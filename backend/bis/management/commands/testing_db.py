@@ -1,3 +1,4 @@
+from itertools import product
 import typing as t
 
 from django.core.management import call_command
@@ -35,7 +36,7 @@ class Command(BaseCommand):
         call_command("import_regions")
         call_command("import_zip_codes")
         self.create_testing_db()
-        call_command("import_locations")
+        # call_command("import_locations")
 
     def create_user(
         self,
@@ -63,25 +64,19 @@ class Command(BaseCommand):
                 qualification_valid_since_date,
                 qualification_approved_by,
             ) = qualification
-            ctg_qualification = QualificationCategory.objects.get(
-                slug=qualification_slug
-            )
-            Qualification.objects.update_or_create(
-                defaults=dict(
-                    user=new_user,
-                    category=ctg_qualification,
-                    valid_since=qualification_valid_since_date,
-                    approved_by=qualification_approved_by,
-                )
+            ctg_qualification = QualificationCategory.objects.get(slug=qualification_slug)
+            q = Qualification.objects.create(
+                user=new_user,
+                category=ctg_qualification,
+                valid_since=qualification_valid_since_date,
+                approved_by=qualification_approved_by,
             )
         return new_user
 
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
         director = self.create_user("Pan", "Reditel", "mountdoom@centrum.cz")
-        finance_director = self.create_user(
-            "Andrej", "Babis", "prezident@prezident.gov.cz"
-        )
+        finance_director = self.create_user("Andrej", "Babis", "prezident@prezident.gov.cz")
         admin = self.create_user("Ich Bin", "Admin", self._next_email())
         kancl = self.create_user("Ich Bin", "Kancl", self._next_email())
         krk = self.create_user("Ich Bin", "KRK", self._next_email())
@@ -137,15 +132,15 @@ class Command(BaseCommand):
             )
         return au
 
-    def add_user_to_administration_unit(
+    def add_administration_unit_member(
         self,
         administration_unit: AdministrationUnit,
         user: User,
         membership: t.Tuple[str, int],
     ):
-        """Add user to administration unit and assign qualification.
+        """Add user to administration unit as a member.
 
-        :param membership: Pair of (slug, member_since_year)
+        :param membership: Pair of (slug, member_since_year).
         """
         membership_slug, membership_from_year = membership
 
@@ -228,22 +223,42 @@ class Command(BaseCommand):
             manager=zc_manager,
         )
 
-        # Add organizer to virtual basic section
-        user = self.create_user(
-            "User",
-            "Name",
-            self._next_email(),
-            qualification=("organizer", date(2020, 1, 1), zc_chairman),
-        )
-        self.add_user_to_administration_unit(
-            basic_section,
-            user,
-            membership=("adult", 2000),
-        )
-        # Create event for basic section
-        self.create_event(
-            "Udalost", date(2020, 1, 1), date(2020, 12, 12), basic_section, user
-        )
+        # Regular members who joined in 2010
+        members_since_2010 = [
+            self.create_user(firstname, surname, self._next_email())
+            for firstname, surname in product(
+                ("James", "Robert", "John", "Jennifer", "Patricia"),
+                ("Smith", "Jones", "Williams", "Brown"),
+            )
+        ]
+        for member in members_since_2010:
+            self.add_administration_unit_member(basic_section, member, membership=("adult", 2010))
+
+        # Members since year 2015 with organizer qualification since 2018
+        organizers_since_2018 = [
+            self.create_user(
+                firstname,
+                surname,
+                self._next_email(),
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            )
+            for firstname, surname in product(
+                (
+                    "Joseph",
+                    "Thomas",
+                ),
+                ("Davies ", "Evans", "Taylor"),
+            )
+        ]
+        for member in organizers_since_2018:
+            self.add_administration_unit_member(basic_section, member, membership=("adult", 2015))
+
+        # Events - weekend event, for all, public_volunteering, nature
+        self.create_event("Udalost1", date(2018, 6, 8), date(2018, 6, 10), basic_section, organizers_since_2018[0])
+        self.create_event("Udalost2", date(2018, 7, 13), date(2018, 7, 15), basic_section, organizers_since_2018[1])
+        self.create_event("Udalost3", date(2019, 10, 18), date(2019, 10, 20), basic_section, organizers_since_2018[2])
+        self.create_event("Udalost4", date(2020, 4, 10), date(2020, 4, 12), basic_section, organizers_since_2018[3])
+        self.create_event("Udalost5", date(2020, 5, 22), date(2020, 5, 24), basic_section, organizers_since_2018[4])
 
     def _next_email(self):
         """Generator of email address."""
