@@ -46,8 +46,9 @@ class Command(BaseCommand):
         birthday: date = None,
         qualification: t.Tuple[str, date, User] = None,
     ):
-        """
-        :param qualification: Triplet of (slug, valid_since, approved_by)
+        """Create users, optionally with qualification.
+
+        :param qualification: Triplet of (slug, valid_since_date, approved_by_user)
         """
         if birthday is None:
             birthday = date(1980, 1, 1)
@@ -65,7 +66,7 @@ class Command(BaseCommand):
                 qualification_approved_by,
             ) = qualification
             ctg_qualification = QualificationCategory.objects.get(slug=qualification_slug)
-            q = Qualification.objects.create(
+            Qualification.objects.create(
                 user=new_user,
                 category=ctg_qualification,
                 valid_since=qualification_valid_since_date,
@@ -76,7 +77,7 @@ class Command(BaseCommand):
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
         director = self.create_user("Pan", "Reditel", "mountdoom@centrum.cz")
-        finance_director = self.create_user("Andrej", "Babis", "prezident@prezident.gov.cz")
+        finance_director = self.create_user("Andrej", "Babis", "kampan@prezident.gov.cz")
         admin = self.create_user("Ich Bin", "Admin", self._next_email())
         kancl = self.create_user("Ich Bin", "Kancl", self._next_email())
         krk = self.create_user("Ich Bin", "KRK", self._next_email())
@@ -261,7 +262,7 @@ class Command(BaseCommand):
         self.create_event("Udalost5", date(2020, 5, 22), date(2020, 5, 24), basic_section, organizers_since_2018[4])
 
     def _next_email(self):
-        """Generator of email address."""
+        """Generator of unique email address."""
         self._email_number += 1
         return f"original_email{self._email_number}@email.com"
 
