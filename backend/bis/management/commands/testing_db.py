@@ -61,6 +61,7 @@ class Command(BaseCommand):
         )
         if password:
             new_user.set_password(password)
+            new_user.save()
 
         if qualification:
             (
