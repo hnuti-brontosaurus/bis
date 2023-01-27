@@ -80,16 +80,15 @@ class Command(BaseCommand):
 
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
-        director = self.create_user("Pan", "Reditel", "reditel@reditel.nope", password="password")
-        finance_director = self.create_user("Ich Bin", "FinanceDirector", self._next_email(), password="password")
-        kancl = self.create_user("Ich Bin", "Kancl", self._next_email(), password="password")
-        krk = self.create_user("Ich Bin", "KRK", self._next_email(), password="password")
-        vv = self.create_user("Ich Bin", "VV", self._next_email(), password="password")
-        edu = self.create_user("Ich Bin", "EDU", self._next_email(), password="password")
+        director = self.create_user("Pan", "Reditel", "director@hb.nope", password="password")
+        finance_director = self.create_user("Ich Bin", "FinanceDirector", "finance_director@hb.nope", password="password")
+        kancl = self.create_user("Ich Bin", "Kancl", "office_worker@hb.nope", password="password")
+        krk = self.create_user("Ich Bin", "KRK", "auditor@hb.nope", password="password")
+        vv = self.create_user("Ich Bin", "VV", "executive@hb.nope", password="password")
+        edu = self.create_user("Ich Bin", "EDU", "education_member@hb.nope", password="password")
 
         admins = [
-            self.create_user("Milan", "Skala", "mountdoom@centrum.cz", password="password"),
-            self.create_user("Ich Bin", "Admin", self._next_email(), password="password"),
+            self.create_user("Ich Bin", "Admin", "admin@hb.nope", password="password"),
         ]
 
         brontosaurus = BrontosaurusMovement.objects.create(
@@ -232,8 +231,8 @@ class Command(BaseCommand):
         # Brontosaurus movement
         self.create_brontosaurus()
         # Virtual basic section
-        zc_chairman = self.create_user("Predseda", "ZC", self._next_email())
-        zc_manager = self.create_user("Hospodar", "ZC", self._next_email())
+        zc_chairman = self.create_user("Predseda", "ZC", "chairman@hb.nope")
+        zc_manager = self.create_user("Hospodar", "ZC", "manager@hb.nope")
         basic_section = self.create_administration_unit(
             name="Zakladni clanek",
             abbreviation="ZC",
