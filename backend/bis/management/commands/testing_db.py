@@ -21,7 +21,7 @@ from categories.models import (
     EventIntendedForCategory,
     EventGroupCategory,
 )
-from event.models import Event
+from event.models import Event, EventRecord
 
 
 class Command(BaseCommand):
@@ -44,6 +44,7 @@ class Command(BaseCommand):
         last_name: str,
         email: str,
         birthday: date = None,
+        password=None,
         qualification: t.Tuple[str, date, User] = None,
     ):
         """Create users, optionally with qualification.
@@ -58,6 +59,8 @@ class Command(BaseCommand):
             email=email,
             birthday=birthday,
         )
+        if password:
+            new_user.set_password(password)
 
         if qualification:
             (
@@ -76,13 +79,13 @@ class Command(BaseCommand):
 
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
-        director = self.create_user("Pan", "Reditel", "mountdoom@centrum.cz")
-        finance_director = self.create_user("Andrej", "Babis", "kampan@prezident.gov.cz")
-        admin = self.create_user("Ich Bin", "Admin", self._next_email())
-        kancl = self.create_user("Ich Bin", "Kancl", self._next_email())
-        krk = self.create_user("Ich Bin", "KRK", self._next_email())
-        vv = self.create_user("Ich Bin", "VV", self._next_email())
-        edu = self.create_user("Ich Bin", "EDU", self._next_email())
+        director = self.create_user("Pan", "Reditel", "reditel@reditel.nope", password='password')
+        finance_director = self.create_user("Ich Bin", "FinanceDirector", self._next_email(), password='password')
+        admin = self.create_user("Ich Bin", "Admin", self._next_email(), password='password')
+        kancl = self.create_user("Ich Bin", "Kancl", self._next_email(), password='password')
+        krk = self.create_user("Ich Bin", "KRK", self._next_email(), password='password')
+        vv = self.create_user("Ich Bin", "VV", self._next_email(), password='password')
+        edu = self.create_user("Ich Bin", "EDU", self._next_email(), password='password')
 
         brontosaurus = BrontosaurusMovement.objects.create(
             director=director,
@@ -163,6 +166,7 @@ class Command(BaseCommand):
         end: date,
         administration_units: t.Union[AdministrationUnit, t.List[AdministrationUnit]],
         main_organizer: User,
+        participants=None,
         group_slug: str = "weekend_event",
         category_slug: str = "public__volunteering",
         program_slug: str = "nature",
@@ -207,6 +211,14 @@ class Command(BaseCommand):
 
         for adm_unit in administration_units:
             event.administration_units.add(adm_unit)
+
+        EventRecord.objects.create(event=event,
+                total_hours_worked=8,
+                comment_on_work_done='',
+            )
+        
+        if participants:
+            event.record.participants.set(participants)
         return event
 
     def create_testing_db(self):
@@ -235,6 +247,17 @@ class Command(BaseCommand):
         for member in members_since_2010:
             self.add_administration_unit_member(basic_section, member, membership=("adult", 2010))
 
+        # Regular members who joined in 2018
+        members_since_2018 = [
+            self.create_user(firstname, surname, self._next_email())
+            for firstname, surname in product(
+                ("Cassandra", "Abbas", "Berger", "Josiah", "Jessie"),
+                ("Mahoney", "Maddox", "Williams", "Franco"),
+            )
+        ]
+        for member in members_since_2018:
+            self.add_administration_unit_member(basic_section, member, membership=("adult", 2018))
+
         # Members since year 2015 with organizer qualification since 2018
         organizers_since_2018 = [
             self.create_user(
@@ -245,21 +268,20 @@ class Command(BaseCommand):
             )
             for firstname, surname in product(
                 (
-                    "Joseph",
-                    "Thomas",
+                    "Organizer",
                 ),
-                ("Davies ", "Evans", "Taylor"),
+                ("Davies ", "Evans", "Taylor", "McDonald", "Morty"),
             )
         ]
         for member in organizers_since_2018:
             self.add_administration_unit_member(basic_section, member, membership=("adult", 2015))
 
-        # Events - weekend event, for all, public_volunteering, nature
-        self.create_event("Udalost1", date(2018, 6, 8), date(2018, 6, 10), basic_section, organizers_since_2018[0])
-        self.create_event("Udalost2", date(2018, 7, 13), date(2018, 7, 15), basic_section, organizers_since_2018[1])
-        self.create_event("Udalost3", date(2019, 10, 18), date(2019, 10, 20), basic_section, organizers_since_2018[2])
-        self.create_event("Udalost4", date(2020, 4, 10), date(2020, 4, 12), basic_section, organizers_since_2018[3])
-        self.create_event("Udalost5", date(2020, 5, 22), date(2020, 5, 24), basic_section, organizers_since_2018[4])
+        # Event defaults - weekend event, for all, public_volunteering, nature
+        self.create_event("Udalost1", date(2018, 6, 8), date(2018, 6, 10), basic_section, organizers_since_2018[0], participants=members_since_2010[0:10])
+        self.create_event("Udalost2", date(2018, 7, 13), date(2018, 7, 15), basic_section, organizers_since_2018[1], category_slug='public__only_experiential', participants=members_since_2010[10:15])
+        self.create_event("Udalost3", date(2019, 10, 18), date(2019, 10, 20), basic_section, organizers_since_2018[2], category_slug='public__club__lecture', participants=members_since_2010[15:20])
+        self.create_event("Udalost4", date(2020, 4, 10), date(2020, 4, 12), basic_section, organizers_since_2018[3], category_slug='public__only_experiential', participants=members_since_2018[0:10])
+        self.create_event("Udalost5", date(2020, 5, 22), date(2020, 5, 24), basic_section, organizers_since_2018[4], participants=members_since_2018[10:20])
 
     def _next_email(self):
         """Generator of unique email address."""
