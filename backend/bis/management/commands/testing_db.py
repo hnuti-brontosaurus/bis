@@ -100,7 +100,7 @@ class Command(BaseCommand):
         brontosaurus.audit_committee.add(krk)
         brontosaurus.executive_committee.add(vv)
         brontosaurus.education_members.add(edu)
-        brontosaurus.bis_administrators.add(admins)
+        brontosaurus.bis_administrators.set(admins)
 
     def create_administration_unit(
         self,
