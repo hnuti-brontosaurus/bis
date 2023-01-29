@@ -31,7 +31,7 @@ from project.settings import BASE_DIR
 class Command(BaseCommand):
 
     # Some events require propagation images.
-    # For the first DB version, we use favicon.
+    # TODO: Generate simple image for testing during runtime.
     event_propagation_image_path = join(BASE_DIR, 'bis', 'static', 'favicon.png')
 
     def __init__(self, *args, **kwargs):
@@ -251,10 +251,10 @@ class Command(BaseCommand):
                 organizers=main_organizer_full_name,
                 web_url='',
                 _contact_url='',
-                invitation_text_introduction='Úvodní slovo',
-                invitation_text_practical_information='Praktické informace',
-                invitation_text_work_description='Popis práce',
-                invitation_text_about_us='O nás',
+                invitation_text_introduction='Co nás čeká?',
+                invitation_text_practical_information='Co, kde a jak',
+                invitation_text_work_description='Dobrovolnická pomoc',
+                invitation_text_about_us='Malá ochutnávka',
                 contact_person=main_organizer,
                 contact_name=main_organizer_full_name,
                 contact_phone=self._random_phonenum(),
@@ -385,7 +385,7 @@ class Command(BaseCommand):
         event_number = 1
         # Generation parameters have been chosen, so that
         # event parameters (such as number of participants,
-        # categories and organizers resemble) simulate real events.
+        # categories and organizers) simulate real events.
         while current_event_time < event_ending_date:
             category_slug = category_slugs[event_number % len(category_slugs)]
             main_organizer = organizers[event_number % len(organizers)]
@@ -404,7 +404,6 @@ class Command(BaseCommand):
                 category_slug=category_slug,
             )
 
-            # Increase iterations
             current_event_time += time_delta
             event_number += 1
 
