@@ -26,7 +26,7 @@
 
 import { create_minimum_event_object } from "./utilities";
 
-function fill_action_form(event_object, submit = true) {
+function fill_event_form(event_object, submit = true) {
     cy.get("button").contains("druh akce").click()
     cy.contains(event_object.kind).click()
     /// Basic info
@@ -90,7 +90,7 @@ function fill_action_form(event_object, submit = true) {
 
 function create_one_day_event(start_date, end_date, count = 1, name = null) {
     let event_object = create_minimum_event_object("ONE_DAY", start_date, end_date, count, name)
-    fill_action_form(event_object)
+    fill_event_form(event_object)
     cy.wrap(event_object)
 }
 

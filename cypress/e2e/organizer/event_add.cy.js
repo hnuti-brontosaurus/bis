@@ -63,9 +63,9 @@ describe("Clone event", () =>
         cy.contains("klonovat").click()
 
         cy.get("button").contains("základní info").click()
-        cy.get('input[name="name"').type(" (Naklonovaná)")
-        cy.get('input[id="start"').type("2025-01-01")
-        cy.get('input[id="end"').type("2025-01-03")
+        cy.get('input[name="name"]').type(" (Naklonovaná)")
+        cy.get('input[id="start"]').type("2025-01-01")
+        cy.get('input[id="end"]').type("2025-01-03")
 
         cy.get('button[type="submit"]').first().click({ force: true })
     })

@@ -23,7 +23,7 @@ before(() => {
 
     cy.clearAllLocalStorage()
     cy.setLocalStorage("persist:auth", JSON.stringify({
-        "token": "\"\"",
+        "token": "\"token\"",
     }))
 
     cy.saveLocalStorage("user")
@@ -43,13 +43,13 @@ describe('Add opportunity', () =>
     it('can add new opportunity', () => {
         cy.visit(url)
         cy.contains("Spolupráce").click()
-        cy.get('input[name="name"').type("Příležitost spolupráce")
-        cy.get('input[name="start"').type("2022-01-01")
-        cy.get('input[name="end"').type("2025-12-31")
-        cy.get('input[name="on_web_start"').type("2023-12-31")
-        cy.get('input[name="on_web_end"').type("2023-12-31")
+        cy.get('input[name="name"]').type("Příležitost spolupráce")
+        cy.get('input[name="start"]').type("2022-01-01")
+        cy.get('input[name="end"]').type("2025-12-31")
+        cy.get('input[name="on_web_start"]').type("2023-12-31")
+        cy.get('input[name="on_web_end"]').type("2023-12-31")
 
-        cy.get("input[id=react-select-2-input").focus().type("Brno").wait(2500).trigger('keydown', {
+        cy.get('input[id="react-select-2-input"').focus().type("Brno").wait(2500).trigger('keydown', {
             key: 'Enter',
         });
         cy.get('p').each(($element, $index) => {
