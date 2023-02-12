@@ -12,7 +12,11 @@
 
 `docker exec -it bis-backend sh` + `python manage.py reset` - import old db
 
-`make open_cypress` - open cypress
+```bash
+# Testing uses plugin for local storage
+npm i --save-dev cypress-localstorage-commands
+make open_cypress  # open cypress
+```
 
 `/admin/code_login/` - login without frontend
 
