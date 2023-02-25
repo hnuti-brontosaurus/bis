@@ -187,7 +187,7 @@ class Command(BaseCommand):
 
         RoleCategory.objects.update_or_create(slug='director', defaults=dict(name='Ředitel'))
         RoleCategory.objects.update_or_create(slug='admin', defaults=dict(name='Admin'))
-        RoleCategory.objects.update_or_create(slug='office_worker', defaults=dict(name='Kancl'))
+        RoleCategory.objects.update_or_create(slug='office_worker', defaults=dict(name='Ústředí'))
         RoleCategory.objects.update_or_create(slug='auditor', defaults=dict(name='KRK'))
         RoleCategory.objects.update_or_create(slug='executive', defaults=dict(name='VV'))
         RoleCategory.objects.update_or_create(slug='education_member', defaults=dict(name='EDU'))

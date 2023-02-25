@@ -131,7 +131,7 @@ class BrontosaurusMovement(SingletonModel):
         for user in self.bis_administrators.all():
             record_history(self._history, date, user, 'Správce BISu')
         for user in self.office_workers.all():
-            record_history(self._history, date, user, 'Člen kanclu')
+            record_history(self._history, date, user, 'Člen ústředí')
         for user in self.audit_committee.all():
             record_history(self._history, date, user, 'KRK')
         for user in self.executive_committee.all():

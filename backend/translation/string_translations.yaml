@@ -33,7 +33,7 @@ generic:
 
 admin:
   header: BIS - Brontosauří informační systém
-  subheader: Administrátorský přístup pro organizační jednotky a kancleář
+  subheader: Administrátorský přístup pro organizační jednotky a ústředí
 
 login:
   too_many_retries: Příliš mnoho pokusů, zkuste to znovu za hodinu
