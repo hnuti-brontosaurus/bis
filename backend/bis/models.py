@@ -139,6 +139,7 @@ class User(AbstractBaseUser):
     _import_id = CharField(max_length=255, default='')
     _str = CharField(max_length=255)
     roles = ManyToManyField(RoleCategory, related_name='users')
+    vokativ = CharField(max_length=63, blank=True)
 
     objects = UserManager()
 

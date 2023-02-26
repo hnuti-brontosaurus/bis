@@ -223,7 +223,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             'fields': ('get_events_where_was_organizer', 'get_participated_in_events')
         }),
         ['Interní data', {
-            'fields': ['roles', 'is_active', 'last_login', 'date_joined', 'get_board_member_of'],
+            'fields': ['roles', 'is_active', 'last_login', 'date_joined', 'get_board_member_of', 'vokativ'],
             'classes': ('collapse',)
         }]
     )

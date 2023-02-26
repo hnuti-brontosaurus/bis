@@ -2,6 +2,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from vokativ import vokativ
 
 from bis.models import User, Location, UserEmail, Qualification
 from project import settings
@@ -12,6 +13,15 @@ from regions.models import Region
 def create_auth_token_for_all_users(instance: User, created, **kwargs):
     if created:
         Token.objects.get_or_create(user=instance)
+
+
+@receiver(pre_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='set_vokativ')
+def set_vokativ(instance: User, **kwargs):
+    if not instance.vokativ:
+        instance.vokativ = vokativ(instance.first_name.split(' ')[0]).capitalize()
+
+        if instance.nickname:
+            instance.vokativ = vokativ(instance.nickname).capitalize()
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='set_unique_str')

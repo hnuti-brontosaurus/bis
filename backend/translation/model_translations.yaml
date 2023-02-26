@@ -44,6 +44,7 @@ User:
   name: Uživatel
   name_plural: Uživatelé
   fields:
+    vokativ: Vokativ
     email_exists: Je e-mail skutečný?
     is_active: Může se uživatel přihlásit?
     date_joined: Datum vzniku účtu
