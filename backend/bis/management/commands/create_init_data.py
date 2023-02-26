@@ -89,8 +89,8 @@ class Command(BaseCommand):
                                                             defaults=dict(name='Regionální centrum'))
         AdministrationUnitCategory.objects.update_or_create(slug="club", defaults=dict(name='Klub'))
 
-        MembershipCategory.objects.update_or_create(slug='family', defaults=dict(name='rodinné'))
-        MembershipCategory.objects.update_or_create(slug='family_member', defaults=dict(name='rodinný příslušník'))
+        MembershipCategory.objects.update_or_create(slug='family', defaults=dict(name='první rodinný člen'))
+        MembershipCategory.objects.update_or_create(slug='family_member', defaults=dict(name='další rodinný člen'))
         MembershipCategory.objects.update_or_create(slug='kid', defaults=dict(name='dětské do 15 let'))
         MembershipCategory.objects.update_or_create(slug='student', defaults=dict(name='individuální 15-26 let'))
         MembershipCategory.objects.update_or_create(slug='adult', defaults=dict(name='individuální nad 26 let'))
