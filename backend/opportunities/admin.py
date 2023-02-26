@@ -10,7 +10,6 @@ from opportunities.models import Opportunity
 class OpportunityAdmin(PermissionMixin, NestedModelAdmin):
     list_display = 'name', 'category', 'contact_person', 'start', 'end', 'on_web_start', 'on_web_end', 'location'
     autocomplete_fields = 'location', 'contact_person'
-    save_as = True
 
     list_select_related = 'category', 'contact_person'
     list_filter = 'category', ('start', DateRangeFilter), ('end', DateRangeFilter),

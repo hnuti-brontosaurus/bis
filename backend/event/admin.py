@@ -33,29 +33,7 @@ class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTab
                 if len(forms) < 1 and request._event_propagation_needs_image:
                     raise ValidationError('Nutno nahrát alespoň jeden obrázek')
 
-        if '_saveasnew' not in request.POST:
-            return New1
-
-        id = request.resolver_match.kwargs['object_id']
-        event = Event.objects.get(id=id)
-
-        if not hasattr(event, 'propagation'):
-            return New1
-
-        images = event.propagation.images.all()
-
-        class New(New1):
-            def is_valid(_self):
-                for i, form in enumerate(_self):
-                    if i >= len(images):
-                        continue
-
-                    form.instance.image = images[i].image
-                    form.fields['image'].required = False
-
-                return super(New, _self).is_valid()
-
-        return New
+        return New1
 
 
 class EventPhotoAdmin(PermissionMixin, NestedTabularInline):
@@ -144,7 +122,6 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
 class EventAdmin(PermissionMixin, NestedModelAdmin):
     actions = [export_to_xlsx]
     inlines = EventFinanceAdmin, EventPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
-    save_as = True
     filter_horizontal = 'other_organizers',
 
     list_filter = [
@@ -231,24 +208,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
 
                 return _self.cleaned_data
 
-        if '_saveasnew' not in request.POST:
-            return F1
-
-        id = request.resolver_match.kwargs['object_id']
-        event = Event.objects.get(id=id)
-
-        class F2(F1):
-            def clean(_self):
-                super().clean()
-                start = _self.cleaned_data['start']
-                end = _self.cleaned_data['end']
-
-                if start == event.start or end == event.end:
-                    raise ValidationError("Nová akce musí mít odlišný čas začátku a konce od původní akce")
-
-                return _self.cleaned_data
-
-        return F2
+        return F1
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
