@@ -21,13 +21,16 @@ class Permissions:
 
     def can_view_all_objs(self):
         return self.user.can_see_all or \
-               self.model in [Location, LocationPhoto, LocationContactPerson, LocationPatron,
-                              AdministrationUnit, AdministrationUnitAddress, AdministrationUnitContactAddress,
-                              GeneralMeeting]
+            self.model in [Location, LocationPhoto, LocationContactPerson, LocationPatron,
+                           AdministrationUnit, AdministrationUnitAddress, AdministrationUnitContactAddress,
+                           GeneralMeeting]
 
     def is_readonly(self):
         return self.model._meta.app_label in ['categories', 'regions'] or \
-               self.model in [Donation]
+            self.model in [Donation]
+
+    def is_game_book(self):
+        return self.model._meta.app_label in ['game_book', 'game_book_categories']
 
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():
@@ -43,8 +46,8 @@ class Permissions:
     def has_view_permission(self, obj=None):
         # individual objects are filtered using get_queryset,
         # this is used only for disabling whole admin model
-        if self.source == 'frontend':
-            return True
+        if self.source == 'frontend': return True
+        if self.is_game_book(): return False
 
         if self.model in [BrontosaurusMovement] or self.model._meta.app_label in ['categories', 'regions']:
             return self.user.can_see_all
@@ -64,9 +67,8 @@ class Permissions:
     def has_add_permission(self, obj=None):
         if self.model is BrontosaurusMovement: return False
         if self.is_readonly(): return False
-
-        if self.user.is_superuser:
-            return True
+        if self.user.is_superuser: return True
+        if self.is_game_book(): return False
 
         if self.user.is_office_worker:
             if self.model not in [UserEmail]:
@@ -105,6 +107,7 @@ class Permissions:
         if self.model in [VariableSymbol, Qualification]: return False
         if self.is_readonly(): return False
         if self.user.is_superuser: return True
+        if self.is_game_book(): return False
 
         if self.user.is_office_worker:
             if self.model not in [BrontosaurusMovement, UserEmail]:
@@ -117,7 +120,8 @@ class Permissions:
                 return True
 
         # for any user
-        if self.model in [User, UserAddress, UserContactAddress, UserClosePerson, EYCACard, OfferedHelp, Donor, EventDraft]:
+        if self.model in [User, UserAddress, UserContactAddress, UserClosePerson, EYCACard, OfferedHelp, Donor,
+                          EventDraft]:
             if not obj or obj.has_edit_permission(self.user):
                 return True
 
@@ -141,6 +145,7 @@ class Permissions:
         if self.model in [BrontosaurusMovement, UploadBankRecords, Feedback]: return False
         if self.is_readonly(): return False
         if self.user.is_superuser: return True
+        if self.is_game_book(): return False
 
         if self.user.is_office_worker:
             if self.model not in [UserEmail]:
