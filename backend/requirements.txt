@@ -30,3 +30,4 @@ drf-nested-routers
 vokativ
 django-bootstrap5
 django-autocomplete-light
+django-cleanup

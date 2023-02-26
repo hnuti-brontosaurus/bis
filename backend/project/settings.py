@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'game_book',
     'game_book_categories',
     'django_bootstrap5',
+    'django_cleanup.apps.CleanupConfig', # needs to be last
 ]
 
 MIDDLEWARE = [
