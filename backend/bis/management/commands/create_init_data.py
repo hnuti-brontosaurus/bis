@@ -265,6 +265,8 @@ class Command(BaseCommand):
             emoji="📝", name="šifrovačka", description=""))
         Tag.objects.update_or_create(slug="warm-up", defaults=dict(
             emoji="🤸", name="rozcvička", description="Hodí se po ránu"))
+        Tag.objects.update_or_create(slug="tutorial", defaults=dict(
+            emoji="🔨", name="návod", description="Jak zasadit, vyrobit, zpracovat, vytvořit..."))
 
         PhysicalCategory.objects.update_or_create(slug="minimal", defaults=dict(
             emoji="🧘", name="Na místě", description="Programy sedící či s minimem pohybu mezi účasníky"))
