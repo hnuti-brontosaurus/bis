@@ -13,7 +13,7 @@ from bis.models import User, Location, UserAddress, UserContactAddress, Membersh
     LocationContactPerson, LocationPatron, EYCACard
 from categories.serializers import DonationSourceCategorySerializer, EventProgramCategorySerializer, \
     OrganizerRoleCategorySerializer, TeamRoleCategorySerializer, MembershipCategorySerializer, \
-    QualificationCategorySerializer, HealthInsuranceCompanySerializer, SexCategorySerializer, RoleCategorySerializer, \
+    QualificationCategorySerializer, HealthInsuranceCompanySerializer, PronounCategorySerializer, RoleCategorySerializer, \
     GrantCategorySerializer, EventIntendedForCategorySerializer, DietCategorySerializer, EventCategorySerializer, \
     LocationProgramCategorySerializer, LocationAccessibilityCategorySerializer, OpportunityCategorySerializer, \
     EventGroupCategorySerializer
@@ -312,7 +312,7 @@ class UserSerializer(ModelSerializer):
     eyca_card = EYCACardSerializer(allow_null=True)
 
     health_insurance_company = HealthInsuranceCompanySerializer()
-    sex = SexCategorySerializer()
+    pronoun = PronounCategorySerializer()
     roles = RoleCategorySerializer(many=True)
 
     class Meta:
@@ -333,7 +333,7 @@ class UserSerializer(ModelSerializer):
             'subscribed_to_newsletter',
             'health_insurance_company',
             'health_issues',
-            'sex',
+            'pronoun',
             'is_active',
             'date_joined',
             'roles',
@@ -678,7 +678,7 @@ class EventApplicationSerializer(ModelSerializer):
     address = EventApplicationAddressSerializer(allow_null=True)
     answers = AnswerSerializer(many=True)
 
-    sex = SexCategorySerializer()
+    pronoun = PronounCategorySerializer()
 
     class Meta:
         model = EventApplication
@@ -693,7 +693,7 @@ class EventApplicationSerializer(ModelSerializer):
             'email',
             'birthday',
             'health_issues',
-            'sex',
+            'pronoun',
             'created_at',
             'close_person',
             'address',

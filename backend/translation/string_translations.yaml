@@ -17,7 +17,7 @@ generic:
   phone: Tel. číslo
   birthday: Datum narození
   order: Pořadí
-  sex: Pohlaví
+  pronoun: Oslovení
   event: Akce
   image: Obrázek
   health_issues: Alergie a zdravotní omezení

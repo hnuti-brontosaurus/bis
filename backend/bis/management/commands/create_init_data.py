@@ -4,7 +4,7 @@ from bis.models import Location
 from categories.models import DietCategory, EventIntendedForCategory, QualificationCategory, \
     AdministrationUnitCategory, MembershipCategory, EventProgramCategory, \
     EventCategory, GrantCategory, DonationSourceCategory, OrganizerRoleCategory, TeamRoleCategory, OpportunityCategory, \
-    LocationProgramCategory, LocationAccessibilityCategory, RoleCategory, HealthInsuranceCompany, SexCategory, \
+    LocationProgramCategory, LocationAccessibilityCategory, RoleCategory, HealthInsuranceCompany, PronounCategory, \
     EventGroupCategory
 from game_book_categories.models import Tag, PhysicalCategory, MentalCategory, LocationCategory, \
     ParticipantNumberCategory, ParticipantAgeCategory, GameLengthCategory, PreparationLengthCategory, \
@@ -216,9 +216,10 @@ class Command(BaseCommand):
         HealthInsuranceCompany.objects.update_or_create(slug='RBP', defaults=dict(
             name='RBP, zdravotní pojišťovna'))
 
-        SexCategory.objects.update_or_create(slug='woman', defaults=dict(name='Žena'))
-        SexCategory.objects.update_or_create(slug='man', defaults=dict(name='Muž'))
-        SexCategory.objects.update_or_create(slug='other', defaults=dict(name='Jiné'))
+        PronounCategory.objects.update_or_create(slug='woman', defaults=dict(name='Ona/její'))
+        PronounCategory.objects.update_or_create(slug='man', defaults=dict(name='On/jeho'))
+        PronounCategory.objects.update_or_create(slug='other', defaults=dict(name='Jiné'))
+        PronounCategory.objects.update_or_create(slug='unknown', defaults=dict(name='Nechci uvádět'))
 
         Location.objects.update_or_create(name='Online', defaults=dict(
             for_beginners=True,

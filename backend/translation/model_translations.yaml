@@ -404,9 +404,9 @@ RoleCategory:
 HealthInsuranceCompany:
   name: Zdravotní pojišťovna
   name_plural: Zdravotní pojišťovny
-SexCategory:
-  name: Pohlaví
-  name_plural: Pohlaví
+PronounCategory:
+  name: Oslovení
+  name_plural: Oslovení
 
 Donor:
   name: Dárce

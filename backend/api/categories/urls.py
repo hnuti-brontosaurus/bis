@@ -36,7 +36,7 @@ register(LocationProgramCategoryViewSet)
 register(LocationAccessibilityCategoryViewSet)
 register(RoleCategoryViewSet)
 register(HealthInsuranceCompanyViewSet)
-register(SexCategoryViewSet)
+register(PronounCategoryViewSet)
 register(RegionViewSet)
 
 urlpatterns = [

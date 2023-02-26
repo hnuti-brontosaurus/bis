@@ -217,7 +217,7 @@ class HealthInsuranceCompany(Model):
 
 
 @translate_model
-class SexCategory(Model):
+class PronounCategory(Model):
     name = CharField(max_length=127)
     slug = SlugField(unique=True)
 

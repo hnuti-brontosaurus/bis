@@ -88,6 +88,6 @@ class HealthInsuranceCompanyViewSet(ReadOnlyModelViewSet):
     queryset = HealthInsuranceCompany.objects.all()
 
 
-class SexCategoryViewSet(ReadOnlyModelViewSet):
-    serializer_class = SexCategorySerializer
-    queryset = SexCategory.objects.all()
+class PronounCategoryViewSet(ReadOnlyModelViewSet):
+    serializer_class = PronounCategorySerializer
+    queryset = PronounCategory.objects.all()

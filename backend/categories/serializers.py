@@ -105,7 +105,7 @@ class HealthInsuranceCompanySerializer(ModelSerializer):
         exclude = ()
 
 
-class SexCategorySerializer(ModelSerializer):
+class PronounCategorySerializer(ModelSerializer):
     class Meta:
-        model = SexCategory
+        model = PronounCategory
         exclude = ()

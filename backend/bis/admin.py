@@ -148,14 +148,14 @@ class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
 def mark_as_man(model_admin, request, queryset):
     if not all([obj.has_edit_permission(request.user) for obj in queryset]):
         return model_admin.message_user(request, 'Nemáš právo editovat vybrané objekty', ERROR)
-    queryset.update(sex=SexCategory.objects.get(slug='man'))
+    queryset.update(pronoun=PronounCategory.objects.get(slug='man'))
 
 
 @admin.action(description='Označ vybrané jako ženy')
 def mark_as_woman(model_admin, request, queryset):
     if not all([obj.has_edit_permission(request.user) for obj in queryset]):
         return model_admin.message_user(request, 'Nemáš právo editovat vybrané objekty', ERROR)
-    queryset.update(sex=SexCategory.objects.get(slug='woman'))
+    queryset.update(pronoun=PronounCategory.objects.get(slug='woman'))
 
 
 def get_member_action(membership_category, administration_unit):
@@ -213,7 +213,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
     fieldsets = (
         [None, {
-            'fields': ['get_donor', 'first_name', 'last_name', 'birth_name', 'nickname', 'birthday', 'sex', 'phone',
+            'fields': ['get_donor', 'first_name', 'last_name', 'birth_name', 'nickname', 'birthday', 'pronoun', 'phone',
                        'get_all_emails']
         }],
         ('Osobní informace', {
@@ -271,7 +271,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         list_filter_extra_title('Osobní info'),
         ('birthday', DateRangeFilter),
         NoBirthdayFilter,
-        ('sex', MultiSelectRelatedDropdownFilter),
+        ('pronoun', MultiSelectRelatedDropdownFilter),
         ('address__region', MultiSelectRelatedDropdownFilter),
         ('health_insurance_company', MultiSelectRelatedDropdownFilter),
 

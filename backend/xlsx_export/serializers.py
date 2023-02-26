@@ -32,7 +32,7 @@ class UserExportSerializer(ModelSerializer):
     address = StringRelatedField(label='Adresa')
     contact_address = StringRelatedField(label='Kontaktí adresa')
     offers = OfferedHelpExportSerializer()
-    sex = StringRelatedField(label='Pohlaví')
+    pronoun = StringRelatedField(label='Oslovení')
 
     @staticmethod
     def get_related(queryset):
@@ -40,7 +40,7 @@ class UserExportSerializer(ModelSerializer):
             'address', 'contact_address',
             'offers',
             'health_insurance_company',
-            'sex',
+            'pronoun',
         ).prefetch_related(
             'roles',
             'offers__programs',
@@ -71,7 +71,7 @@ class UserExportSerializer(ModelSerializer):
             'address',
             'contact_address',
             'offers',
-            'sex',
+            'pronoun',
         )
 
 
@@ -89,7 +89,7 @@ class DonorExportSerializer(ModelSerializer):
             'basic_section_support',
             'user__offers',
             'user__health_insurance_company',
-            'user__sex',
+            'user__pronoun',
         ).prefetch_related(
             'user__roles',
             'variable_symbols',
@@ -272,7 +272,7 @@ class DonationExportSerializer(ModelSerializer):
             'donor__basic_section_support',
             'donor__user__offers',
             'donor__user__health_insurance_company',
-            'donor__user__sex',
+            'donor__user__pronoun',
         ).prefetch_related(
             'donor__user__roles',
             'donor__variable_symbols',

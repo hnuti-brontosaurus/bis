@@ -2,7 +2,7 @@ from django.contrib.gis.db.models import *
 from phonenumber_field.modelfields import PhoneNumberField
 
 from bis.models import User
-from categories.models import SexCategory
+from categories.models import PronounCategory
 from common.abstract_models import BaseContact, BaseAddress
 from event.models import EventRegistration, Event
 from translation.translate import translate_model
@@ -26,7 +26,7 @@ class EventApplication(Model):
     email = EmailField(blank=True, null=True)
     birthday = DateField(blank=True, null=True)
     health_issues = TextField(blank=True)
-    sex = ForeignKey(SexCategory, on_delete=PROTECT, null=True, blank=True, related_name='applications')
+    pronoun = ForeignKey(PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name='applications')
 
     created_at = DateTimeField(auto_now=True)
     note = TextField(blank=True)

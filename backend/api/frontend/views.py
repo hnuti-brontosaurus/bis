@@ -54,7 +54,7 @@ class UserViewSet(PermissionViewSetBase):
         'contact_address__region',
         'donor',
         'health_insurance_company',
-        'sex',
+        'pronoun',
     ).prefetch_related(
         'offers__programs',
         'offers__organizer_roles',
@@ -217,7 +217,7 @@ class QuestionViewSet(PermissionViewSetBase):
 class EventApplicationViewSet(PermissionViewSetBase):
     serializer_class = EventApplicationSerializer
     queryset = EventApplication.objects \
-        .select_related('close_person', 'address', 'sex') \
+        .select_related('close_person', 'address', 'pronoun') \
         .prefetch_related('answers', 'answers__question')
     kwargs_serializer_class = EventRouterKwargsSerializer
 

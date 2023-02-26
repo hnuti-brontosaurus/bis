@@ -22,7 +22,7 @@ from bis.admin_helpers import get_admin_edit_url
 from bis.helpers import permission_cache, paused_validation, filter_queryset_with_multiple_or_queries
 from categories.models import QualificationCategory, MembershipCategory, LocationProgramCategory, \
     LocationAccessibilityCategory, \
-    RoleCategory, HealthInsuranceCompany, SexCategory
+    RoleCategory, HealthInsuranceCompany, PronounCategory
 from common.abstract_models import BaseContact, BaseAddress
 from common.thumbnails import ThumbnailImageField
 from translation.translate import translate_model
@@ -130,7 +130,7 @@ class User(AbstractBaseUser):
     health_insurance_company = ForeignKey(HealthInsuranceCompany, related_name='users', on_delete=PROTECT, null=True,
                                           blank=True)
     health_issues = TextField(blank=True)
-    sex = ForeignKey(SexCategory, on_delete=PROTECT, null=True, blank=True, related_name='users')
+    pronoun = ForeignKey(PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name='users')
 
     is_active = BooleanField(default=True)
     date_joined = DateField(default=datetime.date.today)
@@ -281,7 +281,7 @@ class User(AbstractBaseUser):
                         setattr(self, field.name, getattr(other, field.name))
 
                 elif field.name in ['first_name', 'last_name', 'nickname', 'birth_name', 'phone',
-                                    'birthday', 'close_person', 'health_insurance_company', 'health_issues', 'sex']:
+                                    'birthday', 'close_person', 'health_insurance_company', 'health_issues', 'pronoun']:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))
 

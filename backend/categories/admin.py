@@ -93,6 +93,6 @@ class HealthInsuranceCompanyAdmin(PermissionMixin, admin.ModelAdmin):
     pass
 
 
-@admin.register(SexCategory)
-class SexCategoryAdmin(PermissionMixin, admin.ModelAdmin):
+@admin.register(PronounCategory)
+class PronounCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass
