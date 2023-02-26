@@ -81,7 +81,9 @@ class Donor(Model):
 
     @permission_cache
     def has_edit_permission(self, user):
-        return self in self.filter_queryset(Donor.objects.filter(id=self.id), user)
+        return self.user == user or \
+            self.regional_center_support in user.administration_units.all() or \
+            self.basic_section_support in user.administration_units.all()
 
 
 @translate_model
@@ -119,7 +121,6 @@ class Donation(Model):
             Q(donor__regional_center_support__in=perm.user.administration_units.all()),
             Q(donor__basic_section_support__in=perm.user.administration_units.all())
         ])
-
 
 
 @translate_model
