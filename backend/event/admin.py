@@ -30,7 +30,7 @@ class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTab
                 forms = [form for form in _self.forms if form.is_valid()]
                 forms = [form for form in forms if form.cleaned_data.get('image')]
                 forms = [form for form in forms if not (_self.can_delete and _self._should_delete_form(form))]
-                if len(forms) < 1:
+                if len(forms) < 1 and request._event_propagation_needs_image:
                     raise ValidationError('Nutno nahrát alespoň jeden obrázek')
 
         if '_saveasnew' not in request.POST:
@@ -98,6 +98,19 @@ class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
 
     exclude = '_contact_url',
 
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+
+        class New1(formset):
+            def clean(_self):
+                request._event_propagation_needs_image = (
+                        bool(_self.cleaned_data[0])
+                        and not (_self.can_delete and _self._should_delete_form(_self.forms[0]))
+                )
+                return super().clean()
+
+        return New1
+
 
 class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
     model = EventRegistration
@@ -154,8 +167,8 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     ]
 
     list_display = 'name', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
-                   'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
-                   'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
+        'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
+        'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
     list_select_related = 'location', 'category', 'program', 'record'
 
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
