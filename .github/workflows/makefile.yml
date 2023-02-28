@@ -24,13 +24,13 @@ jobs:
     - name: Build image
       run: make
 
-#    - name: Run test
-#      run: make test
+    - name: Run test
+      run: make test
 
     - name: Build frontend
       run: make build_frontend
 
-    - name: Build frontend
+    - name: Copy frontend static files to backend
       run: cp -r frontend/build/* backend/frontend_static/
 
     - name: Update backend with frontend files
