@@ -95,6 +95,7 @@ node_modules/cypress/bin/cypress:
 prepare_test_env:
 	rm -Rf ./*data_test
 	docker volume rm -f postgresqldata_test
+	mkdir postgresqldata_test
 	docker volume create postgresqldata_test
 
 startup_testing:
