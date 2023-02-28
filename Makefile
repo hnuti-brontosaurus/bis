@@ -74,6 +74,9 @@ submodule_update: submodule_sync
 run:
 	docker-compose up -d
 
+build_frontend:
+	docker-compose run frontend sh docker-entrypoint.sh build
+
 dev:
 	$(call compose_with_trap,                                                              \
 		--profile dev                                                                   \
@@ -95,7 +98,6 @@ node_modules/cypress/bin/cypress:
 prepare_test_env:
 	rm -Rf ./*data_test
 	docker volume rm -f postgresqldata_test
-	mkdir postgresqldata_test
 	docker volume create postgresqldata_test
 
 startup_testing:
@@ -136,7 +138,7 @@ test_e2e: node_modules/cypress/bin/cypress
 	yarn run wait-on http-get://localhost:3000
 	$(call with_trap, yarn run cypress run)
 
-test: test_backend test_e2e
+test: test_backend test_frontend test_e2e
 
 open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 	make startup_testing
