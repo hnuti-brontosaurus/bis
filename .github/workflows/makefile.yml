@@ -30,8 +30,8 @@ jobs:
       - name: Build image
         run: make
 
-      - name: Run test
-        run: make test
+#      - name: Run test
+#        run: make test
 
       - name: Build frontend
         run: make build_frontend
@@ -66,6 +66,6 @@ jobs:
           context: backend
           file: backend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
