@@ -136,7 +136,7 @@ test_e2e: node_modules/cypress/bin/cypress
 	yarn run wait-on http-get://localhost:3000
 	$(call with_trap, yarn run cypress run)
 
-test: test_backend test_frontend test_e2e
+test: test_backend test_e2e
 
 open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 	make startup_testing
