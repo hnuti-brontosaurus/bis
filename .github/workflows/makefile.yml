@@ -30,8 +30,8 @@ jobs:
       - name: Build image
         run: make
 
-#      - name: Run test
-#        run: make test
+      - name: Run test
+        run: make test
 
       - name: Build frontend
         run: make build_frontend
