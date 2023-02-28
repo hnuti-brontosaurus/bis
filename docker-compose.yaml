@@ -13,18 +13,18 @@ services:
       - ./backend/backend_static:/app/backend_static
       - ./backend/media:/app/media
 
-#  frontend:
-#    container_name: bis-frontend
-#    build: ./frontend
-#    volumes:
-#      - ./logs:/logs
-#      - ./frontend:/app
-#    environment:
-#      HOST: frontend
-#      APP_NAME: 'bis'
-#      API_BASE: 'api/'
-#      DEBUG: 0
-#      REACT_APP_SENTRY_DSN: https://f3a6554a5b71437682e51b0410e20c64@o4504321204027392.ingest.sentry.io/4504453023924224
+  frontend:
+    container_name: bis-frontend
+    build: ./frontend
+    volumes:
+      - ./logs:/logs
+      - ./frontend:/app
+    environment:
+      HOST: frontend
+      APP_NAME: 'bis'
+      API_BASE: 'api/'
+      DEBUG: 0
+      REACT_APP_SENTRY_DSN: https://f3a6554a5b71437682e51b0410e20c64@o4504321204027392.ingest.sentry.io/4504453023924224
 
   backend:
     container_name: bis-backend

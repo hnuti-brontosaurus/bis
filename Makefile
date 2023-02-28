@@ -1,4 +1,4 @@
-.PHONY: build run dev_mac dev_wsl dev_linux no_python_mac no_python_wsl no_python_linux test test_wsl clean submodule_checkout_next submodule_update gen_dev_dockercompose_file open_cypress_wsl prepare_test_env startup_testing_backend backend frontend
+.PHONY: build run dev_mac dev_wsl dev_linux no_python_mac no_python_wsl no_python_linux test test_wsl clean submodule_checkout_next submodule_update gen_dev_dockercompose_file open_cypress_wsl prepare_test_env startup_testing backend frontend test_backend test_frontend startup_testing_frontend
 
 define with_os
 if [ "$(shell uname)" = "Darwin" ]; then		                                           \
@@ -90,38 +90,55 @@ frontend:
 		-f docker-compose/dev_$$OS.yaml up)
 
 node_modules/cypress/bin/cypress:
-	yarn add cypress wait-on --dev
+	yarn add cypress@12.1.0 wait-on --dev
 
 prepare_test_env:
 	rm -Rf ./*data_test
 	docker volume rm -f postgresqldata_test
 	docker volume create postgresqldata_test
 
-startup_testing_backend:
+startup_testing:
 	$(call with_os,                                                                        \
 	    docker-compose                                                                     \
-	        --profile backend                                                               \
+	        --profile dev                                                                  \
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
             -f docker-compose/dev_test.yaml                                                \
             -f docker-compose/dev_test_$$OS.yaml up -d)
 
-test: node_modules/cypress/bin/cypress prepare_test_env
+startup_testing_frontend:
+	$(call with_os,                                                                        \
+	    docker-compose                                                                     \
+	        --profile frontend                                                             \
+            -f docker-compose.yaml                                                         \
+            -f docker-compose/dev.yaml                                                     \
+            -f docker-compose/dev_test.yaml                                                \
+            -f docker-compose/dev_test_$$OS.yaml up -d)
+
+test_backend:
+	make prepare_test_env
 	$(call compose_with_trap,                                                              \
 		-f docker-compose/dev_test.yaml                                                    \
 		-f docker-compose/dev_test_$$OS.yaml run backend sh docker-entrypoint.sh test)
-	$(call compose_with_trap,                                                              \
-		-f docker-compose/dev_test.yaml                                                    \
-		-f docker-compose/dev_test_$$OS.yaml run frontend sh docker-entrypoint.sh test)
 
+
+test_frontend: node_modules/cypress/bin/cypress
+	make startup_testing_frontend
+	yarn run wait-on http-get://localhost:3000
+	$(call with_trap, yarn --cwd frontend run cypress run)
+
+
+test_e2e: node_modules/cypress/bin/cypress
 	make prepare_test_env
-	make startup_testing_backend
+	make startup_testing
 	yarn run wait-on http-get://localhost/api/
+	yarn run wait-on http-get://localhost:3000
 	$(call with_trap, yarn run cypress run)
 
+test: test_backend test_frontend test_e2e
 
 open_cypress: node_modules/cypress/bin/cypress prepare_test_env
-	make startup_testing_backend
+	make startup_testing
 	yarn run wait-on http-get://localhost/api/
 	$(call with_trap, yarn run cypress open)
 

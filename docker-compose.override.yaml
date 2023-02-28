@@ -3,9 +3,9 @@ services:
   nginx:
     links:
       - backend
-#      - frontend
+      - frontend
     depends_on:
       - backend
-#      - frontend
+      - frontend
     volumes:
       - ./nginx/certs:/etc/nginx/certs
