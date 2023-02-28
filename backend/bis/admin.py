@@ -49,9 +49,9 @@ class LocationAdmin(PermissionMixin, OSMGeoAdmin):
     exclude = '_import_id',
 
     list_filter = 'program', 'for_beginners', 'is_full', 'is_unexplored', \
-                  ('accessibility_from_prague', MultiSelectRelatedDropdownFilter), \
-                  ('accessibility_from_brno', MultiSelectRelatedDropdownFilter), \
-                  ('region', MultiSelectRelatedDropdownFilter)
+        ('accessibility_from_prague', MultiSelectRelatedDropdownFilter), \
+        ('accessibility_from_brno', MultiSelectRelatedDropdownFilter), \
+        ('region', MultiSelectRelatedDropdownFilter)
 
     readonly_fields = 'get_events',
 
@@ -111,6 +111,7 @@ class QualificationAdmin(PermissionMixin, NestedTabularInline):
     exclude = '_import_id',
     empty_value_display = 'Doplní se automaticky'
 
+
 class UserEmailAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
     model = UserEmail
     sortable_field_name = 'order'
@@ -142,6 +143,7 @@ class EYCACardAdmin(PermissionMixin, NestedTabularInline):
 
 class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
     model = OfferedHelp
+    classes = 'collapse',
 
 
 @admin.action(description='Označ vybrané jako muže')
@@ -207,8 +209,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         return actions
 
     readonly_fields = 'is_superuser', 'last_login', 'date_joined', 'get_all_emails', \
-                      'get_events_where_was_organizer', 'get_participated_in_events', \
-                      'roles', 'get_donor', 'get_board_member_of'
+        'get_events_where_was_organizer', 'get_participated_in_events', \
+        'roles', 'get_donor', 'get_board_member_of'
     exclude = 'groups', 'user_permissions', 'password', 'is_superuser', '_str'
 
     fieldsets = (
