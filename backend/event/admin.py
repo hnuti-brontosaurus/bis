@@ -129,7 +129,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     filter_horizontal = 'other_organizers',
 
     list_filter = [
-        AutocompleteFilterFactory('Zorganizováno pod', 'administration_units'),
+        AutocompleteFilterFactory(_('models.AdministrationUnit.name'), 'administration_units'),
         ('start', DateRangeFilter),
         ('end', DateRangeFilter),
         ('group', MultiSelectRelatedDropdownFilter),
@@ -213,7 +213,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                         _self.cleaned_data.get('main_organizer') == user,
                         user in _self.cleaned_data.get('other_organizers', []).all(),
                     ]):
-                        raise ValidationError('Akci musíš vytvořit pod svým článkem nebo '
+                        raise ValidationError('Akci musíš vytvořit pod svou organizační jednotkou nebo '
                                               'musíš být v organizátorském týmu')
 
                 return _self.cleaned_data

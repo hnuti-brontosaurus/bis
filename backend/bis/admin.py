@@ -97,7 +97,7 @@ class MembershipAdmin(PermissionMixin, NestedTabularInline):
                     if form.instance.year != today().year:
                         raise ValidationError('Můžeš editovat členství jen za tento rok')
                     if form.instance.administration_unit not in request.user.administration_units.all():
-                        raise ValidationError('Můžeš přidat členství jen ke svému článku')
+                        raise ValidationError('Můžeš přidat členství jen ke své organizační jednotce')
 
         return Formset
 
@@ -146,14 +146,14 @@ class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
     classes = 'collapse',
 
 
-@admin.action(description='Označ vybrané jako muže')
+@admin.action(description='Označ vybrané mužským oslovením')
 def mark_as_man(model_admin, request, queryset):
     if not all([obj.has_edit_permission(request.user) for obj in queryset]):
         return model_admin.message_user(request, 'Nemáš právo editovat vybrané objekty', ERROR)
     queryset.update(pronoun=PronounCategory.objects.get(slug='man'))
 
 
-@admin.action(description='Označ vybrané jako ženy')
+@admin.action(description='Označ vybrané ženským oslovením')
 def mark_as_woman(model_admin, request, queryset):
     if not all([obj.has_edit_permission(request.user) for obj in queryset]):
         return model_admin.message_user(request, 'Nemáš právo editovat vybrané objekty', ERROR)
@@ -324,6 +324,6 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             'events_where_was_organizer', 'participated_in_events__event', 'memberships__category'
         )
 
-    @admin.display(description='V předsednictvu článků')
+    @admin.display(description='V předsednictvu organizačních jednotek')
     def get_board_member_of(self, obj):
         return mark_safe(', '.join([get_admin_edit_url(item) for item in obj.administration_units.all()]))

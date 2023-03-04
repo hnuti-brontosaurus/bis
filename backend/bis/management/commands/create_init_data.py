@@ -58,7 +58,7 @@ class Command(BaseCommand):
         QualificationCategory.objects.update_or_create(slug='main_leader_of_kids_camps',
                                                        defaults=dict(name='Hlavní vedoucí dětských táborů (HVDT)'))
         QualificationCategory.objects.update_or_create(slug='organizer_without_education',
-                                                       defaults=dict(name='Organizátor nevzdělaný'))
+                                                       defaults=dict(name='Organizátorský přístup do BISu'))
 
         qualification_parents = {
             'instructor': ['consultant'],

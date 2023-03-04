@@ -112,38 +112,38 @@ class DonationSumAmountFilter(RangeNumericFilter):
 
 
 class MainOrganizerOfEventRangeFilter(CustomDateRangeFilter):
-    custom_title = 'Dle: Hlavní org akce v rozmezí'
+    custom_title = 'Dle: Hlavní organizátor v období'
     cache_name = 'main_organizer_of_event_range_query_cache'
 
 
 class OrganizerOfEventRangeFilter(CustomDateRangeFilter):
-    custom_title = 'Dle: Org akce v rozmezí'
+    custom_title = 'Dle: Organizátor v období'
     cache_name = 'organizer_of_event_range_query_cache'
 
 
 class ParticipatedInEventRangeFilter(CustomDateRangeFilter):
-    custom_title = 'Dle: Účast na akci v rozmezí'
+    custom_title = 'Dle: Účast na akci v období'
     cache_name = 'participated_in_event_range_query_cache'
 
 
 class FirstParticipatedInEventRangeFilter(CustomDateRangeFilter):
-    custom_title = 'Dle: První účast na akci v rozmezí'
+    custom_title = 'Dle: První účast na akci v období'
     annotate_fn = Min("participated_in_events__event__start")
     custom_field_path = 'first_participated_in_event'
 
 
 MainOrganizerOfEventOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
-    'Hlavní org akcí vybraného článku',
+    'Hlavní organizátor vybrané OJ',
     'events_where_was_as_main_organizer__administration_units',
     MainOrganizerOfEventRangeFilter.cache_name
 )
 OrganizerOfEventOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
-    'Org akcí vybraného článku',
+    'Organizátor vybrané OJ',
     'events_where_was_organizer__administration_units',
     OrganizerOfEventRangeFilter.cache_name
 )
 ParticipatedInEventOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
-    'Účast na akci vybraného článku',
+    'Účast na akci vybrané OJ',
     'participated_in_events__event__administration_units',
     ParticipatedInEventRangeFilter.cache_name
 )
@@ -154,7 +154,7 @@ class MemberDuringYearsFilter(CacheRangeNumericFilter):
 
 
 MemberOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
-    'Dle: Členství ve článku',
+    'Dle: Členství ve organizační jednotce',
     'memberships__administration_unit',
     MemberDuringYearsFilter.cache_name
 )

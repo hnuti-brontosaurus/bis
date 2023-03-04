@@ -108,7 +108,7 @@ class Event(Model):
         queries = [
             # ucast na akci
             Q(record__participants=perm.user),
-            # registrace na akci
+            # prihlaseni na akci
             Q(registration__applications__user=perm.user),
         ]
 
@@ -252,7 +252,7 @@ class EventRegistration(Model):
         ordering = 'id',
 
     def __str__(self):
-        return f'Registrace k akci {self.event}'
+        return f'Přihlášení k akci {self.event}'
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
