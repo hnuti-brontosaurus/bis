@@ -279,5 +279,5 @@ BOOTSTRAP5 = {
         'default': 'game_book.filters.GameBookFieldRenderer',
     },
 }
-LOGIN_URL = "/login"
+LOGIN_URL = "/logout"
 
