@@ -75,6 +75,15 @@ def get_event_start(item):
     return start
 
 
+def get_comment_on_work_done(event):
+    comment = []
+    for key in ["prace_stromy", "prace_kere", "prace_louky", "prace_chu", "prace_odpadky", "prace_invaze", "prace_pamatky", "prace_jine"]:
+        if value := event[key]:
+            comment.append(value)
+
+    return "\n\n".join(comment)
+
+
 class Command(BaseCommand):
     help = "Import old BIS's database, exported as json from https://phpmyadmin.brontosaurus.cz/, user: bis_ro"
     file_path = join(BASE_DIR, 'old_database_dump', 'db.json')
@@ -556,7 +565,7 @@ class Command(BaseCommand):
             ))
             EventRecord.objects.update_or_create(event=event, defaults=dict(
                 total_hours_worked=item['odpracovano'],
-                comment_on_work_done=item['prace_jine'] or '',
+                comment_on_work_done=get_comment_on_work_done(item),
                 # has_attendance_list=item['adresar'] == '1',
                 number_of_participants=item['lidi'],
                 number_of_participants_under_26=item['lidi_do26'],
