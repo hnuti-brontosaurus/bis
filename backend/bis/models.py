@@ -261,10 +261,11 @@ class User(AbstractBaseUser):
             self.email = self.email.lower()
             user_email = UserEmail.objects.filter(email=self.email).first()
             if user_email and user_email.user != self:
-                raise ValidationError(f'Cannot set e-mail {self.email} for user {self}, another user with ' \
+                raise ValidationError(f'Cannot set e-mail {self.email} for user {self}, another user with '
                                       f'this email already exists')
 
     def save(self, *args, **kwargs):
+        self.email = self.email or None
         if not settings.SKIP_VALIDATION: self.clean()
         super().save(*args, **kwargs)
 

@@ -241,6 +241,18 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             else:
                 raise RuntimeError('Interní data not found in fieldsets')
 
+        for header, data in fieldsets:
+            if header is None:
+                if obj and 'email' in data['fields']:
+                    data['fields'].remove('email')
+
+                if not obj and 'email' not in data['fields']:
+                    data['fields'].insert(0, 'email')
+                break
+        else:
+            raise RuntimeError('First group not found in fieldsets')
+
+
         return fieldsets
 
     list_display = 'get_name', 'birthday', 'address', 'get_email', 'phone', 'get_qualifications', 'get_memberships'
@@ -293,7 +305,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                    UserOfferedHelpAdmin,
                    EYCACardAdmin,
                    DuplicateUserAdminInline]
-        if request.user.is_superuser:
+        if request.user.is_superuser and obj:
             inlines.append(UserEmailAdmin)
         return inlines
 

@@ -347,6 +347,26 @@ class UserSerializer(ModelSerializer):
         )
         read_only_fields = 'date_joined', 'is_active', 'roles'
 
+    def update(self, instance, validated_data):
+        email = validated_data.get('email')
+        if email and email != instance.email:
+            user = self.context['request'].user
+            if instance != user:
+                if user.is_superuser:
+                    pass
+                elif user.is_office_worker:
+                    if instance.is_superuser:
+                        raise ValidationError('Cannot change email of superuser as office worker')
+                elif user.is_board_member:
+                    if instance.is_superuser or instance.is_office_worker:
+                        raise ValidationError('Cannot change email of superuser or office worker as board member')
+                elif user.is_organizer:
+                    if instance.is_superuser or instance.is_office_worker or instance.is_board_member:
+                        raise ValidationError('Cannot change email of superuser, office worker or board member as '
+                                              'organizer')
+
+        return super().update(instance, validated_data)
+
     def get_excluded_fields(self, fields):
         if self.context['request'].user.id != fields.get('id'):
             return ['donor', 'eyca_card']
