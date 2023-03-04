@@ -624,7 +624,8 @@ class Command(BaseCommand):
         b.bis_administrators.add(User.objects.get(all_emails__email='radka@slunovrat.info'))
         b.bis_administrators.add(User.objects.get(all_emails__email='daniel.kurowski@grifart.cz'))
         b.bis_administrators.add(
-            User.objects.create(first_name='Milan', last_name="Another", email="mountdoom@centrum.cz")
+            User.objects.get_or_create(all_emails__email="mountdoom@centrum.cz", defaults=dict(
+                first_name='Milan', last_name="Another"))[0]
         )
 
         b.office_workers.add(User.objects.get(all_emails__email='terca.op@seznam.cz'))
