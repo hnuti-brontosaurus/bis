@@ -117,10 +117,14 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         }})
         return super().get_formset(request, obj, **kwargs)
 
+@admin.action(description='Uzavřít akce')
+def mark_as_closed(model_admin, request, queryset):
+    queryset.update(is_closed=True)
+
 
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
-    actions = [export_to_xlsx]
+    actions = [mark_as_closed, export_to_xlsx]
     inlines = EventFinanceAdmin, EventPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
     filter_horizontal = 'other_organizers',
 
@@ -142,6 +146,12 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         ('location__region', MultiSelectRelatedDropdownFilter),
         ('main_organizer__birthday', EventStatsDateFilter),
     ]
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not (request.user.is_superuser or request.user.is_office_worker):
+            del actions['mark_as_closed']
+        return actions
 
     list_display = 'name', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
         'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
