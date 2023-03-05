@@ -1,3 +1,5 @@
+from datetime import date
+
 from dateutil.relativedelta import relativedelta
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
@@ -72,6 +74,10 @@ def set_region_for_location(instance: Location, created, **kwargs):
 @receiver(pre_save, sender=Qualification, dispatch_uid='set_qualification_end_date')
 def set_qualification_end_date(instance: Qualification, **kwargs):
     instance.valid_till = instance.valid_since + relativedelta(years=5)
+
+    if instance.category.slug == "organizer":
+        instance.valid_till = date(instance.valid_since.year + 5, 9, 30)
+
     if instance.category.slug in ['weekend_organizer', 'main_leader_of_kids_camps']:
         instance.valid_till = instance.valid_since + relativedelta(years=100)
 
