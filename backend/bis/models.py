@@ -585,14 +585,14 @@ class Qualification(Model):
 
     def clean(self):
         approved_with = [category.slug for category in self.category.can_be_approved_with.all()]
-        if (
+        if not (
                 self.approved_by.is_staff or self.approved_by.is_superuser or
-                not Qualification.user_has_required_qualification(self.approved_by, approved_with)
+                Qualification.user_has_required_qualification(self.approved_by, approved_with)
 
         ):
             approved_with = " nebo ".join([str(c) for c in self.category.can_be_approved_with.all()])
             raise ValidationError(f'Kvalifikace typu {self.category} musí být schválena člověkem s kvalifikací '
-                                  f'{approved_with} nebo kvalifikací nadřazenou.')
+                                  f'{approved_with}, kvalifikací nadřazenou nebo ústředím.')
 
     def save(self, *args, **kwargs):
         if not cache.get('skip_validation'): self.clean()
