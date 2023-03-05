@@ -199,6 +199,7 @@ Event:
     main_organizer: Hlavní organizátor
     other_organizers: Další organizátoři
     is_attendance_list_required: Je prezenční listina vyžadována?
+    vip_propagation: Je akce propagována v rámci VIP propagace?
 
 EventFinance:
   name: Finance akce
@@ -222,7 +223,6 @@ EventPropagation:
   name: Propagace akce
   fields:
     is_shown_on_web: Je akce zobrazena na webu?
-    vip_propagation: Je akce propagována v rámci VIP propagace?
     minimum_age: Minimální věk
     maximum_age: Maximální věk
     cost:

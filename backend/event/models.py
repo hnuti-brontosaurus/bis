@@ -232,7 +232,7 @@ class EventPropagation(Model):
 
 @translate_model
 class VIPEventPropagation(Model):
-    event_propagation = OneToOneField(EventPropagation, related_name='vip_propagation', on_delete=CASCADE)
+    event = OneToOneField(Event, related_name='vip_propagation', on_delete=CASCADE, blank=True, null=True)
 
     goals_of_event = TextField()
     program = TextField()

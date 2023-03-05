@@ -403,8 +403,6 @@ class VIPPropagationSerializer(ModelSerializer):
 
 
 class PropagationSerializer(ModelSerializer):
-    vip_propagation = VIPPropagationSerializer(allow_null=True)
-
     diets = DietCategorySerializer(many=True)
 
     class Meta:
@@ -429,7 +427,6 @@ class PropagationSerializer(ModelSerializer):
             'contact_name',
             'contact_phone',
             'contact_email',
-            'vip_propagation',
         )
 
 
@@ -487,6 +484,7 @@ class RecordSerializer(ModelSerializer):
 class EventSerializer(ModelSerializer):
     finance = FinanceSerializer(allow_null=True)
     propagation = PropagationSerializer(allow_null=True)
+    vip_propagation = VIPPropagationSerializer(allow_null=True)
     registration = RegistrationSerializer(allow_null=True)
     record = RecordSerializer(allow_null=True)
 
@@ -521,6 +519,7 @@ class EventSerializer(ModelSerializer):
             'duration',
             'finance',
             'propagation',
+            'vip_propagation',
             'registration',
             'record',
         )

@@ -1,4 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
+from django.forms import BaseModelFormSet
 from django.utils.datetime_safe import date
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -69,7 +70,7 @@ class EventVIPPropagationAdmin(PermissionMixin, NestedStackedInline):
 
 class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
     model = EventPropagation
-    inlines = EventVIPPropagationAdmin, EventPropagationImageAdmin,
+    inlines = EventPropagationImageAdmin,
     classes = 'collapse',
 
     autocomplete_fields = 'contact_person',
@@ -82,7 +83,7 @@ class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
         class New1(formset):
             def clean(_self):
                 request._event_propagation_needs_image = (
-                        bool(_self.cleaned_data[0])
+                        bool(getattr(_self, 'cleaned_data', [True])[0])
                         and not (_self.can_delete and _self._should_delete_form(_self.forms[0]))
                 )
                 return super().clean()
@@ -125,7 +126,7 @@ def mark_as_closed(model_admin, request, queryset):
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
     actions = [mark_as_closed, export_to_xlsx]
-    inlines = EventFinanceAdmin, EventPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
+    inlines = EventFinanceAdmin, EventPropagationAdmin, EventVIPPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
     filter_horizontal = 'other_organizers',
 
     list_filter = [
