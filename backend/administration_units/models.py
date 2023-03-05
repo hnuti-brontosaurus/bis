@@ -48,7 +48,7 @@ class AdministrationUnit(Model):
 
     @update_roles('chairman', 'vice_chairman', 'manager')
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         self.email = self.email.lower()
         super().save(force_insert, force_update, using, update_fields)
 

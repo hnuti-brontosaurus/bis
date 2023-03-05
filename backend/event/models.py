@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.gis.db.models import *
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from phonenumber_field.modelfields import PhoneNumberField
@@ -74,7 +75,7 @@ class Event(Model):
 
     @update_roles('main_organizer')
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         super().save(force_insert, force_update, using, update_fields)
 
     def is_volunteering(self):
@@ -215,7 +216,7 @@ class EventPropagation(Model):
                 raise ValidationError('Počet pracovních dní je povinný pro dobrovolnické tábory')
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         self.contact_email = self.contact_email.lower()
         super().save(force_insert, force_update, using, update_fields)
 

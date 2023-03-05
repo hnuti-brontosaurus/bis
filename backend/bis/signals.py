@@ -1,6 +1,7 @@
 from datetime import date
 
 from dateutil.relativedelta import relativedelta
+from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
@@ -102,6 +103,7 @@ def set_primary_email(instance: User, **kwargs):
 @receiver(post_save, sender=UserEmail, dispatch_uid='set_users_primary_email')
 @receiver(post_delete, sender=UserEmail, dispatch_uid='set_users_primary_email_delete')
 def set_users_primary_email(instance: UserEmail, **kwargs):
+    if cache.get('skip_validation'): return
     first = getattr(instance.user.all_emails.first(), 'email', None)
     if instance.user.email != first:
         instance.user.email = first

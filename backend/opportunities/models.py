@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db.models import *
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
 from tinymce.models import HTMLField
@@ -37,7 +38,7 @@ class Opportunity(Model):
             raise ValidationError('Pokud kategorie spolupráce není Spolupráce, přínos pro lokalitu musí být vyplněn')
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         self.contact_email = self.contact_email.lower()
         super().save(force_insert, force_update, using, update_fields)
 

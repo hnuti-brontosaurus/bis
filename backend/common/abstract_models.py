@@ -1,7 +1,7 @@
 import re
 
 from django.apps import apps
-from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import Model, CharField, EmailField, ForeignKey, PROTECT
 from django.db.models.functions import Length
@@ -24,7 +24,7 @@ class BaseContact(Model):
             raise ValidationError('Je třeba vyplnit e-mail nebo telefon')
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         super().save(force_insert, force_update, using, update_fields)
 
     class Meta:

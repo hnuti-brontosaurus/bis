@@ -75,13 +75,13 @@ def update_roles(*roles):
 
 class paused_validation:
     def __enter__(self):
-        self.validation_paused = not settings.SKIP_VALIDATION
+        self.validation_paused = not cache.get('skip_validation')
         if self.validation_paused:
-            settings.SKIP_VALIDATION = True
+            cache.set('skip_validation', True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.validation_paused:
-            settings.SKIP_VALIDATION = False
+            cache.set('skip_validation', False)
 
 
 def with_paused_validation(f):
@@ -94,13 +94,13 @@ def with_paused_validation(f):
 
 class paused_emails:
     def __enter__(self):
-        self.emails_paused = not settings.EMAILS_PAUSED
+        self.emails_paused = not cache.get('emails_paused')
         if self.emails_paused:
-            settings.EMAILS_PAUSED = True
+            cache.set('emails_paused', True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.emails_paused:
-            settings.EMAILS_PAUSED = False
+            cache.set('emails_paused', False)
 
 
 def with_paused_emails(f):

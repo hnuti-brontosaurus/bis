@@ -10,6 +10,7 @@ from django.contrib import admin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.contrib.gis.db.models import *
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -70,6 +71,55 @@ class Location(Model):
     @admin.display(description='Akce na lokalitě')
     def get_events(self):
         return mark_safe(', '.join(get_admin_edit_url(e) for e in self.events.all()))
+
+    @classmethod
+    @transaction.atomic
+    def merge(cls, queryset, to_last):
+        queryset = list(queryset.order_by("name"))
+        assert len(queryset) > 1, "Je třeba vybrat dvě a více lokalit"
+        if to_last:
+            first, rest = queryset[-1], queryset[:-1]
+        else:
+            first, rest = queryset[0], queryset[1:]
+        for other in rest:
+            for field in first._meta.fields:
+                if field.name in ['id', '_import_id']:
+                    continue
+
+                elif field.name in ['name', 'description', 'address', 'gps_location', 'is_fully_specified',
+                                    'for_beginners', 'is_full', 'is_unexplored', 'program', 'accessibility_from_prague',
+                                    'accessibility_from_brno', 'volunteering_work', 'volunteering_work_done',
+                                    'volunteering_work_goals', 'options_around', 'facilities', 'web', 'region']:
+                    if not getattr(first, field.name) and getattr(other, field.name):
+                        setattr(first, field.name, getattr(other, field.name))
+
+                else:
+                    raise RuntimeError(f'field {field.name} not checked, database was updated, merge is outdated')
+
+            for relation in first._meta.related_objects:
+                if relation.name in ['contact_person', 'patron']:
+                    print(relation.name, hasattr(first, relation.name), hasattr(other, relation.name))
+                    if not hasattr(first, relation.name) and hasattr(other, relation.name):
+                        obj = getattr(other, relation.name)
+                        obj.location = first
+                        obj.save()
+
+                elif isinstance(relation, ManyToOneRel) or isinstance(relation, OneToOneRel):
+                    for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
+                        setattr(obj, relation.field.name, first)
+                        obj.save()
+
+                elif isinstance(relation, ManyToManyRel):
+                    for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
+                        getattr(obj, relation.field.name).add(first)
+                        getattr(obj, relation.field.name).remove(other)
+
+                else:
+                    raise RuntimeError('should not happen :)')
+
+        first.save()
+        [item.delete() for item in rest]
+        return first
 
 
 @translate_model
@@ -266,15 +316,17 @@ class User(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         self.email = self.email or None
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         super().save(*args, **kwargs)
 
     @transaction.atomic
     def merge_with(self, other):
         assert other != self
         with paused_validation():
+            print(cache.get('skip_validation'))
             for field in self._meta.fields:
-                if field.name in ['id', 'password', '_import_id', 'is_active', 'last_login', '_str', 'roles', 'email']:
+                if field.name in ['id', 'password', '_import_id', 'is_active', 'last_login', '_str', 'roles', 'email',
+                                  '_search_id', 'vokativ']:
                     continue
 
                 elif field.name in ['date_joined', ]:
@@ -282,7 +334,8 @@ class User(AbstractBaseUser):
                         setattr(self, field.name, getattr(other, field.name))
 
                 elif field.name in ['first_name', 'last_name', 'nickname', 'birth_name', 'phone',
-                                    'birthday', 'close_person', 'health_insurance_company', 'health_issues', 'pronoun']:
+                                    'birthday', 'close_person', 'health_insurance_company', 'health_issues', 'pronoun',
+                                    'subscribed_to_newsletter', 'internal_note']:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))
 
@@ -295,7 +348,9 @@ class User(AbstractBaseUser):
 
                 elif relation.name in ['address', 'contact_address']:
                     if not hasattr(self, relation.name) and hasattr(other, relation.name):
-                        setattr(self, relation.name, getattr(other, relation.name))
+                        obj = getattr(other, relation.name)
+                        obj.user = self
+                        obj.save()
 
                 elif relation.name == 'donor':
                     if hasattr(other, relation.name):
@@ -325,8 +380,8 @@ class User(AbstractBaseUser):
                 else:
                     raise RuntimeError('should not happen :)')
 
-            self.save()
             other.delete()
+            self.save()
 
     @admin.display(description='Uživatel')
     def get_name(self):
@@ -540,7 +595,7 @@ class Qualification(Model):
                                   f'{approved_with} nebo kvalifikací nadřazenou.')
 
     def save(self, *args, **kwargs):
-        if not settings.SKIP_VALIDATION: self.clean()
+        if not cache.get('skip_validation'): self.clean()
         super().save(*args, **kwargs)
 
     @classmethod

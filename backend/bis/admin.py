@@ -1,11 +1,13 @@
 from admin_numeric_filter.admin import NumericFilterModelAdmin
 from dateutil.utils import today
+from django.contrib import messages
 from django.contrib.admin import action
 from django.contrib.auth.models import Group
 from django.contrib.gis.admin import OSMGeoAdmin
 from django.contrib.messages import ERROR
 from django.db import ProgrammingError
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedTabularInline, NestedStackedInline, NestedModelAdminMixin
@@ -41,9 +43,22 @@ class LocationContactPersonAdmin(PermissionMixin, NestedTabularInline):
 class LocationPatronAdmin(PermissionMixin, NestedTabularInline):
     model = LocationPatron
 
+@admin.action(description='Spoj lokality do poslední')
+def merge_selected_last(model_admin, request, queryset, last=True):
+    try:
+        obj = Location.merge(queryset, last)
+        url = reverse(f'admin:{obj._meta.app_label}_{obj._meta.model_name}_change', args=[obj.id])
+        return HttpResponseRedirect(url)
+    except AssertionError as e:
+        messages.error(request, str(e))
+
+@admin.action(description='Spoj lokality do první')
+def merge_selected_first(model_admin, request, queryset):
+    return merge_selected_last(model_admin, request, queryset, False)
 
 @admin.register(Location)
 class LocationAdmin(PermissionMixin, OSMGeoAdmin):
+    actions = [merge_selected_first, merge_selected_last]
     inlines = LocationContactPersonAdmin, LocationPatronAdmin, LocationPhotosAdmin,
     search_fields = 'name', 'description'
     exclude = '_import_id',
@@ -54,6 +69,13 @@ class LocationAdmin(PermissionMixin, OSMGeoAdmin):
         ('region', MultiSelectRelatedDropdownFilter)
 
     readonly_fields = 'get_events',
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not (request.user.is_superuser or request.user.is_office_worker):
+            del actions['merge_selected_first']
+            del actions['merge_selected_last']
+        return actions
 
 
 class AllMembershipAdmin(PermissionMixin, NestedTabularInline):
