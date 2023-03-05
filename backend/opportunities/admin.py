@@ -12,6 +12,10 @@ class OpportunityAdmin(PermissionMixin, NestedModelAdmin):
     autocomplete_fields = 'location', 'contact_person'
 
     list_select_related = 'category', 'contact_person'
-    list_filter = 'category', ('start', DateRangeFilter), ('end', DateRangeFilter),
+    list_filter = (
+        'category',
+        ('start', DateRangeFilter), ('end', DateRangeFilter),
+        ('on_web_start', DateRangeFilter), ('on_web_end', DateRangeFilter),
+    )
 
     search_fields = 'name', 'introduction'
