@@ -563,9 +563,6 @@ class Qualification(Model):
                                                  'public__sports', 'public__educational__course',
                                                  'public__educational__ohb', 'public__other__for_public', }
 
-        if not [m for m in main_organizer.memberships.all() if m.year == event.start.year]:
-            raise ValidationError('Hlavní organizátor musí mít aktivní členství v roku konání akce')
-
         if category not in qualification_required_for_categories:
             return
 
