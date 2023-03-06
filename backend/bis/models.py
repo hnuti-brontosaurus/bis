@@ -75,50 +75,52 @@ class Location(Model):
     @classmethod
     @transaction.atomic
     def merge(cls, queryset, to_last):
-        queryset = list(queryset.order_by("name"))
-        assert len(queryset) > 1, "Je třeba vybrat dvě a více lokalit"
-        if to_last:
-            first, rest = queryset[-1], queryset[:-1]
-        else:
-            first, rest = queryset[0], queryset[1:]
-        for other in rest:
-            for field in first._meta.fields:
-                if field.name in ['id', '_import_id']:
-                    continue
+        with paused_validation():
+            queryset = list(queryset.order_by("name"))
+            assert len(queryset) > 1, "Je třeba vybrat dvě a více lokalit"
+            if to_last:
+                first, rest = queryset[-1], queryset[:-1]
+            else:
+                first, rest = queryset[0], queryset[1:]
+            for other in rest:
+                for field in first._meta.fields:
+                    if field.name in ['id', '_import_id']:
+                        continue
 
-                elif field.name in ['name', 'description', 'address', 'gps_location', 'is_fully_specified',
-                                    'for_beginners', 'is_full', 'is_unexplored', 'program', 'accessibility_from_prague',
-                                    'accessibility_from_brno', 'volunteering_work', 'volunteering_work_done',
-                                    'volunteering_work_goals', 'options_around', 'facilities', 'web', 'region']:
-                    if not getattr(first, field.name) and getattr(other, field.name):
-                        setattr(first, field.name, getattr(other, field.name))
+                    elif field.name in ['name', 'description', 'address', 'gps_location', 'is_fully_specified',
+                                        'for_beginners', 'is_full', 'is_unexplored', 'program', 'accessibility_from_prague',
+                                        'accessibility_from_brno', 'volunteering_work', 'volunteering_work_done',
+                                        'volunteering_work_goals', 'options_around', 'facilities', 'web', 'region']:
+                        if not getattr(first, field.name) and getattr(other, field.name):
+                            setattr(first, field.name, getattr(other, field.name))
 
-                else:
-                    raise RuntimeError(f'field {field.name} not checked, database was updated, merge is outdated')
+                    else:
+                        raise RuntimeError(f'field {field.name} not checked, database was updated, merge is outdated')
 
-            for relation in first._meta.related_objects:
-                if relation.name in ['contact_person', 'patron']:
-                    print(relation.name, hasattr(first, relation.name), hasattr(other, relation.name))
-                    if not hasattr(first, relation.name) and hasattr(other, relation.name):
-                        obj = getattr(other, relation.name)
-                        obj.location = first
-                        obj.save()
+                for relation in first._meta.related_objects:
+                    if relation.name in ['contact_person', 'patron']:
+                        print(relation.name, hasattr(first, relation.name), hasattr(other, relation.name))
+                        if not hasattr(first, relation.name) and hasattr(other, relation.name):
+                            obj = getattr(other, relation.name)
+                            obj.location = first
+                            obj.save()
 
-                elif isinstance(relation, ManyToOneRel) or isinstance(relation, OneToOneRel):
-                    for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
-                        setattr(obj, relation.field.name, first)
-                        obj.save()
+                    elif isinstance(relation, ManyToOneRel) or isinstance(relation, OneToOneRel):
+                        for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
+                            setattr(obj, relation.field.name, first)
+                            obj.save()
 
-                elif isinstance(relation, ManyToManyRel):
-                    for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
-                        getattr(obj, relation.field.name).add(first)
-                        getattr(obj, relation.field.name).remove(other)
+                    elif isinstance(relation, ManyToManyRel):
+                        for obj in relation.field.model.objects.filter(**{relation.field.name: other}):
+                            getattr(obj, relation.field.name).add(first)
+                            getattr(obj, relation.field.name).remove(other)
 
-                else:
-                    raise RuntimeError('should not happen :)')
+                    else:
+                        raise RuntimeError('should not happen :)')
 
-        first.save()
-        [item.delete() for item in rest]
+            first.save()
+            [item.delete() for item in rest]
+
         return first
 
 
