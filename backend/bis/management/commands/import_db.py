@@ -442,11 +442,11 @@ class Command(BaseCommand):
             )
 
     def get_attachments(self, item):
-        attachments = set()
+        attachments = list()
         for i in range(10):
             attachment = item.get(f"priloha_{i}")
             if attachment:
-                attachments.add(attachment)
+                attachments.append(attachment)
 
         return attachments
 
@@ -461,129 +461,25 @@ class Command(BaseCommand):
         for i, (id, item) in enumerate(data['akce'].items()):
             print_progress('importing events', i, len(data['akce']))
             attachments = self.get_attachments(item)
-            group = None
             if id in data['tabor']:
-                attachments = attachments.union(self.get_attachments(data['tabor'][id]))
+                for att in self.get_attachments(data['tabor'][id]):
+                    if att not in attachments:
+                        attachments.append(att)
                 item.update(data['tabor'][id])
-                group = 'camp'
 
-            start = get_event_start(item)
-            end = parse_date(item['do'])
-            is_canceled = False
-            if not start:
-                start = datetime(2000, 1, 1, tzinfo=ZoneInfo(key='Europe/Prague'))
-                end = datetime(2000, 1, 1, tzinfo=ZoneInfo(key='Europe/Prague')).date()
-                is_canceled = True
+            event = Event.objects.filter(_import_id=id).first()
+            if not event: continue
 
-            contact = None
-            if item['kontakt_email']:
-                contact = User.objects.filter(all_emails__email=item['kontakt_email'].lower()).first()
+            event_propagation = EventPropagation.objects.filter(event=event).first()
+            if not event_propagation: continue
 
-            location = None
-            if item['lokalita']:
-                location = self.location_map[item['lokalita']]
-            elif item['lokalita_jina']:
-                location = Location.objects.filter(name=item['lokalita_jina']).first()
-                if not location:
-                    location = Location.objects.create(name=item['lokalita_jina'])
-                if not location.address and item['gps']:
-                    location.address = item['gps']
-                    location.save()
-            if not location:
-                location = Location.objects.get_or_create(name="Neznámá")[0]
-
-            if group is None:
-                group = 'other'
-                duration = max((end - start.date()).days + 1, 0)
-                if end.weekday() == 6 and 2 <= duration <= 3:
-                    group = 'weekend_event'
-
-            event = Event.objects.update_or_create(_import_id=id, defaults=dict(
-                name=item['nazev'][:63],
-                start=start.date(),
-                start_time=start.time(),
-                end=end,
-                is_canceled=is_canceled,
-                is_complete=start.year <= 2021,
-                is_closed=start.year <= 2021,
-                location=location,
-                group=self.event_group_category_map[group],
-                category=self.event_category_map[item['typ']],
-                program=self.event_program_category_map[item['program']],
-                intended_for=self.event_intended_for_category_map[item['prokoho']],
-                main_organizer=self.user_map.get(item.get('odpovedna')),
-                number_of_sub_events=item['pocet'],
-                internal_note=item['poznamka'] or '',
-            ))[0]
-
-            for au in event_organizer_map.get(id, [self.administration_unit_map[self.headquarters_id]]):
-                event.administration_units.add(au)
-
-            EventFinance.objects.update_or_create(event=event, defaults=dict(
-                grant_category=self.grant_category_map[item['dotace']],
-                # grant_amount
-                # total_event_cost
-                # budget
-            ))
-            event_propagation = EventPropagation.objects.update_or_create(event=event, defaults=dict(
-                is_shown_on_web=item['zverejnit'] == '1',
-                minimum_age=parse_int(item['vek_od']),
-                maximum_age=parse_int(item['vek_do']),
-                cost=item['poplatek'] or '',
-                accommodation=item.get('ubytovani') or '',
-                working_hours=item.get('pracovni_doba'),
-                working_days=item.get('pracovni_dny'),
-                organizers=item['org'] or '',
-                web_url=item['web'] or '',
-                _contact_url=item['kontakt_url'] or '',
-                invitation_text_introduction=item['text_uvod'] or '',
-                invitation_text_practical_information=item['text_info'] or '',
-                invitation_text_work_description=item['text_dobr'] or '',
-                invitation_text_about_us=item['text_mnam'] or '',
-                contact_person=contact,
-                contact_name=item['kontakt'] or '',
-                contact_phone=item['kontakt_telefon'] or '',
-                contact_email=(item['kontakt_email'] or '').lower(),
-            ))[0]
-
-            for diet in self.diet_category_map[item.get('strava')]:
-                event_propagation.diets.add(diet)
-
-            if item.get('vip') == '1':
-                VIPEventPropagation.objects.update_or_create(event_propagation=event_propagation, defaults=dict(
-                    goals_of_event=item['popis_programu'] or '',
-                    program=item['tema'] or '',
-                    short_invitation_text=item['text_kratsi'] or '',
-                    rover_propagation=item.get('rover') == '1',
-                ))
-            EventRegistration.objects.update_or_create(event=event, defaults=dict(
-                is_registration_required=item['prihlaska'] == '4',
-                is_event_full=item['prihlaska'] == '5',
-                # 'add_info_title': None,
-                # 'add_info_title_2': None,
-                # 'add_info_title_3': None,
-            ))
-            EventRecord.objects.update_or_create(event=event, defaults=dict(
-                total_hours_worked=item['odpracovano'],
-                comment_on_work_done=get_comment_on_work_done(item),
-                # has_attendance_list=item['adresar'] == '1',
-                number_of_participants=item['lidi'],
-                number_of_participants_under_26=item['lidi_do26'],
-            ))
-
-            for attachment in attachments:
+            for i, attachment in enumerate(attachments):
                 file_path = join(BASE_DIR, 'media', 'event_propagation_images', attachment)
-                if not exists(file_path):
-                    try:
-                        urlretrieve(f"https://bis.brontosaurus.cz/files/psb/{quote(attachment)}", file_path)
-                    except HTTPError:
-                        pass
                 if exists(file_path):
-                    EventPropagationImage.objects.get_or_create(
+                    EventPropagationImage.objects.filter(
                         propagation=event_propagation,
-                        image=join('event_propagation_images', attachment),
-                        defaults=dict(order=0)
-                    )
+                        image=join('event_propagation_images', attachment)
+                    ).update(order=i)
 
         self.reset_cache()
 
@@ -618,34 +514,34 @@ class Command(BaseCommand):
         # print(json.dumps(to_print, indent=2, ensure_ascii=False))
         # return
 
-        self.import_users(data)
+        # self.import_users(data)
 
-        director = self.user_map[self.director_id]
-        finance_director = User.objects.filter(all_emails__email='josef.dvoracek@outlook.com')[0]
+        # director = self.user_map[self.director_id]
+        # finance_director = User.objects.filter(all_emails__email='josef.dvoracek@outlook.com')[0]
+        #
+        # b = BrontosaurusMovement.objects.update_or_create(defaults=dict(
+        #     director=director,
+        #     finance_director=finance_director
+        # ))[0]
+        # b.bis_administrators.set([self.user_map[id] for id in self.admin_ids])
+        # b.bis_administrators.add(User.objects.get(all_emails__email='michal.salajka@protonmail.com'))
+        # b.bis_administrators.add(User.objects.get(all_emails__email='dzikilubiabloto@protonmail.com'))
+        # b.bis_administrators.add(User.objects.get(all_emails__email='radka@slunovrat.info'))
+        # b.bis_administrators.add(User.objects.get(all_emails__email='daniel.kurowski@grifart.cz'))
+        # b.bis_administrators.add(
+        #     User.objects.get_or_create(all_emails__email="mountdoom@centrum.cz", defaults=dict(
+        #         first_name='Milan', last_name="Another"))[0]
+        # )
+        #
+        # b.office_workers.add(User.objects.get(all_emails__email='terca.op@seznam.cz'))
+        # b.office_workers.add(User.objects.get(all_emails__email='backova.karin@gmail.com'))
+        # b.office_workers.add(User.objects.get(all_emails__email='martin.rehus8@gmail.com'))
+        # b.office_workers.add(User.objects.get(all_emails__email='tereza.louckova8@gmail.com'))
 
-        b = BrontosaurusMovement.objects.update_or_create(defaults=dict(
-            director=director,
-            finance_director=finance_director
-        ))[0]
-        b.bis_administrators.set([self.user_map[id] for id in self.admin_ids])
-        b.bis_administrators.add(User.objects.get(all_emails__email='michal.salajka@protonmail.com'))
-        b.bis_administrators.add(User.objects.get(all_emails__email='dzikilubiabloto@protonmail.com'))
-        b.bis_administrators.add(User.objects.get(all_emails__email='radka@slunovrat.info'))
-        b.bis_administrators.add(User.objects.get(all_emails__email='daniel.kurowski@grifart.cz'))
-        b.bis_administrators.add(
-            User.objects.get_or_create(all_emails__email="mountdoom@centrum.cz", defaults=dict(
-                first_name='Milan', last_name="Another"))[0]
-        )
-
-        b.office_workers.add(User.objects.get(all_emails__email='terca.op@seznam.cz'))
-        b.office_workers.add(User.objects.get(all_emails__email='backova.karin@gmail.com'))
-        b.office_workers.add(User.objects.get(all_emails__email='martin.rehus8@gmail.com'))
-        b.office_workers.add(User.objects.get(all_emails__email='tereza.louckova8@gmail.com'))
-
-        self.import_qualifications(data)
-        self.import_administration_units(data)
-        self.import_donors(data)
-        self.import_locations(data)
-        self.import_memberships(data)
+        # self.import_qualifications(data)
+        # self.import_administration_units(data)
+        # self.import_donors(data)
+        # self.import_locations(data)
+        # self.import_memberships(data)
         self.import_events(data)
-        self.import_participants(data)
+        # self.import_participants(data)
