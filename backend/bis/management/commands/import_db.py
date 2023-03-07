@@ -560,7 +560,7 @@ class Command(BaseCommand):
             if not event: continue
             alternative_registration_link = item["kontakt_url"] or ''
             if alternative_registration_link:
-                alternative_registration_link = "https://" + alternative_registration_link
+                alternative_registration_link = "http://" + alternative_registration_link
             EventRegistration.objects.update_or_create(event=event, defaults=dict(
                 is_registration_required=item['prihlaska'] != '4',
                 is_event_full=item['prihlaska'] == '5',
