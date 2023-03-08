@@ -6,10 +6,10 @@ from project.settings import EMAIL
 SENDER_NAME = 'BIS'
 
 
-def password_reset_link(user, login_code):
-    text(user.email, 'Link pro (pře)nastavení hesla, platný jednu hodinu',
+def password_reset_link(user, email, login_code):
+    text(email, 'Link pro (pře)nastavení hesla, platný jednu hodinu',
          f'{settings.FULL_HOSTNAME}/reset_password'
-         f'?email={user.email}'
+         f'?email={email}'
          f'&code={login_code.code}'
          f'&password_exists={user.has_usable_password()}')
 

@@ -59,10 +59,11 @@ def login(request, data):
 @api_view(['post'])
 @parse_request_data(SendVerificationLinkRequestSerializer)
 def send_verification_link(request, data):
-    user = User.objects.filter(all_emails__email=data['email'].lower()).first()
+    email = data['email'].lower()
+    user = User.objects.filter(all_emails__email=email).first()
     if not user: raise NotFound()
     login_code = LoginCode.make(user)
-    emails.password_reset_link(user, login_code)
+    emails.password_reset_link(user, email, login_code)
 
     return Response(status=HTTP_204_NO_CONTENT)
 
