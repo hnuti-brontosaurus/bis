@@ -184,26 +184,52 @@ def mark_as_woman(model_admin, request, queryset):
 
 def get_member_action(membership_category, administration_unit):
     def action(view, request, queryset):
+        categories = {c.slug: c for c in MembershipCategory.objects.all()}
         for user in queryset:
+            slug = membership_category
+            if slug == 'extend':
+                previous = Membership.objects.filter(user=user, administration_unit=administration_unit, year=today().year-1).first()
+                if not previous:
+                    messages.error(request, f"Nelze prodloužit členství pro {user}, neb minulý rok nebyl/a členem {administration_unit}")
+                    continue
+
+                slug = previous.category.slug
+                if slug in ["kid", "student", "adult"]:
+                    slug = 'individual'
+
+            if slug == "individual":
+                slug = MembershipCategory.get_individual(user)
+
+                if not slug:
+                    messages.error(request, f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk")
+                    continue
+
             Membership.objects.update_or_create(
                 user=user,
                 administration_unit=administration_unit,
                 year=today().year,
-                defaults=dict(category=membership_category)
+                defaults=dict(category=categories[slug])
             )
 
-    action.__name__ = f'add_member_{membership_category.id}_{administration_unit.id}'
+    action.__name__ = f'add_member_{membership_category}_{administration_unit.id}'
     return action
 
 
 def get_add_members_actions():
+    translate = {
+        "family": "Nastav první rodinné",
+        "family_member": "Nastav další rodinné",
+        "individual": "Nastav individuální",
+        "extend": "Prodluž",
+    }
     try:
         return [
             admin.action(
-                description=f'Přidej členství {membership_category.name} za tento rok pod {administration_unit.abbreviation}'
+                description=f'{translate[membership_category]} členství '
+                            f'na tento rok pod {administration_unit.abbreviation}'
             )(get_member_action(membership_category, administration_unit))
             for administration_unit in AdministrationUnit.objects.filter(existed_till__isnull=True)
-            for membership_category in MembershipCategory.objects.filter(slug__in=['kid', 'student', 'adult'])
+            for membership_category in ["family", "family_member", "individual", "extend"]
         ]
     except ProgrammingError:
         return []

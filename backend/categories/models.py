@@ -1,3 +1,7 @@
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
+from dateutil.utils import today
 from django.db.models import *
 
 from translation.translate import translate_model
@@ -80,6 +84,30 @@ class MembershipCategory(Model):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_individual(cls, user):
+        if not user.birthday:
+            return
+
+        years = relativedelta(date(today().year, 1, 1), user.birthday).years
+        if years < 15: return 'kid'
+        elif years <= 26: return 'student'
+        return 'adult'
+
+    @classmethod
+    def get_extended(cls, user):
+        if not user.birthday:
+            return
+
+
+
+        years = relativedelta(date(today().year, 1, 1), user.birthday).years
+        if years < 15: slug = 'kid'
+        elif years <= 26: slug = 'student'
+        else: slug = 'adult'
+
+        return cls.objects.get(slug=slug)
 
 
 @translate_model
