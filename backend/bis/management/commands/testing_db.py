@@ -54,7 +54,7 @@ class Command(BaseCommand):
         email: str,
         sex_slug: str = None,
         birthday: date = None,
-        password=None,
+        password="password",
         qualification: t.Tuple[str, date, User] = None,
     ):
         """Create users, optionally with qualification.
@@ -95,15 +95,15 @@ class Command(BaseCommand):
 
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
-        director = self.create_user("Pan", "Ředitel", "director@hb.nope", password="password")
-        finance_director = self.create_user("Finanční", "Ředitel", "finance_director@hb.nope", password="password")
-        kancl = self.create_user("Zaměstnanec", "Kancl", "office_worker@hb.nope", password="password")
-        krk = self.create_user("Zaměstnanec", "KRK", "auditor@hb.nope", password="password")
-        vv = self.create_user("Zaměstnanec", "VV", "executive@hb.nope", password="password")
-        edu = self.create_user("Zaměstnanec", "EDU", "education_member@hb.nope", password="password")
+        director = self.create_user("Pan", "Ředitel", "director@hb.nope")
+        finance_director = self.create_user("Finanční", "Ředitel", "finance_director@hb.nope")
+        kancl = self.create_user("Zaměstnanec", "Kancl", "office_worker@hb.nope")
+        krk = self.create_user("Zaměstnanec", "KRK", "auditor@hb.nope")
+        vv = self.create_user("Zaměstnanec", "VV", "executive@hb.nope")
+        edu = self.create_user("Zaměstnanec", "EDU", "education_member@hb.nope")
 
         admins = [
-            self.create_user("Systémový", "Administrátor", "admin@hb.nope", password="password"),
+            self.create_user("Systémový", "Administrátor", "admin@hb.nope"),
         ]
 
         brontosaurus = BrontosaurusMovement.objects.create(
