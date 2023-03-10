@@ -21,7 +21,7 @@ from categories.models import (
     AdministrationUnitCategory,
     EventIntendedForCategory,
     EventGroupCategory,
-    SexCategory,
+    PronounCategory,
 )
 from event.models import Event, EventPropagation,EventPropagationImage,  EventRecord
 
@@ -64,7 +64,7 @@ class Command(BaseCommand):
         if birthday is None:
             birthday = date(1980, 1, 1)
         if sex_slug:
-            ctg_sex = SexCategory.objects.get(slug=sex_slug)
+            ctg_sex = PronounCategory.objects.get(slug=sex_slug)
         else:
             ctg_sex = None
         new_user = User.objects.create(
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             last_name=last_name,
             email=email,
             birthday=birthday,
-            sex=ctg_sex,
+            pronoun=ctg_sex,
         )
         if password:
             new_user.set_password(password)
