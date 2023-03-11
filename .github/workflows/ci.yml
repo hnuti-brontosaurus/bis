@@ -1,0 +1,69 @@
+name: Build, test & deploy
+
+on: [ push, pull_request ]
+#  push:
+#    branches: [ "*" ]
+#    tags: [ 'v*.*.*' ]
+#  pull_request:
+#    branches: [ "master" ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ok
+        run: echo ok
+
+#      - uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#
+#      - name: Docker login
+#        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+#
+#      - name: Disable make sync
+#        run: touch submodule_sync
+#
+#      - name: Build image
+#        run: make
+#
+#      - name: Run test
+#        run: make test
+#
+#      - name: Build frontend
+#        run: make build_frontend
+#
+#      - name: Build image to copy FE into it
+#        run: make
+#
+#      - name: Tag sha
+#        run: docker tag bis_backend ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+#
+#      - name: Push sha
+#        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$GITHUB_SHA
+
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.head_commit.message, '#deploy') }}
+
+    steps:
+      - name: Deploy new tag
+        run: curl -X POST --fail -F token=${{ secrets.GITLAB_TOKEN }} -F "ref=main" -F "variables[TARGET_ENV]=devel" -F "variables[TARGET_TAG]=$GITHUB_SHA" https://gitlab.com/api/v4/projects/43999052/trigger/pipeline
+
+  deploy-prod:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Deploy new tag
+        run: curl -X POST --fail -F token=${{ secrets.GITLAB_TOKEN }} -F "ref=main" -F "variables[TARGET_ENV]=production" -F "variables[TARGET_TAG]=${GITHUB_REF#refs/*/}" https://gitlab.com/api/v4/projects/43999052/trigger/pipeline
