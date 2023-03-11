@@ -57,7 +57,7 @@ class AdministrationUnitAdmin(PermissionMixin, OSMGeoAdmin):
         name, host = obj.email.split('@')
         return mark_safe(f'{name}<br>@{host}')
 
-    @admin.display(description='Aktuální členové')
+    @admin.display(description='Uživatelé s platným členstvím v tomto OJ')
     def get_members(self, obj):
         return get_admin_list_url(User, 'link', {
             'memberships__administration_unit': obj.id,
@@ -65,7 +65,7 @@ class AdministrationUnitAdmin(PermissionMixin, OSMGeoAdmin):
             'memberships__year_to': today().year,
         })
 
-    @admin.display(description='Aktuální orgové')
+    @admin.display(description='Kvalifikovaní organizátoři s platným členstvím v tomto OJ')
     def get_organizers(self, obj):
         return get_admin_list_url(User, 'link', {
             'memberships__administration_unit': obj.id,
