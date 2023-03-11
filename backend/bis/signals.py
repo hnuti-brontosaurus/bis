@@ -110,6 +110,11 @@ def set_users_primary_email(instance: UserEmail, **kwargs):
         instance.user.save()
 
 
+@receiver(post_save, sender=User, dispatch_uid='update_roles')
+def update_roles(instance: User, **kwargs):
+    instance.update_roles()
+
+
 class paused_user_str_signal:
     def __enter__(self):
         post_save.disconnect(sender=settings.AUTH_USER_MODEL, dispatch_uid='set_unique_str')
