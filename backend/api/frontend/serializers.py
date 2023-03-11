@@ -1,3 +1,4 @@
+from dateutil.utils import today
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import ManyToManyField
@@ -530,6 +531,14 @@ class EventSerializer(ModelSerializer):
             return ['internal_note', 'finance', 'record']
 
         return []
+
+    def create(self, validated_data):
+        locked_year = today().year - 1
+        if today().month < 3:
+            locked_year -= 1
+        if validated_data['start'].year <= locked_year:
+            raise DjangoValidationError("Cannot create events in the past")
+        return super().create(validated_data)
 
 
 class LocationContactPersonSerializer(BaseContactSerializer):
