@@ -296,7 +296,7 @@ EventRecord:
   fields:
     total_hours_worked: Odpracováno člověkohodin
     comment_on_work_done: Okomentování vykonané práce
-    attendance_list: Prezenční listina
+    attendance_list_pages: Prezenční listina
     participants: Účastníci
     note: Poznámka k akci
     number_of_participants:
@@ -322,6 +322,13 @@ EventPhoto:
   name_plural: Fotky z akce
   fields:
     record: Záznam z akce
+
+EventAttendanceListPage:
+  name: Prezenční listina
+  name_plural: Prezenční listina
+  fields:
+    record: Záznam z akce
+    page: Strana
 
 # questionnaire
 EventApplication:

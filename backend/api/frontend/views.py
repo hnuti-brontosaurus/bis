@@ -12,11 +12,12 @@ from api.frontend.permissions import BISPermissions
 from api.frontend.serializers import UserSerializer, EventSerializer, LocationSerializer, OpportunitySerializer, \
     FinanceReceiptSerializer, EventPhotoSerializer, EventPropagationImageSerializer, QuestionSerializer, \
     EventApplicationSerializer, GetUnknownUserRequestSerializer, EventDraftSerializer, DashboardItemSerializer, \
-    EventRouterKwargsSerializer, UserRouterKwargsSerializer, UserSearchSerializer
+    EventRouterKwargsSerializer, UserRouterKwargsSerializer, UserSearchSerializer, AttendanceListPageSerializer
 from api.helpers import parse_request_data
 from bis.models import User, Location
 from bis.permissions import Permissions
-from event.models import Event, EventFinanceReceipt, EventPhoto, EventPropagationImage, EventDraft
+from event.models import Event, EventFinanceReceipt, EventPhoto, EventPropagationImage, EventDraft, \
+    EventAttendanceListPage
 from login_code.models import ThrottleLog
 from opportunities.models import Opportunity
 from other.models import DashboardItem
@@ -199,6 +200,15 @@ class EventPropagationImageViewSet(PermissionViewSetBase):
 class EventPhotoViewSet(PermissionViewSetBase):
     serializer_class = EventPhotoSerializer
     queryset = EventPhoto.objects.all()
+    kwargs_serializer_class = EventRouterKwargsSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(record__event=self.kwargs['event_id'])
+
+
+class AttendanceListPageViewSet(PermissionViewSetBase):
+    serializer_class = AttendanceListPageSerializer
+    queryset = EventAttendanceListPage.objects.all()
     kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):

@@ -265,7 +265,6 @@ class EventRecord(Model):
 
     total_hours_worked = PositiveIntegerField(null=True, blank=True)
     comment_on_work_done = TextField(blank=True)
-    attendance_list = ImageField(upload_to='attendance_lists', null=True, blank=True)
     participants = ManyToManyField(User, 'participated_in_events', blank=True)
     number_of_participants = PositiveIntegerField(null=True, blank=True)
     number_of_participants_under_26 = PositiveIntegerField(null=True, blank=True)
@@ -304,6 +303,7 @@ class EventContact(BaseContact):
         pass
 
 
+
 @translate_model
 class EventPropagationImage(Model):
     propagation = ForeignKey(EventPropagation, on_delete=CASCADE, related_name='images')
@@ -328,6 +328,25 @@ class EventPropagationImage(Model):
     def has_edit_permission(self, user):
         return self.propagation.has_edit_permission(user)
 
+
+@translate_model
+class EventAttendanceListPage(Model):
+    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name='attendance_list_pages')
+    page = ImageField(upload_to='attendance_list_pages', null=True, blank=True)
+
+    class Meta:
+        ordering = 'id',
+
+    def __str__(self):
+        return basename(self.page.name)
+
+    @classmethod
+    def filter_queryset(cls, queryset, perm):
+        events = Event.filter_queryset(Event.objects.all(), perm)
+        return queryset.filter(record__event__in=events)
+
+    def has_edit_permission(self, user):
+        return self.record.has_edit_permission(user)
 
 @translate_model
 class EventPhoto(Model):

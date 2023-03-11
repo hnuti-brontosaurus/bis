@@ -20,7 +20,7 @@ from categories.serializers import DonationSourceCategorySerializer, EventProgra
     EventGroupCategorySerializer
 from donations.models import Donor, Donation
 from event.models import Event, EventFinance, EventPropagation, EventRegistration, EventRecord, EventFinanceReceipt, \
-    EventPropagationImage, EventPhoto, VIPEventPropagation, EventDraft, EventContact
+    EventPropagationImage, EventPhoto, VIPEventPropagation, EventDraft, EventContact, EventAttendanceListPage
 from opportunities.models import Opportunity, OfferedHelp
 from other.models import DashboardItem
 from questionnaire.models import Questionnaire, Question, EventApplication, EventApplicationClosePerson, \
@@ -473,7 +473,6 @@ class RecordSerializer(ModelSerializer):
         fields = (
             'total_hours_worked',
             'comment_on_work_done',
-            'attendance_list',
             'participants',
             'number_of_participants',
             'number_of_participants_under_26',
@@ -653,6 +652,19 @@ class EventPhotoSerializer(ModelSerializer):
         fields = (
             'id',
             'photo',
+        )
+
+    @catch_related_object_does_not_exist
+    def create(self, validated_data):
+        validated_data['record'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).record
+        return super().create(validated_data)
+
+class AttendanceListPageSerializer(ModelSerializer):
+    class Meta:
+        model = EventAttendanceListPage
+        fields = (
+            'id',
+            'page',
         )
 
     @catch_related_object_does_not_exist
