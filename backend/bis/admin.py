@@ -19,7 +19,7 @@ from bis.admin_filters import AgeFilter, NoBirthdayFilter, MainOrganizerOfEventR
     OrganizerOfEventOfAdministrationUnitFilter, ParticipatedInEventOfAdministrationUnitFilter, MemberDuringYearsFilter, \
     MemberOfAdministrationUnitFilter, QualificationCategoryFilter, QualificationValidAtFilter, UserStatsDateFilter, \
     FirstParticipatedInEventRangeFilter
-from bis.admin_helpers import list_filter_extra_title
+from bis.admin_helpers import list_filter_extra_title, list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.models import *
 from opportunities.models import OfferedHelp
@@ -140,7 +140,7 @@ class UserEmailAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
     extra = 0
 
 
-class DuplicateUserAdminInline(PermissionMixin, NestedTabularInline):
+class DuplicateUserAdminInline(PermissionMixin, NestedStackedInline):
     model = DuplicateUser
     fk_name = 'user'
     autocomplete_fields = 'other',
@@ -267,7 +267,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                        'get_all_emails']
         }],
         ('Osobní informace', {
-            'fields': ('subscribed_to_newsletter', 'health_insurance_company', 'health_issues')
+            'fields': ('subscribed_to_newsletter', 'health_insurance_company', 'health_issues'),
+            'classes': ('collapse',)
         }),
         (_('models.Event.name_plural'), {
             'fields': ('get_events_where_was_organizer', 'get_participated_in_events')
@@ -306,6 +307,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
     list_display = 'get_name', 'birthday', 'address', 'get_email', 'phone', 'get_qualifications', 'get_memberships'
 
     list_filter = [
+        list_filter_extra_text("Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
+                               "přidrž tlačítko ctrl/shift"),
         AgeFilter,
 
         list_filter_extra_title('Členství'),

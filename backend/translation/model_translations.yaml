@@ -78,8 +78,12 @@ DuplicateUser:
   name: Duplicita
   name_plural: Duplicity
   fields:
-    user: Primární uživatel
-    other: Duplicitní uživatel
+    user:
+      - Primární uživatel
+      - Tento uživatel (by měl) obsahovat aktuání informace
+    other:
+      - Duplicitní uživatel
+      - Tento uživatel (by měl) být zastaralý, jeho informace budou (po kontrole) připojeny k primárnímu (vybranému) uživateli
 
 
 AdministrationUnit:

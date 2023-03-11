@@ -7,6 +7,7 @@ from nested_admin.nested import NestedTabularInline, NestedModelAdmin, NestedSta
 from rangefilter.filters import DateRangeFilter
 
 from bis.admin_filters import EventStatsDateFilter
+from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats
 from event.models import *
@@ -130,6 +131,8 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     filter_horizontal = 'other_organizers',
 
     list_filter = [
+        list_filter_extra_text("Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
+                               "přidrž tlačítko ctrl/shift"),
         AutocompleteFilterFactory(_('models.AdministrationUnit.name'), 'administration_units'),
         ('start', DateRangeFilter),
         ('end', DateRangeFilter),

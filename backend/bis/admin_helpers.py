@@ -176,23 +176,30 @@ def event_of_administration_unit_filter_factory(title, parameter_name, cache_nam
 
     return Filter
 
+class TextOnlyFilter(ListFilter):
+    def has_output(self):
+        return True
+
+    def queryset(self, request, queryset):
+        return queryset
+
+    def choices(self, changelist):
+        return []
+
+    def expected_parameters(self):
+        return None
 
 def list_filter_extra_title(custom_title):
-    class Filter(ListFilter):
+    class Filter(TextOnlyFilter):
         template = 'admin/title_filter.html'
         title = custom_title
 
-        def has_output(self):
-            return True
+    return Filter
 
-        def queryset(self, request, queryset):
-            return queryset
-
-        def choices(self, changelist):
-            return []
-
-        def expected_parameters(self):
-            return None
+def list_filter_extra_text(custom_title):
+    class Filter(TextOnlyFilter):
+        template = 'admin/text_filter.html'
+        title = custom_title
 
     return Filter
 
