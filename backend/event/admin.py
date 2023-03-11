@@ -80,8 +80,6 @@ class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
     inlines = EventPropagationImageAdmin,
     classes = 'collapse',
 
-    autocomplete_fields = 'contact_person',
-
     exclude = '_contact_url',
 
     def get_formset(self, request, obj=None, **kwargs):

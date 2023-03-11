@@ -255,7 +255,6 @@ EventPropagation:
     invitation_text_about_us:
       - 'Zvací text: Malá ochutnávka'
       - Malá ochutnávka uvádí fotky, které k akci přiložíte. Popište fotky, které přikládáte nebo přibližte jak vypadaly akce na stejném místě v minulosti. U nových akcí můžete více ukázat místo a důvody proč vás oslovilo a představit organizátory.
-    contact_person: Kontaktní osoba
     contact_name:
       - Jméno kontaktní osoby
       - Nechte prázdné pokud chcete použít jméno kontaktní osoby

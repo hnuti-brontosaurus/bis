@@ -255,7 +255,6 @@ class Command(BaseCommand):
                 invitation_text_practical_information='Co, kde a jak',
                 invitation_text_work_description='Dobrovolnická pomoc',
                 invitation_text_about_us='Malá ochutnávka',
-                contact_person=main_organizer,
                 contact_name=main_organizer_full_name,
                 contact_phone=self._random_phonenum(),
                 contact_email=main_organizer.email,

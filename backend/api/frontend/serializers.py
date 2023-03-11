@@ -424,7 +424,6 @@ class PropagationSerializer(ModelSerializer):
             'invitation_text_practical_information',
             'invitation_text_work_description',
             'invitation_text_about_us',
-            'contact_person',
             'contact_name',
             'contact_phone',
             'contact_email',

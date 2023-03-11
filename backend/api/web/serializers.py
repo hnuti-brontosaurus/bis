@@ -61,13 +61,13 @@ class EventPropagationSerializer(ModelSerializer):
         )
 
     def get_contact_name(self, instance) -> str:
-        return instance.contact_name or instance.contact_person and instance.contact_person.get_name()
+        return instance.contact_name
 
     def get_contact_phone(self, instance) -> str:
-        return str(instance.contact_phone) or instance.contact_person and str(instance.contact_person.phone)
+        return str(instance.contact_phone)
 
     def get_contact_email(self, instance) -> str:
-        return instance.contact_email or instance.contact_person and instance.contact_person.email
+        return instance.contact_email
 
 
 class QuestionSerializer(ModelSerializer):

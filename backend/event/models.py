@@ -198,8 +198,7 @@ class EventPropagation(Model):
     invitation_text_about_us = HTMLField(blank=True)
     # propagation_images as Model below
 
-    contact_person = ForeignKey(User, on_delete=PROTECT, related_name='events_where_was_as_contact_person', null=True)
-    contact_name = CharField(max_length=63, blank=True)
+    contact_name = CharField(max_length=63)
     contact_phone = PhoneNumberField(blank=True)
     contact_email = EmailField(blank=True)
 
@@ -214,6 +213,9 @@ class EventPropagation(Model):
 
             if not self.working_days and self.event.group.slug == 'camp':
                 raise ValidationError('Počet pracovních dní je povinný pro dobrovolnické tábory')
+
+        if not self.contact_phone and not self.contact_email:
+            raise ValidationError("Kontaktní telefon či kontaktní e-mail musí být vyplněn")
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not cache.get('skip_validation'): self.clean()
