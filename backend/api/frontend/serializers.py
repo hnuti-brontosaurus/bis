@@ -738,6 +738,7 @@ class EventApplicationSerializer(ModelSerializer):
             'address',
             'answers',
             'note',
+            'is_child_application',
         )
 
     @catch_related_object_does_not_exist
