@@ -1,0 +1,12 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {% if original.id %}
+        <div class="submit-row">
+            <input type="submit" value="Export prezenční listiny do xlsx" name="_attendance_list_xlsx_export"/>
+            <input type="submit" value="Export prezenční listiny pro tisk" name="_attendance_list_pdf_export"/>
+            <input type="submit" value="Export účastníků do xlsx" name="_participants_xlsx_export"/>
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

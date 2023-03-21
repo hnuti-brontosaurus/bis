@@ -1,28 +1,30 @@
-FROM python:3.9-alpine
+FROM amancevice/pandas:1.5.3
 
 RUN mkdir app
 WORKDIR /app
+RUN mkdir -p /logs/backend
 
-ARG BUILD_DEPENDENCIES="build-base openssh perl zlib-dev postgresql-dev"
 
 ENV VIRTUAL_ENV=/venv
-RUN apk add --no-cache ${BUILD_DEPENDENCIES} db-dev jpeg-dev geos proj gdal binutils postgresql-client git \
+
+# 1 gdal
+# 2 html to pdf
+# 2 postgres
+RUN apt update \
+ && apt install -y \
+    binutils libproj-dev gdal-bin \
+    wkhtmltopdf \
+    postgresql-client \
+ && rm -rf /var/lib/apt/lists/* \
  && python3 -m venv $VIRTUAL_ENV
 
 # this 'activates' virtual environment, since classic activate does not work
 # https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# set latest pip version to avoid warning messages
-RUN pip install pip==21.1.2
-
-# logging dirs
-RUN mkdir -p /logs/backend
-
 COPY requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
 
-RUN apk del ${BUILD_DEPENDENCIES}
 
 WORKDIR /app
 # Copy files

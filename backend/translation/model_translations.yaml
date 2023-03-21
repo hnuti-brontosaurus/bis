@@ -336,6 +336,7 @@ EventApplication:
   fields:
     event_registration: Přihlášení na akci
     state: Stav
+    child_application: Přihláška dítěte dospělým
 EventApplicationClosePerson:
   name: Rodič / blízká osoba
   name_plural: Rodič / blízká osoba

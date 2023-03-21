@@ -24,10 +24,15 @@ django-more-admin-filters
 python-dateutil
 django-filter
 django-tinymce
-XlsxWriter
+XlsxWriter # replaced by openpyxl
+openpyxl
 drf-spectacular
 drf-nested-routers
 vokativ
 django-bootstrap5
 django-autocomplete-light
 django-cleanup
+pandas
+xlrd
+pdfkit
+xlsx2html

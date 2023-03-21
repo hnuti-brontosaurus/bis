@@ -1,5 +1,13 @@
+from os.path import join
+from pathlib import Path
+
+import openpyxl
+from xlsx2html import xlsx2html
+
+import pandas
+import pdfkit
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.forms import BaseModelFormSet
+from django.http import FileResponse
 from django.utils.datetime_safe import date
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -11,6 +19,7 @@ from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats
 from event.models import *
+from project.settings import BASE_DIR
 from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
 from translation.translate import _
 from xlsx_export.export import export_to_xlsx
@@ -123,6 +132,7 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         }})
         return super().get_formset(request, obj, **kwargs)
 
+
 @admin.action(description='Uzavřít akce')
 def mark_as_closed(model_admin, request, queryset):
     queryset.update(is_closed=True)
@@ -130,6 +140,8 @@ def mark_as_closed(model_admin, request, queryset):
 
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
+    # change_form_template = 'bis/event_change_form.html'
+
     actions = [mark_as_closed, export_to_xlsx]
     inlines = EventFinanceAdmin, EventPropagationAdmin, EventVIPPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
     filter_horizontal = 'other_organizers',
@@ -231,3 +243,28 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.save()
+
+    def response_change(self, request, obj):
+        dir = Path(join(BASE_DIR, "xlsx_export", "fixtures"))
+        print(1, flush=True)
+        wb = openpyxl.load_workbook(str(dir / "attendance_list_template.xlsx"), data_only=True)
+        print(1, flush=True)
+        xlsx2html(str(dir / "attendance_list_template.xlsx"), str(dir / "file.html"))
+        print(1, flush=True)
+
+        pdfkit.from_file(str(dir / "file.html"), str(dir / "file.pdf"), {
+            'page-size': "A4",
+            'encoding': "UTF-8",
+            'orientation': 'Landscape',
+            'title': 'Landscape',
+        })
+        print(1, flush=True)
+        if "_attendance_list_xlsx_export" in request.POST:
+            return FileResponse(open(str(dir / "file.html"), 'rb'))
+        if "_attendance_list_pdf_export" in request.POST:
+            print(1, flush=True)
+            return FileResponse(open(str(dir / "file.pdf"), 'rb'))
+        if "_participants_xlsx_export" in request.POST:
+            return export_to_xlsx(self, request, obj.record.participants.all())
+
+        return super().response_change(request, obj)

@@ -19,6 +19,7 @@ class EventApplication(Model):
         ('approved', 'Potvrzena'),
     ])
 
+    child_application = BooleanField(default=False)
     first_name = CharField(max_length=63)
     last_name = CharField(max_length=63)
     nickname = CharField(max_length=63, blank=True)
