@@ -19,10 +19,9 @@ from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats
 from event.models import *
-from project.settings import BASE_DIR
 from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx
+from xlsx_export.export import export_to_xlsx, get_attendance_list
 
 
 class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
@@ -140,7 +139,7 @@ def mark_as_closed(model_admin, request, queryset):
 
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
-    # change_form_template = 'bis/event_change_form.html'
+    change_form_template = 'bis/event_change_form.html'
 
     actions = [mark_as_closed, export_to_xlsx]
     inlines = EventFinanceAdmin, EventPropagationAdmin, EventVIPPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
@@ -245,25 +244,10 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         form.instance.save()
 
     def response_change(self, request, obj):
-        dir = Path(join(BASE_DIR, "xlsx_export", "fixtures"))
-        print(1, flush=True)
-        wb = openpyxl.load_workbook(str(dir / "attendance_list_template.xlsx"), data_only=True)
-        print(1, flush=True)
-        xlsx2html(str(dir / "attendance_list_template.xlsx"), str(dir / "file.html"))
-        print(1, flush=True)
-
-        pdfkit.from_file(str(dir / "file.html"), str(dir / "file.pdf"), {
-            'page-size': "A4",
-            'encoding': "UTF-8",
-            'orientation': 'Landscape',
-            'title': 'Landscape',
-        })
-        print(1, flush=True)
         if "_attendance_list_xlsx_export" in request.POST:
-            return FileResponse(open(str(dir / "file.html"), 'rb'))
+            return get_attendance_list(request, obj)['xlsx']
         if "_attendance_list_pdf_export" in request.POST:
-            print(1, flush=True)
-            return FileResponse(open(str(dir / "file.pdf"), 'rb'))
+            return get_attendance_list(request, obj)['pdf']
         if "_participants_xlsx_export" in request.POST:
             return export_to_xlsx(self, request, obj.record.participants.all())
 

@@ -1,17 +1,23 @@
 from collections import Counter
+from copy import copy
 from itertools import zip_longest
+from os.path import join
 from typing import OrderedDict
 
+import openpyxl
+import pdfkit
 import xlsxwriter
 from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.http import FileResponse
 from rest_framework.serializers import ModelSerializer
+from xlsx2html import xlsx2html
 
 from bis.helpers import print_progress
 from bis.models import User
 from event.models import Event
+from project.settings import BASE_DIR
 from xlsx_export.serializers import UserExportSerializer, EventExportSerializer, DonorExportSerializer, \
     DonationExportSerializer
 
@@ -112,10 +118,10 @@ class XLSXWriter:
         ))
 
         for line in zip_longest(
-            *zip(*Counter(participants).most_common()),
-            *zip(*Counter(organizers).most_common()),
-            *zip(*Counter(main_organizers).most_common()),
-            fillvalue=''
+                *zip(*Counter(participants).most_common()),
+                *zip(*Counter(organizers).most_common()),
+                *zip(*Counter(main_organizers).most_common()),
+                fillvalue=''
         ):
             row = []
             for item in line:
@@ -128,13 +134,11 @@ class XLSXWriter:
             self.write_row(row)
 
 
-
-
 @admin.action(description='Exportuj data')
 def export_to_xlsx(model_admin, request, queryset):
     serializer_class = \
-    [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer]
-     if s.Meta.model is queryset.model][0]
+        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer]
+         if s.Meta.model is queryset.model][0]
     queryset = serializer_class.get_related(queryset)
 
     writer = XLSXWriter(queryset.model._meta.verbose_name_plural)
@@ -144,3 +148,87 @@ def export_to_xlsx(model_admin, request, queryset):
     file = writer.get_file()
 
     return FileResponse(open(file.name, 'rb'))
+
+
+def get_attendance_list_data(event):
+    organizers = list(event.other_organizers.all())
+    applications = (registration := getattr(event, "registration", [])) and list(registration.applications.all())
+    for item in (organizers + applications):
+        address = getattr(item, 'address', None)
+        yield (
+            item.first_name + ' ' + item.last_name,
+            item.birthday and item.birthday.strftime("%d. %m. %Y"),
+            address and f"{address.street}, {address.city}",
+            address and address.zip_code,
+            item.email,
+            str(item.phone),
+        )
+
+    for i in range(max(10, len(applications) // 10)):
+        yield 6 * ('',)
+
+
+def get_attendance_list_rows(ws):
+    for i in range(13):
+        yield i + 17
+
+    for i in range(25):
+        yield i + 31
+
+    start_i = 39
+    start = 30
+    rows = 26
+    while True:
+        for i in range(rows):
+            source_row = start + i
+            row = start + rows + i
+            ws.row_dimensions[row] = copy(ws.row_dimensions[source_row])
+            for col in "ABSCDEFGH":
+                ws[f"{col}{row}"] = None
+                ws[f"{col}{row}"]._style = copy(ws[f"{col}{source_row}"]._style)
+
+            if i != 0:
+                ws[f"A{row}"] = start_i
+                start_i += 1
+
+        start += rows
+
+        for i in range(25):
+            yield start + 1 + i
+
+
+def get_attendance_list(request, event: Event):
+    wb = openpyxl.load_workbook(join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx"))
+    ws = wb.active
+
+    ws['C2'] = 5 * event.name
+    ws['C3'] = event.get_date()
+    ws['C4'] = event.location.name
+    ws['C5'] = ", ".join(au.abbreviation for au in event.administration_units.all())
+
+    for row, data in zip(get_attendance_list_rows(ws), get_attendance_list_data(event)):
+        for cell, value in zip("BCDEFG", data):
+            ws[f"{cell}{row}"] = value
+
+    tmp_xlsx = NamedTemporaryFile(mode='w', suffix='.xlsx', newline='', encoding='utf8',
+                                  prefix='attendance_list_')
+    tmp_html = NamedTemporaryFile(mode='w', suffix='.html', newline='', encoding='utf8',
+                                  prefix='attendance_list_')
+    tmp_pdf = NamedTemporaryFile(mode='w', suffix='.pdf', newline='', encoding='utf8',
+                                 prefix='attendance_list_')
+
+    wb.save(tmp_xlsx.name)
+
+    xlsx2html(tmp_xlsx.name, tmp_html.name)
+
+    pdfkit.from_file(tmp_html.name, tmp_pdf.name, {
+        'page-size': "A4",
+        'encoding': "UTF-8",
+        'orientation': 'Landscape',
+        'title': 'Landscape',
+    })
+
+    return {
+        'xlsx': FileResponse(open(tmp_xlsx.name, 'rb')),
+        'pdf': FileResponse(open(tmp_pdf.name, 'rb'))
+    }
