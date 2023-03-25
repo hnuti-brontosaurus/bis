@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import ManyToManyField
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, CharField, DateField, IntegerField, UUIDField
+from rest_framework.fields import SerializerMethodField, CharField, DateField, IntegerField, UUIDField, ChoiceField
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer as DRFModelSerializer, ListSerializer, Serializer
@@ -14,7 +14,8 @@ from bis.models import User, Location, UserAddress, UserContactAddress, Membersh
     LocationContactPerson, LocationPatron, EYCACard
 from categories.serializers import DonationSourceCategorySerializer, EventProgramCategorySerializer, \
     OrganizerRoleCategorySerializer, TeamRoleCategorySerializer, MembershipCategorySerializer, \
-    QualificationCategorySerializer, HealthInsuranceCompanySerializer, PronounCategorySerializer, RoleCategorySerializer, \
+    QualificationCategorySerializer, HealthInsuranceCompanySerializer, PronounCategorySerializer, \
+    RoleCategorySerializer, \
     GrantCategorySerializer, EventIntendedForCategorySerializer, DietCategorySerializer, EventCategorySerializer, \
     LocationProgramCategorySerializer, LocationAccessibilityCategorySerializer, OpportunityCategorySerializer, \
     EventGroupCategorySerializer
@@ -658,6 +659,7 @@ class EventPhotoSerializer(ModelSerializer):
         validated_data['record'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).record
         return super().create(validated_data)
 
+
 class AttendanceListPageSerializer(ModelSerializer):
     class Meta:
         model = EventAttendanceListPage
@@ -790,6 +792,14 @@ class GetUnknownUserRequestSerializer(Serializer):
     first_name = CharField()
     last_name = CharField()
     birthday = DateField()
+
+
+class GetAttendanceListRequestSerializer(Serializer):
+    formatting = ChoiceField(['pdf', 'xlsx'], default='pdf')
+
+
+class AttendanceListResponseSerializer(Serializer):
+    format = ChoiceField(['pdf', 'xlsx'], default='pdf')
 
 
 class EventRouterKwargsSerializer(Serializer):

@@ -245,9 +245,9 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
 
     def response_change(self, request, obj):
         if "_attendance_list_xlsx_export" in request.POST:
-            return get_attendance_list(request, obj)['xlsx']
+            return get_attendance_list(obj)['xlsx']
         if "_attendance_list_pdf_export" in request.POST:
-            return get_attendance_list(request, obj)['pdf']
+            return get_attendance_list(obj)['pdf']
         if "_participants_xlsx_export" in request.POST:
             return export_to_xlsx(self, request, obj.record.participants.all())
 

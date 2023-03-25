@@ -197,7 +197,7 @@ def get_attendance_list_rows(ws):
             yield start + 1 + i
 
 
-def get_attendance_list(request, event: Event):
+def get_attendance_list(event: Event):
     wb = openpyxl.load_workbook(join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx"))
     ws = wb.active
 

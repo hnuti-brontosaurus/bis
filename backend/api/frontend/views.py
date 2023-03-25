@@ -1,10 +1,12 @@
+from django.http import HttpResponseForbidden
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
+from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_429_TOO_MANY_REQUESTS
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_429_TOO_MANY_REQUESTS, HTTP_403_FORBIDDEN
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from api.frontend.filters import EventFilter, LocationFilter, UserFilter
@@ -12,7 +14,8 @@ from api.frontend.permissions import BISPermissions
 from api.frontend.serializers import UserSerializer, EventSerializer, LocationSerializer, OpportunitySerializer, \
     FinanceReceiptSerializer, EventPhotoSerializer, EventPropagationImageSerializer, QuestionSerializer, \
     EventApplicationSerializer, GetUnknownUserRequestSerializer, EventDraftSerializer, DashboardItemSerializer, \
-    EventRouterKwargsSerializer, UserRouterKwargsSerializer, UserSearchSerializer, AttendanceListPageSerializer
+    EventRouterKwargsSerializer, UserRouterKwargsSerializer, UserSearchSerializer, AttendanceListPageSerializer, \
+    GetAttendanceListRequestSerializer
 from api.helpers import parse_request_data
 from bis.models import User, Location
 from bis.permissions import Permissions
@@ -22,6 +25,7 @@ from login_code.models import ThrottleLog
 from opportunities.models import Opportunity
 from other.models import DashboardItem
 from questionnaire.models import Question, EventApplication
+from xlsx_export import export
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 
@@ -269,3 +273,19 @@ def get_unknown_user(request, data):
         raise NotFound()
 
     return Response(UserSerializer(instance=user, context={'request': request}).data)
+
+
+@extend_schema(parameters=[GetAttendanceListRequestSerializer],
+               responses={
+                   HTTP_200_OK: None,
+                   HTTP_404_NOT_FOUND: OpenApiResponse(description='Not found'),
+                   HTTP_403_FORBIDDEN: OpenApiResponse(description='Forbidden'),
+               })
+@api_view(['get'])
+@permission_classes([IsAuthenticated])
+@parse_request_data(GetAttendanceListRequestSerializer, 'query_params')
+def get_attendance_list(request, data, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not Permissions(request.user, Event, 'frontend').has_change_permission():
+        return HttpResponseForbidden()
+    return export.get_attendance_list(event)[data['formatting']]
