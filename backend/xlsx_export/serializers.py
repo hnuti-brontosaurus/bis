@@ -2,6 +2,7 @@ from rest_framework.fields import SerializerMethodField, ReadOnlyField
 from rest_framework.relations import StringRelatedField
 from rest_framework.serializers import ModelSerializer
 
+from administration_units.models import AdministrationUnit
 from bis.models import User, Location
 from donations.models import Donor, Donation
 from event.models import Event, EventFinance, EventPropagation, EventRegistration, EventRecord
@@ -289,4 +290,51 @@ class DonationExportSerializer(ModelSerializer):
             'donation_source',
             'info',
             'donor',
+        )
+
+
+class AdministrationUnitExportSerializer(ModelSerializer):
+    category = StringRelatedField()
+    chairman = StringRelatedField()
+    vice_chairman = StringRelatedField()
+    manager = StringRelatedField()
+    address = StringRelatedField(label='Adresa')
+    contact_address = StringRelatedField(label='Kontaktí adresa')
+
+    @staticmethod
+    def get_related(queryset):
+        return queryset.select_related(
+            'category',
+            'chairman',
+            'vice_chairman',
+            'manager',
+            'address',
+            'contact_address',
+        )
+
+    class Meta:
+        model = AdministrationUnit
+        fields = (
+            'id',
+            'name',
+            'abbreviation',
+            'is_for_kids',
+            'phone',
+            'email',
+            'www',
+            'facebook',
+            'instagram',
+            'ic',
+            'bank_account_number',
+            'data_box',
+            'custom_statues',
+            'gps_location',
+            'existed_since',
+            'existed_till',
+            'category',
+            'address',
+            'contact_address',
+            'chairman',
+            'vice_chairman',
+            'manager',
         )

@@ -19,7 +19,7 @@ from bis.models import User
 from event.models import Event
 from project.settings import BASE_DIR
 from xlsx_export.serializers import UserExportSerializer, EventExportSerializer, DonorExportSerializer, \
-    DonationExportSerializer
+    DonationExportSerializer, AdministrationUnitExportSerializer
 
 
 class XLSXWriter:
@@ -137,7 +137,7 @@ class XLSXWriter:
 @admin.action(description='Exportuj data')
 def export_to_xlsx(model_admin, request, queryset):
     serializer_class = \
-        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer]
+        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer, AdministrationUnitExportSerializer]
          if s.Meta.model is queryset.model][0]
     queryset = serializer_class.get_related(queryset)
 

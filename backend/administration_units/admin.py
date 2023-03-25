@@ -13,6 +13,7 @@ from bis.admin_helpers import get_admin_list_url
 from bis.admin_permissions import PermissionMixin
 from bis.models import User
 from common.history import show_history
+from xlsx_export.export import export_to_xlsx
 
 
 class AdministrationUnitAddressAdmin(PermissionMixin, NestedTabularInline):
@@ -30,6 +31,7 @@ class GeneralMeetingAdmin(PermissionMixin, NestedTabularInline):
 
 @admin.register(AdministrationUnit)
 class AdministrationUnitAdmin(PermissionMixin, OSMGeoAdmin):
+    actions = [export_to_xlsx]
     list_display = 'abbreviation', 'is_active', 'address', 'phone', 'get_email', 'www', 'chairman', 'category'
     search_fields = 'abbreviation', 'name', 'address__city', 'address__street', 'address__zip_code', 'phone', 'email'
     list_filter = IsAdministrationUnitActiveFilter, 'category', 'is_for_kids', \
