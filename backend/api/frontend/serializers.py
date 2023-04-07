@@ -10,6 +10,7 @@ from rest_framework.serializers import ModelSerializer as DRFModelSerializer, Li
 from rest_framework.utils import model_meta
 
 from api.helpers import catch_related_object_does_not_exist
+from bis import emails
 from bis.models import User, Location, UserAddress, UserContactAddress, Membership, Qualification, UserClosePerson, \
     LocationContactPerson, LocationPatron, EYCACard
 from categories.serializers import DonationSourceCategorySerializer, EventProgramCategorySerializer, \
@@ -747,7 +748,9 @@ class EventApplicationSerializer(ModelSerializer):
     def create(self, validated_data):
         validated_data['event_registration'] = \
             Event.objects.get(id=self.context['view'].kwargs['event_id']).registration
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        emails.application_created(instance)
+        return instance
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):

@@ -65,7 +65,10 @@ from ecomail.serializers import SendEmailSerializer
 
 def send_email(from_email, from_name, subject, template_id, recipients, *, reply_to=None, variables=None,
                attachments=None):
-    if settings.TEST: return
+    if settings.TEST or not settings.EMAILS_ENABLED:
+        print("Sending of emails disabled, email data:", locals())
+        return
+
     if cache.get('emails_paused'): return
     if attachments is None: attachments = []
     if variables is None: variables = {}

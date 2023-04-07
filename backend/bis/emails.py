@@ -23,30 +23,54 @@ def password_reset_link(user, email, login_code):
                            f'&password_exists={user.has_usable_password()}'}
     )
 
-def application_created(application : EventApplication):
-    email = (
-        application.email or
-        hasattr(application, "close_person") and application.close_person.email
+
+def application_created(application: EventApplication):
+    event = application.event_registration.event
+    variables = {
+        'event_name': event.name,
+        'event_date': event.get_date()
+    }
+    if application.is_child_application:
+        template = "182"
+        email = application.close_person.email
+        variables["child_name"] = application.first_name
+
+    else:
+        template = "147"
+        email = application.email
+        if application.user:
+            variables |= {
+                **PronounCategory.get_variables(application.user),
+                'vokativ': application.user.vokativ
+            }
+        else:
+            variables['vokativ'] = (
+                    vokativ(application.nickname).capitalize() or
+                    vokativ(application.first_name.split(' ')[0]).capitalize()
+            )
+
+    ecomail.send_email(
+        EMAIL, SENDER_NAME,
+        "Potvrzení přihlášení na akci", template,
+        [email],
+        variables=variables
     )
+    email = event.propagation.contact_email or event.main_organizer.email
     if not email:
-        logging.error("Application has no email to send notification to")
+        logging.error("Organizer does not have an email")
         return
 
     ecomail.send_email(
         EMAIL, SENDER_NAME,
-        "Potvrzení přihlášení na akci", "147",
+        "Nová přihláška!", "148",
         [email],
         variables={
-            **PronounCategory.get_variables(application.user),
-            'vokativ': (
-                    vokativ(application.nickname).capitalize() or
-                    vokativ(application.first_name.split(' ')[0]).capitalize() or
-                    application.user.vokativ
-            ),
-            'event_name': application.event_registration.event.name,
-            'event_date': application.event_registration.event.get_date()
+            "participant_name": application.nickname or f"{application.first_name} {application.last_name}",
+            'event_name': event.name,
+            "event_applications_link": f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/prihlasky"
         }
     )
+
 
 def event_created(event):
     return

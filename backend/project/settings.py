@@ -238,7 +238,7 @@ EMAIL = environ['EMAIL']
 AUTH_USER_MODEL = 'bis.User'
 
 SKIP_VALIDATION = False
-EMAILS_PAUSED = False
+EMAILS_ENABLED = bool(int(environ['EMAILS_ENABLED']))
 
 ECOMAIL_API_KEY = environ['ECOMAIL_API_KEY']
 
