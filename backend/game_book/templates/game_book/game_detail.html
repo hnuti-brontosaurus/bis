@@ -48,42 +48,55 @@
             {% game_detail_field "material" %}
             {% game_detail_field "notes" %}
 
-            <h5>Soubory:</h5>
-            {% for file in object.files.all %}
-                <a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a>
-            {% endfor %}
+            {% if object.files.count %}
+                <h5>Soubory:</h5>
+                {% for file in object.files.all %}
+                    <a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a>
+                {% endfor %}
+            {% endif %}
 
-            <h5>Komentáře:</h5>
+            <h5>Přidat komentář:</h5>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% bootstrap_form form layout="floating" %}
                 {% bootstrap_formset formset layout="floating" %}
-                <button class="btn btn-secondary" type="button" onclick="add_form(this);">Přiložit další soubor</button>
+                <button class="btn btn-secondary" type="button" onclick="add_form(this);">Přiložit další soubor ke
+                    komentáři
+                </button>
                 {% bootstrap_button button_type="submit" content="Okomentovat" %}
             </form>
-            <div class="row">
-                <div class="col">created_at</div>
-                <div class="col">author</div>
-                <div class="col">comment</div>
-                <div class="col">is_hidden</div>
-                <div class="col">files</div>
-            </div>
-            {% for comment in object.comments.all %}
+            {% if object.comments.count %}
+                <h5>Komentáře:</h5>
                 <div class="row">
-                    <div class="col">{{ comment.created_at }}</div>
-                    <div class="col">{{ comment.author }}</div>
-                    <div class="col">{{ comment.comment }}</div>
-                    <div class="col">{{ comment.is_hidden }}</div>
-                    <div class="col">
-                        {% for file in comment.files.all %}
-                            <div><a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a></div>
-                        {% endfor %}
-                    </div>
+                    <div class="col">Vytvořen:</div>
+                    <div class="col">Autor:</div>
+                    <div class="col">Komentář:</div>
+                    <div class="col">Pouze pro autora:</div>
+                    <div class="col">soubory:</div>
                 </div>
-            {% endfor %}
+                {% for comment in object.comments.all %}
+                    <div class="row">
+                        <div class="col">{{ comment.created_at }}</div>
+                        <div class="col">{{ comment.author }}</div>
+                        <div class="col">{{ comment.comment }}</div>
+                        <div class="col">{{ comment.is_hidden }}</div>
+                        <div class="col">
+                            {% for file in comment.files.all %}
+                                <div><a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-            <h5>todo uvedeni na akcich</h5>
-            <h5>todo pridat do meho seznamu her</h5>
+            <div style="float: right">
+                <small>
+                    <div>todo lepsi zobrazeni</div>
+                    <div>todo uvedeni na akcich</div>
+                    <div>todo pridat do meho seznamu her</div>
+                    <div>todo skryte komentare</div>
+                </small>
+            </div>
         </div>
     </div>
 

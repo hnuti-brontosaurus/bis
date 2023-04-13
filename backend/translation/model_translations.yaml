@@ -645,7 +645,9 @@ Comment:
   name_plural: Komentáře
   fields:
     author: Autor
-    is_hidden: Je skrytý?
+    is_hidden:
+      - Pouze pro autora?
+      - Zobrazit komentář pouze autorovi?
 CommentFile:
   name: Soubor
   name_plural: Soubory

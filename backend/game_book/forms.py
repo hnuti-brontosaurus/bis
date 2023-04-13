@@ -60,7 +60,7 @@ class FilterForm(Form):
     administration_unit = forms.ModelChoiceField(
         label=_("models.Game.fields.administration_unit"),
         queryset=AdministrationUnit.objects.all(), required=False)
-    tags = forms.ModelMultipleChoiceField(
+    tags = CategoryMultipleChoiceField(
         label=_("models.Game.fields.tags"), queryset=Tag.objects.all(),
         widget=forms.CheckboxSelectMultiple(), required=False)
     physical_category = CategoryMultipleChoiceField(
@@ -202,5 +202,4 @@ class CommentForm(ModelForm):
         model = Comment
         fields = [
             "comment",
-            "is_hidden",
         ]
