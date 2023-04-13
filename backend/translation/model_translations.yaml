@@ -556,6 +556,9 @@ Game:
     is_original:
       - Autorský program?
       - Jsi autorem tohoto programu — vytvořil si ho? Pokud ne, vyplň původ programu níže.
+    is_draft:
+      - Rozpracován?
+      - Je program finálně zpracován, či ještě něco chybí doladit?
     origin:
       - Původ programu
       - Kdo je autorem programu, odkud byl program převzat?

@@ -44,6 +44,7 @@ class Game(BaseModel):
     watchers = ManyToManyField(User, related_name='watched_games', blank=True)
     stars = PositiveSmallIntegerField(choices=[(i, '★' * i) for i in range(1, 6)], blank=True, null=True)
     is_verified = BooleanField(default=False)
+    is_draft = BooleanField(default=True)
 
     # categories
     tags = ManyToManyField(Tag, related_name='games', blank=True)

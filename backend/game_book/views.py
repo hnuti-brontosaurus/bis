@@ -104,7 +104,7 @@ class FormsetHandlingMixin:
 
         # when not ok, return form response
         if response.status_code != 302:
-            messages.error(request, "Chyba v uložení, zkontroluj data")
+            messages.error(request, "Někde něco chybí, zkontroluj formulář")
             return response
 
         formset = self.formset_class(request.POST, request.FILES, instance=self.object)
@@ -113,7 +113,7 @@ class FormsetHandlingMixin:
             messages.info(request, "Úspěšně uloženo")
             return response
 
-        messages.error(request, "Chyba v uložení, zkontroluj soubory")
+        messages.error(request, "Chyba v uložení souborů, mrkni na to")
         return self.render_to_response(self.get_context_data(formset=formset))
 
 

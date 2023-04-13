@@ -112,33 +112,36 @@ class GameForm(ModelForm):
             self.fields['contributor'].choices = [(self.instance.contributor.id, self.instance.contributor)]
             self.fields['contributor'].disabled = True
 
+    tags = CategoryMultipleChoiceField(
+        label=_("models.Game.fields.tags"), queryset=Tag.objects.all(),
+        widget=forms.CheckboxSelectMultiple(), required=False)
     physical_category = CategoryChoiceField(
         label=_("models.Game.fields.physical_category"), queryset=PhysicalCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
     mental_category = CategoryChoiceField(
         label=_("models.Game.fields.mental_category"), queryset=MentalCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
     location_category = CategoryMultipleChoiceField(
         label=_("models.Game.fields.location_category"), queryset=LocationCategory.objects.all(),
-        widget=forms.CheckboxSelectMultiple(), required=False)
+        widget=forms.CheckboxSelectMultiple(), required=True)
     participant_number_category = CategoryMultipleChoiceField(
         label=_("models.Game.fields.participant_number_category"), queryset=ParticipantNumberCategory.objects.all(),
-        widget=forms.CheckboxSelectMultiple(), required=False)
+        widget=forms.CheckboxSelectMultiple(), required=True)
     participant_age_category = CategoryMultipleChoiceField(
         label=_("models.Game.fields.participant_age_category"), queryset=ParticipantAgeCategory.objects.all(),
-        widget=forms.CheckboxSelectMultiple(), required=False)
+        widget=forms.CheckboxSelectMultiple(), required=True)
     game_length_category = CategoryChoiceField(
         label=_("models.Game.fields.game_length_category"), queryset=GameLengthCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
     preparation_length_category = CategoryChoiceField(
         label=_("models.Game.fields.preparation_length_category"), queryset=PreparationLengthCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
     material_requirement_category = CategoryChoiceField(
         label=_("models.Game.fields.material_requirement_category"), queryset=MaterialRequirementCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
     organizers_number_category = CategoryChoiceField(
         label=_("models.Game.fields.organizers_number_category"), queryset=OrganizersNumberCategory.objects.all(),
-        widget=forms.RadioSelect(), required=False)
+        widget=forms.RadioSelect(), required=True)
 
     class Meta:
         model = Game

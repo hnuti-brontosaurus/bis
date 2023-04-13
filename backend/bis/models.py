@@ -291,7 +291,7 @@ class User(AbstractBaseUser):
             return relativedelta(now().date(), self.birthday).years
 
     class Meta:
-        ordering = '-id',
+        ordering = 'last_name',
         unique_together = 'first_name', 'last_name', 'birthday'
 
     def __str__(self):
