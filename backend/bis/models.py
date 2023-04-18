@@ -498,15 +498,15 @@ class User(AbstractBaseUser):
         if self.manager_of.exists():
             roles += ['manager']
         if self.administration_units.exists():
-            roles += ['board_member']
+            roles += ['board_member', 'organizer']
         if self.events_where_was_as_main_organizer.exists():
             roles += ['main_organizer']
         if self.events_where_was_organizer.exists():
             roles += ['organizer']
         if self.get_qualifications():
-            roles += ['qualified_organizer']
+            roles += ['qualified_organizer', 'organizer']
 
-        roles = [RoleCategory.objects.get(slug=role) for role in roles]
+        roles = [RoleCategory.objects.get(slug=role) for role in set(roles)]
 
         self.roles.set(roles)
 
