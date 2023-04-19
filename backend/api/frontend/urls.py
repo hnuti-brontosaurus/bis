@@ -41,4 +41,5 @@ urlpatterns = [
     path('', include(events_router.urls)),
     path('get_unknown_user/', frontend.views.get_unknown_user),
     path('events/<int:event_id>/get_attendance_list/', frontend.views.get_attendance_list),
+    path('events/<int:event_id>/get_participants_list/', frontend.views.get_participants_list),
 ]

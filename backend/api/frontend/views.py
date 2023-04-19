@@ -286,6 +286,20 @@ def get_unknown_user(request, data):
 @parse_request_data(GetAttendanceListRequestSerializer, 'query_params')
 def get_attendance_list(request, data, event_id):
     event = get_object_or_404(Event, id=event_id)
-    if not Permissions(request.user, Event, 'frontend').has_change_permission():
+    if not Permissions(request.user, Event, 'frontend').has_change_permission(event):
         return HttpResponseForbidden()
     return export.get_attendance_list(event)[data['formatting']]
+
+@extend_schema(responses={
+                   HTTP_200_OK: None,
+                   HTTP_404_NOT_FOUND: OpenApiResponse(description='Not found'),
+                   HTTP_403_FORBIDDEN: OpenApiResponse(description='Forbidden'),
+               })
+@api_view(['get'])
+@permission_classes([IsAuthenticated])
+def get_participants_list(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not Permissions(request.user, Event, 'frontend').has_change_permission(event):
+        return HttpResponseForbidden()
+
+    return export.export_to_xlsx(..., ..., Event.objects.filter(id=event.id))
