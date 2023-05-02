@@ -302,4 +302,4 @@ def get_participants_list(request, event_id):
     if not Permissions(request.user, Event, 'frontend').has_change_permission(event):
         return HttpResponseForbidden()
 
-    return export.export_to_xlsx(..., ..., Event.objects.filter(id=event.id))
+    return export.export_to_xlsx(..., ..., event.record.participants.all())
