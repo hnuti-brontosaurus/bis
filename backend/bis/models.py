@@ -467,11 +467,13 @@ class User(AbstractBaseUser):
     @permission_cache
     def has_edit_permission(self, user):
         if self == user: return True
+        if Membership.objects.filter(user=self, administration_unit__board_members=user).count():
+            return True
+
         events = []
         events += apps.get_model('bis', 'Event').objects.filter(registration__applications__user=self)
         events += self.participated_in_events.all()
         events += self.events_where_was_organizer.all()
-        events += apps.get_model('bis', 'Event').objects.filter(administration_units__board_members=self)
         for event in events:
             if event.has_edit_permission(user):
                 return True
