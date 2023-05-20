@@ -236,9 +236,9 @@ class EventPropagation(Model):
 class VIPEventPropagation(Model):
     event = OneToOneField(Event, related_name='vip_propagation', on_delete=CASCADE, blank=True, null=True)
 
-    goals_of_event = TextField()
-    program = TextField()
-    short_invitation_text = TextField(max_length=200)
+    goals_of_event = TextField(blank=True)
+    program = TextField(blank=True)
+    short_invitation_text = TextField(max_length=200, blank=True)
 
     rover_propagation = BooleanField(default=False)
 
