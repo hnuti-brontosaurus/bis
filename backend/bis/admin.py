@@ -27,6 +27,7 @@ from other.models import DuplicateUser
 from translation.translate import _
 from xlsx_export.export import export_to_xlsx
 
+
 admin.site.unregister(TokenProxy)
 admin.site.unregister(Group)
 
