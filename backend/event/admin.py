@@ -2,6 +2,8 @@ from os.path import join
 from pathlib import Path
 
 import openpyxl
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
 from xlsx2html import xlsx2html
 
 import pandas
@@ -243,12 +245,16 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         super().save_related(request, form, formsets, change)
         form.instance.save()
 
-    def response_change(self, request, obj):
-        if "_attendance_list_xlsx_export" in request.POST:
-            return get_attendance_list(obj)['xlsx']
-        if "_attendance_list_pdf_export" in request.POST:
-            return get_attendance_list(obj)['pdf']
-        if "_participants_xlsx_export" in request.POST:
-            return export_to_xlsx(self, request, obj.record.participants.all())
+    def changeform_view(self, request, object_id=None, form_url="",
+                        extra_context=None):
+        if object_id:
+            to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+            obj = self.get_object(request, unquote(object_id), to_field)
+            if "_attendance_list_xlsx_export" in request.POST:
+                return get_attendance_list(obj)['xlsx']
+            if "_attendance_list_pdf_export" in request.POST:
+                return get_attendance_list(obj)['pdf']
+            if "_participants_xlsx_export" in request.POST:
+                return export_to_xlsx(self, request, obj.record.participants.all())
 
-        return super().response_change(request, obj)
+        return super().changeform_view(request, object_id, form_url, extra_context)
