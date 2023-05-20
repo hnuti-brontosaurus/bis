@@ -278,6 +278,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             'classes': ('collapse',)
         }]
     )
+    ordering = "last_name", "first_name"
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
