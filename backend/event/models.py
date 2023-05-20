@@ -127,8 +127,8 @@ class Event(Model):
         return filter_queryset_with_multiple_or_queries(queryset, queries)
 
     @permission_cache
-    def has_edit_permission(self, user):
-        if self.is_closed: return False
+    def has_edit_permission(self, user, ignore_closed=False):
+        if self.is_closed and not ignore_closed: return False
         return user in self.other_organizers.all() or \
                self.administration_units.filter(board_members=user).exists()
 

@@ -475,7 +475,7 @@ class User(AbstractBaseUser):
         events += self.participated_in_events.all()
         events += self.events_where_was_organizer.all()
         for event in events:
-            if event.has_edit_permission(user):
+            if event.has_edit_permission(user, ignore_closed=True):
                 return True
 
     def update_roles(self):
