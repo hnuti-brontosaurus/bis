@@ -1,4 +1,4 @@
-.PHONY: build run dev_mac dev_wsl dev_linux no_python_mac no_python_wsl no_python_linux test test_wsl clean submodule_checkout_next submodule_update gen_dev_dockercompose_file open_cypress_wsl prepare_test_env startup_testing backend frontend test_backend test_frontend startup_testing_frontend
+.PHONY: build run dev_mac dev_wsl dev_linux no_python_mac no_python_wsl no_python_linux test test_wsl clean submodule_checkout_next submodule_update gen_dev_dockercompose_file open_cypress_wsl prepare_test_env startup_testing backend frontend test_backend test_frontend startup_testing_frontend init_test_db
 
 define with_os
 if [ "$(shell uname)" = "Darwin" ]; then		                                           \
@@ -147,3 +147,10 @@ open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 
 clean:
 	docker-compose down -t 0 --remove-orphans
+
+
+init_test_db:
+	$(call compose_with_trap,                                                              \
+		-f docker-compose/dev_$$OS.yaml run backend sh docker-entrypoint.sh manage migrate)
+	$(call compose_with_trap,                                                              \
+		-f docker-compose/dev_$$OS.yaml run backend sh docker-entrypoint.sh manage testing_db)
