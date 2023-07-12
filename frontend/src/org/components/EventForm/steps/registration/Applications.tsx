@@ -23,6 +23,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
 import { NewApplicationModal } from './NewApplicationModal'
 import { ShowApplicationModal } from './ShowApplicationModal'
+import { EmailListModal } from './EmailListModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
 
 export const Applications: FC<{
@@ -45,6 +46,8 @@ export const Applications: FC<{
   const [showAddParticipantModal, setShowAddParticipantModal] =
     useState<boolean>(false)
   const [showShowApplicationModal, setShowShowApplicationModal] =
+    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] =
     useState<boolean>(false)
   const [highLightedRow, setHighlightedRow] = useState<number>()
   const [currentApplicationId, setCurrentApplicationId] = useState<number>()
@@ -284,6 +287,14 @@ export const Applications: FC<{
             Tiskni prezenční listinu
           </Button>
           <Button
+            secondary
+            small
+            type="button"
+            onClick={() => setShowEmailListModal(true)}
+          >
+            Zobraz seznam e-mailů
+          </Button>
+          <Button
             primary
             small
             type="button"
@@ -375,6 +386,19 @@ export const Applications: FC<{
           }}
           event={event}
         ></NewApplicationModal>
+
+        <EmailListModal
+          open={showEmailListModal}
+          onClose={() => {
+            setShowEmailListModal(false)
+          }}
+          lists={[
+            { users: applicationsPending, title: "E-maily všech přihlášených" },
+            { users: applicationsAccepted, title: "E-maily přijatých přihlášek" },
+            { users: applicationsRejected, title: "E-maily zamítnutých přihlášek" }
+          ]}
+          title="Výpis e-mailů přihlášek"
+        ></EmailListModal>
 
         {currentApplication && (
           <AddParticipantModal

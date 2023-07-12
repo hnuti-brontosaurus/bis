@@ -24,6 +24,7 @@ import { formatAddress, formatDateTime } from 'utils/helpers'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
 import { ShowApplicationModal } from './ShowApplicationModal'
+import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
 
 export const Participants: FC<{
@@ -57,6 +58,8 @@ export const Participants: FC<{
     api.endpoints.readEventParticipants.useQuery({ eventId, pageSize: 10000 })
 
   const [showShowApplicationModal, setShowShowApplicationModal] =
+    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] =
     useState<boolean>(false)
 
   const showMessage = useShowMessage()
@@ -279,6 +282,15 @@ export const Participants: FC<{
         <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
         </div>
+        {participants && participants?.results?.length > 0 && (
+          <Button
+            secondary
+            small
+            type="button"
+            onClick={() => setShowEmailListModal(true)}
+          >
+            Zobraz seznam e-mailů
+          </Button>)}
         <Button type="button" primary small onClick={handleClickNewParticipant}>
           Přidej nového účastníka
         </Button>
@@ -405,6 +417,16 @@ export const Participants: FC<{
           }
           participantsMap={participantsMap}
         ></ShowApplicationModal>
+      )}
+      {participants && participants?.results?.length > 0 && (
+        <EmailListModal
+          open={showEmailListModal}
+          onClose={() => {
+            setShowEmailListModal(false)
+          }}
+          lists={[{ users: participants.results, title: "E-maily účastníků" }]}
+          title="Výpis e-mailů"
+        ></EmailListModal>
       )}
     </div>
   )
