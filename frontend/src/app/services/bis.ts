@@ -173,7 +173,7 @@ export const api = createApi({
         params: {
           id: id?.join?.(','),
           _search_id: _search_id?.join?.(','),
-          page_size: params.pageSize?? ALL_USERS,
+          page_size: params.pageSize,
           ...params,
         },
       }),
