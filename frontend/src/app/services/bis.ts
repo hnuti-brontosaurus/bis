@@ -64,6 +64,8 @@ import type {
   UserSearch,
 } from './bisTypes'
 
+export const ALL_USERS = 2000;
+
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
   reducerPath: 'api',
@@ -171,6 +173,7 @@ export const api = createApi({
         params: {
           id: id?.join?.(','),
           _search_id: _search_id?.join?.(','),
+          page_size: params.pageSize?? ALL_USERS,
           ...params,
         },
       }),

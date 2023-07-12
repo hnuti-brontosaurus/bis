@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { skipToken } from '@reduxjs/toolkit/dist/query'
-import { api } from 'app/services/bis'
+import { ALL_USERS, api } from 'app/services/bis'
 import {
   EventApplication,
   User,
@@ -100,19 +100,19 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
 
   const { data: userOptions1, isFetching: isOptionsLoading1 } =
     api.endpoints.readUsers.useQuery({
-      search: `${defaultUserData.first_name} ${defaultUserData.last_name}`,
+      search: `${defaultUserData.first_name} ${defaultUserData.last_name}`, pageSize: ALL_USERS
     })
 
   const { data: userOptions2, isFetching: isOptionsLoading2 } =
     api.endpoints.readUsers.useQuery({
-      search: `${defaultUserData.email?.split('@')[0]}`,
+      search: `${defaultUserData.email?.split('@')[0]}`, pageSize: ALL_USERS
     })
 
   const { data: userOptions3, isFetching: isOptionsLoading3 } =
     api.endpoints.readUsers.useQuery(
       defaultUserData && defaultUserData.nickname
         ? {
-            search: `${defaultUserData.nickname}`,
+            search: `${defaultUserData.nickname}`, pageSize: ALL_USERS
           }
         : skipToken,
     )

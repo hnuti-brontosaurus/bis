@@ -1,5 +1,5 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
-import { api } from 'app/services/bis'
+import { ALL_USERS, api } from 'app/services/bis'
 import {
   Actions,
   Breadcrumbs,
@@ -54,7 +54,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
 
   const { data: participants } = api.endpoints.readUsers.useQuery(
     event.record?.participants && event.record.participants.length > 0
-      ? { id: event.record.participants }
+      ? { id: event.record.participants, pageSize: ALL_USERS }
       : skipToken,
   )
 
