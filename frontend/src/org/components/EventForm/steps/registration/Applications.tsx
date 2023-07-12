@@ -385,9 +385,9 @@ export const Applications: FC<{
             setShowEmailListModal(false)
           }}
           lists={[
-            { users: applicationsPending, title: "E-maily přihlášených" },
-            { users: applicationsAccepted, title: "E-maily přijatých" },
-            { users: applicationsRejected, title: "E-maily zamítnutých" }
+            { users: applicationsPending, title: "E-maily všech přihlášených" },
+            { users: applicationsAccepted, title: "E-maily přijatých přihlášek" },
+            { users: applicationsRejected, title: "E-maily zamítnutých přihlášek" }
           ]}
           title="Výpis e-mailů přihlášek"
         ></EmailListModal>
