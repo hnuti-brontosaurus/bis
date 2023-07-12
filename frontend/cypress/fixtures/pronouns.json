@@ -1,0 +1,10 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    { "id": 1, "name": "Ona", "slug": "she" },
+    { "id": 2, "name": "On", "slug": "he" },
+    { "id": 3, "name": "Jiné", "slug": "other" }
+  ]
+}

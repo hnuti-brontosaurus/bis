@@ -1,0 +1,110 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+@mixin basic-button {
+  border-radius: 8px;
+  padding: 4px 32px;
+  cursor: pointer;
+  text-align: center;
+  min-height: 44px;
+  font-size: 1rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  @include media.for-phone-only {
+    padding: 4px 4px;
+  }
+}
+
+@mixin small-button {
+  padding: 2px 4px;
+}
+
+@mixin primary-button {
+  color: white;
+  background-color: colors.$bronto;
+  border: 3px solid colors.$bronto;
+  &:hover {
+    background-color: colors.$bronto-500;
+  }
+}
+
+@mixin secondary-button {
+  background-color: white;
+  border: 3px solid colors.$bronto;
+  color: black;
+  &:hover {
+    background-color: colors.$bronto-super-light;
+  }
+}
+
+@mixin tertiary-button {
+  color: colors.$bronto;
+  background-color: none;
+  text-decoration: underline;
+  border-radius: unset;
+  padding: 0px;
+  border: 0;
+  &:hover {
+    color: colors.$bronto-500;
+    text-decoration: none;
+  }
+}
+
+.button {
+  @include basic-button;
+  .icon {
+    color: colors.$bronto;
+    width: 30px;
+  }
+}
+
+.smallButton {
+  @include small-button;
+}
+
+.primary {
+  @include primary-button;
+}
+
+.secondary {
+  @include secondary-button;
+}
+
+.tertiary {
+  @include tertiary-button;
+}
+
+.danger {
+  background-color: colors.$error;
+  color: black;
+  &:hover {
+    background-color: colors.$error-400;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  color: colors.$gray-400;
+  background-color: colors.$gray-100;
+  border-color: colors.$gray-300;
+}
+
+:global .opportunitySection {
+  :local .primary {
+    background-color: colors.$opportunities;
+    border-color: colors.$opportunities;
+    &:hover {
+      background-color: colors.$opportunities-400;
+    }
+  }
+
+  :local .secondary {
+    border-color: colors.$opportunities;
+    &:hover {
+      background-color: colors.$opportunities-light;
+    }
+  }
+}

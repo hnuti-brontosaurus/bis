@@ -1,0 +1,38 @@
+@use 'styles/colors';
+
+$opacity: 0.85;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.container {
+  padding: 1rem;
+  background-color: rgba(#ddd, $opacity);
+  opacity: 0.95;
+}
+
+.success {
+  background-color: colors.$bronto-light;
+}
+
+.error {
+  background-color: colors.$error-light;
+  margin: 1rem;
+}
+
+.info {
+  background-color: rgba(blue, $opacity);
+}
+
+.warning {
+  background-color: rgba(orange, $opacity);
+}
+
+.detail {
+  white-space: pre-wrap;
+}

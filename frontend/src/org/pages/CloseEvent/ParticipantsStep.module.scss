@@ -1,0 +1,68 @@
+@use 'styles/colors';
+@use 'styles/media';
+@use 'components/Button/Button.module' as button;
+
+.inputTypeOptions {
+  margin: 0;
+  margin-bottom: -12px;
+  width: 100%;
+}
+
+.tabFrame {
+  border: solid 3px colors.$gray-200;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top: none;
+  width: 100%;
+  margin-top: -4px;
+}
+
+.changeEvedenceNavigation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: baseline;
+
+  @include media.for-tablet-landscape-up {
+    flex-direction: row;
+  }
+  .textPart {
+    display: flex;
+    flex-direction: row;
+
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    .icon {
+      width: 50px;
+    }
+
+    .customEvidenceHeader {
+      font-size: 1rem;
+      @include media.for-tablet-landscape-up {
+        font-size: 1.2rem;
+      }
+      @include media.for-desktop-up {
+        font-size: 1.5rem;
+      }
+      @include media.for-medium-desktop-up {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .button {
+    @include button.tertiary-button();
+    height: unset;
+    padding: 0;
+  }
+}
+
+.smallIcon {
+  background-color: colors.$bronto;
+  svg {
+    path {
+      fill: white;
+    }
+  }
+}

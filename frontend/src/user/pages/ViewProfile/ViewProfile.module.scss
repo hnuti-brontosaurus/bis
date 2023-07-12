@@ -1,0 +1,25 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  table.horizontalTable {
+    th {
+      padding-right: 1rem;
+      text-align: right;
+    }
+    th,
+    td {
+      vertical-align: top;
+    }
+  }
+
+  // copy-pasted from ViewEvent.module.scss
+  .data {
+    margin: 1rem 0;
+    padding: 1rem;
+    max-width: 100%;
+    overflow: scroll;
+    background-color: #eee;
+  }
+}

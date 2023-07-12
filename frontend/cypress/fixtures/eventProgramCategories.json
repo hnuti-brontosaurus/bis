@@ -1,0 +1,47 @@
+{
+  "count": 8,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Akce památky",
+      "slug": "monuments"
+    },
+    {
+      "id": 2,
+      "name": "Akce příroda",
+      "slug": "nature"
+    },
+    {
+      "id": 3,
+      "name": "BRĎO",
+      "slug": "kids"
+    },
+    {
+      "id": 4,
+      "name": "Ekostan",
+      "slug": "eco_tent"
+    },
+    {
+      "id": 5,
+      "name": "PsB (Prázdniny s Brontosaurem = vícedenní letní akce)",
+      "slug": "holidays_with_brontosaurus"
+    },
+    {
+      "id": 6,
+      "name": "Vzdělávání",
+      "slug": "education"
+    },
+    {
+      "id": 7,
+      "name": "Mezinárodní",
+      "slug": "international"
+    },
+    {
+      "id": 8,
+      "name": "Žádný",
+      "slug": "none"
+    }
+  ]
+}

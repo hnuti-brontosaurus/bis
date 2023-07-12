@@ -1,0 +1,17 @@
+@use 'styles/colors';
+
+.trigger {
+  color: colors.$bronto;
+  padding: 0.1rem;
+  &:hover {
+    background-color: colors.$bronto-light;
+    border-radius: 50px;
+  }
+}
+
+.tooltip {
+  ul {
+    list-style-type: disc;
+    margin: 1rem 2rem;
+  }
+}

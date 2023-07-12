@@ -1,0 +1,8 @@
+{
+  "schemaFile": "https://dev.bis.brontosaurus.cz/api/schema/",
+  "apiFile": "./emptyApi.ts",
+  "apiImport": "emptySplitApi",
+  "outputFile": "./testApi.ts",
+  "exportName": "testApi",
+  "hooks": true
+}

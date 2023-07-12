@@ -1,0 +1,28 @@
+@use 'styles/colors';
+
+:export {
+  error: colors.$error;
+  error-light: colors.$error-light;
+
+  bronto: colors.$bronto;
+  bronto-light: colors.$bronto-light;
+  bronto-super-light: colors.$bronto-super-light;
+  opportunities: colors.$opportunities;
+  opportunitiesLight: colors.$opportunities-light;
+
+  create-event-main: colors.$bronto;
+  close-event-main: colors.$close-event-main;
+  edit-event-main: colors.$edit-event-main;
+  opportunities-main: colors.$opportunities-light;
+
+  edit: colors.$edit;
+
+  gray100: colors.$gray-100;
+  gray200: colors.$gray-200;
+  gray300: colors.$gray-300;
+  gray400: colors.$gray-400;
+  gray500: colors.$gray-500;
+
+  yellow: colors.$yellow;
+  yellow300: colors.$yellow-300;
+}

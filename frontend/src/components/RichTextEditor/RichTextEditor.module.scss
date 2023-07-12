@@ -1,0 +1,29 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.wrapper {
+  border: 2px solid #ebeff4;
+  border-radius: 10px;
+  overflow: hidden;
+  @include media.for-phone-only {
+    min-height: 250px;
+  }
+
+  &::placeholder {
+    color: colors.$gray-200;
+    font-size: 0.875rem;
+  }
+
+  :global .ql-toolbar {
+    color: black;
+    border: none;
+    border-bottom: 2px solid #ebeff4;
+  }
+  :global .ql-container {
+    border: none;
+  }
+
+  :global .ql-editor {
+    min-height: 4rem;
+  }
+}

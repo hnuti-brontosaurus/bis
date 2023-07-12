@@ -1,0 +1,125 @@
+@use 'styles/media';
+@use 'styles/colors';
+
+@mixin link-highlight {
+  color: colors.$bronto;
+  transition: color 0.2s ease;
+}
+
+.container {
+  display: flex;
+  position: relative;
+  @include media.for-tablet-portrait-up {
+    padding: 0 1.5rem;
+    margin-top: 0.5rem;
+    height: 4rem;
+  }
+  align-items: stretch;
+  .spacer {
+    flex: auto;
+  }
+
+  .logoWrapper {
+    flex: 0 0 auto;
+  }
+
+  margin: 0 0.5rem;
+  .logoMini {
+    display: initial;
+    height: 3rem;
+    margin: 0;
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .profileName {
+    display: none;
+  }
+
+  @include media.for-tablet-portrait-up {
+    margin: 0;
+    .profileName {
+      display: block;
+    }
+  }
+
+  @include media.for-tablet-landscape-up {
+    .logoMini {
+      display: none;
+    }
+    .logo {
+      display: block;
+      height: 4rem;
+      margin: 1rem;
+    }
+  }
+
+  button,
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    height: 100%;
+    border-radius: 0;
+    @include media.for-phone-only {
+      padding: 0.5rem;
+    }
+  }
+
+  .menuButton {
+    gap: 0.5rem;
+    font-weight: 400;
+    &:hover {
+      @include link-highlight;
+    }
+  }
+
+  .menuButtonOpen {
+    color: colors.$bronto;
+  }
+
+  .menuItemCustom {
+    color: black;
+    // stops background flickering on hover
+    background-color: white !important;
+    &:hover {
+      @include link-highlight;
+    }
+
+    &:hover {
+      // stops default background color on hover
+      background-color: white !important;
+    }
+  }
+
+  .menuItemProfileData {
+    color: black;
+    font-weight: 400;
+    padding: 0;
+    // stops background flickering on hover
+    background-color: white !important;
+    .menuUserInfo {
+      flex-direction: column;
+      .menuEmail {
+        padding: 0;
+      }
+      .menuName {
+        font-weight: 600;
+        padding: 0;
+        justify-content: center;
+      }
+
+      &:hover {
+        .menuName {
+          @include link-highlight;
+        }
+        .menuEmail {
+          color: black !important;
+        }
+      }
+    }
+  }
+}

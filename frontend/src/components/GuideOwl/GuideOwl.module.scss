@@ -1,0 +1,174 @@
+@use 'styles/media';
+
+.guideOwl {
+  position: fixed;
+  bottom: 2rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  z-index: 10000;
+  &.left {
+    .close {
+      right: unset;
+      left: 0;
+    }
+    #owlGuideIcon {
+      order: 1;
+      transform: scaleX(-1);
+      display: flex;
+    }
+    #desktopBubbleOwlGuide {
+      order: 2;
+    }
+    right: unset;
+    left: 0.5rem;
+    .bubble {
+      margin-right: unset;
+      margin-left: 0rem;
+    }
+  }
+
+  .bubble {
+    margin-right: 0rem;
+    .content {
+      position: absolute;
+      top: 1.5rem;
+      left: 1rem;
+      width: 200px;
+      height: fit-content;
+      display: inline;
+      align-items: center;
+      justify-content: center;
+      padding: 0rem;
+      z-index: 300;
+    }
+  }
+
+  .owl {
+    width: 130px;
+    height: 130px;
+    z-index: 1;
+  }
+  .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    cursor: pointer;
+  }
+}
+
+.animatingOwl {
+  animation: owl-main-animation 800ms ease-in-out 1;
+}
+
+.hiddenOwlContainer {
+  position: fixed;
+  bottom: calc(100px + 8rem);
+  right: 40px;
+  z-index: 10000;
+  transform: rotate(-90deg);
+
+  &.left {
+    right: unset;
+    left: 40px;
+
+    .hiddenOwl {
+      transform: scaleY(-1);
+      top: unset;
+      bottom: -25px;
+    }
+  }
+  .hiddenOwl {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    z-index: 1;
+    cursor: pointer;
+    /* Add this to hide half of the owl behind the viewport */
+    clip-path: inset(0 0 25% 0);
+  }
+  &.animating {
+    animation: owl-animation 1000ms ease-in-out 1;
+  }
+}
+
+@keyframes owl-animation {
+  0% {
+    transform: rotate(-90deg) translateY(0px);
+  }
+  25% {
+    transform: rotate(-90deg) translateY(-10px);
+  }
+  50% {
+    transform: rotate(-90deg) translateY(10px);
+  }
+  75% {
+    transform: rotate(-90deg) translateY(-10px);
+  }
+  85% {
+    transform: rotate(-90deg) translateY(10px);
+  }
+  100% {
+    transform: rotate(-90deg) translateY(90px);
+  }
+}
+
+@keyframes owl-main-animation {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0%;
+  }
+  50% {
+    opacity: 0%;
+  }
+  75% {
+    opacity: 40%;
+  }
+  85% {
+    opacity: 80%;
+  }
+  85% {
+    opacity: 100%;
+  }
+}
+
+.mobileContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 11000;
+
+  .mobileBubble {
+    width: 85%;
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px 32px 10px 8px;
+    position: relative;
+    .mobileBubbleClose {
+      position: absolute;
+      top: 4px;
+      right: 8px;
+    }
+  }
+}
+
+.desktopContainer {
+  display: none;
+}
+
+@include media.for-tablet-landscape-up {
+  .mobileContainer {
+    display: none;
+  }
+  .desktopContainer {
+    display: flex;
+  }
+}

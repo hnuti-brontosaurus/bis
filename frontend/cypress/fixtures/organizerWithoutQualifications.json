@@ -1,0 +1,16 @@
+{
+  "id": "0419781d-06ba-432b-8617-797ea14cf824",
+  "roles": [
+    {
+      "id": 1,
+      "name": "asdf",
+      "slug": "organizer"
+    }
+  ],
+  "qualifications": [],
+  "first_name": "NotQualified",
+  "last_name": "Organizer",
+  "nickname": "Nickname",
+  "display_name": "Nickname (FirstName LastName)",
+  "birthday": "2000-01-11"
+}

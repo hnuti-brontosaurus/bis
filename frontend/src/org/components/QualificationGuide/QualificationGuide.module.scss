@@ -1,0 +1,7 @@
+@use 'styles/colors';
+
+.link {
+  color: colors.$bronto;
+  cursor: pointer;
+  text-decoration: underline;
+}

@@ -1,0 +1,42 @@
+$error: rgb(247, 100, 100);
+$error-400: darken($error, 10);
+$error-light: #f8d5d4;
+
+$bronto-500: rgb(0, 94, 0);
+$bronto-400: #080;
+$bronto-300: #b8f3d7;
+$bronto-200: #beecd5;
+$bronto-100: #dcf5e8;
+$bronto-light: $bronto-200;
+$bronto-super-light: $bronto-100;
+
+$bronto: $bronto-400;
+
+$opportunities-100: #d8e6ed;
+$opportunities-200: #92c3db;
+$opportunities-300: #3f7089;
+$opportunities-400: #24536b;
+$opportunities-500: #0f2936;
+
+$opportunities: $opportunities-300;
+$opportunities-light: $opportunities-100;
+
+$create-event-main: $bronto;
+$close-event-main: #6dd6a3;
+$edit-event-main: #fa7c79;
+$opportunities-main: $opportunities-light;
+
+$edit: #fae572;
+
+$gray-100: rgb(244, 248, 250);
+$gray-200: rgb(226, 233, 238);
+$gray-250: rgb(196, 193, 193);
+$gray-300: rgb(152, 160, 163);
+$gray-400: rgb(102, 112, 116);
+$gray-500: rgb(55, 58, 63);
+
+$yellow-300: rgb(248, 224, 9);
+$yellow: $yellow-300;
+
+$gray-blue: #ebeff4;
+$black: #000000;

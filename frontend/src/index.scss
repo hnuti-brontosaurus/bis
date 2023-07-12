@@ -1,0 +1,49 @@
+@import-normalize;
+@import 'styles/preflight.css';
+// fix some production style inconsistencies
+button,
+fieldset,
+input[type='submit'],
+input[type='reset'] {
+  border: none;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // TODO: decide font
+  // font-family: 'Montserrat', sans-serif;
+  // font-family: 'Arimo', sans-serif;
+
+  // font-family: 'Libre Franklin', sans-serif;
+
+  // font-family: 'Montserrat', sans-serif;
+
+  // te na dole ok
+  font-family: 'Karla', sans-serif;
+
+  // font-family: 'Mulish', sans-serif;
+}
+
+// this is here to make flex layout working
+#root {
+  height: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+@import 'styles/menu';
+@import 'styles/forms';

@@ -1,0 +1,11 @@
+@use 'components/Button/Button.module' as button;
+
+.importButton {
+  input {
+    display: none;
+  }
+
+  @include button.basic-button();
+  @include button.secondary-button();
+  @include button.small-button();
+}

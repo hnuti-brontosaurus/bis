@@ -1,0 +1,34 @@
+@use 'styles/colors';
+
+.selectObject {
+  > div {
+    border: 2px solid colors.$bronto-light;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  &:focus-within {
+    > div {
+      border: 2px solid black !important;
+      box-shadow: none;
+    }
+  }
+  &:hover {
+    > div {
+      border: 2px solid colors.$bronto-light;
+      box-shadow: none;
+    }
+  }
+}
+
+.opportunitiesTheme {
+  > div {
+    border-color: colors.$opportunities-light;
+  }
+
+  &:hover {
+    > div {
+      border-color: colors.$opportunities-light;
+    }
+  }
+}

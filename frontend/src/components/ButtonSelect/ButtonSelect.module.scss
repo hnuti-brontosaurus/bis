@@ -1,0 +1,135 @@
+@use 'components/FormLayout/FormLayout.module' as formLayout;
+@use 'styles/colors';
+@use 'styles/media';
+
+.group {
+  @include formLayout.actions;
+  width: 100%;
+  margin: 0;
+  gap: 0;
+}
+.buttonSelect {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: colors.$gray-300;
+  width: 100%;
+  gap: 4px;
+  margin-top: -3px;
+  @include media.for-tablet-landscape-up {
+    width: calc(100% / 3);
+    font-size: 1.2rem;
+  }
+
+  .input {
+    display: none;
+    &::before {
+      display: none;
+    }
+
+    // style label of checked input
+    &:checked + .label {
+      color: black;
+      @include media.for-tablet-landscape-up {
+        border-bottom: 0;
+      }
+      .icon {
+        background-color: colors.$bronto-300;
+        transition: ease-in 200ms;
+
+        svg {
+          @include media.for-tablet-landscape-up {
+            width: 70px;
+            height: 70px;
+            transition: ease-in 200ms;
+          }
+
+          path {
+            fill: black;
+          }
+        }
+      }
+    }
+    &:not(:checked) + .label {
+      color: colors.$gray-300;
+
+      .icon {
+        transition: ease-in 200ms;
+        svg {
+          path {
+            fill: colors.$gray-300;
+          }
+        }
+      }
+    }
+  }
+
+  color: black;
+  .label {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    color: black;
+    width: 100%;
+    justify-content: center;
+    cursor: pointer;
+    gap: 8px;
+    border: 3px solid colors.$gray-200;
+    border-left: 0;
+    border-right: 0;
+    @include media.for-tablet-landscape-up {
+      gap: 16px;
+      padding: 12px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border: 3px solid colors.$gray-200;
+    }
+
+    .icon {
+      border-radius: 50%;
+      display: flex;
+      height: 50px;
+      width: 50px;
+
+      align-items: center;
+      justify-content: center;
+      @include media.for-tablet-landscape-up {
+        width: 100px;
+        height: 100px;
+        margin: 10px;
+      }
+      svg {
+        path {
+          fill: black;
+        }
+        width: 30px;
+        height: 30px;
+
+        @include media.for-tablet-landscape-up {
+          width: 50px;
+          height: 50px;
+        }
+        transition: ease-in 200ms;
+      }
+    }
+    .labelText {
+      width: 70%;
+      text-align: center;
+      @include media.for-tablet-landscape-up {
+        width: unset;
+      }
+    }
+  }
+  &:hover {
+    .icon {
+      background-color: colors.$gray-100;
+      svg {
+        @include media.for-tablet-landscape-up {
+          width: 70px;
+          height: 70px;
+          transition: ease-in 200ms;
+        }
+      }
+    }
+  }
+}

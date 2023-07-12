@@ -1,0 +1,96 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+  th,
+  td {
+    padding: 0.5rem;
+  }
+  thead {
+    th {
+      border-bottom: 1px solid #737373;
+      text-align: left;
+    }
+  }
+  tbody tr td {
+    border-bottom: 1px solid #d9d9d9;
+  }
+  &.verticalLine1 {
+    tbody tr td:first-child {
+      border-right: 1px solid #d9d9d9;
+      text-align: center;
+    }
+  }
+}
+
+.inProgress {
+  color: colors.$bronto-light;
+}
+
+.finished {
+  color: colors.$bronto;
+}
+
+.closed {
+  color: black;
+}
+
+.canceled {
+  color: colors.$error;
+}
+
+:global .tableEvents {
+  tr {
+    cursor: pointer;
+    &:hover {
+      background-color: colors.$gray-100;
+    }
+  }
+
+  thead {
+    tr {
+      &:hover {
+        cursor: auto;
+        background-color: white;
+      }
+    }
+  }
+
+  tr {
+    td,
+    th {
+      &:first-of-type {
+        width: 80px;
+      }
+      &:last-of-type {
+        width: 80px;
+      }
+    }
+  }
+
+  .cellWithButton {
+    svg {
+      display: block;
+      margin: auto !important;
+    }
+  }
+}
+
+:global .cellWithButtonMenuIcon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  &:hover {
+    background-color: colors.$gray-200;
+    border-radius: 50%;
+  }
+}
+
+:global .mobileHiddenCell {
+  display: none;
+  @include media.for-tablet-landscape-up {
+    display: table-cell;
+  }
+}

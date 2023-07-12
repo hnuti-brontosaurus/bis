@@ -1,0 +1,110 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+// we use this to style content under this header
+// to set similar margins as header
+.listContent {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+
+  @include media.for-phone-only {
+    // padding-left: 35px;
+    // padding-right: 35px;
+    // on phone we want to save as much space as possible for the table
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  // @include media.for-tablet-portrait-up {
+  //   padding-left: 70px;
+  //   padding-right: 70px;
+  // }
+
+  @include media.for-desktop-up {
+    padding-left: 8rem;
+    padding-right: 8rem;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  // TODO let's make the spacing of header more responsive
+  // e.g. some form of max-width
+  padding: 2rem 8rem 4rem;
+
+  @include media.for-phone-only {
+    padding-left: 35px;
+    padding-right: 35px;
+  }
+
+  // @include media.for-tablet-portrait-up {
+  //   padding-left: 70px;
+  //   padding-right: 70px;
+  // }
+
+  @include media.for-desktop-up {
+    padding-left: 8rem;
+    padding-right: 8rem;
+  }
+
+  position: relative;
+
+  // themes
+  background-color: colors.$close-event-main;
+  color: white;
+  &.createEvent {
+    background-color: colors.$create-event-main;
+  }
+  &.editEvent {
+    background-color: colors.$edit-event-main;
+  }
+  &.closeEvent {
+    background-color: colors.$close-event-main;
+  }
+  &.opportunities {
+    background-color: colors.$opportunities-main;
+    color: black;
+
+    .headerActionButton:hover {
+      border-color: colors.$opportunities;
+    }
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .headerActionButton {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    margin: 2px;
+    background-color: white;
+    border-radius: 4rem;
+    box-sizing: content-box;
+    &:hover {
+      border: 2px solid colors.$bronto;
+      margin: 0;
+    }
+    color: black;
+  }
+
+  .tabs {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    bottom: 0;
+    .tab {
+      &.active {
+        font-weight: bold;
+
+        border-bottom: 5px solid white;
+      }
+    }
+  }
+}

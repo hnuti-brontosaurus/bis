@@ -1,0 +1,10 @@
+@use 'styles/sizes';
+
+.map {
+  height: sizes.$map-height;
+  width: sizes.$map-width;
+
+  img {
+    max-width: initial;
+  }
+}

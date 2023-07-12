@@ -1,0 +1,25 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Organizování akcí",
+      "description": "Příležitosti organizovat či pomáhat s pořádáním našich akcí.",
+      "slug": "organizing"
+    },
+    {
+      "id": 2,
+      "name": "Spolupráce",
+      "description": "Příležitosti ke spolupráci na chodu a rozvoji Hnutí Brontosaurus.",
+      "slug": "collaboration"
+    },
+    {
+      "id": 3,
+      "name": "Pomoc lokalitě",
+      "description": "Příležitosti k pomoci dané lokalitě, která to aktuálně potřebuje.",
+      "slug": "location_help"
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "id": 2000,
+  "name": "Test",
+  "start": "2123-03-08",
+  "start_time": null,
+  "end": "2123-03-08",
+  "duration": 1,
+  "location": {
+    "name": "Location",
+    "description": "description",
+    "patron": null,
+    "program": {
+      "id": 2,
+      "name": "APAM - Akce památky",
+      "slug": "monuments"
+    },
+    "accessibility_from_prague": {
+      "id": 2,
+      "name": "Středně obtížná (1,5-3h)",
+      "slug": "ok"
+    },
+    "accessibility_from_brno": {
+      "id": 2,
+      "name": "Středně obtížná (1,5-3h)",
+      "slug": "ok"
+    },
+    "volunteering_work": "",
+    "volunteering_work_done": "",
+    "volunteering_work_goals": "",
+    "options_around": "",
+    "facilities": "",
+    "address": "",
+    "gps_location": {
+      "type": "Point",
+      "coordinates": [15.3, 49.9]
+    },
+    "region": "Středočeský kraj",
+    "photos": []
+  },
+  "group": {
+    "id": 3,
+    "name": "Ostatní",
+    "slug": "other"
+  },
+  "category": {
+    "id": 4,
+    "name": "Veřejná - Dobrovolnická",
+    "slug": "public__volunteering"
+  },
+  "program": {
+    "id": 8,
+    "name": "Žádný",
+    "slug": "none"
+  },
+  "intended_for": {
+    "id": 1,
+    "name": "pro všechny",
+    "slug": "for_all"
+  },
+  "administration_units": ["Test"],
+  "propagation": {
+    "minimum_age": 0,
+    "maximum_age": 120,
+    "cost": "0",
+    "accommodation": "",
+    "working_days": null,
+    "working_hours": 5,
+    "diets": [],
+    "organizers": "Test1 a Test2",
+    "web_url": "",
+    "invitation_text_introduction": "<p>asdf</p>",
+    "invitation_text_practical_information": "<p>asdf</p>",
+    "invitation_text_work_description": "<p>asdf</p>",
+    "invitation_text_about_us": "",
+    "contact_name": "Test1",
+    "contact_phone": "",
+    "contact_email": "test1@example.com",
+    "images": []
+  },
+  "registration": {
+    "is_registration_required": true,
+    "is_event_full": false,
+    "questionnaire": {
+      "introduction": "asdf",
+      "after_submit_text": "asdf",
+      "questions": [
+        {
+          "id": 4,
+          "question": "Question 1 (text)",
+          "data": {
+            "type": "text"
+          },
+          "is_required": true,
+          "order": 0
+        },
+        {
+          "id": 3,
+          "question": "Question 2 (radio)",
+          "data": {
+            "type": "radio",
+            "options": [
+              {
+                "option": "Option 1"
+              },
+              {
+                "option": "Option 2"
+              }
+            ]
+          },
+          "is_required": false,
+          "order": 1
+        },
+        {
+          "id": 5,
+          "question": "Question 3 (checkbox)",
+          "data": {
+            "type": "checkbox",
+            "options": [
+              {
+                "option": "Option 1"
+              },
+              {
+                "option": "Option 2"
+              },
+              {
+                "option": "Option 3"
+              }
+            ]
+          },
+          "is_required": true,
+          "order": 2
+        },
+        {
+          "id": 6,
+          "question": "Question 4 (text)",
+          "data": {
+            "type": "text"
+          },
+          "is_required": false,
+          "order": 3
+        }
+      ]
+    },
+    "alternative_registration_link": ""
+  }
+}

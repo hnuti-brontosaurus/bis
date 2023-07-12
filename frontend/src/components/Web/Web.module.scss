@@ -1,0 +1,14 @@
+@use 'styles/colors';
+
+.tag {
+  border: 2px solid colors.$bronto;
+  color: colors.$bronto;
+  font-size: x-small;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 32px;
+  padding: 2px 4px;
+  vertical-align: super;
+  height: 1rem;
+}

@@ -1,0 +1,99 @@
+@use 'styles/colors';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .importPart {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+.header {
+  font-size: 1.2rem;
+  text-align: left;
+  width: 100%;
+}
+.inputLine {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  justify-content: space-between;
+  align-items: center;
+  input {
+    max-width: 170px;
+  }
+}
+
+.contactTable {
+  overflow: hidden;
+  table-layout: fixed;
+  max-width: 1000px;
+  th,
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+      overflow: visible;
+    }
+
+    &:last-child {
+      width: 80px !important;
+      button {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  td {
+    padding: 0;
+    height: 48px;
+    position: relative;
+
+    &.error {
+      input {
+        border-color: colors.$error !important;
+      }
+    }
+    .errorMessage {
+      padding-left: 0.25rem;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: left;
+      font-size: smaller;
+      color: colors.$error;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    input {
+      border: 2px solid #0000;
+      background: none;
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      padding: 8px;
+
+      &:focus {
+        border-color: colors.$bronto-light;
+      }
+    }
+  }
+}
+
+.emptyTable {
+  width: 100%;
+  padding: 10px 0;
+}

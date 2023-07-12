@@ -1,0 +1,33 @@
+{
+  "id": 100,
+  "name": "Test Lokalita",
+  "description": "Test description",
+  "patron": null,
+  "contact_person": null,
+  "for_beginners": false,
+  "is_full": false,
+  "is_unexplored": true,
+  "program": { "id": 2, "name": "APAM - Akce památky", "slug": "monuments" },
+  "accessibility_from_prague": {
+    "id": 2,
+    "name": "Středně obtížná (1,5-3h)",
+    "slug": "ok"
+  },
+  "accessibility_from_brno": {
+    "id": 3,
+    "name": "Obtížná (více než 3h)",
+    "slug": "bad"
+  },
+  "volunteering_work": "whatever",
+  "volunteering_work_done": "",
+  "volunteering_work_goals": "",
+  "options_around": "",
+  "facilities": "",
+  "web": "",
+  "address": "",
+  "gps_location": {
+    "type": "Point",
+    "coordinates": [14.95, 49.95]
+  },
+  "region": { "id": 2, "name": "Středočeský kraj" }
+}

@@ -1,0 +1,54 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.header {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+// styling of the information about event (date, location)
+.infoBox {
+  margin: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  > * {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
+
+// styling of messages before and after event
+.info {
+  white-space: pre-wrap;
+  background-color: colors.$bronto;
+  color: white;
+  font-weight: bold;
+  padding: 1rem;
+}
+
+.answerBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  textArea {
+    width: 100%;
+    @include media.for-tablet-landscape-up {
+      width: 500px;
+    }
+  }
+}
+
+// when organizers put very long words into questions and options
+// try to display them a bit gracefully
+.questionWordWrap {
+  overflow-wrap: break-word;
+  max-width: 100%;
+  label {
+    overflow-wrap: break-word;
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "count": 9,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Konzultant",
+      "slug": "consultant",
+      "parents": []
+    },
+    {
+      "id": 2,
+      "name": "Instruktor",
+      "slug": "instructor",
+      "parents": [1]
+    },
+    {
+      "id": 3,
+      "name": "Organizátor (OHB)",
+      "slug": "organizer",
+      "parents": [2]
+    },
+    {
+      "id": 4,
+      "name": "Organizátor víkendovek (OvHB)",
+      "slug": "weekend_organizer",
+      "parents": [3]
+    },
+    {
+      "id": 5,
+      "name": "Konzultant Brďo",
+      "slug": "consultant_for_kids",
+      "parents": []
+    },
+    {
+      "id": 6,
+      "name": "Vedoucí Brďo",
+      "slug": "kids_leader",
+      "parents": [5]
+    },
+    {
+      "id": 7,
+      "name": "Praktikant Brďo",
+      "slug": "kids_intern",
+      "parents": [6]
+    },
+    {
+      "id": 8,
+      "name": "Hlavní vedoucí dětských táborů (HVDT)",
+      "slug": "main_leader_of_kids_camps",
+      "parents": []
+    },
+    {
+      "id": 9,
+      "name": "Organizátor nevzdělaný",
+      "slug": "organizer_without_education",
+      "parents": [4, 7]
+    }
+  ]
+}

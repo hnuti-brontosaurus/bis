@@ -1,0 +1,163 @@
+@use 'styles/media';
+@use 'styles/colors';
+
+.sectionGroup {
+  position: relative;
+  // these next two lines make sure flex cross axis won't stretch
+  width: 0;
+  min-width: 100%;
+  counter-reset: section;
+  border: 2px solid colors.$gray-200;
+  margin: 1rem 0 0;
+  padding: 1rem 2rem 1rem;
+  @include media.for-big-desktop-up {
+    padding: 2rem 2rem 4rem;
+    margin: 1rem 0;
+  }
+  gap: 1rem;
+  display: flex;
+  flex-grow: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section,
+.subsection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  @include media.for-big-desktop-up {
+    margin: 1rem 0;
+  }
+
+  header {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    @include media.for-phone-only {
+      margin-top: 0;
+    }
+  }
+}
+
+.subsection {
+  .subsection {
+    header {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.numberedHeader {
+  text-align: center;
+  // number for numbered headers
+  &::before {
+    content: counter(section);
+    counter-increment: section;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 5rem;
+    margin-right: 1.2rem;
+  }
+  @include media.for-phone-only {
+    font-size: 1.1rem !important;
+  }
+}
+
+[required] ~ label::after,
+.required::after {
+  content: '*';
+  color: colors.$error;
+  margin-left: 0.2rem;
+}
+
+.infoBox {
+  background-color: colors.$gray-blue;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  p {
+    margin: 1rem 0;
+    &:first-child {
+      margin-top: 0;
+    }
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  ul {
+    margin: 1rem 0 1rem 2rem;
+    list-style-type: disc;
+  }
+}
+
+// this must be a direct child of a Form[Sub[sub]]Section
+.fullSize {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  position: relative;
+  align-self: stretch;
+  min-width: 100%;
+  width: 0;
+  textarea,
+  input,
+  select {
+    display: block;
+    width: 100%;
+  }
+}
+
+.clearFullSize {
+  textarea,
+  input,
+  select {
+    display: initial;
+    width: initial;
+  }
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0;
+  column-gap: 1rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 0;
+  column-gap: 1.5rem;
+}
+
+@mixin actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-end;
+
+  @include media.for-phone-only {
+    // flex-direction: column-reverse;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+.actions {
+  @include actions;
+  margin: 1rem 0;
+  display: flex;
+}

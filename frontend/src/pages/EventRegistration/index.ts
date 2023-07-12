@@ -1,0 +1,1 @@
+export { EventRegistration } from './EventRegistration'

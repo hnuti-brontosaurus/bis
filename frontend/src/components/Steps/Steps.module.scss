@@ -1,0 +1,177 @@
+@use 'styles/colors';
+@use 'components/FormLayout/FormLayout.module' as formLayout;
+@use 'styles/media';
+
+.isHidden {
+  display: none;
+}
+
+$step-button-horizontal-padding: 0.5rem;
+$step-button-vertical-padding: 0.2rem;
+$step-button-border-width: 4px;
+$step-button-height: 1rem;
+$step-button-connect-height: 4px;
+$step-button-horizontal-gap: 1rem;
+$step-button-line-height: 1.5rem;
+$step-button-line-height-phone: 1rem;
+
+.navWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.actions {
+  @include formLayout.actions;
+}
+
+.navigation {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+  overflow: hidden;
+  margin-top: 0.1rem;
+  @include media.for-tablet-landscape-up {
+    margin-top: 0.3rem;
+  }
+  @include media.for-big-desktop-up {
+    gap: 0.2rem $step-button-horizontal-gap;
+  }
+  .stepButton {
+    line-height: $step-button-line-height;
+    white-space: nowrap;
+    padding: 0.1rem 0.5rem;
+    border: $step-button-border-width solid colors.$bronto-light;
+    background-color: colors.$bronto-light;
+    color: colors.$bronto;
+    border-radius: 2rem;
+    height: 44px;
+    font-size: 0.95rem;
+    @include media.for-big-desktop-up {
+      width: unset;
+      padding: $step-button-vertical-padding $step-button-horizontal-padding;
+    }
+    &::first-letter {
+      text-transform: uppercase;
+    }
+
+    &.isError {
+      border-color: colors.$error;
+    }
+    &:hover {
+      border-color: colors.$bronto;
+      transition: 220ms ease-in;
+    }
+    &.isActive {
+      background-color: colors.$bronto;
+      border-color: colors.$bronto;
+      transition: 220ms ease-in;
+      color: white;
+      &.isError {
+        border-color: colors.$error;
+        transition: 220ms ease-in;
+      }
+    }
+    // this connects step buttons with a line
+    &:not(:last-child):after {
+      z-index: -1;
+      content: '';
+      position: absolute;
+      background: colors.$bronto-light;
+      width: calc($step-button-horizontal-gap + 2px);
+      height: $step-button-connect-height;
+      transform: translateX(
+          calc(
+            $step-button-border-width + $step-button-horizontal-padding - 1px
+          )
+        )
+        translateY(
+          calc($step-button-line-height / 2 - $step-button-connect-height / 2)
+        );
+      @include media.for-phone-only {
+        width: 120px;
+        transform: translateX(0)
+          translateY(
+            calc(
+              $step-button-line-height-phone / 2 - $step-button-connect-height /
+                2
+            )
+          );
+      }
+    }
+
+    @include media.for-phone-only {
+      height: 36px;
+      line-height: $step-button-line-height-phone;
+      font-size: 1rem;
+      color: colors.$bronto;
+      padding: $step-button-vertical-padding 0.4rem;
+    }
+  }
+}
+
+.bottomNavigation {
+  position: relative;
+  display: flex;
+  left: 0;
+  margin: 1rem;
+  z-index: 10000;
+  width: calc(100% - 2rem);
+  .spacer {
+    flex: auto;
+  }
+  button {
+    background-color: transparent;
+  }
+  @include media.for-tablet-landscape-up {
+    display: none;
+  }
+}
+
+.topActions {
+  display: none;
+}
+// TODO: fix that
+@include media.for-medium-desktop-up {
+  .topActions {
+    display: flex;
+  }
+}
+
+.floatingStepArrow {
+  width: 60px;
+  height: 60px;
+  path {
+    fill: colors.$bronto-300;
+  }
+  &:hover {
+    path {
+      fill: colors.$bronto-300;
+    }
+  }
+}
+.buttonNavigationLeftBigScreen {
+  display: none;
+  @include media.for-tablet-landscape-up {
+    display: block;
+    position: fixed;
+    top: 50%;
+    left: 1rem;
+    opacity: 60%;
+    background-color: transparent;
+  }
+}
+.buttonNavigationRightBigScreen {
+  display: none;
+  @include media.for-tablet-landscape-up {
+    display: block;
+    position: fixed;
+    top: 50%;
+    right: 1rem;
+    opacity: 60%;
+    background-color: transparent;
+  }
+}

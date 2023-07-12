@@ -1,0 +1,66 @@
+@use 'styles/colors';
+
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+}
+
+.formContainer {
+  width: 400px;
+  max-width: 100%;
+  position: relative;
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .formElement {
+    width: 100%;
+    display: block;
+  }
+}
+
+.error {
+  background-color: #f8afad;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+// for reset password strength bar
+.passwordStrengthBar {
+  margin-bottom: -1.2rem;
+  & > div > div {
+    height: 0.5rem !important;
+    border-radius: 1rem;
+    &:nth-child(even) {
+      width: 0.5rem !important;
+    }
+  }
+}
+
+.inlineLink {
+  font-weight: bold;
+  color: rgb(0, 128, 55);
+}
+
+.help {
+  font-size: 0.85rem;
+  text-align: center;
+}

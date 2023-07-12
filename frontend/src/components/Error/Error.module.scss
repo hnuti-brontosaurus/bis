@@ -1,0 +1,20 @@
+@use 'styles/colors';
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.status {
+  font-size: 2rem;
+  font-weight: bold;
+  color: colors.$bronto;
+}
+
+.message {
+  font-size: 1.2rem;
+}

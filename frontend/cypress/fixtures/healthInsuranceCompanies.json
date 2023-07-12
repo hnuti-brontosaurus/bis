@@ -1,0 +1,34 @@
+{
+  "count": 7,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Všeobecná zdravotní pojišťovna České republiky",
+      "slug": "VZP"
+    },
+    {
+      "id": 2,
+      "name": "Vojenská zdravotní pojišťovna České republiky",
+      "slug": "VOZP"
+    },
+    {
+      "id": 3,
+      "name": "Česká průmyslová zdravotní pojišťovna",
+      "slug": "CPZP"
+    },
+    {
+      "id": 4,
+      "name": "Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví",
+      "slug": "OZP"
+    },
+    { "id": 5, "name": "Zaměstnanecká pojišťovna Škoda", "slug": "ZPS" },
+    {
+      "id": 6,
+      "name": "Zdravotní pojišťovna ministerstva vnitra České republiky",
+      "slug": "ZPMV"
+    },
+    { "id": 7, "name": "RBP, zdravotní pojišťovna", "slug": "RBP" }
+  ]
+}

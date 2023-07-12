@@ -1,0 +1,32 @@
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "pro všechny",
+      "slug": "for_all"
+    },
+    {
+      "id": 2,
+      "name": "pro mládež a dospělé",
+      "slug": "for_young_and_adult"
+    },
+    {
+      "id": 3,
+      "name": "pro děti",
+      "slug": "for_kids"
+    },
+    {
+      "id": 4,
+      "name": "pro rodiče s dětmi",
+      "slug": "for_parents_with_kids"
+    },
+    {
+      "id": 5,
+      "name": "pro prvoúčastníky",
+      "slug": "for_first_time_participant"
+    }
+  ]
+}

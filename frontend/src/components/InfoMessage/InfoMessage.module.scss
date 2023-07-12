@@ -1,0 +1,32 @@
+@use 'styles/colors';
+
+.container {
+  position: relative;
+  padding: 1rem 2rem 1rem 1rem;
+  background-color: colors.$gray-100;
+
+  display: flex;
+  align-items: flex-start;
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    a {
+      text-decoration: underline;
+    }
+  }
+
+  .closeButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem;
+    border-radius: 2rem;
+
+    &:hover {
+      background-color: colors.$gray-200;
+    }
+  }
+}

@@ -1,0 +1,131 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5rem;
+  @include media.for-phone-only {
+    gap: 1rem;
+  }
+}
+
+.iconItem {
+  &:hover {
+    .icon {
+      border-color: colors.$bronto;
+      transition: 120ms ease-in;
+    }
+  }
+  .input {
+    display: none;
+
+    // style label of checked input
+    &:checked + .label .icon {
+      background-color: colors.$bronto;
+      transition: 220ms ease-in;
+      svg {
+        fill: white !important;
+        path {
+          fill: white !important;
+        }
+        transition: 220ms ease-in;
+      }
+    }
+  }
+
+  .icon {
+    display: inline-block;
+    border: 4px solid colors.$bronto-light;
+    background-color: colors.$bronto-light;
+    padding: 1rem;
+    border-radius: 10rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+
+    &:hover {
+      border-color: colors.$bronto;
+      transition: 120ms transform ease-in-out;
+    }
+
+    svg {
+      fill: colors.$bronto;
+      overflow: visible;
+      path {
+        fill: colors.$bronto;
+      }
+      @include media.for-phone-only {
+        width: 30px;
+        height: 30px;
+      }
+    }
+    @include media.for-phone-only {
+      margin-bottom: 0;
+    }
+  }
+
+  .label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 14rem;
+    cursor: pointer;
+
+    .title {
+      text-align: center;
+    }
+
+    .detail {
+      text-align: center;
+      font-size: smaller;
+    }
+    @include media.for-phone-only {
+      flex-direction: row;
+      justify-content: space-around;
+      .title {
+        width: 60%;
+      }
+      max-width: unset;
+    }
+  }
+  @include media.for-phone-only {
+    width: 100%;
+  }
+}
+
+// set up color for opportunities
+.group.blue {
+  .input {
+    &:checked + .label .icon {
+      background-color: colors.$opportunities;
+      transition: 120ms ease-in-out;
+    }
+  }
+
+  .icon {
+    border-color: colors.$opportunities-light;
+    background-color: colors.$opportunities-light;
+    path {
+      fill: colors.$opportunities;
+    }
+    &:hover {
+      border-color: colors.$opportunities;
+    }
+  }
+}
+
+.smallIcon {
+  .icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}

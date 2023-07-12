@@ -1,0 +1,29 @@
+{
+  "id": 1000,
+  "category": {
+    "id": 3,
+    "name": "Pomoc lokalitě",
+    "description": "Příležitosti k pomoci dané lokalitě, která to aktuálně potřebuje.",
+    "slug": "location_help"
+  },
+  "name": "asdf",
+  "start": "2022-12-29",
+  "end": "2022-12-31",
+  "on_web_start": "2022-12-29",
+  "on_web_end": "2022-12-31",
+  "location": 100,
+  "introduction": "<p>a</p>",
+  "description": "<p>bv</p>",
+  "location_benefits": "<p>c</p>",
+  "personal_benefits": "<p>d</p>",
+  "requirements": "<p>a</p>",
+  "contact_name": "",
+  "contact_phone": "",
+  "contact_email": "",
+  "image": {
+    "small": "https://dev.bis.lomic.cz/media/thumbnails/opportunity_images/a_O5DTT0z_small.png",
+    "medium": "https://dev.bis.lomic.cz/media/thumbnails/opportunity_images/a_O5DTT0z_medium.png",
+    "large": "https://dev.bis.lomic.cz/media/thumbnails/opportunity_images/a_O5DTT0z_large.png",
+    "original": "https://dev.bis.lomic.cz/media/opportunity_images/a_O5DTT0z.png"
+  }
+}

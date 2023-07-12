@@ -1,0 +1,128 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+
+  @include media.for-phone-only {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .mainMenu {
+    display: grid;
+    grid-template-columns: repeat(2, 250px);
+    grid-auto-rows: 120px;
+    grid-row-gap: 2.5rem;
+    grid-column-gap: 1.5rem;
+
+    // on mobile, show the buttons under each other
+    @include media.for-phone-only {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+
+      .menuItem {
+        height: 80px;
+        width: 100%;
+        &:hover {
+          margin: -0.3rem;
+          width: calc(100% + 0.6rem);
+          height: calc(120px + 0.6rem);
+        }
+
+        transition: width 0.2s, height 0.2s, margin 0.2s;
+      }
+    }
+
+    .menuItem {
+      background-color: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 0.5rem;
+
+      @include media.for-tablet-portrait-up {
+        // transition smoothly when hovering
+        transition: margin 0.2s;
+        &:hover {
+          // make button bigger on hover
+          margin: -0.3rem;
+        }
+      }
+      .title {
+        text-transform: uppercase;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      // .detail {
+      //   // any need to style detail?
+      // }
+
+      &.createEvent {
+        background-color: colors.$create-event-main;
+      }
+      &.myEvents {
+        background-color: colors.$create-event-main;
+      }
+      &.myProfile {
+        background-color: rgb(235, 207, 84);
+      }
+      &.editEvent {
+        background-color: colors.$edit-event-main;
+      }
+      &.closeEvent {
+        background-color: colors.$close-event-main;
+      }
+      &.opportunities {
+        background-color: colors.$opportunities-main;
+        .title {
+          color: black;
+        }
+      }
+      &.simple {
+        background-color: colors.$gray-300;
+      }
+
+      &.disabled {
+        background-color: colors.$gray-100;
+        pointer-events: none;
+        cursor: not-allowed;
+        .title {
+          color: colors.$gray-250;
+        }
+        &:hover {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  .illustration {
+    // when the illustration gets cropped, the height will need to be different
+    // the illustration should be approximately the size of the mainMenu, or a little bit smaller
+    height: 500px;
+
+    @include media.for-phone-only {
+      height: auto;
+      width: 100%;
+    }
+  }
+}
+
+.guideLink {
+  color: colors.$bronto;
+  text-decoration: underline;
+  cursor: pointer;
+}

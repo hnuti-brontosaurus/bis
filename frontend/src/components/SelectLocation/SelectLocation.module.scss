@@ -1,0 +1,220 @@
+@use 'styles/media';
+@use 'styles/sizes';
+@use 'styles/colors';
+
+.aboveMap {
+  z-index: 1000;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.topContentContainer {
+  width: 100%;
+  flex-direction: column;
+  display: flex;
+  gap: 8px;
+  @include media.for-tablet-landscape-up {
+    width: 100%;
+    flex-direction: row;
+  }
+  .selectLocationBox {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+
+    @include media.for-tablet-landscape-up {
+      flex-direction: row;
+    }
+    .editingLocation {
+      font-size: 1.4rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .selectLocationItem {
+      align-items: flex-start;
+      gap: 2px;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      white-space: nowrap;
+
+      margin-bottom: 0.5rem;
+
+      .selectLocationErrorWrapper {
+        height: 36px;
+        overflow: visible;
+      }
+
+      @include media.for-tablet-landscape-up {
+        gap: 16px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .selectLocationWithIcon {
+        display: flex;
+
+        gap: 2px;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        @include media.for-tablet-landscape-up {
+          gap: 16px;
+        }
+        .selectLocation {
+          width: calc(100% - 40px);
+          @include media.for-tablet-landscape-up {
+            width: 300px;
+          }
+        }
+      }
+    }
+  }
+  .editStatePending {
+    color: colors.$edit;
+  }
+  .editStateDone {
+    color: colors.$bronto;
+  }
+}
+
+.mainContentContainerWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+  @include media.for-tablet-landscape-up {
+    flex-direction: row;
+  }
+  .mainContentContainer {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+    @include media.for-tablet-landscape-up {
+      flex-direction: row;
+    }
+    .mapColumn {
+      .mapContainer {
+        width: 100%;
+        height: sizes.$map-height;
+        @include media.for-tablet-landscape-up {
+          width: sizes.$map-width;
+        }
+      }
+      button {
+        margin: 1rem auto;
+      }
+    }
+
+    .mapSpacer {
+      width: 4px;
+    }
+  }
+}
+
+.locationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 3px solid colors.$bronto-100;
+  padding: 0.8rem;
+  border-radius: 8px;
+  width: 100%;
+  height: calc(sizes.$map-height + 100px);
+  overflow: auto;
+
+  @include media.for-tablet-landscape-up {
+    width: 300px;
+  }
+  div {
+    column-gap: 0.3rem;
+  }
+  .fieldTitle {
+    font-weight: 600;
+  }
+
+  .saveLocationButtons {
+    flex-wrap: nowrap;
+    margin: 0;
+    display: flex;
+    button {
+      width: 48%;
+      height: 60px;
+    }
+  }
+  .emptyLocation {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: colors.$gray-400;
+    svg {
+      margin-top: unset;
+      // @include media.for-tablet-landscape-up {
+      //   margin-top: -100px;
+      // }
+      width: 60px;
+      height: 60px;
+      path {
+        stroke-width: 1 !important;
+      }
+    }
+    div {
+      text-align: center;
+    }
+  }
+}
+.locationSelected {
+  background-color: colors.$bronto-100;
+}
+
+.buttonNewLocalization {
+  white-space: nowrap;
+}
+.buttonSmallScreen {
+  display: block;
+  @include media.for-tablet-landscape-up {
+    display: none;
+  }
+}
+.buttonBigScreen {
+  display: none;
+  @include media.for-tablet-landscape-up {
+    display: block;
+  }
+}
+
+.opportunitiesLocation {
+  .locationInfo {
+    border-color: colors.$opportunities-light;
+  }
+  .locationSelected {
+    background-color: colors.$opportunities-light;
+  }
+
+  button {
+    border-color: colors.$opportunities;
+    &:hover {
+      background-color: colors.$opportunities-light;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+@use 'styles/colors';
+
+.modal {
+  background-color: white;
+  width: 1000px;
+  max-width: 90%;
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  margin: 0 auto;
+  display: flex;
+  box-shadow: 0px 0px 18px 0px rgba($color: #000000, $alpha: 0.75);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  .content {
+    width: 100%;
+
+    .modalTitleBox {
+      border-bottom: 1px solid rgb(233, 231, 231);
+      padding: 20px 40px;
+      .showUserApplicationNameBox {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        .closeIcon {
+          cursor: pointer;
+          path {
+            &:last-child {
+              fill: colors.$gray-300;
+            }
+          }
+          &:hover {
+            path {
+              &:last-child {
+                fill: colors.$black;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .modalFormBox {
+      padding: 20px 40px 80px;
+
+      //TODO: move those styles to some other componentn
+      .infoBox {
+        padding: 20px;
+        background-color: colors.$gray-100;
+      }
+
+      textarea {
+        width: 100%;
+        display: block;
+      }
+
+      h3 {
+        font-size: 24px;
+        font-weight: 700;
+      }
+      h4 {
+        font-size: 20px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+//TODO: move those styles to some other componentn

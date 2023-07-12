@@ -1,0 +1,30 @@
+{
+  "id": "347fc177-f321-4977-9b9d-ceb307156dd4",
+  "_search_id": "169bbcf8-0a2e-4f33-b725-ef074806892e",
+  "first_name": "first_name",
+  "last_name": "last_name",
+  "nickname": "",
+  "birth_name": "",
+  "display_name": "",
+  "phone": "",
+  "email": null,
+  "all_emails": [],
+  "birthday": "1950-01-01",
+  "close_person": null,
+  "health_insurance_company": null,
+  "health_issues": "",
+  "pronoun": null,
+  "is_active": true,
+  "date_joined": "2023-01-04",
+  "roles": [],
+  "offers": null,
+  "address": {
+    "street": "abc",
+    "city": "de",
+    "zip_code": "10000",
+    "region": 11
+  },
+  "contact_address": null,
+  "memberships": [],
+  "qualifications": []
+}

@@ -1,0 +1,22 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Tábor",
+      "slug": "camp"
+    },
+    {
+      "id": 2,
+      "name": "Víkendovka",
+      "slug": "weekend_event"
+    },
+    {
+      "id": 3,
+      "name": "Ostatní",
+      "slug": "other"
+    }
+  ]
+}

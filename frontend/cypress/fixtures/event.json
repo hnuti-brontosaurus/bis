@@ -1,0 +1,93 @@
+{
+  "id": 1000,
+  "name": "Event Name",
+  "is_canceled": true,
+  "is_complete": true,
+  "is_closed": true,
+  "start": "2022-12-28",
+  "start_time": "17:45",
+  "end": "2022-12-28",
+  "number_of_sub_events": 1,
+  "location": 100,
+  "online_link": "",
+  "group": { "id": 3, "name": "Ostatní", "slug": "other" },
+  "category": {
+    "id": 4,
+    "name": "Veřejná - Dobrovolnická",
+    "slug": "public__volunteering"
+  },
+  "program": { "id": 3, "name": "BRĎO", "slug": "kids" },
+  "intended_for": {
+    "id": 2,
+    "name": "pro mládež a dospělé",
+    "slug": "for_young_and_adult"
+  },
+  "administration_units": [1],
+  "main_organizer": "00000000-0000-0000-0000-000000000000",
+  "other_organizers": [
+    "00000000-0000-0000-0000-000000000000",
+    "11111111-1111-1111-1111-111111111111",
+    "22222222-2222-2222-2222-222222222222",
+    "33333333-3333-3333-3333-333333333333",
+    "44444444-4444-4444-4444-444444444444",
+    "55555555-5555-5555-5555-555555555555",
+    "66666666-6666-6666-6666-666666666666",
+    "77777777-7777-7777-7777-777777777777",
+    "88888888-8888-8888-8888-888888888888",
+    "99999999-9999-9999-9999-999999999999"
+  ],
+  "is_attendance_list_required": false,
+  "is_internal": false,
+  "internal_note": "",
+  "duration": 1,
+  "finance": {
+    "bank_account_number": "",
+    "grant_category": null,
+    "grant_amount": null,
+    "total_event_cost": null,
+    "budget": null
+  },
+  "propagation": {
+    "is_shown_on_web": true,
+    "minimum_age": 20,
+    "maximum_age": 21,
+    "cost": "10000",
+    "accommodation": "dszcdzc",
+    "working_hours": 23,
+    "working_days": null,
+    "diets": [
+      { "id": 1, "name": "s masem", "slug": "meat" },
+      { "id": 2, "name": "vegetariánská", "slug": "vege" },
+      { "id": 3, "name": "veganská", "slug": "vegan" }
+    ],
+    "organizers": "Whatever",
+    "web_url": "",
+    "_contact_url": "",
+    "invitation_text_introduction": "<p>dsx&lt;</p>",
+    "invitation_text_practical_information": "<p>,fc&lt;',c&lt;cv&lt;s,c;&lt;a</p>",
+    "invitation_text_work_description": "<p>asdffdsa</p>",
+    "invitation_text_about_us": "",
+    "contact_name": "contact name",
+    "contact_phone": "",
+    "contact_email": "asdf@example.com"
+  },
+  "vip_propagation": null,
+  "registration": {
+    "is_registration_required": true,
+    "is_event_full": false,
+    "alternative_registration_link": "",
+    "questionnaire": {
+      "introduction": "dziki",
+      "after_submit_text": "Tak Ti teda pěkně děkujeme. Tak se teda těšíme. :)"
+    }
+  },
+  "record": {
+    "total_hours_worked": 5,
+    "comment_on_work_done": "a",
+    "participants": [],
+    "number_of_participants": 4,
+    "number_of_participants_under_26": 4,
+    "note": "",
+    "contacts": []
+  }
+}

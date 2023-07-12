@@ -1,0 +1,22 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "s masem",
+      "slug": "meat"
+    },
+    {
+      "id": 2,
+      "name": "vegetariánská",
+      "slug": "vege"
+    },
+    {
+      "id": 3,
+      "name": "veganská",
+      "slug": "vegan"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+@use 'styles/media';
+
+.outerLinkButton {
+  padding: 0.5rem;
+}
+
+.widerTextArea {
+  min-width: 90vw;
+  min-height: 100px;
+  @include media.for-tablet-landscape-up {
+    min-width: 600px;
+    min-height: 200px;
+  }
+}

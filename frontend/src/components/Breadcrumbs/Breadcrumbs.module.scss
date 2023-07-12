@@ -1,0 +1,15 @@
+@use 'styles/colors';
+
+.container {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  .link {
+    text-decoration: underline;
+    &:hover {
+      color: colors.$bronto;
+    }
+  }
+}

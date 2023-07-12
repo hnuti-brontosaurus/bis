@@ -1,0 +1,82 @@
+{
+  "count": 15,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Interní - Valná hromada",
+      "slug": "internal__general_meeting"
+    },
+    {
+      "id": 2,
+      "name": "Interní - Schůzka dobrovolníků, týmovka",
+      "slug": "internal__volunteer_meeting"
+    },
+    {
+      "id": 3,
+      "name": "Interní - Oddílová, družinová schůzka",
+      "slug": "internal__section_meeting"
+    },
+    {
+      "id": 4,
+      "name": "Veřejná - Dobrovolnická",
+      "slug": "public__volunteering"
+    },
+    {
+      "id": 5,
+      "name": "Veřejná - Čistě zážitková",
+      "slug": "public__only_experiential"
+    },
+    {
+      "id": 6,
+      "name": "Veřejná - Vzdělávací - Přednáška",
+      "slug": "public__educational__lecture"
+    },
+    {
+      "id": 7,
+      "name": "Veřejná - Vzdělávací - Kurz, školení, exkurze",
+      "slug": "public__educational__course"
+    },
+    {
+      "id": 8,
+      "name": "Veřejná - Vzdělávací - OHB",
+      "slug": "public__educational__ohb"
+    },
+    {
+      "id": 9,
+      "name": "Veřejná - Vzdělávací - Výukový program",
+      "slug": "public__educational__educational"
+    },
+    {
+      "id": 10,
+      "name": "Veřejná - Vzdělávací - Pobytový výukový program",
+      "slug": "public__educational__educational_with_stay"
+    },
+    {
+      "id": 11,
+      "name": "Veřejná - Klub - Přednáška",
+      "slug": "public__club__lecture"
+    },
+    {
+      "id": 12,
+      "name": "Veřejná - Klub - Setkání",
+      "slug": "public__club__meeting"
+    },
+    {
+      "id": 13,
+      "name": "Veřejná - Ostatní - Akce pro veřejnost",
+      "slug": "public__other__for_public"
+    },
+    {
+      "id": 14,
+      "name": "Veřejná - Ostatní - Výstava",
+      "slug": "public__other__exhibition"
+    },
+    {
+      "id": 15,
+      "name": "Veřejná - Ostatní - Ekostan",
+      "slug": "public__other__eco_tent"
+    }
+  ]
+}

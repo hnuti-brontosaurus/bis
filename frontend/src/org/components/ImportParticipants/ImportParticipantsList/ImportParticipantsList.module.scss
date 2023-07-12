@@ -1,0 +1,31 @@
+@use 'styles/colors';
+
+.container {
+  display: block;
+}
+
+.table {
+  width: 100%;
+  thead {
+    border-bottom: 2px solid black;
+  }
+  tbody {
+    tr.userRow {
+      border-top: 1px solid black;
+      cursor: pointer;
+      &:hover {
+        td {
+          background-color: colors.$gray-200;
+        }
+      }
+
+      &.invalid {
+        background-color: colors.$error-light;
+      }
+
+      &.validating {
+        background-color: lightyellow;
+      }
+    }
+  }
+}

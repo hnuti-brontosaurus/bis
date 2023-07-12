@@ -1,0 +1,38 @@
+@use 'styles/colors';
+
+.container {
+  width: 240px;
+  height: 44px;
+  border-radius: 50px;
+  background-color: colors.$bronto-light;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+
+  .button {
+    width: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: colors.$bronto;
+    cursor: pointer;
+    height: 44px;
+    &:hover {
+      background-color: colors.$bronto;
+      transition: 220ms ease-in;
+      color: white;
+    }
+  }
+  .input {
+    width: 80px;
+    border-radius: 0;
+    text-align: center;
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+  }
+}

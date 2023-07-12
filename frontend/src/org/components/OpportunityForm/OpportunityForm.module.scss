@@ -1,0 +1,48 @@
+@use 'styles/colors';
+
+.opportunityForm {
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 3rem;
+
+    > .mainAction,
+    .cancelAction {
+      min-width: 200px;
+      border-radius: 4rem;
+    }
+
+    .mainAction {
+      background-color: colors.$opportunities;
+      color: white;
+    }
+
+    .cancelAction {
+      background-color: #d9d9d9;
+      color: rgb(35, 31, 32);
+    }
+  }
+
+  .blueSelectIcon {
+    svg {
+      path {
+        fill: colors.$opportunities;
+      }
+    }
+  }
+
+  input,
+  textarea {
+    border-color: colors.$opportunities-light;
+  }
+}
+
+.selectObject {
+  color: pink;
+  border-color: colors.$opportunities-light;
+
+  > div {
+    border-color: colors.$opportunities-light;
+  }
+}

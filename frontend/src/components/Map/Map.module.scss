@@ -1,0 +1,103 @@
+@use 'styles/media';
+@use 'styles/sizes';
+
+.mapWrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  @include media.for-phone-only {
+    width: 100%;
+  }
+  .legend {
+    width: 180px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    z-index: 3;
+    justify-content: flex-start;
+    @include media.for-phone-only {
+      width: 100%;
+    }
+
+    .legendMenu {
+      display: flex;
+      flex-direction: column;
+      .legendItem {
+        font-size: 0.8rem;
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+        @include media.for-phone-only {
+          width: 50%;
+        }
+      }
+      @include media.for-phone-only {
+        width: 100%;
+        flex-direction: row;
+      }
+    }
+
+    .searchForm {
+      fieldset {
+        display: flex;
+        input[type='text'] {
+          flex: auto;
+        }
+      }
+      display: block;
+      width: 100%;
+    }
+  }
+  .mainMapContentContainer {
+    z-index: 1;
+    width: sizes.$map-width;
+    @include media.for-phone-only {
+      width: 100%;
+    }
+  }
+  .mapSpacer {
+    width: 4px;
+  }
+}
+
+#idMenuLegend {
+  @include media.for-phone-only {
+    order: -1;
+  }
+}
+
+#idSearchMap {
+  @include media.for-phone-only {
+    order: 2;
+  }
+}
+
+:global .marker-cluster-small {
+  background-color: rgba(126, 174, 206, 0.6);
+
+  div {
+    background-color: rgb(36, 109, 158);
+    color: white;
+  }
+}
+
+:global .marker-cluster-medium {
+  background-color: rgba(126, 174, 206, 0.6);
+
+  div {
+    background-color: rgb(14, 70, 107);
+    color: white;
+  }
+}
+
+:global .marker-cluster-big {
+  background-color: rgba(14, 70, 107, 0.6);
+
+  div {
+    background-color: rgb(3, 36, 58);
+    color: white;
+  }
+}
