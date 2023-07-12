@@ -324,7 +324,7 @@ export const Applications: FC<{
                   ))}
                   {applicationsAccepted.length > 0 && (
                     <tr>
-                      <td colSpan={5} className={styles.oneCellRow}>
+                      <td colSpan={8} className={styles.oneCellRow}>
                         Přidání do účastníků
                       </td>
                     </tr>
@@ -337,7 +337,7 @@ export const Applications: FC<{
                   ))}
                   {applicationsRejected.length > 0 && (
                     <tr>
-                      <td colSpan={5} className={styles.oneCellRow}>
+                      <td colSpan={8} className={styles.oneCellRow}>
                         Odmítnuté přihlášky
                       </td>
                     </tr>
