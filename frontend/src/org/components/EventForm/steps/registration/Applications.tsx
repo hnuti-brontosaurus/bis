@@ -167,6 +167,8 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
+  const ALL_COLUMNS = 8
+
   const ApplicationRow = ({
     application,
     className,
@@ -323,11 +325,14 @@ export const Applications: FC<{
                     />
                   ))}
                   {applicationsAccepted.length > 0 && (
-                    <tr>
-                      <td colSpan={5} className={styles.oneCellRow}>
-                        Přidání do účastníků
-                      </td>
-                    </tr>
+                    <>
+                      <tr><td colSpan={ALL_COLUMNS}></td></tr>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
+                          Přidaní do účastníků
+                        </td>
+                      </tr>
+                    </>
                   )}
                   {applicationsAccepted.map((application: EventApplication) => (
                     <ApplicationRow
@@ -336,11 +341,14 @@ export const Applications: FC<{
                     />
                   ))}
                   {applicationsRejected.length > 0 && (
-                    <tr>
-                      <td colSpan={5} className={styles.oneCellRow}>
-                        Odmítnuté přihlášky
-                      </td>
-                    </tr>
+                    <>
+                      <tr><td colSpan={ALL_COLUMNS}></td></tr>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
+                          Odmítnuté přihlášky
+                        </td>
+                      </tr>
+                    </>
                   )}
 
                   {applicationsRejected.map((application: EventApplication) => (
