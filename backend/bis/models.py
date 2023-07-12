@@ -481,7 +481,11 @@ class User(AbstractBaseUser):
     def update_roles(self):
         roles = ['any']
 
-        brontosaurus_movement = BrontosaurusMovement.get()
+        try:
+            brontosaurus_movement = BrontosaurusMovement.get()
+        except BrontosaurusMovement.DoesNotExist:
+            return
+
         if self in [brontosaurus_movement.director, brontosaurus_movement.finance_director]:
             roles += ['director']
         if self in brontosaurus_movement.bis_administrators.all():
