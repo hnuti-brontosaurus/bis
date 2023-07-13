@@ -259,7 +259,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
     readonly_fields = 'is_superuser', 'last_login', 'date_joined', 'get_all_emails', \
         'get_events_where_was_organizer', 'get_participated_in_events', \
-        'roles', 'get_donor', 'get_board_member_of'
+        'roles', 'get_donor', 'get_board_member_of', 'get_token'
     exclude = 'groups', 'user_permissions', 'password', 'is_superuser', '_str'
 
     fieldsets = (
@@ -288,6 +288,9 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                 if header == 'Interní data':
                     if 'internal_note' not in data['fields']:
                         data['fields'].append('internal_note')
+
+                    if request.user.is_superuser and 'get_token' not in data['fields']:
+                        data['fields'].append('get_token')
                     break
             else:
                 raise RuntimeError('Interní data not found in fieldsets')
@@ -380,3 +383,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
     @admin.display(description='V předsednictvu organizačních jednotek')
     def get_board_member_of(self, obj):
         return mark_safe(', '.join([get_admin_edit_url(item) for item in obj.administration_units.all()]))
+
+    @admin.display(description='Token')
+    def get_token(self, obj):
+        return f"Token {obj.auth_token}"
+
