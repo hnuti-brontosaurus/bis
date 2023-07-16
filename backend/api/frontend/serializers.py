@@ -1,3 +1,5 @@
+from datetime import date
+
 from dateutil.utils import today
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -11,6 +13,7 @@ from rest_framework.utils import model_meta
 
 from api.helpers import catch_related_object_does_not_exist
 from bis import emails
+from bis.helpers import AgeStats
 from bis.models import User, Location, UserAddress, UserContactAddress, Membership, Qualification, UserClosePerson, \
     LocationContactPerson, LocationPatron, EYCACard
 from categories.serializers import DonationSourceCategorySerializer, EventProgramCategorySerializer, \
@@ -469,6 +472,8 @@ class EventContactSerializer(BaseContactSerializer):
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
 
+    age_stats = SerializerMethodField()
+
     class Meta:
         model = EventRecord
         fields = (
@@ -479,7 +484,14 @@ class RecordSerializer(ModelSerializer):
             'number_of_participants_under_26',
             'note',
             'contacts',
+            'age_stats',
         )
+
+    def get_age_stats(self, instance) -> dict:
+        return {
+            "at_start_of_event": AgeStats('', instance.get_all_participants(), instance.event.start).get_data(),
+            "at_start_of_year": AgeStats('', instance.get_all_participants(), date(instance.event.start.year, 1, 1)).get_data()
+        }
 
 
 class EventSerializer(ModelSerializer):

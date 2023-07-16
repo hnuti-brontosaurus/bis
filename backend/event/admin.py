@@ -119,13 +119,13 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     readonly_fields = 'get_participants_age_stats_event_start', 'get_participants_age_stats_year_start'
     autocomplete_fields = 'participants',
 
-    @admin.display(description='Statistika věku účastníků k začátku akce')
+    @admin.display(description='Statistika věku účastníků a organizátorů k začátku akce')
     def get_participants_age_stats_event_start(self, obj):
-        return AgeStats('účastníků', obj.participants.all(), obj.event.start).as_table()
+        return AgeStats('účastníků', obj.get_all_participants(), obj.event.start).as_table()
 
-    @admin.display(description='Statistika věku účastníků k začátku roku')
+    @admin.display(description='Statistika věku účastníků a organizátorů k začátku roku')
     def get_participants_age_stats_year_start(self, obj):
-        return AgeStats('účastníků', obj.participants.all(), date(obj.event.start.year, 1, 1)).as_table()
+        return AgeStats('účastníků', obj.get_all_participants(), date(obj.event.start.year, 1, 1)).as_table()
 
     def get_formset(self, request, obj=None, **kwargs):
         kwargs.update({'help_texts': {
@@ -183,7 +183,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def get_administration_units(self, obj):
         return mark_safe('<br>'.join([str(au) for au in obj.administration_units.all()]))
 
-    @admin.display(description='Počet účastníků')
+    @admin.display(description='Počet účastníků + organizátorů')
     def get_participants_count(self, obj):
         if not hasattr(obj, 'record'): return None
         return obj.record.get_participants_count()
@@ -255,6 +255,6 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             if "_attendance_list_pdf_export" in request.POST:
                 return get_attendance_list(obj)['pdf']
             if "_participants_xlsx_export" in request.POST:
-                return export_to_xlsx(self, request, obj.record.participants.all())
+                return export_to_xlsx(self, request, obj.record.get_all_participants())
 
         return super().changeform_view(request, object_id, form_url, extra_context)

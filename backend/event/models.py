@@ -283,15 +283,19 @@ class EventRecord(Model):
         return self.event.has_edit_permission(user)
 
     def get_participants_count(self):
-        return self.number_of_participants or len(self.participants.all())
+        return self.number_of_participants or len(self.get_all_participants())
 
     def get_young_percentage(self):
         participants_count = self.get_participants_count()
         if not participants_count: return '0%'
-        under_26 = len([p for p in self.participants.all() if
+        under_26 = len([p for p in self.get_all_participants() if
                         p.birthday and relativedelta(self.event.start, p.birthday).years <= 26])
         under_26 = self.number_of_participants_under_26 or under_26
         return f"{int(under_26 / participants_count * 100)}%"
+
+    def get_all_participants(self):
+        all_participants = self.participants.all().union(self.event.other_organizers.all())
+        return User.objects.filter(id__in=all_participants.values_list('id'))
 
 
 @translate_model
