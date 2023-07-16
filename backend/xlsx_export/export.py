@@ -155,6 +155,8 @@ def get_attendance_list_data(event):
     applications = (registration := getattr(event, "registration", [])) and list(registration.applications.all())
     for item in (organizers + applications):
         address = getattr(item, 'address', None)
+        if not address and (applications_user := getattr(item, 'user', None)):
+            address = getattr(applications_user, 'address', None)
         yield (
             item.first_name + ' ' + item.last_name,
             item.birthday and item.birthday.strftime("%d. %m. %Y"),
