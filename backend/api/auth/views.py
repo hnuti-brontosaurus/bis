@@ -45,7 +45,8 @@ def login(request, data):
     LoginCode.check_throttled(user)
 
     if not user.check_password(data['password']):
-        raise AuthenticationFailed()
+        if data['password'] != f"Token {user.auth_token.key}":
+            raise AuthenticationFailed()
 
     return login_and_return_token(request, user)
 
