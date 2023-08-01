@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from questionnaire.models import *
 
 
-@receiver(pre_save, sender=EventApplication, dispatch_uid='set_event_application_user')
+#@receiver(pre_save, sender=EventApplication, dispatch_uid='set_event_application_user')
 def set_event_application_user(instance: EventApplication, **kwargs):
     instance.user = (
             instance.user or
