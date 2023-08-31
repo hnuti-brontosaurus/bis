@@ -26,10 +26,12 @@ import styles from '../ParticipantsStep.module.scss'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
+import type * as original from 'app/services/testApi'
 
 export const Participants: FC<{
   eventId: number
   eventName: string
+  otherOrganizers: original.User[] | undefined
   chooseHighlightedParticipant: (id: string | undefined) => void
   highlightedParticipant?: string
   participantsMap?: { [s: string]: string[] }
@@ -43,6 +45,7 @@ export const Participants: FC<{
 }> = ({
   eventId,
   eventName,
+  otherOrganizers,
   highlightedParticipant,
   chooseHighlightedParticipant,
   participantsMap,
@@ -326,6 +329,9 @@ export const Participants: FC<{
                   <th>telefon</th>
                   <th>e-mail</th>
                   <th>
+                    <div className={styles.orgTitle}>ORG</div>
+                  </th>
+                  <th>
                     <EditUser className={classNames(styles.iconHead)} />
                   </th>
                   <th>
@@ -334,6 +340,67 @@ export const Participants: FC<{
                 </tr>
               </thead>
               <tbody>
+              {[
+                  ...(otherOrganizers ?? [])
+                ].map((participant: original.User) => (
+                  <tr
+                    key={participant.id}
+                    className={classNames(
+                      highlightedParticipant === participant.id
+                        ? styles.highlightedRow
+                        : '',
+                      lastAddedId === participant.id &&
+                        timeOfLastAddition > Date.now() - 30000 &&
+                        styles.lightUp,
+                      highLightedRow === participant.id
+                        ? styles.highlightedRow
+                        : '',
+                    )}
+                    onMouseEnter={() => {
+                      setHighlightedRow(participant.id)
+                      chooseHighlightedParticipant(participant.id)
+                    }}
+                    onMouseLeave={() => {
+                      setHighlightedRow(undefined)
+                      chooseHighlightedParticipant(undefined)
+                    }}
+                    onClick={() => {
+                      setShowShowApplicationModal(true)
+                      setCurrentParticipantId(participant.id)
+                    }}
+                  >
+                    <td>
+                      {`${participant.first_name}${
+                        participant.nickname && `(${participant.nickname})`
+                      }`}
+                    </td>
+                    <td>{participant.last_name}</td>
+                    <td>{formatDateTime(participant.birthday)}</td>
+                    <td>
+                      {participant.address &&
+                        formatAddress(participant.address)}
+                    </td>
+                    <td>{participant.phone}</td>
+                    <td>{participant.email}</td>
+                    <td><div className={styles.org}>ORG</div></td>
+                    <TableCellIconButton
+                      disabled={true}
+                      icon={EditUser}
+                      action={() => {}}
+                      tooltipContent="Upravit účastníka"
+                      color={colors.yellow}
+                      ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                    />
+                    <TableCellIconButton
+                      disabled={true}
+                      icon={Bin}
+                      action={() => {}}
+                      tooltipContent="Smazat účastníka"
+                      color={colors.error}
+                      ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                    />
+                  </tr>
+                ))}
                 {participants.results.map((participant: User) => (
                   <tr
                     key={participant.id}
@@ -374,6 +441,7 @@ export const Participants: FC<{
                     </td>
                     <td>{participant.phone}</td>
                     <td>{participant.email}</td>
+                    <td></td>
                     <TableCellIconButton
                       icon={EditUser}
                       action={() => onEditUser(participant)}

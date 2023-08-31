@@ -195,6 +195,7 @@ export const ParticipantsStep: FC<{
           }}
           createUser={createUser}
           updateUser={updateUser}
+          otherOrganizers={event.other_organizers}
         />
       )}
     </div>
