@@ -155,6 +155,7 @@ def export_to_xlsx(model_admin, request, queryset):
 def get_attendance_list_data(event, for_admin=False):
     organizers = list(event.other_organizers.all())
     applications = (registration := getattr(event, "registration", [])) and list(registration.applications.all())
+    applications = [application for application in applications if application.state not in ["cancelled", "rejected"]]
     for item in (organizers + applications):
         address = getattr(item, 'address', "")
         if not address and (applications_user := getattr(item, 'user', None)):
