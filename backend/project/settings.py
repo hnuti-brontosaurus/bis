@@ -206,8 +206,13 @@ SPECTACULAR_SETTINGS = {
 API_BASE = environ['API_BASE']
 
 if not DEBUG:
-    CSRF_TRUSTED_ORIGINS = [FULL_HOSTNAME, 'https://bronto.vercel.app']
-    CORS_ALLOWED_ORIGINS = [FULL_HOSTNAME, 'https://bronto.vercel.app']
+    CSRF_TRUSTED_ORIGINS = [FULL_HOSTNAME]
+    CORS_ALLOWED_ORIGINS = [FULL_HOSTNAME]
+
+    if "dev" in FULL_HOSTNAME:
+        CSRF_TRUSTED_ORIGINS.append("http://localhost")
+        CORS_ALLOWED_ORIGINS.append("http://localhost")
+
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # phonenumber_field
