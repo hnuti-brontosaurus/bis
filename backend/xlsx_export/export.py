@@ -11,6 +11,7 @@ from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.http import FileResponse
+from openpyxl.styles import PatternFill
 from rest_framework.serializers import ModelSerializer
 from xlsx2html import xlsx2html
 
@@ -137,7 +138,8 @@ class XLSXWriter:
 @admin.action(description='Exportuj data')
 def export_to_xlsx(model_admin, request, queryset):
     serializer_class = \
-        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer, AdministrationUnitExportSerializer]
+        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer,
+                     AdministrationUnitExportSerializer]
          if s.Meta.model is queryset.model][0]
     queryset = serializer_class.get_related(queryset)
 
@@ -164,11 +166,12 @@ def get_attendance_list_data(event, for_admin=False):
             address and address.zip_code,
             item.email,
             str(item.phone),
+            item in organizers
         )
 
     if not for_admin:
         for i in range(max(10, len(applications) // 10)):
-            yield 6 * ('',)
+            yield 7 * ('',)
 
 
 def get_attendance_list_rows(ws):
@@ -204,14 +207,17 @@ def get_attendance_list(event: Event):
     wb = openpyxl.load_workbook(join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx"))
     ws = wb.active
 
-    ws['C2'] = 5 * event.name
+    ws['C2'] = event.name
     ws['C3'] = event.get_date()
     ws['C4'] = event.location.name
     ws['C5'] = ", ".join(au.abbreviation for au in event.administration_units.all())
 
     for row, data in zip(get_attendance_list_rows(ws), get_attendance_list_data(event)):
-        for cell, value in zip("BCDEFG", data):
+        for cell, value in zip("BCDEFG", data[:-1]):
             ws[f"{cell}{row}"] = value
+        if data[-1]:
+            for cell in "BCDEFGH":
+                ws[f"{cell}{row}"].fill = PatternFill(start_color="d5e9dc", fill_type="solid")
 
     tmp_xlsx = NamedTemporaryFile(mode='w', suffix='.xlsx', newline='', encoding='utf8',
                                   prefix='attendance_list_')
