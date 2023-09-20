@@ -150,13 +150,13 @@ def export_to_xlsx(model_admin, request, queryset):
     return FileResponse(open(file.name, 'rb'))
 
 
-def get_attendance_list_data(event):
+def get_attendance_list_data(event, for_admin=False):
     organizers = list(event.other_organizers.all())
     applications = (registration := getattr(event, "registration", [])) and list(registration.applications.all())
     for item in (organizers + applications):
-        address = getattr(item, 'address', None)
+        address = getattr(item, 'address', "")
         if not address and (applications_user := getattr(item, 'user', None)):
-            address = getattr(applications_user, 'address', None)
+            address = getattr(applications_user, 'address', "")
         yield (
             item.first_name + ' ' + item.last_name,
             item.birthday and item.birthday.strftime("%d. %m. %Y"),
@@ -166,8 +166,9 @@ def get_attendance_list_data(event):
             str(item.phone),
         )
 
-    for i in range(max(10, len(applications) // 10)):
-        yield 6 * ('',)
+    if not for_admin:
+        for i in range(max(10, len(applications) // 10)):
+            yield 6 * ('',)
 
 
 def get_attendance_list_rows(ws):

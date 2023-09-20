@@ -5,7 +5,12 @@
         <div class="submit-row">
             <input type="submit" value="Export prezenční listiny do xlsx" name="_attendance_list_xlsx_export"/>
             <input type="submit" value="Export prezenční listiny pro tisk" name="_attendance_list_pdf_export"/>
+            <br>
             <input type="submit" value="Export účastníků do xlsx" name="_participants_xlsx_export"/>
+            <input type="submit" value="Exportovat e-maily účastníků" name="_attendance_list_emails_export">
+            <input type="submit" value="Exportovat e-maily účastníků a organizátorů" name="_attendance_list_all_emails_export">
+            <br>
+            <input type="submit" value="Zobrazit v BISu pro organizátory" name="_redirect_to_fe"/>
         </div>
     {% endif %}
     {{ block.super }}

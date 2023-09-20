@@ -9,13 +9,14 @@ from xlsx2html import xlsx2html
 import pandas
 import pdfkit
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponseRedirect
 from django.utils.datetime_safe import date
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedTabularInline, NestedModelAdmin, NestedStackedInline
 from rangefilter.filters import DateRangeFilter
 
+from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
@@ -23,7 +24,7 @@ from bis.helpers import AgeStats
 from event.models import *
 from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx, get_attendance_list
+from xlsx_export.export import export_to_xlsx, get_attendance_list, get_attendance_list_data
 
 
 class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
@@ -116,16 +117,35 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     model = EventRecord
     inlines = EventPhotoAdmin, AttendanceListPageAdmin, EventContactAdmin
 
-    readonly_fields = 'get_participants_age_stats_event_start', 'get_participants_age_stats_year_start'
+    readonly_fields = 'get_participants_age_stats_event_start', 'get_participants_age_stats_year_start', 'get_participants_table'
     autocomplete_fields = 'participants',
 
     @admin.display(description='Statistika věku účastníků a organizátorů k začátku akce')
     def get_participants_age_stats_event_start(self, obj):
+        print(111)
         return AgeStats('účastníků', obj.get_all_participants(), obj.event.start).as_table()
 
     @admin.display(description='Statistika věku účastníků a organizátorů k začátku roku')
     def get_participants_age_stats_year_start(self, obj):
         return AgeStats('účastníků', obj.get_all_participants(), date(obj.event.start.year, 1, 1)).as_table()
+
+    @admin.display(description='E-maily účastníků a organizátorů')
+    def get_participants_table(self, obj):
+        def make_cell(item): return f'<td>{item}</td>'
+        def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+
+        # participants = obj.record.get_all_participants()
+        # header = []
+        # participants = []
+        # rows = [make_row(row) for row in participants]
+        # rows = [header] + rows
+
+        html = [
+            # f'<table>{"".join(rows)}</table>',
+            '<input type="submit" value="Exportovat e-maily účastníků" name="_attendance_list_emails_export">',
+            '<input type="submit" value="Exportovat e-maily účastníků a organizátorů" name="_attendance_list_all_emails_export">',
+        ]
+        return mark_safe("".join(html))
 
     def get_formset(self, request, obj=None, **kwargs):
         kwargs.update({'help_texts': {
@@ -174,10 +194,14 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             del actions['mark_as_closed']
         return actions
 
-    list_display = 'name', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
+    list_display = 'name', 'frontend_link', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
         'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
         'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
     list_select_related = 'location', 'category', 'program', 'record'
+
+    @admin.display(description="Odkaz")
+    def frontend_link(self, obj):
+        return mark_safe(f'<a href="/org/akce/{obj.id}">org.<br>přístup</a>')
 
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
     def get_administration_units(self, obj):
@@ -256,5 +280,11 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 return get_attendance_list(obj)['pdf']
             if "_participants_xlsx_export" in request.POST:
                 return export_to_xlsx(self, request, obj.record.get_all_participants())
+            if "_attendance_list_emails_export" in request.POST:
+                return export_emails(..., ..., obj.record.participants.all())
+            if "_attendance_list_all_emails_export" in request.POST:
+                return export_emails(..., ..., obj.record.get_all_participants())
+            if "_redirect_to_fe" in request.POST:
+                return HttpResponseRedirect(f"/org/akce/{object_id}")
 
         return super().changeform_view(request, object_id, form_url, extra_context)
