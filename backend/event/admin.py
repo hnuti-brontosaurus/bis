@@ -24,7 +24,7 @@ from bis.helpers import AgeStats
 from event.models import *
 from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx, get_attendance_list, get_attendance_list_data
+from xlsx_export.export import export_to_xlsx, get_attendance_list, get_attendance_list_data, export_files
 
 
 class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
@@ -285,5 +285,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 return export_emails(..., ..., obj.record.get_all_participants())
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")
+            if "_files_export" in request.POST:
+                return export_files(obj)
 
         return super().changeform_view(request, object_id, form_url, extra_context)

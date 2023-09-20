@@ -1,8 +1,13 @@
+import os
 from collections import Counter
 from copy import copy
 from itertools import zip_longest
 from os.path import join
+from pathlib import Path
+from shutil import make_archive, copy2
+from tempfile import TemporaryDirectory
 from typing import OrderedDict
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import openpyxl
 import pdfkit
@@ -19,6 +24,7 @@ from bis.helpers import print_progress
 from bis.models import User
 from event.models import Event
 from project.settings import BASE_DIR
+from translation.translate import _
 from xlsx_export.serializers import UserExportSerializer, EventExportSerializer, DonorExportSerializer, \
     DonationExportSerializer, AdministrationUnitExportSerializer
 
@@ -242,3 +248,54 @@ def get_attendance_list(event: Event):
         'xlsx': FileResponse(open(tmp_xlsx.name, 'rb')),
         'pdf': FileResponse(open(tmp_pdf.name, 'rb'))
     }
+
+
+def export_files(event: Event):
+    def mkdir(path):
+        path.mkdir()
+        return path
+
+    file_name = f"Soubory {event.name}"
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        if hasattr(event, 'finance'):
+            finance_path = mkdir(tmp_dir / _("models.EventFinance.name"))
+
+            if event.finance.budget:
+                copy2(event.finance.budget.path, finance_path)
+
+            receipts_path = mkdir(finance_path / _("models.EventFinanceReceipt.name_plural"))
+            for receipt in event.finance.receipts.all():
+                copy2(receipt.receipt.path, receipts_path)
+
+        if hasattr(event, 'propagation'):
+            propagation_path = mkdir(tmp_dir / _("models.EventPropagation.name"))
+
+            images_path = mkdir(propagation_path / _("models.EventPropagationImage.name_plural"))
+            for image in event.propagation.images.all():
+                copy2(image.image.path, images_path)
+
+        if hasattr(event, 'record'):
+            record_path = mkdir(tmp_dir / _("models.EventRecord.name"))
+
+            attendance_list_pages_path = mkdir(record_path / _("models.EventAttendanceListPage.name_plural"))
+            for attendance_list_page in event.record.attendance_list_pages.all():
+                copy2(attendance_list_page.page.path, attendance_list_pages_path)
+
+            photos_path = mkdir(record_path / _("models.EventPhoto.name_plural"))
+            for photo in event.record.photos.all():
+                copy2(photo.photo.path, photos_path)
+
+        file = NamedTemporaryFile(mode='w', suffix='.zip', newline='', encoding='utf8',
+                                  prefix=file_name + ' ')
+
+        with ZipFile(file.name, 'w', ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(tmp_dir):
+                for _file in files:
+                    zip_file.write(os.path.join(root, _file),
+                                   os.path.relpath(os.path.join(root, _file), tmp_dir))
+
+        os.chdir(tmp_dir)
+        make_archive(file.name, 'zip')
+
+    return FileResponse(open(file.name, 'rb'))
