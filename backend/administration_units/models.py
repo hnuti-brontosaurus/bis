@@ -43,6 +43,9 @@ class AdministrationUnit(Model):
     _history = JSONField(default=dict)
 
     def clean(self):
+        if self.existed_till is not None:
+            return
+
         if not self.manager and not self.category.slug == "club":
             raise ValidationError('Hospodář není povinný pouze pro kluby')
 
