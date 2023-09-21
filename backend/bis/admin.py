@@ -1,9 +1,8 @@
 from admin_numeric_filter.admin import NumericFilterModelAdmin
 from dateutil.utils import today
 from django.contrib import messages
-from django.contrib.admin import action
+from django.contrib.admin import action, ModelAdmin
 from django.contrib.auth.models import Group
-from django.contrib.gis.admin import OSMGeoAdmin
 from django.contrib.messages import ERROR
 from django.db import ProgrammingError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -19,14 +18,13 @@ from bis.admin_filters import AgeFilter, NoBirthdayFilter, MainOrganizerOfEventR
     OrganizerOfEventOfAdministrationUnitFilter, ParticipatedInEventOfAdministrationUnitFilter, MemberDuringYearsFilter, \
     MemberOfAdministrationUnitFilter, QualificationCategoryFilter, QualificationValidAtFilter, UserStatsDateFilter, \
     FirstParticipatedInEventRangeFilter
-from bis.admin_helpers import list_filter_extra_title, list_filter_extra_text
+from bis.admin_helpers import list_filter_extra_title, list_filter_extra_text, LatLongWidget
 from bis.admin_permissions import PermissionMixin
 from bis.models import *
 from opportunities.models import OfferedHelp
 from other.models import DuplicateUser
 from translation.translate import _
 from xlsx_export.export import export_to_xlsx
-
 
 admin.site.unregister(TokenProxy)
 admin.site.unregister(Group)
@@ -44,6 +42,7 @@ class LocationContactPersonAdmin(PermissionMixin, NestedTabularInline):
 class LocationPatronAdmin(PermissionMixin, NestedTabularInline):
     model = LocationPatron
 
+
 @admin.action(description='Spoj lokality do poslední')
 def merge_selected_last(model_admin, request, queryset, last=True):
     try:
@@ -53,12 +52,14 @@ def merge_selected_last(model_admin, request, queryset, last=True):
     except AssertionError as e:
         messages.error(request, str(e))
 
+
 @admin.action(description='Spoj lokality do první')
 def merge_selected_first(model_admin, request, queryset):
     return merge_selected_last(model_admin, request, queryset, False)
 
+
 @admin.register(Location)
-class LocationAdmin(PermissionMixin, OSMGeoAdmin):
+class LocationAdmin(PermissionMixin, ModelAdmin):
     actions = [merge_selected_first, merge_selected_last]
     inlines = LocationContactPersonAdmin, LocationPatronAdmin, LocationPhotosAdmin,
     search_fields = 'name', 'description'
@@ -68,6 +69,10 @@ class LocationAdmin(PermissionMixin, OSMGeoAdmin):
         ('accessibility_from_prague', MultiSelectRelatedDropdownFilter), \
         ('accessibility_from_brno', MultiSelectRelatedDropdownFilter), \
         ('region', MultiSelectRelatedDropdownFilter)
+
+    formfield_overrides = {
+        PointField: {'widget': LatLongWidget},
+    }
 
     readonly_fields = 'get_events',
 
@@ -189,9 +194,11 @@ def get_member_action(membership_category, administration_unit):
         for user in queryset:
             slug = membership_category
             if slug == 'extend':
-                previous = Membership.objects.filter(user=user, administration_unit=administration_unit, year=today().year-1).first()
+                previous = Membership.objects.filter(user=user, administration_unit=administration_unit,
+                                                     year=today().year - 1).first()
                 if not previous:
-                    messages.error(request, f"Nelze prodloužit členství pro {user}, neb minulý rok nebyl/a členem {administration_unit}")
+                    messages.error(request,
+                                   f"Nelze prodloužit členství pro {user}, neb minulý rok nebyl/a členem {administration_unit}")
                     continue
 
                 slug = previous.category.slug
@@ -202,7 +209,8 @@ def get_member_action(membership_category, administration_unit):
                 slug = MembershipCategory.get_individual(user)
 
                 if not slug:
-                    messages.error(request, f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk")
+                    messages.error(request,
+                                   f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk")
                     continue
 
             Membership.objects.update_or_create(
@@ -306,7 +314,6 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         else:
             raise RuntimeError('First group not found in fieldsets')
 
-
         return fieldsets
 
     list_display = 'get_name', 'birthday', 'address', 'get_email', 'phone', 'get_qualifications', 'get_memberships'
@@ -387,4 +394,3 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
     @admin.display(description='Token')
     def get_token(self, obj):
         return f"Token {obj.auth_token}"
-

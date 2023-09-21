@@ -6,6 +6,7 @@ from admin_numeric_filter.forms import SliderNumericForm
 from django import forms
 from django.contrib.admin import ListFilter
 from django.contrib.admin.widgets import AdminDateWidget
+from django.contrib.gis.geos import Point
 from django.urls import reverse
 from rangefilter.filters import DateRangeFilter
 from urllib.parse import urlencode
@@ -176,6 +177,7 @@ def event_of_administration_unit_filter_factory(title, parameter_name, cache_nam
 
     return Filter
 
+
 class TextOnlyFilter(ListFilter):
     def has_output(self):
         return True
@@ -189,12 +191,14 @@ class TextOnlyFilter(ListFilter):
     def expected_parameters(self):
         return None
 
+
 def list_filter_extra_title(custom_title):
     class Filter(TextOnlyFilter):
         template = 'admin/title_filter.html'
         title = custom_title
 
     return Filter
+
 
 def list_filter_extra_text(custom_title):
     class Filter(TextOnlyFilter):
@@ -224,3 +228,30 @@ class CacheRangeNumericFilter(RangeNumericFilter):
 
         setattr(request, self.cache_name, filters)
         return queryset
+
+
+class LatLongWidget(forms.MultiWidget):
+    """
+    A Widget that splits Point input into latitude/longitude text inputs.
+    """
+
+    def __init__(self, attrs=None, date_format=None, time_format=None):
+        widgets = (forms.TextInput(attrs=attrs),
+                   forms.TextInput(attrs=attrs))
+        super(LatLongWidget, self).__init__(widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            return tuple(value.coords)
+        return None, None
+
+    def value_from_datadict(self, data, files, name):
+        lat = data[name + '_0']
+        long = data[name + '_1']
+
+        try:
+            point = Point(float(lat), float(long))
+        except ValueError:
+            return ''
+
+        return point
