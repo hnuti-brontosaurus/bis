@@ -210,8 +210,8 @@ if not DEBUG:
     CORS_ALLOWED_ORIGINS = [FULL_HOSTNAME]
 
     if "dev" in FULL_HOSTNAME:
-        CSRF_TRUSTED_ORIGINS.append("http://localhost")
-        CORS_ALLOWED_ORIGINS.append("http://localhost")
+        CSRF_TRUSTED_ORIGINS += ["http://localhost", "http://localhost:3000"]
+        CORS_ALLOWED_ORIGINS += ["http://localhost", "http://localhost:3000"]
 
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
