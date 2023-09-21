@@ -318,6 +318,7 @@ class AdministrationUnitExportSerializer(ModelSerializer):
             'id',
             'name',
             'abbreviation',
+            'description',
             'is_for_kids',
             'phone',
             'email',
