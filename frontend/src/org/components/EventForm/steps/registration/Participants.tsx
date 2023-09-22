@@ -62,8 +62,7 @@ export const Participants: FC<{
 
   const [showShowApplicationModal, setShowShowApplicationModal] =
     useState<boolean>(false)
-  const [showEmailListModal, setShowEmailListModal] =
-    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] = useState<boolean>(false)
 
   const showMessage = useShowMessage()
 
@@ -293,7 +292,8 @@ export const Participants: FC<{
             onClick={() => setShowEmailListModal(true)}
           >
             Zobraz seznam e-mailů
-          </Button>)}
+          </Button>
+        )}
         <Button type="button" primary small onClick={handleClickNewParticipant}>
           Přidej nového účastníka
         </Button>
@@ -340,67 +340,69 @@ export const Participants: FC<{
                 </tr>
               </thead>
               <tbody>
-              {[
-                  ...(otherOrganizers ?? [])
-                ].map((participant: original.User) => (
-                  <tr
-                    key={participant.id}
-                    className={classNames(
-                      highlightedParticipant === participant.id
-                        ? styles.highlightedRow
-                        : '',
-                      lastAddedId === participant.id &&
-                        timeOfLastAddition > Date.now() - 30000 &&
-                        styles.lightUp,
-                      highLightedRow === participant.id
-                        ? styles.highlightedRow
-                        : '',
-                    )}
-                    onMouseEnter={() => {
-                      setHighlightedRow(participant.id)
-                      chooseHighlightedParticipant(participant.id)
-                    }}
-                    onMouseLeave={() => {
-                      setHighlightedRow(undefined)
-                      chooseHighlightedParticipant(undefined)
-                    }}
-                    onClick={() => {
-                      setShowShowApplicationModal(true)
-                      setCurrentParticipantId(participant.id)
-                    }}
-                  >
-                    <td>
-                      {`${participant.first_name}${
-                        participant.nickname && `(${participant.nickname})`
-                      }`}
-                    </td>
-                    <td>{participant.last_name}</td>
-                    <td>{formatDateTime(participant.birthday)}</td>
-                    <td>
-                      {participant.address &&
-                        formatAddress(participant.address)}
-                    </td>
-                    <td>{participant.phone}</td>
-                    <td>{participant.email}</td>
-                    <td><div className={styles.org}>ORG</div></td>
-                    <TableCellIconButton
-                      disabled={true}
-                      icon={EditUser}
-                      action={() => {}}
-                      tooltipContent="Upravit účastníka"
-                      color={colors.yellow}
-                      ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
-                    />
-                    <TableCellIconButton
-                      disabled={true}
-                      icon={Bin}
-                      action={() => {}}
-                      tooltipContent="Smazat účastníka"
-                      color={colors.error}
-                      ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
-                    />
-                  </tr>
-                ))}
+                {[...(otherOrganizers ?? [])].map(
+                  (participant: original.User) => (
+                    <tr
+                      key={participant.id}
+                      className={classNames(
+                        highlightedParticipant === participant.id
+                          ? styles.highlightedRow
+                          : '',
+                        lastAddedId === participant.id &&
+                          timeOfLastAddition > Date.now() - 30000 &&
+                          styles.lightUp,
+                        highLightedRow === participant.id
+                          ? styles.highlightedRow
+                          : '',
+                      )}
+                      onMouseEnter={() => {
+                        setHighlightedRow(participant.id)
+                        chooseHighlightedParticipant(participant.id)
+                      }}
+                      onMouseLeave={() => {
+                        setHighlightedRow(undefined)
+                        chooseHighlightedParticipant(undefined)
+                      }}
+                      onClick={() => {
+                        setShowShowApplicationModal(true)
+                        setCurrentParticipantId(participant.id)
+                      }}
+                    >
+                      <td>
+                        {`${participant.first_name}${
+                          participant.nickname && `(${participant.nickname})`
+                        }`}
+                      </td>
+                      <td>{participant.last_name}</td>
+                      <td>{formatDateTime(participant.birthday)}</td>
+                      <td>
+                        {participant.address &&
+                          formatAddress(participant.address)}
+                      </td>
+                      <td>{participant.phone}</td>
+                      <td>{participant.email}</td>
+                      <td>
+                        <div className={styles.org}>ORG</div>
+                      </td>
+                      <TableCellIconButton
+                        disabled={true}
+                        icon={EditUser}
+                        action={() => {}}
+                        tooltipContent="Upravit účastníka"
+                        color={colors.yellow}
+                        ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                      />
+                      <TableCellIconButton
+                        disabled={true}
+                        icon={Bin}
+                        action={() => {}}
+                        tooltipContent="Smazat účastníka"
+                        color={colors.error}
+                        ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                      />
+                    </tr>
+                  ),
+                )}
                 {participants.results.map((participant: User) => (
                   <tr
                     key={participant.id}
@@ -492,7 +494,10 @@ export const Participants: FC<{
           onClose={() => {
             setShowEmailListModal(false)
           }}
-          lists={[{ users: participants.results, title: "E-maily účastníků" }]}
+          lists={[
+            { users: participants.results, title: 'E-maily účastníků' },
+            { users: otherOrganizers ?? [], title: 'E-maily orgů' },
+          ]}
           title="Výpis e-mailů"
         ></EmailListModal>
       )}
