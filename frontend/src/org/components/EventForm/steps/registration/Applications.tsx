@@ -415,7 +415,7 @@ export const Applications: FC<{
             openAddNewUser={openAddNewUser}
           />
         )}
-        {currentApplication && (
+        {currentApplication && currentApplication.user && (
           <ShowApplicationModal
             open={showShowApplicationModal}
             onClose={() => {
@@ -426,6 +426,7 @@ export const Applications: FC<{
             currentApplication={currentApplication}
             eventName={event.name}
             eventId={event.id}
+            userId={currentApplication.user}
             categories={membershipCategories?.results ?? []}
             administrationUnits={administrationUnits}
           ></ShowApplicationModal>

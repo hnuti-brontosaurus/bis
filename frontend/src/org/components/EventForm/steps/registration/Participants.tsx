@@ -400,7 +400,7 @@ export const Participants: FC<{
       ) : (
         <Loading>Stahujeme účastníky</Loading>
       )}
-      {currentParticipant && (
+      {currentParticipant && currentParticipantId && (
         <ShowApplicationModal
           open={showShowApplicationModal}
           onClose={() => {
