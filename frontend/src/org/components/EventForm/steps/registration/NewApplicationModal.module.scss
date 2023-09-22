@@ -89,16 +89,6 @@
   }
 }
 
-.showUserApplicationNameBox {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  .addUserButtons {
-    display: flex;
-    flex-direction: row;
-  }
-}
-
 .errorBirthdate {
   background-color: colors.$error-light !important;
 }
