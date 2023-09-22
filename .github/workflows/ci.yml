@@ -46,7 +46,7 @@ jobs:
   deploy-dev:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, '#deploy') }}
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Deploy new tag
