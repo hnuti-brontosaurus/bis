@@ -132,6 +132,22 @@ export const EvidenceStep = ({
               </ExternalButtonLink>
             </div>
           </FormSection>
+          <FormSection header="Follow up e-mail pro účastníky">
+            <InfoBox>
+              Kontakt s účastníky po akci dokresluje celkový dojem z akce a je základem toho, aby se účastníci rádi vraceli na další akce HB. Stáhni si šablonu pro follow up e-mail, který je nejlepší poslat všem účastníkům týden až dva po akci. Účastníkům tak ukážeš, že na ně ani po akci nezapomínáš.
+            </InfoBox>
+            <div>
+              <ExternalButtonLink
+                tertiary
+                href="https://docs.google.com/document/d/17hUEOvU4GH2WEFtd4ZScM_rke9Gv6Vzm/edit"
+                target="__blank"
+                rel="noopener noreferrer"
+                className={styles.outerLinkButton}
+              >
+                Odkaz na follow up e-mail <HiExternalLink />
+              </ExternalButtonLink>
+            </div>
+          </FormSection>
           {/* Údaje , které je třeba zadat po akci:
 Počet účastníků celkem *
 Z toho počet účastníků do 26 let * 
