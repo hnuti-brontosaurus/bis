@@ -59,8 +59,7 @@ export const Participants: FC<{
 
   const [showShowApplicationModal, setShowShowApplicationModal] =
     useState<boolean>(false)
-  const [showEmailListModal, setShowEmailListModal] =
-    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] = useState<boolean>(false)
 
   const showMessage = useShowMessage()
 
@@ -290,7 +289,8 @@ export const Participants: FC<{
             onClick={() => setShowEmailListModal(true)}
           >
             Zobraz seznam e-mailů
-          </Button>)}
+          </Button>
+        )}
         <Button type="button" primary small onClick={handleClickNewParticipant}>
           Přidej nového účastníka
         </Button>
@@ -400,7 +400,7 @@ export const Participants: FC<{
       ) : (
         <Loading>Stahujeme účastníky</Loading>
       )}
-      {currentParticipant && currentParticipantId && (
+      {currentParticipant && (
         <ShowApplicationModal
           open={showShowApplicationModal}
           onClose={() => {
@@ -424,7 +424,7 @@ export const Participants: FC<{
           onClose={() => {
             setShowEmailListModal(false)
           }}
-          lists={[{ users: participants.results, title: "E-maily účastníků" }]}
+          lists={[{ users: participants.results, title: 'E-maily účastníků' }]}
           title="Výpis e-mailů"
         ></EmailListModal>
       )}
