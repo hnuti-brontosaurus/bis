@@ -167,3 +167,19 @@ h2 {
 .addParticipantModal {
   z-index: 10;
 }
+
+.org {
+  background-color: #f5b942;
+  border: 3px solid #f5b942;
+}
+
+.orgTitle {
+  background-color: black;
+  border: 3px solid black;
+}
+
+.org, .orgTitle {
+  border-radius: 8px;
+  color: white;
+  padding: 0 4px;
+}

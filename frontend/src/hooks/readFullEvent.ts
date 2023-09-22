@@ -52,6 +52,7 @@ export const useReadFullEvent = (
     event?.main_organizer ? { id: event.main_organizer } : skipToken,
   )
   const otherOrganizersQuery = api.endpoints.readUsers.useQuery(
+    // @ts-ignore
     event?.other_organizers ? { id: event.other_organizers, pageSize: ALL_USERS } : skipToken,
   )
   const locationQuery = api.endpoints.readLocation.useQuery(

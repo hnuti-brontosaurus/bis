@@ -2823,7 +2823,7 @@ export type Event = {
   intended_for: EventIntendedForCategory
   administration_units: number[]
   main_organizer: string
-  other_organizers?: string[]
+  other_organizers?: User[]
   is_attendance_list_required?: boolean
   internal_note?: string
   duration: number
@@ -3101,7 +3101,7 @@ export type PatchedEvent = {
   intended_for?: number
   administration_units?: number[]
   main_organizer?: string
-  other_organizers?: string[]
+  other_organizers?: User[]
   is_attendance_list_required?: boolean
   internal_note?: string
   duration?: number
