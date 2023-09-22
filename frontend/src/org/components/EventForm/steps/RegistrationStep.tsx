@@ -7,6 +7,7 @@ import {
   FormSectionGroup,
   FormSubsection,
   FullSizeElement,
+  InfoBox,
   InlineSection,
   Label,
 } from 'components'
@@ -129,6 +130,10 @@ export const RegistrationStep = ({
 
               {watch('registrationMethod') === 'other' && (
                 <InlineSection>
+                  <InfoBox>
+                    Opravdu nechcete použít Standardní přihlášku?<br/>
+                    Standardní přihláška vám ulehčí práci, zjednoduší přihlašování účastníkům a poskytuje stejné funkce jako google formulář.
+                  </InfoBox>
                   <Label required>Odkaz na přihlášku</Label>{' '}
                   <FormInputError>
                     <input

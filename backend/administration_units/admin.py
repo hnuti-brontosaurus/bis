@@ -1,15 +1,16 @@
 from dateutil.utils import today
 from django.contrib import admin
-from django.contrib.gis.admin import OSMGeoAdmin
+from django.contrib.admin import ModelAdmin
+from django.contrib.gis.db.models import PointField
 from django.utils.safestring import mark_safe
 from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedModelAdmin, NestedTabularInline
+from nested_admin.nested import NestedTabularInline
 from solo.admin import SingletonModelAdmin
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement, AdministrationUnitAddress, \
     AdministrationUnitContactAddress, GeneralMeeting
 from bis.admin_filters import IsAdministrationUnitActiveFilter
-from bis.admin_helpers import get_admin_list_url
+from bis.admin_helpers import get_admin_list_url, LatLongWidget
 from bis.admin_permissions import PermissionMixin
 from bis.models import User
 from common.history import show_history
@@ -30,12 +31,15 @@ class GeneralMeetingAdmin(PermissionMixin, NestedTabularInline):
 
 
 @admin.register(AdministrationUnit)
-class AdministrationUnitAdmin(PermissionMixin, OSMGeoAdmin):
+class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
     actions = [export_to_xlsx]
     list_display = 'abbreviation', 'is_active', 'address', 'phone', 'get_email', 'www', 'chairman', 'category'
     search_fields = 'abbreviation', 'name', 'address__city', 'address__street', 'address__zip_code', 'phone', 'email'
     list_filter = IsAdministrationUnitActiveFilter, 'category', 'is_for_kids', \
-                  ('address__region', MultiSelectRelatedDropdownFilter)
+        ('address__region', MultiSelectRelatedDropdownFilter)
+    formfield_overrides = {
+        PointField: {'widget': LatLongWidget},
+    }
 
     autocomplete_fields = 'chairman', 'vice_chairman', 'manager', 'board_members'
 
@@ -84,7 +88,7 @@ class AdministrationUnitAdmin(PermissionMixin, OSMGeoAdmin):
 @admin.register(BrontosaurusMovement)
 class BrontosaurusMovementAdmin(PermissionMixin, SingletonModelAdmin):
     autocomplete_fields = 'director', 'finance_director', 'bis_administrators', 'office_workers', 'audit_committee', \
-                          'executive_committee', 'education_members'
+        'executive_committee', 'education_members'
     readonly_fields = 'history',
     exclude = '_history',
 

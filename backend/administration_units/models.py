@@ -9,6 +9,7 @@ from bis.helpers import permission_cache, update_roles
 from categories.models import AdministrationUnitCategory
 from common.abstract_models import BaseAddress
 from common.history import record_history
+from common.thumbnails import ThumbnailImageField
 from translation.translate import translate_model, _
 
 
@@ -16,6 +17,8 @@ from translation.translate import translate_model, _
 class AdministrationUnit(Model):
     name = CharField(max_length=255, unique=True)
     abbreviation = CharField(max_length=63, unique=True)
+    description = TextField(blank=True)
+    image = ThumbnailImageField(upload_to="administration_unit_images", blank=True)
 
     is_for_kids = BooleanField()
 
@@ -43,6 +46,9 @@ class AdministrationUnit(Model):
     _history = JSONField(default=dict)
 
     def clean(self):
+        if self.existed_till is not None:
+            return
+
         if not self.manager and not self.category.slug == "club":
             raise ValidationError('Hospodář není povinný pouze pro kluby')
 

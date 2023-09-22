@@ -35,6 +35,11 @@ class Command(BaseCommand):
             for_beginners=False,
             is_unexplored=True,
         ),
+        32943: dict(
+            program=LocationProgramCategory.objects.get(slug='nature'),
+            for_beginners=False,
+            is_unexplored=True,
+        ),
         2378: dict(
             program=LocationProgramCategory.objects.get(slug='monuments'),
             for_beginners=True,
@@ -46,6 +51,11 @@ class Command(BaseCommand):
             is_unexplored=False,
         ),
         2380: dict(
+            program=LocationProgramCategory.objects.get(slug='monuments'),
+            for_beginners=False,
+            is_unexplored=True,
+        ),
+        32944: dict(
             program=LocationProgramCategory.objects.get(slug='monuments'),
             for_beginners=False,
             is_unexplored=True,

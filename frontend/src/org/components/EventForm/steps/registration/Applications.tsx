@@ -47,8 +47,7 @@ export const Applications: FC<{
     useState<boolean>(false)
   const [showShowApplicationModal, setShowShowApplicationModal] =
     useState<boolean>(false)
-  const [showEmailListModal, setShowEmailListModal] =
-    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] = useState<boolean>(false)
   const [highLightedRow, setHighlightedRow] = useState<number>()
   const [currentApplicationId, setCurrentApplicationId] = useState<number>()
 
@@ -337,7 +336,9 @@ export const Applications: FC<{
                   ))}
                   {applicationsAccepted.length > 0 && (
                     <>
-                      <tr><td colSpan={ALL_COLUMNS}></td></tr>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS}></td>
+                      </tr>
                       <tr>
                         <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
                           Přidaní do účastníků
@@ -353,7 +354,9 @@ export const Applications: FC<{
                   ))}
                   {applicationsRejected.length > 0 && (
                     <>
-                      <tr><td colSpan={ALL_COLUMNS}></td></tr>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS}></td>
+                      </tr>
                       <tr>
                         <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
                           Odmítnuté přihlášky
@@ -393,9 +396,15 @@ export const Applications: FC<{
             setShowEmailListModal(false)
           }}
           lists={[
-            { users: applicationsPending, title: "E-maily všech přihlášených" },
-            { users: applicationsAccepted, title: "E-maily přijatých přihlášek" },
-            { users: applicationsRejected, title: "E-maily zamítnutých přihlášek" }
+            { users: applicationsPending, title: 'E-maily všech přihlášených' },
+            {
+              users: applicationsAccepted,
+              title: 'E-maily přijatých přihlášek',
+            },
+            {
+              users: applicationsRejected,
+              title: 'E-maily zamítnutých přihlášek',
+            },
           ]}
           title="Výpis e-mailů přihlášek"
         ></EmailListModal>
@@ -426,6 +435,7 @@ export const Applications: FC<{
             currentApplication={currentApplication}
             eventName={event.name}
             eventId={event.id}
+            userId={currentApplication.user}
             categories={membershipCategories?.results ?? []}
             administrationUnits={administrationUnits}
           ></ShowApplicationModal>

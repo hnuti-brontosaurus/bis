@@ -1,8 +1,13 @@
+import os
 from collections import Counter
 from copy import copy
 from itertools import zip_longest
 from os.path import join
+from pathlib import Path
+from shutil import make_archive, copy2
+from tempfile import TemporaryDirectory
 from typing import OrderedDict
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import openpyxl
 import pdfkit
@@ -11,6 +16,7 @@ from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.http import FileResponse
+from openpyxl.styles import PatternFill
 from rest_framework.serializers import ModelSerializer
 from xlsx2html import xlsx2html
 
@@ -18,6 +24,7 @@ from bis.helpers import print_progress
 from bis.models import User
 from event.models import Event
 from project.settings import BASE_DIR
+from translation.translate import _
 from xlsx_export.serializers import UserExportSerializer, EventExportSerializer, DonorExportSerializer, \
     DonationExportSerializer, AdministrationUnitExportSerializer
 
@@ -137,7 +144,8 @@ class XLSXWriter:
 @admin.action(description='Exportuj data')
 def export_to_xlsx(model_admin, request, queryset):
     serializer_class = \
-        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer, AdministrationUnitExportSerializer]
+        [s for s in [UserExportSerializer, EventExportSerializer, DonorExportSerializer, DonationExportSerializer,
+                     AdministrationUnitExportSerializer]
          if s.Meta.model is queryset.model][0]
     queryset = serializer_class.get_related(queryset)
 
@@ -150,13 +158,14 @@ def export_to_xlsx(model_admin, request, queryset):
     return FileResponse(open(file.name, 'rb'))
 
 
-def get_attendance_list_data(event):
+def get_attendance_list_data(event, for_admin=False):
     organizers = list(event.other_organizers.all())
     applications = (registration := getattr(event, "registration", [])) and list(registration.applications.all())
+    applications = [application for application in applications if application.state not in ["cancelled", "rejected"]]
     for item in (organizers + applications):
-        address = getattr(item, 'address', None)
+        address = getattr(item, 'address', "")
         if not address and (applications_user := getattr(item, 'user', None)):
-            address = getattr(applications_user, 'address', None)
+            address = getattr(applications_user, 'address', "")
         yield (
             item.first_name + ' ' + item.last_name,
             item.birthday and item.birthday.strftime("%d. %m. %Y"),
@@ -164,10 +173,12 @@ def get_attendance_list_data(event):
             address and address.zip_code,
             item.email,
             str(item.phone),
+            item in organizers
         )
 
-    for i in range(max(10, len(applications) // 10)):
-        yield 6 * ('',)
+    if not for_admin:
+        for i in range(max(10, len(applications) // 10)):
+            yield 7 * ('',)
 
 
 def get_attendance_list_rows(ws):
@@ -203,14 +214,17 @@ def get_attendance_list(event: Event):
     wb = openpyxl.load_workbook(join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx"))
     ws = wb.active
 
-    ws['C2'] = 5 * event.name
+    ws['C2'] = event.name
     ws['C3'] = event.get_date()
     ws['C4'] = event.location.name
     ws['C5'] = ", ".join(au.abbreviation for au in event.administration_units.all())
 
     for row, data in zip(get_attendance_list_rows(ws), get_attendance_list_data(event)):
-        for cell, value in zip("BCDEFG", data):
+        for cell, value in zip("BCDEFG", data[:-1]):
             ws[f"{cell}{row}"] = value
+        if data[-1]:
+            for cell in "BCDEFGH":
+                ws[f"{cell}{row}"].fill = PatternFill(start_color="d5e9dc", fill_type="solid")
 
     tmp_xlsx = NamedTemporaryFile(mode='w', suffix='.xlsx', newline='', encoding='utf8',
                                   prefix='attendance_list_')
@@ -234,3 +248,54 @@ def get_attendance_list(event: Event):
         'xlsx': FileResponse(open(tmp_xlsx.name, 'rb')),
         'pdf': FileResponse(open(tmp_pdf.name, 'rb'))
     }
+
+
+def export_files(event: Event):
+    def mkdir(path):
+        path.mkdir()
+        return path
+
+    file_name = f"Soubory {event.name}"
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        if hasattr(event, 'finance'):
+            finance_path = mkdir(tmp_dir / _("models.EventFinance.name"))
+
+            if event.finance.budget:
+                copy2(event.finance.budget.path, finance_path)
+
+            receipts_path = mkdir(finance_path / _("models.EventFinanceReceipt.name_plural"))
+            for receipt in event.finance.receipts.all():
+                copy2(receipt.receipt.path, receipts_path)
+
+        if hasattr(event, 'propagation'):
+            propagation_path = mkdir(tmp_dir / _("models.EventPropagation.name"))
+
+            images_path = mkdir(propagation_path / _("models.EventPropagationImage.name_plural"))
+            for image in event.propagation.images.all():
+                copy2(image.image.path, images_path)
+
+        if hasattr(event, 'record'):
+            record_path = mkdir(tmp_dir / _("models.EventRecord.name"))
+
+            attendance_list_pages_path = mkdir(record_path / _("models.EventAttendanceListPage.name_plural"))
+            for attendance_list_page in event.record.attendance_list_pages.all():
+                copy2(attendance_list_page.page.path, attendance_list_pages_path)
+
+            photos_path = mkdir(record_path / _("models.EventPhoto.name_plural"))
+            for photo in event.record.photos.all():
+                copy2(photo.photo.path, photos_path)
+
+        file = NamedTemporaryFile(mode='w', suffix='.zip', newline='', encoding='utf8',
+                                  prefix=file_name + ' ')
+
+        with ZipFile(file.name, 'w', ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(tmp_dir):
+                for _file in files:
+                    zip_file.write(os.path.join(root, _file),
+                                   os.path.relpath(os.path.join(root, _file), tmp_dir))
+
+        os.chdir(tmp_dir)
+        make_archive(file.name, 'zip')
+
+    return FileResponse(open(file.name, 'rb'))

@@ -26,6 +26,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
+import { useExportAttendanceList } from './useExportAttendanceList'
 import type * as original from 'app/services/testApi'
 
 export const Participants: FC<{
@@ -85,6 +86,9 @@ export const Participants: FC<{
 
   const [exportParticipantsList, { isLoading: isExportLoading }] =
     useExportParticipantsList()
+
+  const [exportAttendanceList, { isLoading: isGeneratingPdf }] =
+    useExportAttendanceList()
 
   const addParticipant = async (newParticipantId: string) => {
     let newParticipants: string[] = []
@@ -284,6 +288,17 @@ export const Participants: FC<{
         <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
         </div>
+        <Button
+          secondary
+          small
+          type="button"
+          onClick={() => {
+            exportAttendanceList({ eventId, format: 'pdf' })
+          }}
+          isLoading={isGeneratingPdf}
+        >
+          Tiskni prezenční listinu
+        </Button>
         {participants && participants?.results?.length > 0 && (
           <Button
             secondary

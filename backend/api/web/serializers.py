@@ -217,6 +217,8 @@ class AdministrationUnitSerializer(ModelSerializer):
             'id',
             'name',
             'abbreviation',
+            'description',
+            'image',
             'is_for_kids',
             'phone',
             'email',

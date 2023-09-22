@@ -96,6 +96,8 @@ AdministrationUnit:
     abbreviation:
       - Zkrácený název
       - Běžně užívaný název, např. Zvonek, Orchis...
+    description:
+      - Krátké představení
     phone: Telefon
     category: Typ jednotky
     board_members: Členové představenstva
@@ -406,8 +408,8 @@ EventProgramCategory:
   name: Program akce
   name_plural: Programy akcí
 DonationSourceCategory:
-  name: Zdroj dotace
-  name_plural: Zdroje dotací
+  name: Zdroj daru
+  name_plural: Zdroje darů
 OrganizerRoleCategory:
   name: Organizátorská role
   name_plural: Organizátorské role

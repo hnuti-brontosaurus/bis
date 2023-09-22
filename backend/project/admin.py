@@ -11,8 +11,8 @@ class MyAdminSite(admin.AdminSite):
     index_title = _('admin.subheader')
     empty_value_display = 'Nevyplněno'
 
-    def get_app_list(self, request):
-        list = super().get_app_list(request)
+    def get_app_list(self, request, app_label=None):
+        list = super().get_app_list(request, app_label)
 
         order = [
             'administration_units',
