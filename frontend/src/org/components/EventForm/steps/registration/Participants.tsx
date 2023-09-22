@@ -26,6 +26,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
+import { useExportAttendanceList } from './useExportAttendanceList'
 
 export const Participants: FC<{
   eventId: number
@@ -59,8 +60,7 @@ export const Participants: FC<{
 
   const [showShowApplicationModal, setShowShowApplicationModal] =
     useState<boolean>(false)
-  const [showEmailListModal, setShowEmailListModal] =
-    useState<boolean>(false)
+  const [showEmailListModal, setShowEmailListModal] = useState<boolean>(false)
 
   const showMessage = useShowMessage()
 
@@ -83,6 +83,9 @@ export const Participants: FC<{
 
   const [exportParticipantsList, { isLoading: isExportLoading }] =
     useExportParticipantsList()
+
+  const [exportAttendanceList, { isLoading: isGeneratingPdf }] =
+    useExportAttendanceList()
 
   const addParticipant = async (newParticipantId: string) => {
     let newParticipants: string[] = []
@@ -282,6 +285,17 @@ export const Participants: FC<{
         <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
         </div>
+        <Button
+          secondary
+          small
+          type="button"
+          onClick={() => {
+            exportAttendanceList({ eventId, format: 'pdf' })
+          }}
+          isLoading={isGeneratingPdf}
+        >
+          Tiskni prezenční listinu
+        </Button>
         {participants && participants?.results?.length > 0 && (
           <Button
             secondary
@@ -290,7 +304,8 @@ export const Participants: FC<{
             onClick={() => setShowEmailListModal(true)}
           >
             Zobraz seznam e-mailů
-          </Button>)}
+          </Button>
+        )}
         <Button type="button" primary small onClick={handleClickNewParticipant}>
           Přidej nového účastníka
         </Button>
@@ -424,7 +439,7 @@ export const Participants: FC<{
           onClose={() => {
             setShowEmailListModal(false)
           }}
-          lists={[{ users: participants.results, title: "E-maily účastníků" }]}
+          lists={[{ users: participants.results, title: 'E-maily účastníků' }]}
           title="Výpis e-mailů"
         ></EmailListModal>
       )}
