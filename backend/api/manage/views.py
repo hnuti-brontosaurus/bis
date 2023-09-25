@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from django.core.management import call_command
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import BasePermission
@@ -12,5 +14,5 @@ class IsSuperuser(BasePermission):
 @api_view(['post'])
 @permission_classes([IsSuperuser])
 def manage(request, command):
-    call_command(command)
+    ThreadPoolExecutor().submit(call_command, command)
     return Response()
