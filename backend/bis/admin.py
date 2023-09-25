@@ -8,6 +8,7 @@ from django.db import ProgrammingError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedTabularInline, NestedStackedInline, NestedModelAdminMixin
 from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
