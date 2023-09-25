@@ -96,18 +96,26 @@ class DashboardItem(Model):
                 )
             )
 
-        for event in user.events_where_was_organizer.filter(start__gte=today(), is_canceled=False):
+        future_events = []
+        for event in (user.events_where_was_organizer
+                .exclude(is_closed=True)
+                .exclude(is_canceled=True)
+                .filter(start__gte=today())):
             dashboard_items.append(
                 DashboardItem(
                     date=event.start,
                     name=f'Organizuješ akci {event.name}'
                 )
             )
+            future_events.append(event)
 
         for event in (user.events_where_was_organizer
                 .exclude(is_closed=True)
                 .exclude(is_canceled=True)
                 .filter(is_complete=False)):
+            if event in future_events:
+                continue
+
             dashboard_items.append(
                 DashboardItem(
                     date=event.start + timedelta(days=20),
