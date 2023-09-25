@@ -104,7 +104,10 @@ class DashboardItem(Model):
                 )
             )
 
-        for event in user.events_where_was_organizer.filter(is_canceled=False, is_complete=False):
+        for event in (user.events_where_was_organizer
+                .exclude(is_closed=True)
+                .exclude(is_canceled=True)
+                .filter(is_complete=False)):
             dashboard_items.append(
                 DashboardItem(
                     date=event.start + timedelta(days=20),
