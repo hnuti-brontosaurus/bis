@@ -89,12 +89,12 @@ def set_primary_email(instance: User, **kwargs):
     email = email and email.email
     if email != instance.email:
         if instance.email is not None:
-            UserEmail.objects.get_or_create(user=instance, email=instance.email)
-            all_emails = sorted(instance.all_emails.all(), key=lambda x: x != instance.email)
+            if not instance.all_emails.filter(email=instance.email).exists():
+                UserEmail.objects.bulk_create([UserEmail(user=instance, email=instance.email)])
+            all_emails = sorted(instance.all_emails.all(), key=lambda x: x.email != instance.email)
             for i, obj in enumerate(all_emails):
                 if obj.order != i:
-                    obj.order = i
-                    obj.save()
+                    UserEmail.objects.filter(id=obj.id).update(order=i)
         else:
             instance.email = email
             instance.save()
