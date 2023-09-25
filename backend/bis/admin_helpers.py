@@ -229,29 +229,29 @@ class CacheRangeNumericFilter(RangeNumericFilter):
         setattr(request, self.cache_name, filters)
         return queryset
 
+class LatLongWidget(forms.TextInput):
+    def __init__(self, attrs=None):
+        if attrs is None:
+            attrs = {}
+        attrs["placeholder"] = "49.20091N, 16.62262E"
+        super().__init__(attrs)
 
-class LatLongWidget(forms.MultiWidget):
-    """
-    A Widget that splits Point input into latitude/longitude text inputs.
-    """
-
-    def __init__(self, attrs=None, date_format=None, time_format=None):
-        widgets = (forms.TextInput(attrs=attrs),
-                   forms.TextInput(attrs=attrs))
-        super(LatLongWidget, self).__init__(widgets, attrs)
-
-    def decompress(self, value):
-        if value:
-            return tuple(value.coords)
-        return None, None
+    def format_value(self, value):
+        if isinstance(value, Point):
+            coords = value.coords[::-1]
+            return f"{coords[0]}N, {coords[1]}E"
+        return value
 
     def value_from_datadict(self, data, files, name):
-        lat = data[name + '_0']
-        long = data[name + '_1']
+        value = data.get(name)
+        if not value:
+            return value
 
         try:
-            point = Point(float(lat), float(long))
-        except ValueError:
-            return ''
+            coords = [c.strip() for c in value.split(",")]
+            assert coords[0][-1] == "N" and coords[1][-1] == "E"
+            return Point(float(coords[1][:-1]), float(coords[0][:-1]))
+        except (IndexError, AssertionError, ValueError):
+            pass
 
-        return point
+        return value

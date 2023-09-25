@@ -30,6 +30,7 @@ generic:
   file: Soubor
   comment: Komentář
   emoji: Smajlík
+  gps_location: GPS lokace
 
 admin:
   header: BIS - Brontosauří informační systém
