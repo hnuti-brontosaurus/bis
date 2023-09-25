@@ -12,6 +12,8 @@ def record_history(history: dict, date, user, position):
         if range[1] == str(date - timedelta(days=1)):
             range[1] = str(date)
             break
+        if range[1] == str(date):
+            return
     else:
         date_ranges.append([str(date), str(date)])
 
