@@ -366,6 +366,12 @@ class UserSerializer(ModelSerializer):
                 elif user.is_board_member:
                     if instance.is_superuser or instance.is_office_worker:
                         raise ValidationError('Cannot change email of superuser or office worker as board member')
+                    for user_administration_unit in user.administration_units.all():
+                        for instance_administration_unit in instance.administration_units.all():
+                            if user_administration_unit == instance_administration_unit:
+                                break
+                        else:
+                            raise ValidationError('Cannot change email of board member of different administration unit then yours')
                 elif user.is_organizer:
                     if instance.is_superuser or instance.is_office_worker or instance.is_board_member:
                         raise ValidationError('Cannot change email of superuser, office worker or board member as '
