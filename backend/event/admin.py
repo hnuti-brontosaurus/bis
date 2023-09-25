@@ -141,8 +141,9 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
 
         html = [
             # f'<table>{"".join(rows)}</table>',
-            '<input type="submit" value="Exportovat e-maily účastníků" name="_attendance_list_emails_export">',
-            '<input type="submit" value="Exportovat e-maily účastníků a organizátorů" name="_attendance_list_all_emails_export">',
+            '<input type="submit" value="E-maily účastníků" name="_attendance_list_emails_export"><br>',
+            '<input type="submit" value="E-maily účastníků a organizátorů" name="_attendance_list_all_emails_export"><br>',
+            '<input type="submit" value="Zobrazit přihlášky / účastníky v BISu" name="_redirect_to_fe_attendance_list"><br>',
         ]
         return mark_safe("".join(html))
 
@@ -285,6 +286,8 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 return export_emails(..., ..., obj.record.get_all_participants())
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")
+            if "_redirect_to_fe_attendance_list" in request.POST:
+                return HttpResponseRedirect(f"/org/akce/{object_id}/prihlasky")
             if "_files_export" in request.POST:
                 return export_files(obj)
 

@@ -5,14 +5,16 @@
         <div class="submit-row">
             <input type="submit" value="Export souborů" name="_files_export"/>
             <br>
-            <input type="submit" value="Export prezenční listiny do xlsx" name="_attendance_list_xlsx_export"/>
-            <input type="submit" value="Export prezenční listiny pro tisk" name="_attendance_list_pdf_export"/>
+          Prezenční listina:
+            <input type="submit" value="xlsx" name="_attendance_list_xlsx_export"/>
+            <input type="submit" value="pdf" name="_attendance_list_pdf_export"/>
             <br>
-            <input type="submit" value="Export účastníků do xlsx" name="_participants_xlsx_export"/>
-            <input type="submit" value="Exportovat e-maily účastníků" name="_attendance_list_emails_export">
-            <input type="submit" value="Exportovat e-maily účastníků a organizátorů" name="_attendance_list_all_emails_export">
+          Export účastníků:
+            <input type="submit" value="xlsx" name="_participants_xlsx_export"/>
             <br>
-            <input type="submit" value="Zobrazit v BISu pro organizátory" name="_redirect_to_fe"/>
+          Zobrazit v BISu:
+            <input type="submit" value="Událost" name="_redirect_to_fe"/>
+            <input type="submit" value="Přihlášky / účastníci" name="_redirect_to_fe_attendance_list"/>
         </div>
     {% endif %}
     {{ block.super }}
