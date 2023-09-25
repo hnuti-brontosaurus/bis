@@ -60,7 +60,7 @@ class Permissions:
 
         if self.user.is_education_member:
             return self.model in [Qualification, User, UserAddress, UserContactAddress, UserClosePerson, Feedback,
-                                  DuplicateUser]
+                                  DuplicateUser, Event] or self.model._meta.app_label in ['event']
 
         raise RuntimeError("Should never happen")
 

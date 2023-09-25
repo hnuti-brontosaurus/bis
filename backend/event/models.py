@@ -104,6 +104,9 @@ class Event(Model):
     @classmethod
     def filter_queryset(cls, queryset, perm):
         if perm.source == 'backend':
+            if perm.user.is_education_member:
+                return queryset
+
             return queryset.filter(administration_units__board_members=perm.user)
 
         queries = [
