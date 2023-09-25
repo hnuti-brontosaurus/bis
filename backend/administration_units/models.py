@@ -72,7 +72,7 @@ class AdministrationUnit(Model):
             if user not in [self.chairman, self.vice_chairman, self.manager]:
                 record_history(self._history, date, user, 'Člen představenstva')
 
-        AdministrationUnit.objects.filter(id=self.id).update(_history=self._history)
+        AdministrationUnit.objects.bulk_update([self], ["_history"])
 
     @permission_cache
     def has_edit_permission(self, user):

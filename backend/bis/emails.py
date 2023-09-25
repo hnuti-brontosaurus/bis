@@ -76,9 +76,6 @@ def event_created(event):
     return
 
 
-def event_closed(event, auto=False):
-    return
-
 
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
