@@ -12,4 +12,5 @@ class Command(BaseCommand):
         BrontosaurusMovement.get().record_history(date)
 
         for administration_unit in AdministrationUnit.objects.all():
-            administration_unit.record_history(date)
+            if administration_unit.is_active():
+                administration_unit.record_history(date)

@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.contrib.admin import display
 from django.contrib.gis.db.models import *
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -72,11 +72,15 @@ class AdministrationUnit(Model):
             if user not in [self.chairman, self.vice_chairman, self.manager]:
                 record_history(self._history, date, user, 'Člen představenstva')
 
-        self.save()
+        AdministrationUnit.objects.filter(id=self.id).update(_history=self._history)
 
     @permission_cache
     def has_edit_permission(self, user):
         return user in self.board_members.all()
+
+    @display(description='Je aktivní', boolean=True)
+    def is_active(self):
+        return self.existed_till is None
 
 
 @translate_model

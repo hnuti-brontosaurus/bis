@@ -49,10 +49,6 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
 
     inlines = AdministrationUnitAddressAdmin, AdministrationUnitContactAddressAdmin, GeneralMeetingAdmin
 
-    @admin.display(description='Je aktivní', boolean=True)
-    def is_active(self, obj):
-        return obj.existed_till is None
-
     @admin.display(description='Historie')
     def history(self, obj):
         return show_history(obj._history)
