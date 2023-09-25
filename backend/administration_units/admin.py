@@ -33,7 +33,7 @@ class GeneralMeetingAdmin(PermissionMixin, NestedTabularInline):
 @admin.register(AdministrationUnit)
 class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
     actions = [export_to_xlsx]
-    list_display = 'abbreviation', 'is_active', 'address', 'phone', 'get_email', 'www', 'chairman', 'category'
+    list_display = 'abbreviation', 'is_active', 'address', 'phone', 'email', 'www', 'chairman', 'category'
     search_fields = 'abbreviation', 'name', 'address__city', 'address__street', 'address__zip_code', 'phone', 'email'
     list_filter = IsAdministrationUnitActiveFilter, 'category', 'is_for_kids', \
         ('address__region', MultiSelectRelatedDropdownFilter)
@@ -56,12 +56,6 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
     @admin.display(description='Historie')
     def history(self, obj):
         return show_history(obj._history)
-
-    @admin.display(description='E-mail')
-    def get_email(self, obj):
-        if not obj.email: return None
-        name, host = obj.email.split('@')
-        return mark_safe(f'{name}<br>@{host}')
 
     @admin.display(description='Uživatelé s platným členstvím v tomto OJ')
     def get_members(self, obj):

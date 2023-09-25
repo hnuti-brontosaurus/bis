@@ -8,7 +8,6 @@ from django.db import ProgrammingError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedTabularInline, NestedStackedInline, NestedModelAdminMixin
 from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
@@ -316,7 +315,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
         return fieldsets
 
-    list_display = 'get_name', 'birthday', 'address', 'get_email', 'phone', 'get_qualifications', 'get_memberships'
+    list_display = 'get_name', 'get_links', 'birthday', 'address', 'email', 'phone', 'get_qualifications', 'get_memberships'
 
     list_filter = [
         list_filter_extra_text("Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
@@ -394,3 +393,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
     @admin.display(description='Token')
     def get_token(self, obj):
         return f"Token {obj.auth_token}"
+
+    @admin.display(description="Odkazy")
+    def get_links(self, obj):
+        return mark_safe(f'<a target="_blank" href="/profil/{obj.id}/" title="Zobrazit v BISu pro organizátory">📄</a><br>'
+                         f'<a target="_blank" href="/profil/{obj.id}/upravit" title="Upravit v BISu pro organizátory">📝</a><br>')

@@ -404,15 +404,9 @@ class User(AbstractBaseUser):
 
     @admin.display(description='E-mailové adresy')
     def get_all_emails(self):
-        return mark_safe("<br>".join(e.email for e in self.all_emails.all()))
-
-    @admin.display(description='E-mail')
-    def get_email(self):
-        if not self.email:
-            return ''
-
-        name, host = self.email.split('@')
-        return mark_safe(f'{name}<br>@{host}')
+        emails = [e.email for e in self.all_emails.all()]
+        emails.append(f'<a target="_blank" href="/profil/{self.id}/upravit">Změnit e-mail přes org. BIS</a>')
+        return mark_safe("<br>".join(emails))
 
     @admin.display(description='Aktivní kvalifikace')
     def get_qualifications(self):

@@ -194,13 +194,13 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             del actions['mark_as_closed']
         return actions
 
-    list_display = 'name', 'frontend_link', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
+    list_display = 'name', 'get_links', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
         'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
         'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
     list_select_related = 'location', 'category', 'program', 'record'
 
     @admin.display(description="Odkazy")
-    def frontend_link(self, obj):
+    def get_links(self, obj):
         return mark_safe(f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
                          f'<a target="_blank" href="/org/akce/{obj.id}/prihlasky" title="Zobrazit přihlášky / účastníky">👪</a><br>'
                          f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
