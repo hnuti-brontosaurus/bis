@@ -199,9 +199,11 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
     list_select_related = 'location', 'category', 'program', 'record'
 
-    @admin.display(description="Odkaz")
+    @admin.display(description="Odkazy")
     def frontend_link(self, obj):
-        return mark_safe(f'<a href="/org/akce/{obj.id}">org.<br>přístup</a>')
+        return mark_safe(f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
+                         f'<a target="_blank" href="/org/akce/{obj.id}/prihlasky" title="Zobrazit přihlášky / účastníky">👪</a><br>'
+                         f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
 
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
     def get_administration_units(self, obj):
