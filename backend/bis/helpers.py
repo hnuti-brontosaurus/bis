@@ -1,5 +1,6 @@
 import re
 from collections import Counter
+from functools import wraps
 from time import time
 
 from dateutil.relativedelta import relativedelta
@@ -51,8 +52,8 @@ def permission_cache(f):
 
 def update_roles(*roles):
     def decorator(f):
+        @wraps(f)
         def wrapper(self, *args, **kwargs):
-
             to_update = set()
             old = self._meta.model.objects.filter(id=self.id).first()
             if old:
@@ -71,6 +72,7 @@ def update_roles(*roles):
         return wrapper
 
     return decorator
+
 
 
 class paused_validation:
@@ -109,6 +111,25 @@ def with_paused_emails(f):
             return f(*args, **kwargs)
 
     return wrapper
+
+def on_save(fn, when="always"):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            if when == "always":
+                run_fn = True
+            elif when == "on_create":
+                run_fn = self._state.adding
+            else:
+                assert False, "Invalid when argument"
+
+            f(self, *args, **kwargs)
+
+            if run_fn:
+                fn(self)
+        return wrapper
+    return decorator
+
 
 
 class AgeStats:

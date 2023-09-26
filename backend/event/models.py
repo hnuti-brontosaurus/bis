@@ -11,7 +11,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 from tinymce.models import HTMLField
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import permission_cache, update_roles, filter_queryset_with_multiple_or_queries
+from bis import emails
+from bis.helpers import permission_cache, update_roles, filter_queryset_with_multiple_or_queries, on_save
 from bis.models import Location, User, Qualification
 from categories.models import GrantCategory, EventIntendedForCategory, DietCategory, \
     EventCategory, EventProgramCategory, EventGroupCategory
@@ -74,6 +75,7 @@ class Event(Model):
             Qualification.validate_main_organizer(self, self.main_organizer)
 
     @update_roles('main_organizer')
+    @on_save(emails.event_created, "on_create")
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not cache.get('skip_validation'): self.clean()
         super().save(force_insert, force_update, using, update_fields)

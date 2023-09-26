@@ -6,7 +6,6 @@ from vokativ import vokativ
 from categories.models import PronounCategory
 from ecomail import ecomail
 from project.settings import EMAIL
-from questionnaire.models import EventApplication
 
 SENDER_NAME = 'BIS'
 
@@ -24,7 +23,7 @@ def password_reset_link(user, email, login_code):
     )
 
 
-def application_created(application: EventApplication):
+def application_created(application):
     event = application.event_registration.event
     variables = {
         'event_name': event.name,

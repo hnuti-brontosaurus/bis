@@ -1,6 +1,8 @@
 from django.contrib.gis.db.models import *
 from phonenumber_field.modelfields import PhoneNumberField
 
+from bis import emails
+from bis.helpers import on_save
 from bis.models import User
 from categories.models import PronounCategory
 from common.abstract_models import BaseContact, BaseAddress
@@ -37,6 +39,10 @@ class EventApplication(Model):
 
     def __str__(self):
         return f'Přihláška na akci'
+
+    @on_save(emails.application_created, "on_create")
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        super().save(force_insert, force_update, using, update_fields)
 
     @classmethod
     def filter_queryset(cls, queryset, perm):

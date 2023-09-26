@@ -325,7 +325,6 @@ class User(AbstractBaseUser):
     def merge_with(self, other):
         assert other != self
         with paused_validation():
-            print(cache.get('skip_validation'))
             for field in self._meta.fields:
                 if field.name in ['id', 'password', '_import_id', 'is_active', 'last_login', '_str', 'roles', 'email',
                                   '_search_id', 'vokativ']:
