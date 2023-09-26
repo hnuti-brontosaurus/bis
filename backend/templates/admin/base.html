@@ -76,6 +76,38 @@
             transform: scaleY(-1);
         }
 
+        #result_list th.action-checkbox-column,  #result_list td.action-checkbox {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            width: 40px;
+            max-width: 40px;
+            min-width: 40px;
+            padding: 8px 0 0 0;
+        }
+
+        #result_list th.action-checkbox-column + th,  #result_list td.action-checkbox + th {
+            position: sticky;
+            left: 40px;
+            z-index: 2;
+        }
+
+        #result_list thead th,
+        #result_list tbody tr:nth-child(even) td.action-checkbox,
+        #result_list tbody tr:nth-child(even) td.action-checkbox + th {
+            background: #f8f8f8;
+        }
+
+        #result_list tbody tr:nth-child(odd) td.action-checkbox,
+        #result_list tbody tr:nth-child(odd) td.action-checkbox + th {
+            background: #fff;
+        }
+
+        #result_list tbody tr.selected td.action-checkbox,
+        #result_list tbody tr.selected td.action-checkbox + th {
+            background: rgb(255, 249, 217);
+        }
+
     </style>
     <link rel="icon" href="{% static 'favicon.png' %}" sizes="32x32"/>
 {% endblock %}
