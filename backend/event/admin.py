@@ -276,16 +276,20 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         if object_id:
             to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
             obj = self.get_object(request, unquote(object_id), to_field)
+            has_record = hasattr(obj, 'record')
             if "_attendance_list_xlsx_export" in request.POST:
                 return get_attendance_list(obj)['xlsx']
             if "_attendance_list_pdf_export" in request.POST:
                 return get_attendance_list(obj)['pdf']
             if "_participants_xlsx_export" in request.POST:
-                return export_to_xlsx(self, request, obj.record.get_all_participants())
+                participants = has_record and obj.record.get_all_participants() or User.objects.none()
+                return export_to_xlsx(self, request, participants)
             if "_attendance_list_emails_export" in request.POST:
-                return export_emails(..., ..., obj.record.participants.all())
+                participants = has_record and obj.record.participants.all() or User.objects.none()
+                return export_emails(..., ..., participants)
             if "_attendance_list_all_emails_export" in request.POST:
-                return export_emails(..., ..., obj.record.get_all_participants())
+                participants = has_record and obj.record.get_all_participants() or User.objects.none()
+                return export_emails(..., ..., participants)
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")
             if "_redirect_to_fe_attendance_list" in request.POST:
