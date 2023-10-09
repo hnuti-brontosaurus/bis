@@ -35,7 +35,7 @@ class AdministrationUnitCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(MembershipCategory)
 class MembershipCategoryAdmin(PermissionMixin, admin.ModelAdmin):
-    pass
+    list_display = 'name', 'price'
 
 
 @admin.register(EventGroupCategory)

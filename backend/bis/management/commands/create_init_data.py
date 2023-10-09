@@ -89,12 +89,12 @@ class Command(BaseCommand):
                                                             defaults=dict(name='Regionální centrum'))
         AdministrationUnitCategory.objects.update_or_create(slug="club", defaults=dict(name='Klub'))
 
-        MembershipCategory.objects.update_or_create(slug='family', defaults=dict(name='první rodinný člen'))
-        MembershipCategory.objects.update_or_create(slug='family_member', defaults=dict(name='další rodinný člen'))
-        MembershipCategory.objects.update_or_create(slug='kid', defaults=dict(name='dětské do 15 let'))
-        MembershipCategory.objects.update_or_create(slug='student', defaults=dict(name='individuální 15-26 let'))
-        MembershipCategory.objects.update_or_create(slug='adult', defaults=dict(name='individuální nad 26 let'))
-        MembershipCategory.objects.update_or_create(slug='member_elsewhere', defaults=dict(name='platil v jiném ZČ'))
+        MembershipCategory.objects.update_or_create(slug='family', defaults=dict(name='první rodinný člen', price=350))
+        MembershipCategory.objects.update_or_create(slug='family_member', defaults=dict(name='další rodinný člen', price=25))
+        MembershipCategory.objects.update_or_create(slug='kid', defaults=dict(name='dětské do 15 let', price=150))
+        MembershipCategory.objects.update_or_create(slug='student', defaults=dict(name='individuální 15-26 let', price=100))
+        MembershipCategory.objects.update_or_create(slug='adult', defaults=dict(name='individuální nad 26 let', price=350))
+        MembershipCategory.objects.update_or_create(slug='member_elsewhere', defaults=dict(name='platil v jiném ZČ', price=0))
 
         EventGroupCategory.objects.update_or_create(slug='camp', defaults=dict(name='Tábor'))
         EventGroupCategory.objects.update_or_create(slug='weekend_event', defaults=dict(name='Víkendovka'))
