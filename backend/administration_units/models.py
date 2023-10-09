@@ -17,7 +17,7 @@ from translation.translate import translate_model, _
 class AdministrationUnit(Model):
     name = CharField(max_length=255, unique=True)
     abbreviation = CharField(max_length=63, unique=True)
-    description = TextField(blank=True)
+    description = TextField(blank=True, max_length=400)
     image = ThumbnailImageField(upload_to="administration_unit_images", blank=True)
 
     is_for_kids = BooleanField()
