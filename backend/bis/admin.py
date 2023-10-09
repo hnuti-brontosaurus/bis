@@ -239,7 +239,7 @@ def get_add_members_actions():
                             f'pro aktuální rok pod {administration_unit.abbreviation}'
             )(get_member_action(membership_category, administration_unit))
             for administration_unit in AdministrationUnit.objects.filter(existed_till__isnull=True)
-            for membership_category in ["family", "family_member", "individual", "extend"]
+            for membership_category in translate.keys()
         ]
     except ProgrammingError:
         return []
