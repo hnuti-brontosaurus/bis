@@ -12,6 +12,7 @@ from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_filters import IsAdministrationUnitActiveFilter
 from bis.admin_helpers import get_admin_list_url, LatLongWidget
 from bis.admin_permissions import PermissionMixin
+from bis.helpers import MembershipStats
 from bis.models import User
 from common.history import show_history
 from xlsx_export.export import export_to_xlsx
@@ -45,7 +46,7 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
 
     exclude = '_import_id', '_history'
     list_select_related = 'address', 'chairman', 'category'
-    readonly_fields = 'history', 'get_members', 'get_organizers'
+    readonly_fields = 'history', 'get_members', 'get_organizers', 'get_membership_stats'
 
     inlines = AdministrationUnitAddressAdmin, AdministrationUnitContactAddressAdmin, GeneralMeetingAdmin
 
@@ -73,6 +74,13 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.save()
+
+    @admin.display(description='Statistika členských příspěvků')
+    def get_membership_stats(self, obj):
+        return MembershipStats(
+            f"organizační jednotky {obj.abbreviation}",
+            User.objects.filter(memberships__administration_unit=obj)
+        ).as_table()
 
 
 @admin.register(BrontosaurusMovement)

@@ -1,13 +1,15 @@
 import re
 from collections import Counter
+from datetime import date
 from functools import wraps
 from time import time
 
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
+
+from categories.models import MembershipCategory
 
 
 def print_progress(name, i, total):
@@ -74,7 +76,6 @@ def update_roles(*roles):
     return decorator
 
 
-
 class paused_validation:
     def __enter__(self):
         self.validation_paused = not cache.get('skip_validation')
@@ -112,6 +113,7 @@ def with_paused_emails(f):
 
     return wrapper
 
+
 def on_save(fn, when="always"):
     def decorator(f):
         @wraps(f)
@@ -127,9 +129,10 @@ def on_save(fn, when="always"):
 
             if run_fn:
                 fn(self)
-        return wrapper
-    return decorator
 
+        return wrapper
+
+    return decorator
 
 
 class AgeStats:
@@ -181,6 +184,7 @@ class AgeStats:
         data = self.get_data()
 
         def make_cell(item): return f'<td>{item.replace(" - ", "<br>")}</td>'
+
         def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
 
         header = f'<tr><th colspan={len(data)}>{self.get_header()}</th></tr>'
@@ -190,6 +194,44 @@ class AgeStats:
                          f"{make_row(data.keys())}"
                          f"{make_row(data.values())}"
                          f"</table>")
+
+
+class MembershipStats:
+    def __init__(self, header, queryset, year=date.today().year):
+        self.header = header
+        self.year = year
+        self.queryset = queryset
+
+    def get_header(self):
+        return f"Sumarizace členských příspěvků {self.header} za rok {self.year}"
+
+    def get_data(self):
+        data = {
+            category.name: (self.queryset.filter(
+                memberships__year=self.year,
+                memberships__category=category
+            ).count(), category.price)
+            for category in MembershipCategory.objects.all()
+        }
+        total = sum(v[0] * v[1] for v in data.values())
+        data = {key: f"{v[0] * v[1]} Kč ({v[0]}x{v[1]})" for key, v in data.items() if v[0]}
+        data["Celkem"] = f"{total} Kč"
+        return data
+
+    def as_table(self):
+        data = self.get_data()
+
+        def make_cell(item): return f'<td>{item.replace(" - ", "<br>")}</td>'
+
+        def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+
+        header = f'<tr><th colspan={len(data)}>{self.get_header()}</th></tr>'
+        return mark_safe(f"<table>"
+                         f"{header}"
+                         f"{make_row(data.keys())}"
+                         f"{make_row(data.values())}"
+                         f"</table>")
+
 
 def to_snake_case(name):
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
