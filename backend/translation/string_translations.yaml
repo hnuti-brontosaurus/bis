@@ -31,6 +31,7 @@ generic:
   comment: Komentář
   emoji: Smajlík
   gps_location: GPS lokace
+  created_by: Vytvořeno
 
 admin:
   header: BIS - Brontosauří informační systém

@@ -56,6 +56,7 @@ class Event(Model):
     administration_units = ManyToManyField(AdministrationUnit, related_name='events')
     main_organizer = ForeignKey(User, on_delete=PROTECT, related_name='events_where_was_as_main_organizer', null=True)
     other_organizers = ManyToManyField(User, related_name='events_where_was_organizer', blank=True)
+    created_by = ForeignKey(User, on_delete=PROTECT, related_name='created_events', null=True)
 
     is_attendance_list_required = BooleanField(default=False)
     internal_note = TextField(blank=True)
