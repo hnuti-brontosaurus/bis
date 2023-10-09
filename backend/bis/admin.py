@@ -226,16 +226,17 @@ def get_member_action(membership_category, administration_unit):
 
 def get_add_members_actions():
     translate = {
-        "family": "Nastav první rodinné",
-        "family_member": "Nastav další rodinné",
-        "individual": "Nastav individuální",
-        "extend": "Prodluž",
+        "family": "Nastav první rodinné členství",
+        "family_member": "Nastav další rodinné členství",
+        "individual": "Nastav individuální členství",
+        "member_elsewhere": "Nastav, že platil členství v jiném ZČ",
+        "extend": "Prodluž členství",
     }
     try:
         return [
             admin.action(
-                description=f'{translate[membership_category]} členství '
-                            f'na tento rok pod {administration_unit.abbreviation}'
+                description=f'{translate[membership_category]} '
+                            f'pro aktuální rok pod {administration_unit.abbreviation}'
             )(get_member_action(membership_category, administration_unit))
             for administration_unit in AdministrationUnit.objects.filter(existed_till__isnull=True)
             for membership_category in ["family", "family_member", "individual", "extend"]
