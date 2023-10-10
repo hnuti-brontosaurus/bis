@@ -767,7 +767,9 @@ class EventApplicationSerializer(ModelSerializer):
     def create(self, validated_data):
         validated_data['event_registration'] = \
             Event.objects.get(id=self.context['view'].kwargs['event_id']).registration
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        emails.application_created(instance)
+        return instance
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
