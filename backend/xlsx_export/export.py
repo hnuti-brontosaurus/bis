@@ -16,7 +16,6 @@ from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.http import FileResponse
-from openpyxl.styles import PatternFill
 from rest_framework.serializers import ModelSerializer
 from xlsx2html import xlsx2html
 
@@ -224,7 +223,7 @@ def get_attendance_list(event: Event):
             ws[f"{cell}{row}"] = value
         if data[-1]:
             for cell in "BCDEFGH":
-                ws[f"{cell}{row}"].fill = PatternFill(start_color="d5e9dc", fill_type="solid")
+                ws[f"{cell}{row}"].font = ws[f"{cell}{row}"].font.copy(bold=True)
 
     tmp_xlsx = NamedTemporaryFile(mode='w', suffix='.xlsx', newline='', encoding='utf8',
                                   prefix='attendance_list_')
