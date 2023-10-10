@@ -39,13 +39,16 @@ class AgeFilter(RawRangeNumericFilter):
     def queryset(self, request, queryset):
         filters = {}
 
+        def min_max_age(value):
+            return max(0, min(200, int(value)))
+
         value_from = self.used_parameters.get(self.parameter_name + '_from', None)
         if value_from is not None and value_from != '':
-            filters.update({'birthday__lt': now().date() - relativedelta(years=int(value_from))})
+            filters.update({'birthday__lt': now().date() - relativedelta(years=min_max_age(value_from))})
 
         value_to = self.used_parameters.get(self.parameter_name + '_to', None)
         if value_to is not None and value_to != '':
-            filters.update({'birthday__gte': now().date() - relativedelta(years=int(value_to) + 1)})
+            filters.update({'birthday__gte': now().date() - relativedelta(years=min_max_age(value_to) + 1)})
 
         return queryset.filter(**filters)
 
