@@ -291,13 +291,15 @@ class EventRecord(Model):
     def get_participants_count(self):
         return self.number_of_participants or len(self.get_all_participants())
 
+    def get_young_participants_count(self):
+        under_26 = len([p for p in self.get_all_participants() if
+                        p.birthday and relativedelta(self.event.start, p.birthday).years <= 26])
+        return self.number_of_participants_under_26 or under_26
+
     def get_young_percentage(self):
         participants_count = self.get_participants_count()
         if not participants_count: return '0%'
-        under_26 = len([p for p in self.get_all_participants() if
-                        p.birthday and relativedelta(self.event.start, p.birthday).years <= 26])
-        under_26 = self.number_of_participants_under_26 or under_26
-        return f"{int(under_26 / participants_count * 100)}%"
+        return f"{int(self.get_young_participants_count() / participants_count * 100)}%"
 
     def get_all_participants(self):
         all_participants = self.participants.all().union(self.event.other_organizers.all())

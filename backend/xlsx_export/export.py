@@ -41,6 +41,9 @@ class XLSXWriter:
         self.format.shrink.set_shrink()
         self.format.text_wrap = self.writer.add_format()
         self.format.text_wrap.set_text_wrap()
+        self.format.bold = self.writer.add_format()
+        self.format.bold.set_shrink()
+        self.format.bold.set_bold()
 
     def get_file(self):
         self.writer.close()
@@ -52,6 +55,7 @@ class XLSXWriter:
         self.worksheet = self.writer.add_worksheet(name)
         self.row = 0
         self.header_keys = []
+        self.widths = {}
 
     def from_queryset(self, queryset, serializer_class):
         self.add_worksheet(queryset.model._meta.verbose_name_plural)
@@ -64,8 +68,12 @@ class XLSXWriter:
                     self.write_header(serializer.child.get_fields())
                 self.write_row(item)
 
+        for i, key in enumerate(self.header_keys):
+            self.worksheet.set_column(i, i, width=self.widths[key])
+
     def write_values(self, values):
         values = {key: value for key, value in values}
+        height = 0
         for i, key in enumerate(self.header_keys):
             value = values.get(key)
             if isinstance(value, list):
@@ -76,8 +84,14 @@ class XLSXWriter:
                 value = 'ano'
             if value is None:
                 value = '-'
-            self.worksheet.write(self.row, i, str(value), self.format.shrink)
+            value = str(value)
+            self.widths.setdefault(key, 0)
+            self.widths[key] = max(self.widths[key], max(len(row) for row in value.split('\n')))
+            height = max(height, value.count('\n'))
+            row_format = self.row and self.format.text_wrap or self.format.bold
+            self.worksheet.write(self.row, i, value, row_format)
 
+        self.worksheet.set_row(self.row, 16 + height * 12)
         self.row += 1
 
     def get_header_values(self, fields, prefix='', key_prefix=''):

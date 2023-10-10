@@ -55,5 +55,5 @@ urllib3==1.26.15
 vokativ==1.2.1
 xlrd==2.0.1
 xlsx2html==0.4.4
-XlsxWriter==3.1.0
+XlsxWriter==3.1.7
 git+https://github.com/lukasvinclav/django-admin-numeric-filter.git@c5718f59eea66f67bbaa2ee542206719dfd43df3

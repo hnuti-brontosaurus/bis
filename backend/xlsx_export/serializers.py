@@ -1,9 +1,9 @@
-from rest_framework.fields import SerializerMethodField, ReadOnlyField
+from rest_framework.fields import ReadOnlyField, SerializerMethodField
 from rest_framework.relations import StringRelatedField
 from rest_framework.serializers import ModelSerializer
 
 from administration_units.models import AdministrationUnit
-from bis.models import User, Location
+from bis.models import User, Location, UserClosePerson
 from donations.models import Donor, Donation
 from event.models import Event, EventFinance, EventPropagation, EventRegistration, EventRecord
 from opportunities.models import OfferedHelp
@@ -26,6 +26,17 @@ class OfferedHelpExportSerializer(ModelSerializer):
         )
 
 
+class ClosePersonExportSerializer(ModelSerializer):
+    class Meta:
+        model = UserClosePerson
+        fields = (
+            'first_name',
+            'last_name',
+            'phone',
+            'email',
+        )
+
+
 class UserExportSerializer(ModelSerializer):
     roles = StringRelatedField(label='Role', many=True)
     get_name = ReadOnlyField(label='Celé jméno')
@@ -34,6 +45,11 @@ class UserExportSerializer(ModelSerializer):
     contact_address = StringRelatedField(label='Kontaktí adresa')
     offers = OfferedHelpExportSerializer()
     pronoun = StringRelatedField(label='Oslovení')
+    all_emails = StringRelatedField(label='Všechny e-maily', many=True)
+    qualifications = StringRelatedField(label='Kvalifikace', many=True)
+    memberships = StringRelatedField(label='Členství', many=True)
+    eyca_card = StringRelatedField(label="EYCA")
+    close_person = ClosePersonExportSerializer()
 
     @staticmethod
     def get_related(queryset):
@@ -42,8 +58,12 @@ class UserExportSerializer(ModelSerializer):
             'offers',
             'health_insurance_company',
             'pronoun',
+            'eyca_card',
         ).prefetch_related(
             'roles',
+            'all_emails',
+            'qualifications',
+            'memberships',
             'offers__programs',
             'offers__organizer_roles',
             'offers__team_roles',
@@ -54,25 +74,28 @@ class UserExportSerializer(ModelSerializer):
 
         fields = (
             'id',
-            'get_name',
             'first_name',
             'last_name',
+            'get_name',
             'nickname',
-            'birth_name',
-            'email',
-            'phone',
             'birthday',
-            'age',
-            'subscribed_to_newsletter',
-            'health_insurance_company',
-            'health_issues',
-            'is_active',
-            'date_joined',
-            'roles',
             'address',
             'contact_address',
-            'offers',
+            'phone',
+            'email',
+            'all_emails',
+            'qualifications',
+            'memberships',
+            'age',
+            'health_insurance_company',
+            'health_issues',
+            'date_joined',
+            'roles',
+            'subscribed_to_newsletter',
+            'eyca_card',
             'pronoun',
+            'close_person',
+            'offers',
         )
 
 
@@ -175,15 +198,17 @@ class RegistrationExportSerializer(ModelSerializer):
 
 class RecordExportSerializer(ModelSerializer):
     get_participants_count = ReadOnlyField(label='Počet účastníků')
+    get_young_participants_count = ReadOnlyField(label='Počet účastníků do 26 let')
     get_young_percentage = ReadOnlyField(label='% do 26')
 
     class Meta:
         model = EventRecord
         fields = (
+            'get_participants_count',
+            'get_young_participants_count',
+            'get_young_percentage',
             'total_hours_worked',
             'comment_on_work_done',
-            'get_participants_count',
-            'get_young_percentage',
             'note',
         )
 
@@ -203,6 +228,7 @@ class EventExportSerializer(ModelSerializer):
     propagation = PropagationExportSerializer()
     registration = RegistrationExportSerializer()
     record = RecordExportSerializer()
+    location_name = SerializerMethodField(label='Název lokality')
 
     @staticmethod
     def get_related(queryset):
@@ -232,20 +258,22 @@ class EventExportSerializer(ModelSerializer):
 
         fields = (
             'name',
-            'is_canceled',
-            'is_complete',
-            'is_closed',
             'start',
             'start_time',
             'end',
+            'location_name',
+            'record',
+            'category',
+            'program',
+            'location',
+            'is_canceled',
+            'is_complete',
+            'is_closed',
             'get_date',
             'duration',
             'number_of_sub_events',
-            'location',
             'online_link',
-            'category',
             'is_volunteering',
-            'program',
             'intended_for',
             'administration_units',
             'main_organizer',
@@ -255,9 +283,10 @@ class EventExportSerializer(ModelSerializer):
             'finance',
             'propagation',
             'registration',
-            'record',
         )
 
+    def get_location_name(self, instance):
+        return instance.location.name
 
 class DonationExportSerializer(ModelSerializer):
     donor = DonorExportSerializer()

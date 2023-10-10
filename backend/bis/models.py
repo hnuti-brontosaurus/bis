@@ -552,6 +552,9 @@ class EYCACard(Model):
     sent_to_user = BooleanField(default=False)
     valid_till = DateField(blank=True)
 
+    def __str__(self):
+        return f"EYCA {self.number}"
+
 
 @translate_model
 class Membership(Model):
