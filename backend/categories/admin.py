@@ -48,6 +48,11 @@ class EventCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass
 
 
+@admin.register(EventTag)
+class EventTagAdmin(PermissionMixin, admin.ModelAdmin):
+    list_display = 'name', 'description', 'is_active'
+
+
 @admin.register(EventProgramCategory)
 class EventProgramCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass

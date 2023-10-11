@@ -50,6 +50,7 @@ class EventViewSet(ReadOnlyModelViewSet):
             'propagation__images',
             'administration_units',
             'propagation__diets',
+            'tags',
         )
 
         if self.action == 'list':

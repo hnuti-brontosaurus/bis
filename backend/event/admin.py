@@ -175,6 +175,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         ('end', DateRangeFilter),
         ('group', MultiSelectRelatedDropdownFilter),
         ('category', MultiSelectRelatedDropdownFilter),
+        ('tags', MultiSelectRelatedDropdownFilter),
         ('program', MultiSelectRelatedDropdownFilter),
         'propagation__is_shown_on_web',
         ('intended_for', MultiSelectRelatedDropdownFilter),
@@ -194,7 +195,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             del actions['mark_as_closed']
         return actions
 
-    list_display = 'name', 'get_links', 'get_date', 'get_administration_units', 'location', 'category', 'program', \
+    list_display = 'name', 'get_links', 'get_date', 'get_administration_units', 'location', 'category', 'get_tags', 'program', \
         'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
         'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
     list_select_related = 'location', 'category', 'program', 'record'
@@ -208,6 +209,10 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
     def get_administration_units(self, obj):
         return mark_safe('<br>'.join([str(au) for au in obj.administration_units.all()]))
+
+    @admin.display(description='Tagy')
+    def get_tags(self, obj):
+        return mark_safe('<br>'.join([str(tag) for tag in obj.tags.all()]))
 
     @admin.display(description='Počet účastníků + organizátorů')
     def get_participants_count(self, obj):
@@ -236,7 +241,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('administration_units', 'record__participants',
-                                                              'record__photos', 'finance__receipts')
+                                                              'record__photos', 'finance__receipts', 'tags')
 
     date_hierarchy = 'start'
     search_fields = 'name',

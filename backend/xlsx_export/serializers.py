@@ -215,6 +215,7 @@ class RecordExportSerializer(ModelSerializer):
 
 class EventExportSerializer(ModelSerializer):
     category = StringRelatedField(label='Typ akce')
+    tags = StringRelatedField(label='Tagy akce', many=True)
     program = StringRelatedField(label='Program')
     intended_for = StringRelatedField(label='Pro koho')
     administration_units = StringRelatedField(label='Organizováno', many=True)
@@ -250,7 +251,8 @@ class EventExportSerializer(ModelSerializer):
         ).prefetch_related(
             'administration_units',
             'other_organizers',
-            'propagation__diets'
+            'propagation__diets',
+            'tags',
         )
 
     class Meta:
@@ -264,6 +266,7 @@ class EventExportSerializer(ModelSerializer):
             'location_name',
             'record',
             'category',
+            'tags',
             'program',
             'location',
             'is_canceled',

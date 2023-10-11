@@ -92,8 +92,10 @@ class MembershipCategory(Model):
             return
 
         years = relativedelta(date(today().year, 1, 1), user.birthday).years
-        if years < 15: return 'kid'
-        elif years <= 26: return 'student'
+        if years < 15:
+            return 'kid'
+        elif years <= 26:
+            return 'student'
         return 'adult'
 
     @classmethod
@@ -101,12 +103,13 @@ class MembershipCategory(Model):
         if not user.birthday:
             return
 
-
-
         years = relativedelta(date(today().year, 1, 1), user.birthday).years
-        if years < 15: slug = 'kid'
-        elif years <= 26: slug = 'student'
-        else: slug = 'adult'
+        if years < 15:
+            slug = 'kid'
+        elif years <= 26:
+            slug = 'student'
+        else:
+            slug = 'adult'
 
         return cls.objects.get(slug=slug)
 
@@ -127,6 +130,20 @@ class EventGroupCategory(Model):
 class EventCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)
+
+    class Meta:
+        ordering = 'id',
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
+class EventTag(Model):
+    name = CharField(max_length=63)
+    slug = SlugField(unique=True)
+    description = TextField(blank=True)
+    is_active = BooleanField(default=True)
 
     class Meta:
         ordering = 'id',

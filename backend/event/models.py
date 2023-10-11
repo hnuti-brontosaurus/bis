@@ -15,7 +15,7 @@ from bis import emails
 from bis.helpers import permission_cache, update_roles, filter_queryset_with_multiple_or_queries, on_save
 from bis.models import Location, User, Qualification
 from categories.models import GrantCategory, EventIntendedForCategory, DietCategory, \
-    EventCategory, EventProgramCategory, EventGroupCategory
+    EventCategory, EventProgramCategory, EventGroupCategory, EventTag
 from common.abstract_models import BaseContact
 from common.thumbnails import ThumbnailImageField
 from translation.translate import translate_model
@@ -50,6 +50,7 @@ class Event(Model):
 
     group = ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name='events')
     category = ForeignKey(EventCategory, on_delete=PROTECT, related_name='events')
+    tags = ManyToManyField(EventTag, related_name='events')
     program = ForeignKey(EventProgramCategory, on_delete=PROTECT, related_name='events')
     intended_for = ForeignKey(EventIntendedForCategory, on_delete=PROTECT, related_name='events')
 

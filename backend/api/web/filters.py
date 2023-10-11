@@ -3,7 +3,7 @@ from django_filters import *
 
 from administration_units.models import AdministrationUnit
 from categories.models import EventCategory, EventProgramCategory, EventIntendedForCategory, OpportunityCategory, \
-    AdministrationUnitCategory, EventGroupCategory
+    AdministrationUnitCategory, EventGroupCategory, EventTag
 from event.models import Event
 from opportunities.models import Opportunity
 
@@ -27,6 +27,10 @@ class EventFilter(FilterSet):
     category = ChoiceInFilter(
         field_name='category__slug',
         choices=get_choices(EventCategory, lambda x: (x.slug, x.name))
+    )
+    tags = ChoiceInFilter(
+        field_name='tags__slug',
+        choices=get_choices(EventTag, lambda x: (x.slug, x.name))
     )
     program = ChoiceInFilter(
         field_name='program__slug',

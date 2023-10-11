@@ -43,6 +43,11 @@ class EventCategoryViewSet(ReadOnlyModelViewSet):
     queryset = EventCategory.objects.all()
 
 
+class EventTagViewSet(ReadOnlyModelViewSet):
+    serializer_class = EventTagSerializer
+    queryset = EventTag.objects.all()
+
+
 class EventProgramCategoryViewSet(ReadOnlyModelViewSet):
     serializer_class = EventProgramCategorySerializer
     queryset = EventProgramCategory.objects.all()

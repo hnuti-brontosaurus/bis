@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         call_command("flush", no_input=False)
-        call_command("create_init_data")
+        call_command("create_categories")
         call_command("import_regions")
         call_command("import_zip_codes")
         self.create_testing_db()

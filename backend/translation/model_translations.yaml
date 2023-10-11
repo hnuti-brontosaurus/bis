@@ -176,6 +176,7 @@ Event:
   fields:
     group: Druh
     category: Typ
+    tags: Tagy
     internal_note: Privátní poznámka
     program: Program
     intended_for: Pro koho?
@@ -404,6 +405,13 @@ EventGroupCategory:
 EventCategory:
   name: Typ akce
   name_plural: Typy akcí
+EventTag:
+  name: Tag akce
+  name_plural: Tagy akcí
+  fields:
+    is_active:
+      - Je aktivní?
+      - Neaktivní tagy se nezobrazí organizátorovi při vytváření nové akce
 EventProgramCategory:
   name: Program akce
   name_plural: Programy akcí

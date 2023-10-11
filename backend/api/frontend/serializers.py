@@ -22,7 +22,7 @@ from categories.serializers import DonationSourceCategorySerializer, EventProgra
     RoleCategorySerializer, \
     GrantCategorySerializer, EventIntendedForCategorySerializer, DietCategorySerializer, EventCategorySerializer, \
     LocationProgramCategorySerializer, LocationAccessibilityCategorySerializer, OpportunityCategorySerializer, \
-    EventGroupCategorySerializer
+    EventGroupCategorySerializer, EventTagSerializer
 from donations.models import Donor, Donation
 from event.models import Event, EventFinance, EventPropagation, EventRegistration, EventRecord, EventFinanceReceipt, \
     EventPropagationImage, EventPhoto, VIPEventPropagation, EventDraft, EventContact, EventAttendanceListPage
@@ -510,6 +510,7 @@ class EventSerializer(ModelSerializer):
 
     group = EventGroupCategorySerializer()
     category = EventCategorySerializer()
+    tags = EventTagSerializer(many=True)
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
 
@@ -529,6 +530,7 @@ class EventSerializer(ModelSerializer):
             'online_link',
             'group',
             'category',
+            'tags',
             'program',
             'intended_for',
             'administration_units',

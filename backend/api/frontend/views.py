@@ -119,6 +119,7 @@ class EventViewSet(PermissionViewSetBase):
     ).prefetch_related(
         'propagation__diets',
         'record__contacts',
+        'tags',
     )
 
 

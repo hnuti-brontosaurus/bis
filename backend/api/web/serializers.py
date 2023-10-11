@@ -7,7 +7,7 @@ from administration_units.models import AdministrationUnit
 from bis.models import User, Location, LocationPhoto
 from categories.serializers import OpportunityCategorySerializer, EventCategorySerializer, \
     EventProgramCategorySerializer, AdministrationUnitCategorySerializer, LocationAccessibilityCategorySerializer, \
-    EventIntendedForCategorySerializer, DietCategorySerializer, EventGroupCategorySerializer
+    EventIntendedForCategorySerializer, DietCategorySerializer, EventGroupCategorySerializer, EventTagSerializer
 from event.models import Event, EventPropagation, EventRegistration, EventPropagationImage
 from opportunities.models import Opportunity
 from questionnaire.models import Questionnaire, Question
@@ -135,6 +135,7 @@ class EventSerializer(ModelSerializer):
     location = LocationSerializer()
     group = EventGroupCategorySerializer()
     category = EventCategorySerializer()
+    tags = EventTagSerializer(many=True)
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
     administration_units = SlugRelatedField(slug_field='abbreviation', read_only=True, many=True)
@@ -152,6 +153,7 @@ class EventSerializer(ModelSerializer):
             'location',
             'group',
             'category',
+            'tags',
             'program',
             'intended_for',
             'administration_units',

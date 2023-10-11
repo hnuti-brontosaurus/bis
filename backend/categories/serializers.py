@@ -51,6 +51,12 @@ class EventCategorySerializer(ModelSerializer):
         exclude = ()
 
 
+class EventTagSerializer(ModelSerializer):
+    class Meta:
+        model = EventTag
+        exclude = ()
+
+
 class EventProgramCategorySerializer(ModelSerializer):
     class Meta:
         model = EventProgramCategory

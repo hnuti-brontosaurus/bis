@@ -5,7 +5,7 @@ from categories.models import DietCategory, EventIntendedForCategory, Qualificat
     AdministrationUnitCategory, MembershipCategory, EventProgramCategory, \
     EventCategory, GrantCategory, DonationSourceCategory, OrganizerRoleCategory, TeamRoleCategory, OpportunityCategory, \
     LocationProgramCategory, LocationAccessibilityCategory, RoleCategory, HealthInsuranceCompany, PronounCategory, \
-    EventGroupCategory
+    EventGroupCategory, EventTag
 from game_book_categories.models import Tag, PhysicalCategory, MentalCategory, LocationCategory, \
     ParticipantNumberCategory, ParticipantAgeCategory, GameLengthCategory, PreparationLengthCategory, \
     OrganizersNumberCategory, MaterialRequirementCategory
@@ -33,6 +33,10 @@ class Command(BaseCommand):
                 self.create_event_categories(value, slug, name)
 
     def handle(self, *args, **options):
+        self.create_bis_categories()
+        self.create_game_book_categories()
+
+    def create_bis_categories(self):
         DietCategory.objects.update_or_create(slug='meat', defaults=dict(name='s masem'))
         DietCategory.objects.update_or_create(slug='vege', defaults=dict(name='vegetariánská'))
         DietCategory.objects.update_or_create(slug='vegan', defaults=dict(name='veganská'))
@@ -90,11 +94,15 @@ class Command(BaseCommand):
         AdministrationUnitCategory.objects.update_or_create(slug="club", defaults=dict(name='Klub'))
 
         MembershipCategory.objects.update_or_create(slug='family', defaults=dict(name='první rodinný člen', price=350))
-        MembershipCategory.objects.update_or_create(slug='family_member', defaults=dict(name='další rodinný člen', price=25))
+        MembershipCategory.objects.update_or_create(slug='family_member',
+                                                    defaults=dict(name='další rodinný člen', price=25))
         MembershipCategory.objects.update_or_create(slug='kid', defaults=dict(name='dětské do 15 let', price=150))
-        MembershipCategory.objects.update_or_create(slug='student', defaults=dict(name='individuální 15-26 let', price=100))
-        MembershipCategory.objects.update_or_create(slug='adult', defaults=dict(name='individuální nad 26 let', price=350))
-        MembershipCategory.objects.update_or_create(slug='member_elsewhere', defaults=dict(name='platil v jiném ZČ', price=0))
+        MembershipCategory.objects.update_or_create(slug='student',
+                                                    defaults=dict(name='individuální 15-26 let', price=100))
+        MembershipCategory.objects.update_or_create(slug='adult',
+                                                    defaults=dict(name='individuální nad 26 let', price=350))
+        MembershipCategory.objects.update_or_create(slug='member_elsewhere',
+                                                    defaults=dict(name='platil v jiném ZČ', price=0))
 
         EventGroupCategory.objects.update_or_create(slug='camp', defaults=dict(name='Tábor'))
         EventGroupCategory.objects.update_or_create(slug='weekend_event', defaults=dict(name='Víkendovka'))
@@ -139,6 +147,11 @@ class Command(BaseCommand):
         }
 
         self.create_event_categories(event_categories)
+
+        EventTag.objects.update_or_create(slug='retro_event', defaults=dict(name='Retro akce',
+                                                                            description='Retro akce k oslavám 50 let HB'))
+        EventTag.objects.update_or_create(slug='region_event', defaults=dict(name='Akce v regionech',
+                                                                             description='Akce v regionech k oslavám 50 let HB'))
 
         GrantCategory.objects.update_or_create(slug='msmt', defaults=dict(name='mšmt'))
         GrantCategory.objects.update_or_create(slug='other', defaults=dict(name='z jiných projektů'))
@@ -227,9 +240,11 @@ class Command(BaseCommand):
             accessibility_from_brno=LocationAccessibilityCategory.objects.get(slug='good'),
         ))
 
+    def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/
         Tag.objects.update_or_create(slug="icebreaker", defaults=dict(
-            emoji="🧊", name="icebreaker", description="Prolomení nervozity, uvolnění účastníků, tvoření skupiny z jednotlivců"))
+            emoji="🧊", name="icebreaker",
+            description="Prolomení nervozity, uvolnění účastníků, tvoření skupiny z jednotlivců"))
         Tag.objects.update_or_create(slug="meet", defaults=dict(
             emoji="🤝", name="seznamka", description=""))
         Tag.objects.update_or_create(slug="dynamix", defaults=dict(
