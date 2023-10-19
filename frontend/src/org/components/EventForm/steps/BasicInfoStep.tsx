@@ -176,6 +176,67 @@ export const BasicInfoStep = ({
                 </select>
               </FormInputError>
             </FullSizeElement>
+            <FullSizeElement>
+              <FormInputError>
+                <Controller
+                  name="tags"
+                  control={control}
+                  rules={{ required }}
+                  render={({ field }) => (
+                    <fieldset>
+                      <InlineSection>
+                        <label key={'retro_event'} className="checkboxLabel">
+                          <input
+                            ref={field.ref}
+                            key={'retro_event'}
+                            type="checkbox"
+                            name={field.name}
+                            id={'retro_event'}
+                            value={'retro_event'}
+                            checked={field.value?.includes('retro_event')}
+                            onChange={e => {
+                              // check when unchecked and vise-versa
+                              const targetId = e.target.value
+                              const set = new Set(field.value)
+                              if (set.has(targetId)) {
+                                set.delete(targetId)
+                              } else {
+                                set.add(targetId)
+                              }
+                              field.onChange(Array.from(set))
+                            }}
+                          />{' '}
+                          Retro akce
+                        </label>
+                        <label key={'region_event'} className="checkboxLabel">
+                          <input
+                            ref={field.ref}
+                            key={'region_event'}
+                            type="checkbox"
+                            name={field.name}
+                            id={'region_event'}
+                            value={'region_event'}
+                            checked={field.value?.includes('region_event')}
+                            onChange={e => {
+                              // check when unchecked and vise-versa
+                              const targetId = e.target.value
+                              const set = new Set(field.value)
+                              if (set.has(targetId)) {
+                                set.delete(targetId)
+                              } else {
+                                set.add(targetId)
+                              }
+                              field.onChange(Array.from(set))
+                            }}
+                          />{' '}
+                          Akce v regionech
+                        </label>
+                      </InlineSection>
+                    </fieldset>
+                  )}
+                />
+              </FormInputError>
+            </FullSizeElement>
           </FormSection>
           <FormSection header="Pořádající organizační jednotka" required onWeb>
             <FullSizeElement>
