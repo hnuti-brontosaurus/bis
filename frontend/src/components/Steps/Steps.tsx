@@ -5,6 +5,7 @@ import { useSwipe } from 'hooks/useSwipe'
 import { Children, FC, FunctionComponentElement, ReactNode } from 'react'
 import { FaArrowCircleLeft, FaArrowCircleRight } from 'react-icons/fa'
 import styles from './Steps.module.scss'
+import { useKeyDown } from 'utils/useKeyDown'
 
 export const Steps = <T extends Record<string, any>>({
   children,
@@ -51,6 +52,12 @@ export const Steps = <T extends Record<string, any>>({
     },
     { ignoredClass: 'steps-change-swipe-ignored' },
   )
+
+  useKeyDown(() => {
+    nextStep()
+    window.scrollTo(0, 0)
+  }, ['Enter'])
+
   return (
     <div ref={swipeRef}>
       <div className={styles.navWrapper}>
