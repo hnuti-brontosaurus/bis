@@ -2815,7 +2815,7 @@ export type Event = {
   start_time?: string | null
   end: string
   number_of_sub_events?: number
-  tags?: string[]
+  tags?: number[]
   location: number
   online_link?: string
   group: EventGroupCategory

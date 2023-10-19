@@ -203,3 +203,10 @@ export type RoleSlug =
   | 'any'
 
 export type RoleCategory = Overwrite<original.RoleCategory, { slug: RoleSlug }>
+export type EventTag = {
+  id: number
+  name: string
+  slug: string
+  description: string
+  is_active: boolean
+}

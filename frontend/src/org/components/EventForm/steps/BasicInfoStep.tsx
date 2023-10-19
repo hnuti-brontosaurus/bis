@@ -32,6 +32,7 @@ export const BasicInfoStep = ({
   const { data: programs } = api.endpoints.readPrograms.useQuery()
   const { data: administrationUnits } =
     api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
+  const { data: tags } = api.endpoints.readEventTags.useQuery()
 
   // trigger validation of fields which are dependent on other fields
   useEffect(() => {
@@ -185,52 +186,37 @@ export const BasicInfoStep = ({
                   render={({ field }) => (
                     <fieldset>
                       <InlineSection>
-                        <label key={'retro_event'} className="checkboxLabel">
-                          <input
-                            ref={field.ref}
-                            key={'retro_event'}
-                            type="checkbox"
-                            name={field.name}
-                            id={'retro_event'}
-                            value={'retro_event'}
-                            checked={field.value?.includes('retro_event')}
-                            onChange={e => {
-                              // check when unchecked and vise-versa
-                              const targetId = e.target.value
-                              const set = new Set(field.value)
-                              if (set.has(targetId)) {
-                                set.delete(targetId)
-                              } else {
-                                set.add(targetId)
-                              }
-                              field.onChange(Array.from(set))
-                            }}
-                          />{' '}
-                          Retro akce
-                        </label>
-                        <label key={'region_event'} className="checkboxLabel">
-                          <input
-                            ref={field.ref}
-                            key={'region_event'}
-                            type="checkbox"
-                            name={field.name}
-                            id={'region_event'}
-                            value={'region_event'}
-                            checked={field.value?.includes('region_event')}
-                            onChange={e => {
-                              // check when unchecked and vise-versa
-                              const targetId = e.target.value
-                              const set = new Set(field.value)
-                              if (set.has(targetId)) {
-                                set.delete(targetId)
-                              } else {
-                                set.add(targetId)
-                              }
-                              field.onChange(Array.from(set))
-                            }}
-                          />{' '}
-                          Akce v regionech
-                        </label>
+                        {tags &&
+                          tags.results!.map(
+                            ({ id, name, slug, description, is_active }) =>
+                              is_active ? (
+                                <div key={slug} title={description}>
+                                  <label key={slug} className="checkboxLabel">
+                                    <input
+                                      ref={field.ref}
+                                      key={slug}
+                                      type="checkbox"
+                                      name={field.name}
+                                      id={slug}
+                                      value={id}
+                                      checked={field.value?.includes(id)}
+                                      onChange={e => {
+                                        // check when unchecked and vise-versa
+                                        const targetId = Number(e.target.value)
+                                        const set = new Set(field.value)
+                                        if (set.has(targetId)) {
+                                          set.delete(targetId)
+                                        } else {
+                                          set.add(targetId)
+                                        }
+                                        field.onChange(Array.from(set))
+                                      }}
+                                    />{' '}
+                                    {name}
+                                  </label>
+                                </div>
+                              ) : null,
+                          )}
                       </InlineSection>
                     </fieldset>
                   )}
