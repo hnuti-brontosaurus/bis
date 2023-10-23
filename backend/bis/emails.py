@@ -7,12 +7,14 @@ from categories.models import PronounCategory
 from ecomail import ecomail
 from project.settings import EMAIL
 
-SENDER_NAME = 'BIS'
+emails = {
+    'bis': ('BIS', 'bis@brontosaurus.cz')
+}
 
 
 def password_reset_link(user, email, login_code):
     ecomail.send_email(
-        EMAIL, SENDER_NAME,
+        emails['bis'],
         "Obnova hesla",
         "151",
         [email],
@@ -49,7 +51,7 @@ def application_created(application):
             )
 
     ecomail.send_email(
-        EMAIL, SENDER_NAME,
+        emails['bis'],
         "Potvrzení přihlášení na akci", template,
         [email],
         variables=variables
@@ -60,7 +62,7 @@ def application_created(application):
         return
 
     ecomail.send_email(
-        EMAIL, SENDER_NAME,
+        emails['bis'],
         "Nová přihláška!", "148",
         [email],
         variables={
@@ -72,7 +74,18 @@ def application_created(application):
 
 
 def event_created(event):
-    return
+    ecomail.send_email(
+        emails['bis'],
+        "Akce je zadána v BIS", "142",
+        [event.main_organizer.email],
+        variables={
+            'created_by': event.created_by.get_name(),
+            'vokativ': event.created_by.vokativ,
+            'created_by_email': event.created_by.email,
+            'event_name': event.name,
+            'link': f'{settings.FULL_HOSTNAME}/org/akce/{event.id}',
+        }
+    )
 
 
 
@@ -83,7 +96,7 @@ def login_code(email, code):
 def text(email, subject, text, reply_to=None):
     text = text.replace("\n", "<br>")
     ecomail.send_email(
-        EMAIL, SENDER_NAME,
+        emails['bis'],
         subject,
         '111',
         [email],

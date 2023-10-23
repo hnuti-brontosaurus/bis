@@ -559,7 +559,11 @@ class EventSerializer(ModelSerializer):
             locked_year -= 1
         if validated_data['start'].year <= locked_year:
             raise DjangoValidationError("Cannot create events in the past")
-        return super().create(validated_data)
+
+        instance = super().create(validated_data)
+
+        emails.event_created(instance)
+        return instance
 
 
 class LocationContactPersonSerializer(BaseContactSerializer):

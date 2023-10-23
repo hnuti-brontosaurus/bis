@@ -77,7 +77,6 @@ class Event(Model):
             Qualification.validate_main_organizer(self, self.main_organizer)
 
     @update_roles('main_organizer')
-    @on_save(emails.event_created, "on_create")
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not cache.get('skip_validation'): self.clean()
         super().save(force_insert, force_update, using, update_fields)
