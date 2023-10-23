@@ -24,6 +24,7 @@ class Command(BaseCommand):
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.event_end_participants_notification)
+        try_to_run(emails.qualification_about_to_end)
 
         # weekly
         if date.today().weekday() == 0:

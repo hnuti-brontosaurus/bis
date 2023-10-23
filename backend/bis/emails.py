@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from vokativ import vokativ
 
+from bis.models import Qualification
 from categories.models import PronounCategory, EventProgramCategory
 from ecomail import ecomail
 from event.models import Event
@@ -11,6 +12,8 @@ from event.models import Event
 emails = {
     'bis': ('BIS', 'bis@brontosaurus.cz'),
     'movement': ('Hnutí Brontosaurus', 'hnuti@brontosaurus.cz'),
+    'education': ('Vzdělávání', 'vzdelavani@brontosaurus.cz'),
+    'volunteering': ('Dobrovolnictví', 'dobrovolnictvi@brontosaurus.cz'),
 }
 
 
@@ -118,9 +121,13 @@ def event_ended_notify_organizers():
             end=date.today() - timedelta(days=2),
     ):
         organizers = event.other_organizers.all()
+        organizers_emails = [organizer.email for organizer in organizers if organizer.email]
+        if not organizers_emails:
+            continue
+
         ecomail.send_email(
             emails['bis'], "Organizátorům po akci", "161",
-            [organizer.email for organizer in organizers if organizer.email],
+            organizers_emails,
             variables={
                 'vokativs': ", ".join(organizer.vokativ for organizer in organizers),
                 'event_name': event.name,
@@ -136,6 +143,9 @@ def event_not_closed_10_days():
             is_closed=False,
             end=date.today() - timedelta(days=10),
     ):
+        if not event.main_organizer.email:
+            continue
+
         ecomail.send_email(
             emails['bis'], "Blížící se termín uzavření akce", "162",
             [event.main_organizer.email],
@@ -155,6 +165,9 @@ def event_not_closed_20_days():
             is_closed=False,
             end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
+        if not event.main_organizer.email:
+            continue
+
         ecomail.send_email(
             emails['bis'], "Akce je po termínu pro její uzavření", "163",
             [event.main_organizer.email],
@@ -166,10 +179,11 @@ def event_not_closed_20_days():
             }
         )
 
+
 def event_end_participants_notification():
     for event in Event.objects.filter(
-        is_canceled=False,
-        end=date.today() - timedelta(days=10)
+            is_canceled=False,
+            end=date.today() - timedelta(days=10)
     ):
         if not hasattr(event, 'record'):
             continue
@@ -186,6 +200,7 @@ def event_end_participants_notification():
                     'event_name': event.name,
                 }
             )
+
 
 def notify_not_closed_events_summary():
     for program in EventProgramCategory.objects.exclude(slug='none'):
@@ -211,6 +226,35 @@ def notify_not_closed_events_summary():
         )
 
 
+def qualification_about_to_end():
+    valid_qualifications = Qualification.objects.filter(
+        valid_since__lte=date.today(),
+        valid_till__gte=date.today(),
+    )
+    consultants = [qualification.user for qualification in valid_qualifications.filter(category__slug='consultant')]
+    kids_consultants = [qualification.user for qualification in
+                        valid_qualifications.filter(category__slug='consultant_for_kids')]
+    consultants = "".join(f"<li>{consultant.get_name()}, {consultant.email}</li>" for consultant in consultants)
+    kids_consultants = "".join(
+        f"<li>{consultant.get_name()}, {consultant.email}</li>" for consultant in kids_consultants)
+    for qualification in Qualification.objects.filter(
+            valid_till=date.today() + timedelta(days=90),
+    ):
+        if not qualification.user.email:
+            continue
+
+        ecomail.send_email(
+            emails['education'], 'Blíží se konec platnosti kvalifikace', '155',
+            [qualification.user.email],
+            variables={
+                'vokativ': qualification.user.vokativ,
+                'qualification': qualification.category.name,
+                'consultants': f'<ul>{consultants}</ul>',
+                'kids_consultants': f'<ul>{kids_consultants}</ul>',
+            }
+        )
+
+
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
 
@@ -225,4 +269,3 @@ def text(email, subject, text, reply_to=None):
         reply_to=reply_to,
         variables={'content': text}
     )
-
