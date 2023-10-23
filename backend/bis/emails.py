@@ -17,6 +17,22 @@ emails = {
 }
 
 
+def login_code(email, code):
+    text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
+
+
+def text(email, subject, text, reply_to=None):
+    text = text.replace("\n", "<br>")
+    ecomail.send_email(
+        emails['bis'],
+        subject,
+        '111',
+        [email],
+        reply_to=reply_to,
+        variables={'content': text}
+    )
+
+
 def password_reset_link(user, email, login_code):
     ecomail.send_email(
         emails['bis'],
@@ -226,7 +242,7 @@ def notify_not_closed_events_summary():
         )
 
 
-def qualification_about_to_end():
+def get_consultants():
     valid_qualifications = Qualification.objects.filter(
         valid_since__lte=date.today(),
         valid_till__gte=date.today(),
@@ -237,6 +253,14 @@ def qualification_about_to_end():
     consultants = "".join(f"<li>{consultant.get_name()}, {consultant.email}</li>" for consultant in consultants)
     kids_consultants = "".join(
         f"<li>{consultant.get_name()}, {consultant.email}</li>" for consultant in kids_consultants)
+
+    return {
+        'consultants': f'<ul>{consultants}</ul>',
+        'kids_consultants': f'<ul>{kids_consultants}</ul>',
+    }
+
+
+def qualification_about_to_end():
     for qualification in Qualification.objects.filter(
             valid_till=date.today() + timedelta(days=90),
     ):
@@ -249,23 +273,23 @@ def qualification_about_to_end():
             variables={
                 'vokativ': qualification.user.vokativ,
                 'qualification': qualification.category.name,
-                'consultants': f'<ul>{consultants}</ul>',
-                'kids_consultants': f'<ul>{kids_consultants}</ul>',
+                **get_consultants(),
             }
         )
 
 
-def login_code(email, code):
-    text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
+def qualification_created(qualification: Qualification):
+    if not qualification.user.email:
+        return
 
-
-def text(email, subject, text, reply_to=None):
-    text = text.replace("\n", "<br>")
     ecomail.send_email(
-        emails['bis'],
-        subject,
-        '111',
-        [email],
-        reply_to=reply_to,
-        variables={'content': text}
+        emails['education'], 'Udělení nové kvalifikace', '157',
+        [qualification.user.email],
+        variables={
+            'consultant': qualification.approved_by.get_name(),
+            'consultant_email': qualification.approved_by.email,
+            'qualification': qualification.category.name,
+            'valid_till': str(qualification.valid_till),
+            **get_consultants(),
+        }
     )

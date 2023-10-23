@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from vokativ import vokativ
 
+from bis import emails
 from bis.models import User, Location, UserEmail, Qualification
 from project import settings
 from regions.models import Region
@@ -82,6 +83,11 @@ def set_qualification_end_date(instance: Qualification, **kwargs):
     if instance.category.slug in ['weekend_organizer', 'main_leader_of_kids_camps']:
         instance.valid_till = instance.valid_since + relativedelta(years=100)
 
+
+@receiver(post_save, sender=Qualification, dispatch_uid='qualification_created_email')
+def qualification_created_email(instance: Qualification, created, **kwargs):
+    if created:
+        emails.qualification_created(instance)
 
 @receiver(post_save, sender=User, dispatch_uid='set_primary_email')
 def set_primary_email(instance: User, **kwargs):
