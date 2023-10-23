@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.core.cache import cache
 
@@ -65,15 +67,19 @@ from ecomail.serializers import SendEmailSerializer
 
 def send_email(sender, subject, template_id, recipients, *, reply_to=None, variables=None,
                attachments=None):
-    from_name, from_email = sender
     if settings.TEST or not settings.EMAILS_ENABLED:
         print("Sending of emails disabled, email data:", locals())
         return
 
+    from_name, from_email = sender
     if cache.get('emails_paused'): return
     if attachments is None: attachments = []
     if variables is None: variables = {}
     if reply_to is None: reply_to = [from_email]
+    recipients = [recipient for recipient in recipients if recipient]
+    if not recipients:
+        logging.error("No recipients for email")
+        return
 
     SendEmailSerializer(data=dict(from_email=from_email, from_name=from_name, subject=subject, template_id=template_id,
                                   recipients=recipients, variables=variables, attachments=attachments,

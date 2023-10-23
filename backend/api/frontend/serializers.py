@@ -640,7 +640,9 @@ class OpportunitySerializer(ModelSerializer):
     def create(self, validated_data):
         validated_data['contact_person'] = User.objects.get(id=self.context['view'].kwargs['user_id'])
         assert validated_data['contact_person'] == self.context['request'].user
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        emails.opportunity_created(instance)
+        return instance
 
 
 class FinanceReceiptSerializer(ModelSerializer):

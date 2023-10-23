@@ -8,6 +8,7 @@ from bis.models import Qualification
 from categories.models import PronounCategory, EventProgramCategory
 from ecomail import ecomail
 from event.models import Event
+from opportunities.models import Opportunity
 
 emails = {
     'bis': ('BIS', 'bis@brontosaurus.cz'),
@@ -78,10 +79,6 @@ def application_created(application):
         variables=variables
     )
     email = event.propagation.contact_email or event.main_organizer.email
-    if not email:
-        logging.error("Organizer does not have an email")
-        return
-
     ecomail.send_email(
         emails['bis'],
         "Nová přihláška!", "148",
@@ -137,13 +134,9 @@ def event_ended_notify_organizers():
             end=date.today() - timedelta(days=2),
     ):
         organizers = event.other_organizers.all()
-        organizers_emails = [organizer.email for organizer in organizers if organizer.email]
-        if not organizers_emails:
-            continue
-
         ecomail.send_email(
             emails['bis'], "Organizátorům po akci", "161",
-            organizers_emails,
+            [organizer.email for organizer in organizers if organizer.email],
             variables={
                 'vokativs': ", ".join(organizer.vokativ for organizer in organizers),
                 'event_name': event.name,
@@ -159,9 +152,6 @@ def event_not_closed_10_days():
             is_closed=False,
             end=date.today() - timedelta(days=10),
     ):
-        if not event.main_organizer.email:
-            continue
-
         ecomail.send_email(
             emails['bis'], "Blížící se termín uzavření akce", "162",
             [event.main_organizer.email],
@@ -181,9 +171,6 @@ def event_not_closed_20_days():
             is_closed=False,
             end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
-        if not event.main_organizer.email:
-            continue
-
         ecomail.send_email(
             emails['bis'], "Akce je po termínu pro její uzavření", "163",
             [event.main_organizer.email],
@@ -205,9 +192,6 @@ def event_end_participants_notification():
             continue
 
         for participant in event.record.participants.all():
-            if not participant.email:
-                continue
-
             ecomail.send_email(
                 emails['movement'], "Děkujeme za účast na akci Hnutí", "169",
                 [participant.email],
@@ -264,9 +248,6 @@ def qualification_about_to_end():
     for qualification in Qualification.objects.filter(
             valid_till=date.today() + timedelta(days=90),
     ):
-        if not qualification.user.email:
-            continue
-
         ecomail.send_email(
             emails['education'], 'Blíží se konec platnosti kvalifikace', '155',
             [qualification.user.email],
@@ -279,9 +260,6 @@ def qualification_about_to_end():
 
 
 def qualification_created(qualification: Qualification):
-    if not qualification.user.email:
-        return
-
     ecomail.send_email(
         emails['education'], 'Udělení nové kvalifikace', '157',
         [qualification.user.email],
@@ -293,3 +271,17 @@ def qualification_created(qualification: Qualification):
             **get_consultants(),
         }
     )
+
+
+def opportunity_created(opportunity: Opportunity):
+    email = opportunity.contact_email or opportunity.contact_person.email
+    ecomail.send_email(
+        emails['volunteering'], "Příležitost je zadána v BISu", '145',
+        [email],
+        variables={
+            'created_by': opportunity.contact_person.get_name(),
+            'opportunity': opportunity.name,
+            'created_by_email': opportunity.contact_person.email,
+        }
+    )
+
