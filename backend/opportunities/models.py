@@ -32,6 +32,7 @@ class Opportunity(Model):
     contact_phone = PhoneNumberField(blank=True)
     contact_email = EmailField(blank=True)
     image = ThumbnailImageField(upload_to='opportunity_images')
+    created_at = DateField(auto_now=True)
 
     def clean(self):
         if not (self.category.slug == 'collaboration' or self.location_benefits):

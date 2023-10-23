@@ -285,3 +285,16 @@ def opportunity_created(opportunity: Opportunity):
         }
     )
 
+
+def opportunities_created_summary():
+    opportunities = Opportunity.objects.filter(created_at__gte=date.today() - timedelta(days=7))
+    opportunities = "".join(
+        f"<li>{opportunity.name}, {opportunity.category.name}</li>" for opportunity in opportunities
+    )
+    ecomail.send_email(
+        emails['bis'], 'Seznam zadaných příležitostí', '146',
+        [emails['volunteering'][1]],
+        variables={
+            'opportunities': f'<ul>{opportunities}</ul>'
+        }
+    )

@@ -29,6 +29,7 @@ class Command(BaseCommand):
         # weekly
         if date.today().weekday() == 0:
             try_to_run(emails.events_created_summary)
+            try_to_run(emails.opportunities_created_summary)
 
         # monthly
         if date.today().day == 1:
