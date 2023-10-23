@@ -9,7 +9,8 @@ from ecomail import ecomail
 from event.models import Event
 
 emails = {
-    'bis': ('BIS', 'bis@brontosaurus.cz')
+    'bis': ('BIS', 'bis@brontosaurus.cz'),
+    'movement': ('Hnutí Brontosaurus', 'hnuti@brontosaurus.cz'),
 }
 
 
@@ -96,6 +97,9 @@ def events_created_summary():
             created_at__gte=date.today() - timedelta(days=7),
             program__slug__in=[program.slug, 'none']
         )
+        if not events.count():
+            continue
+
         events = "".join(f"<li>{event.name}, {event.get_date()}, Program: {program.name}</li>" for event in events)
         ecomail.send_email(
             emails['bis'],
@@ -162,6 +166,50 @@ def event_not_closed_20_days():
             }
         )
 
+def event_end_participants_notification():
+    for event in Event.objects.filter(
+        is_canceled=False,
+        end=date.today() - timedelta(days=10)
+    ):
+        if not hasattr(event, 'record'):
+            continue
+
+        for participant in event.record.participants.all():
+            if not participant.email:
+                continue
+
+            ecomail.send_email(
+                emails['movement'], "Děkujeme za účast na akci Hnutí", "169",
+                [participant.email],
+                variables={
+                    'vokativ': participant.vokativ,
+                    'event_name': event.name,
+                }
+            )
+
+def notify_not_closed_events_summary():
+    for program in EventProgramCategory.objects.exclude(slug='none'):
+        events = Event.objects.filter(
+            is_canceled=False,
+            is_completed=False,
+            is_closed=False,
+            end__lte=date.today() - timedelta(days=20),
+            program__slug__in=[program.slug, 'none']
+        )
+        if not events.count():
+            continue
+
+        events = "".join(f"<li>{event.name}, {event.get_date()}, Program: {program.name}</li>" for event in events)
+        ecomail.send_email(
+            emails['bis'],
+            "Seznam neuzavřených akcí",
+            "154",
+            [program.email],
+            variables={
+                'events': f'<ul>{events}</ul>'
+            }
+        )
+
 
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
@@ -177,3 +225,4 @@ def text(email, subject, text, reply_to=None):
         reply_to=reply_to,
         variables={'content': text}
     )
+

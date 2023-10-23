@@ -4,7 +4,7 @@ from datetime import date
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from bis.emails import emails
+from bis import emails
 
 
 def try_to_run(fn, *args, **kwargs):
@@ -23,6 +23,7 @@ class Command(BaseCommand):
         try_to_run(emails.event_ended_notify_organizers)
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
+        try_to_run(emails.event_end_participants_notification)
 
         # weekly
         if date.today().weekday() == 0:
@@ -31,4 +32,5 @@ class Command(BaseCommand):
         # monthly
         if date.today().day == 1:
             try_to_run(call_command, "close_events")
+            try_to_run(emails.notify_not_closed_events_summary)
 
