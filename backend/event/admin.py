@@ -245,7 +245,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
 
     date_hierarchy = 'start'
     search_fields = 'name',
-    readonly_fields = 'duration', 'created_by'
+    readonly_fields = 'duration', 'created_by', 'created_at'
 
     autocomplete_fields = 'main_organizer', 'other_organizers', 'location', 'administration_units',
 

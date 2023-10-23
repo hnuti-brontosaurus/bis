@@ -156,6 +156,7 @@ class EventTag(Model):
 class EventProgramCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)
+    email = EmailField()
 
     class Meta:
         ordering = 'id',

@@ -1,10 +1,12 @@
 import logging
+from datetime import date, timedelta
 
 from django.conf import settings
 from vokativ import vokativ
 
-from categories.models import PronounCategory
+from categories.models import PronounCategory, EventProgramCategory
 from ecomail import ecomail
+from event.models import Event
 from project.settings import EMAIL
 
 emails = {
@@ -87,7 +89,23 @@ def event_created(event):
         }
     )
 
-
+def events_created_summary():
+    for program in EventProgramCategory.objects.exclude(slug='none'):
+        events = Event.objects.filter(
+            is_canceled=False,
+            created_at__gte=date.today() - timedelta(days=7),
+            program__slug__in=[program.slug, 'none']
+        )
+        events = "".join(f"<li>{event.name}, {event.get_date()}, Program: {program.name}</li>" for event in events)
+        ecomail.send_email(
+            emails['bis'],
+            "Seznam zadaných akcí koordinátorovi",
+            "153",
+            [program.email],
+            variables={
+                'events': f'<ul>{events}</ul>'
+            }
+        )
 
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')

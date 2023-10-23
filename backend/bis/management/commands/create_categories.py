@@ -108,15 +108,14 @@ class Command(BaseCommand):
         EventGroupCategory.objects.update_or_create(slug='weekend_event', defaults=dict(name='Víkendovka'))
         EventGroupCategory.objects.update_or_create(slug='other', defaults=dict(name='Ostatní'))
 
-        EventProgramCategory.objects.update_or_create(slug='monuments', defaults=dict(name='Akce památky'))
-        EventProgramCategory.objects.update_or_create(slug='nature', defaults=dict(name='Akce příroda'))
-        EventProgramCategory.objects.update_or_create(slug='kids', defaults=dict(name='BRĎO'))
-        EventProgramCategory.objects.update_or_create(slug='eco_tent', defaults=dict(name='Ekostan'))
-        EventProgramCategory.objects.update_or_create(slug='holidays_with_brontosaurus', defaults=dict(
-            name='PsB (Prázdniny s Brontosaurem = vícedenní letní akce)'))
-        EventProgramCategory.objects.update_or_create(slug='education', defaults=dict(name='Vzdělávání'))
-        EventProgramCategory.objects.update_or_create(slug='international', defaults=dict(name='Mezinárodní'))
-        EventProgramCategory.objects.update_or_create(slug='none', defaults=dict(name='Žádný'))
+        EventProgramCategory.objects.update_or_create(slug='monuments', defaults=dict(email='pamatky@brontosaurus.cz', name='Akce památky'))
+        EventProgramCategory.objects.update_or_create(slug='nature', defaults=dict(email='akce-priroda@brontosaurus.cz', name='Akce příroda'))
+        EventProgramCategory.objects.update_or_create(slug='kids', defaults=dict(email='sekce.brdo@brontosaurus.cz', name='BRĎO'))
+        EventProgramCategory.objects.update_or_create(slug='eco_tent', defaults=dict(email='ekostan@brontosaurus.cz', name='Ekostan'))
+        EventProgramCategory.objects.update_or_create(slug='holidays_with_brontosaurus', defaults=dict(email='psb@brontosaurus.cz', name='PsB (Prázdniny s Brontosaurem = vícedenní letní akce)'))
+        EventProgramCategory.objects.update_or_create(slug='education', defaults=dict(email='vzdelavani@brontosaurus.cz', name='Vzdělávání'))
+        EventProgramCategory.objects.update_or_create(slug='international', defaults=dict(email='international@brontosaurus.cz', name='Mezinárodní'))
+        EventProgramCategory.objects.update_or_create(slug='none', defaults=dict(email='hnuti@brontosaurus.cz', name='Žádný'))
 
         event_categories = {
             'internal': {
