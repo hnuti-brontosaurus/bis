@@ -20,6 +20,7 @@ class Command(BaseCommand):
         try_to_run(call_command, "record_history")
         try_to_run(call_command, "import_locations")
         try_to_run(call_command, "import_donations")
+        try_to_run(emails.event_ended_notify_organizers)
 
         # weekly
         if date.today().weekday() == 0:

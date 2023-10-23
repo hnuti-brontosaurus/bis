@@ -7,7 +7,6 @@ from vokativ import vokativ
 from categories.models import PronounCategory, EventProgramCategory
 from ecomail import ecomail
 from event.models import Event
-from project.settings import EMAIL
 
 emails = {
     'bis': ('BIS', 'bis@brontosaurus.cz')
@@ -89,6 +88,7 @@ def event_created(event):
         }
     )
 
+
 def events_created_summary():
     for program in EventProgramCategory.objects.exclude(slug='none'):
         events = Event.objects.filter(
@@ -106,6 +106,24 @@ def events_created_summary():
                 'events': f'<ul>{events}</ul>'
             }
         )
+
+
+def event_ended_notify_organizers():
+    for event in Event.objects.filter(
+            is_canceled=False,
+            end=date.today() - timedelta(days=2),
+    ):
+        organizers = event.other_organizers.all()
+        ecomail.send_email(
+            emails['bis'], "Organizátorům po akci", "161",
+            [organizer.email for organizer in organizers if organizer.email],
+            variables={
+                'vokativs': ", ".join(organizer.vokativ for organizer in organizers),
+                'event_name': event.name,
+                'program_email': event.program.email,
+            }
+        )
+
 
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
