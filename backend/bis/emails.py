@@ -125,6 +125,44 @@ def event_ended_notify_organizers():
         )
 
 
+def event_not_closed_10_days():
+    for event in Event.objects.filter(
+            is_canceled=False,
+            is_complete=False,
+            is_closed=False,
+            end=date.today() - timedelta(days=10),
+    ):
+        ecomail.send_email(
+            emails['bis'], "Blížící se termín uzavření akce", "162",
+            [event.main_organizer.email],
+            variables={
+                **PronounCategory.get_variables(event.main_organizer),
+                'main_organizer_name': event.main_organizer.vokativ,
+                'event_name': event.name,
+                'program_email': event.program.email,
+            }
+        )
+
+
+def event_not_closed_20_days():
+    for event in Event.objects.filter(
+            is_canceled=False,
+            is_complete=False,
+            is_closed=False,
+            end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
+    ):
+        ecomail.send_email(
+            emails['bis'], "Akce je po termínu pro její uzavření", "163",
+            [event.main_organizer.email],
+            variables={
+                **PronounCategory.get_variables(event.main_organizer),
+                'main_organizer_name': event.main_organizer.vokativ,
+                'event_name': event.name,
+                'program_email': event.program.email,
+            }
+        )
+
+
 def login_code(email, code):
     text(email, 'Kód pro přihlášení', f'tvůj kód pro přihlášení je {code}.')
 
