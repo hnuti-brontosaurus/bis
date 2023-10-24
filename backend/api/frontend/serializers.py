@@ -560,6 +560,7 @@ class EventSerializer(ModelSerializer):
         if validated_data['start'].year <= locked_year:
             raise DjangoValidationError("Cannot create events in the past")
 
+        validated_data['created_by'] = self.context['request'].user
         instance = super().create(validated_data)
 
         emails.event_created(instance)
