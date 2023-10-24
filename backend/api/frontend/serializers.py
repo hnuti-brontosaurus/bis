@@ -565,6 +565,13 @@ class EventSerializer(ModelSerializer):
         emails.event_created(instance)
         return instance
 
+    def update(self, instance, validated_data):
+        was_complete = instance.is_complete
+        instance = super().update(instance, validated_data)
+        if not was_complete and instance.is_complete:
+            emails.event_closed(instance)
+        return instance
+
 
 class LocationContactPersonSerializer(BaseContactSerializer):
     class Meta(BaseContactSerializer.Meta):

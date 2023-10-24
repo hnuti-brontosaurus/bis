@@ -298,3 +298,19 @@ def opportunities_created_summary():
             'opportunities': f'<ul>{opportunities}</ul>'
         }
     )
+
+
+def event_closed(event: Event):
+    programs = [EventProgramCategory.objects.exclude(slug='none')]
+    if event.program.slug != 'none':
+        programs = [event.program]
+
+    ecomail.send_email(
+        emails['bis'], 'Organizátor vyplnil akci', '192',
+        [program.email for program in programs],
+        variables={
+            'event': event.name,
+            'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}",
+            'backend_link':f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
+        }
+    )
