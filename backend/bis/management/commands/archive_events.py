@@ -10,10 +10,10 @@ class Command(BaseCommand):
     @with_paused_validation
     def handle(self, *args, **options):
         today = date.today()
-        year_to_close = today.year - 1
+        year_to_archive = today.year - 1
         if today.month < 3:
-            year_to_close -= 1
+            year_to_archive -= 1
 
         Event.objects.filter(
-            end__lte=date(year_to_close, 12, 31), is_closed=False
-        ).update(is_closed=True)
+            end__lte=date(year_to_archive, 12, 31), is_archived=False
+        ).update(is_archived=True)

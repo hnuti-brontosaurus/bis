@@ -30,7 +30,7 @@ import { ParticipantsStep } from './ParticipantsStep'
 
 export type CloseEventPayload = DeepPick<
   PatchedEvent,
-  'is_complete' | 'record' | 'finance.bank_account_number'
+  'is_closed' | 'record' | 'finance.bank_account_number'
 > & {
   photos: EventPhotoPayload[]
   pages: AttendanceListPagePayload[]
@@ -96,9 +96,9 @@ const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
   )
 
 const formData2payload = ({
-  is_complete,
+  is_closed,
   ...data
-}: CloseEventFormShape & { is_complete: boolean }): CloseEventPayload => {
+}: CloseEventFormShape & { is_closed: boolean }): CloseEventPayload => {
   const { participantInputType } = data.record
   const payload = cloneDeep(omit(data, 'record.participantInputType'))
 
@@ -116,7 +116,7 @@ const formData2payload = ({
   if (payload.finance && !payload.finance.bank_account_number)
     payload.finance.bank_account_number = ''
 
-  return merge(is_complete ? { is_complete: true } : {}, payload)
+  return merge(is_closed ? { is_closed: true } : {}, payload)
 }
 
 const initialData2form = (
@@ -252,7 +252,7 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
-  const handleSubmit = async ({ is_complete }: { is_complete: boolean }) => {
+  const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
     // then let's clear the redux persistent state
@@ -289,7 +289,7 @@ export const CloseEventForm = ({
         {},
         evidence,
         participants,
-        { is_complete },
+        { is_closed },
         {
           photos: evidence.photos.filter(photo => photo.photo),
           pages: evidence.pages.filter(page => page.page),
@@ -334,8 +334,8 @@ export const CloseEventForm = ({
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       actions={[
-        { name: 'uložit', props: { is_complete: false } },
-        { name: 'uložit a uzavřít', props: { is_complete: true } },
+        { name: 'uložit', props: { is_closed: false } },
+        { name: 'uložit a uzavřít', props: { is_closed: true } },
       ]}
     >
       <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>

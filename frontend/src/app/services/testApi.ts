@@ -2809,8 +2809,8 @@ export type Event = {
   id: number
   name: string
   is_canceled?: boolean
-  is_complete?: boolean
   is_closed?: boolean
+  is_archived?: boolean
   start: string
   start_time?: string | null
   end: string
@@ -3087,8 +3087,8 @@ export type PatchedEvent = {
   id?: number
   name?: string
   is_canceled?: boolean
-  is_complete?: boolean
   is_closed?: boolean
+  is_archived?: boolean
   start?: string
   start_time?: string | null
   end?: string

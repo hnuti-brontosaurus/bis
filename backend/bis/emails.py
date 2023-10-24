@@ -163,8 +163,8 @@ def event_ended_notify_organizers():
 def event_not_closed_10_days():
     for event in Event.objects.filter(
             is_canceled=False,
-            is_complete=False,
             is_closed=False,
+            is_archived=False,
             end=date.today() - timedelta(days=10),
     ):
         ecomail.send_email(
@@ -182,8 +182,8 @@ def event_not_closed_10_days():
 def event_not_closed_20_days():
     for event in Event.objects.filter(
             is_canceled=False,
-            is_complete=False,
             is_closed=False,
+            is_archived=False,
             end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
         ecomail.send_email(
@@ -221,8 +221,8 @@ def notify_not_closed_events_summary():
     for program in EventProgramCategory.objects.exclude(slug='none'):
         events = Event.objects.filter(
             is_canceled=False,
-            is_completed=False,
             is_closed=False,
+            is_archived=False,
             end__lte=date.today() - timedelta(days=20),
             program__slug__in=[program.slug, 'none']
         )

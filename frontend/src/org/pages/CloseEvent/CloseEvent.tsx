@@ -213,7 +213,7 @@ export const CloseEvent = () => {
       type: 'success',
       message:
         'Evidence akce byla úspěšně uložena' +
-        (evidence.is_complete ? ' a uzavřena' : ''),
+        (evidence.is_closed ? ' a uzavřena' : ''),
     })
 
     navigate(`/org/akce/${eventId}`)

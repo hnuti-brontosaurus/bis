@@ -194,8 +194,8 @@ class Command(BaseCommand):
         other_organizers: t.List[User] = None,
         location_name: str = "Online",
         is_canceled: bool = False,
-        is_complete: bool = None,
         is_closed: bool = None,
+        is_archived: bool = None,
     ):
         ctg_group = EventGroupCategory.objects.get(slug=group_slug)
         ctg_category = EventCategory.objects.get(slug=category_slug)
@@ -203,18 +203,18 @@ class Command(BaseCommand):
         ctg_intended_for = EventIntendedForCategory.objects.get(slug=intended_for_slug)
         location = Location.objects.get(name=location_name)
 
-        if is_complete is None:
-            is_complete = start.year <= 2022
         if is_closed is None:
             is_closed = start.year <= 2022
+        if is_archived is None:
+            is_archived = start.year <= 2022
 
         event = Event.objects.create(
             name=name,
             start=start,
             end=end,
             is_canceled=is_canceled,
-            is_complete=is_complete,
             is_closed=is_closed,
+            is_archived=is_archived,
             location=location,
             group=ctg_group,
             category=ctg_category,

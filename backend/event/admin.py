@@ -154,16 +154,16 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         return super().get_formset(request, obj, **kwargs)
 
 
-@admin.action(description='Uzavřít akce')
-def mark_as_closed(model_admin, request, queryset):
-    queryset.update(is_closed=True)
+@admin.action(description='Zarchivovat akce')
+def mark_as_archived(model_admin, request, queryset):
+    queryset.update(is_archived=True)
 
 
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
     change_form_template = 'bis/event_change_form.html'
 
-    actions = [mark_as_closed, export_to_xlsx]
+    actions = [mark_as_archived, export_to_xlsx]
     inlines = EventFinanceAdmin, EventPropagationAdmin, EventVIPPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
     filter_horizontal = 'other_organizers',
 
@@ -180,8 +180,8 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         'propagation__is_shown_on_web',
         ('intended_for', MultiSelectRelatedDropdownFilter),
         'is_canceled',
-        'is_complete',
         'is_closed',
+        'is_archived',
         'registration__is_registration_required',
         'registration__is_event_full',
         'is_attendance_list_required',
@@ -192,7 +192,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def get_actions(self, request):
         actions = super().get_actions(request)
         if not (request.user.is_superuser or request.user.is_office_worker):
-            del actions['mark_as_closed']
+            del actions['mark_as_archived']
         return actions
 
     list_display = 'name', 'get_links', 'get_date', 'get_administration_units', 'location', 'category', 'get_tags', 'program', \

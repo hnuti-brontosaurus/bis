@@ -520,8 +520,8 @@ class EventSerializer(ModelSerializer):
             'id',
             'name',
             'is_canceled',
-            'is_complete',
             'is_closed',
+            'is_archived',
             'start',
             'start_time',
             'end',
@@ -566,9 +566,9 @@ class EventSerializer(ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        was_complete = instance.is_complete
+        was_closed = instance.is_closed
         instance = super().update(instance, validated_data)
-        if not was_complete and instance.is_complete:
+        if not was_closed and instance.is_closed:
             emails.event_closed(instance)
         return instance
 

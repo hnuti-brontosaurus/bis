@@ -233,7 +233,7 @@ describe('create event', () => {
     // test that event was submitted and proper data were sent to backend
     cy.wait('@createEvent')
       .its('request.body')
-      .should('not.have.any.keys', 'is_canceled', 'is_closed', 'is_complete')
+      .should('not.have.any.keys', 'is_canceled', 'is_archived', 'is_closed')
       .and('include', { record: null, finance: null })
   })
 

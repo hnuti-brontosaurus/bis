@@ -468,7 +468,7 @@ class User(AbstractBaseUser):
         events += apps.get_model('bis', 'Event').objects.filter(record__participants=self)
         events += self.events_where_was_organizer.all()
         for event in events:
-            if event.has_edit_permission(user, ignore_closed=True):
+            if event.has_edit_permission(user, ignore_archived=True):
                 return True
 
     def update_roles(self):

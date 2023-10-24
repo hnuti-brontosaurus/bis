@@ -102,7 +102,7 @@ export type EventStatus =
 export const getEventStatus = (event: Event): EventStatus => {
   if (event.is_canceled) return 'canceled'
   if (isEventClosed(event)) return 'closed'
-  if (event.is_complete) return 'finished'
+  if (event.is_closed) return 'finished'
   return 'inProgress'
 }
 

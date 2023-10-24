@@ -200,11 +200,11 @@ export const event = {
   intended_for: 'Pro koho?',
   location: ['Lokalita', 'Zobrazí se na webu jako místo konání akce'],
   is_canceled: ['Je akce zrušena?', 'Akce se nebude konat / nekonala'],
-  is_complete: [
+  is_closed: [
     'Vše vyplněno?',
     'Příznak, zda-li jsou všechny povinné údaje po akci vyplněny',
   ],
-  is_closed: [
+  is_archived: [
     'Je akce uzavřena?',
     'Uzavřená akce nelze editovat, je archivována',
   ],

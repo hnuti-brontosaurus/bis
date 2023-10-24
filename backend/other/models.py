@@ -98,7 +98,7 @@ class DashboardItem(Model):
 
         future_events = []
         for event in (user.events_where_was_organizer
-                .exclude(is_closed=True)
+                .exclude(is_archived=True)
                 .exclude(is_canceled=True)
                 .filter(start__gte=today())):
             dashboard_items.append(
@@ -110,9 +110,9 @@ class DashboardItem(Model):
             future_events.append(event)
 
         for event in (user.events_where_was_organizer
-                .exclude(is_closed=True)
+                .exclude(is_archived=True)
                 .exclude(is_canceled=True)
-                .filter(is_complete=False)):
+                .filter(is_closed=False)):
             if event in future_events:
                 continue
 

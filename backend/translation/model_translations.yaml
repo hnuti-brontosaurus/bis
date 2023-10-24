@@ -186,12 +186,12 @@ Event:
     is_canceled:
       - Je akce zrušena?
       - Akce se nebude konat / nekonala
-    is_complete:
-      - Vše vyplněno?
-      - Příznak, zda-li jsou všechny povinné údaje po akci vyplněny
     is_closed:
       - Je akce uzavřena?
-      - Uzavřená akce nelze editovat, je archivována
+      - Příznak, zda-li jsou všechny povinné údaje po akci vyplněny
+    is_archived:
+      - Je akce archivovaná?
+      - Zarchivovaná akce nelze editovat
     start: Začátek akce
     start_time: Čas začátku akce
     end: Konec akce

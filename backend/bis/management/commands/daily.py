@@ -33,6 +33,6 @@ class Command(BaseCommand):
 
         # monthly
         if date.today().day == 1:
-            try_to_run(call_command, "close_events")
+            try_to_run(call_command, "archive_events")
             try_to_run(emails.notify_not_closed_events_summary)
 
