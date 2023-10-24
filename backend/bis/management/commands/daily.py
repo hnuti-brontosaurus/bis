@@ -26,13 +26,21 @@ class Command(BaseCommand):
         try_to_run(emails.event_end_participants_notification)
         try_to_run(emails.qualification_about_to_end)
 
+        today = date.today()
         # weekly
-        if date.today().weekday() == 0:
+        if today.weekday() == 0:
             try_to_run(emails.events_created_summary)
             try_to_run(emails.opportunities_created_summary)
 
         # monthly
-        if date.today().day == 1:
+        if today.day == 1:
             try_to_run(call_command, "archive_events")
             try_to_run(emails.notify_not_closed_events_summary)
+
+        if today.month == 10:
+            if today.day == 15:
+                emails.fill_memberships(call=1)
+            if today.day == 27:
+                emails.fill_memberships(call=2)
+
 

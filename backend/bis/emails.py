@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from vokativ import vokativ
 
+from administration_units.models import AdministrationUnit
 from bis.models import Qualification
 from categories.models import PronounCategory, EventProgramCategory
 from ecomail import ecomail
@@ -329,3 +330,27 @@ def event_closed(event: Event):
             'backend_link':f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
         }
     )
+
+
+def fill_memberships(call):
+    template_ids = {
+        1: "159",
+        2: "160",
+    }
+    subjects = {
+        1: "Blížící se termín zadání členů HB do BIS",
+        2: "Blížící se termín zadání členů HB do BIS (2.výzva)",
+    }
+
+    for administration_unit in AdministrationUnit.objects.all():
+        if not administration_unit.is_active():
+            continue
+
+        ecomail.send_email(
+            emails['bis'], subjects[call], template_ids[call],
+            [administration_unit.chairman.email],
+            variables={
+                'vokativ': administration_unit.chairman.vokativ,
+                'administration_unit': administration_unit.abbreviation,
+            }
+        )
