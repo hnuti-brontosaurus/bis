@@ -126,7 +126,7 @@ class XLSXWriter:
         main_organizers = User.objects.filter(events_where_was_as_main_organizer__in=queryset)
 
         self.write_header(dict(
-            p='=Učastníci',
+            p='Účastníci',
             pe='Emaily',
             pc='Počet účastí',
             o='Orgové',
