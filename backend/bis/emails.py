@@ -199,23 +199,19 @@ def event_not_closed_20_days():
         )
 
 
-def event_end_participants_notification():
-    for event in Event.objects.filter(
-            is_canceled=False,
-            end=date.today() - timedelta(days=10)
-    ):
-        if not hasattr(event, 'record'):
-            continue
+def event_end_participants_notification(event):
+    if not hasattr(event, 'record'):
+        return
 
-        for participant in event.record.participants.all():
-            ecomail.send_email(
-                emails['movement'], "Děkujeme za účast na akci Hnutí", "169",
-                [participant.email],
-                variables={
-                    'vokativ': participant.vokativ,
-                    'event_name': event.name,
-                }
-            )
+    for participant in event.record.participants.all():
+        ecomail.send_email(
+            emails['movement'], "Děkujeme za účast na akci Hnutí", "169",
+            [participant.email],
+            variables={
+                'vokativ': participant.vokativ,
+                'event_name': event.name,
+            }
+        )
 
 
 def notify_not_closed_events_summary():
