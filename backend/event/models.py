@@ -50,7 +50,7 @@ class Event(Model):
 
     group = ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name='events')
     category = ForeignKey(EventCategory, on_delete=PROTECT, related_name='events')
-    tags = ManyToManyField(EventTag, related_name='events')
+    tags = ManyToManyField(EventTag, related_name='events', blank=True)
     program = ForeignKey(EventProgramCategory, on_delete=PROTECT, related_name='events')
     intended_for = ForeignKey(EventIntendedForCategory, on_delete=PROTECT, related_name='events')
 
