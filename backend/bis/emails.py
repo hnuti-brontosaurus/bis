@@ -313,7 +313,7 @@ def opportunities_created_summary():
 
 
 def event_closed(event: Event):
-    programs = [EventProgramCategory.objects.exclude(slug='none')]
+    programs = EventProgramCategory.objects.exclude(slug='none')
     if event.program.slug != 'none':
         programs = [event.program]
 
