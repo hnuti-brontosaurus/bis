@@ -7,7 +7,8 @@ from administration_units.models import AdministrationUnit
 from bis.models import User, Location, LocationPhoto
 from categories.serializers import OpportunityCategorySerializer, EventCategorySerializer, \
     EventProgramCategorySerializer, AdministrationUnitCategorySerializer, LocationAccessibilityCategorySerializer, \
-    EventIntendedForCategorySerializer, DietCategorySerializer, EventGroupCategorySerializer, EventTagSerializer
+    EventIntendedForCategorySerializer, DietCategorySerializer, EventGroupCategorySerializer, EventTagSerializer, \
+    LocationProgramCategorySerializer
 from event.models import Event, EventPropagation, EventRegistration, EventPropagationImage
 from opportunities.models import Opportunity
 from questionnaire.models import Questionnaire, Question
@@ -100,7 +101,7 @@ class LocationPhotoSerializer(ModelSerializer):
 
 class LocationSerializer(ModelSerializer):
     patron = UserSerializer()
-    program = EventProgramCategorySerializer()
+    program = LocationProgramCategorySerializer()
     accessibility_from_prague = LocationAccessibilityCategorySerializer()
     accessibility_from_brno = LocationAccessibilityCategorySerializer()
     region = StringRelatedField()
