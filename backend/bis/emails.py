@@ -105,6 +105,21 @@ def event_created(event):
         }
     )
 
+    chairmen = [administration_unit.chairman for administration_unit in event.administration_units.all()]
+    recipients = [chairman.email for chairman in chairmen if chairman != event.main_organizer]
+    ecomail.send_email(
+        emails['bis'], 'Informace, že někdo založil akci pod mým ZČ', '150',
+        recipients,
+        variables={
+            'event_name': event.name,
+            'event_date': event.get_date(),
+            'main_organizer': event.main_organizer.get_name(),
+            'main_organizer_email': event.main_organizer.email,
+            'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}",
+            'backend_link':f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
+        }
+    )
+
 
 def events_created_summary():
     for program in EventProgramCategory.objects.exclude(slug='none'):
