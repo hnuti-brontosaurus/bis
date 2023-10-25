@@ -176,6 +176,7 @@ def event_not_closed_10_days():
                 'main_organizer_name': event.main_organizer.vokativ,
                 'event_name': event.name,
                 'program_email': event.program.email,
+                'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/uzavrit",
             }
         )
 
@@ -198,6 +199,7 @@ def event_not_closed_20_days():
                 'main_organizer_name': event.main_organizer.vokativ,
                 'event_name': event.name,
                 'program_email': event.program.email,
+                'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/uzavrit",
             }
         )
 
