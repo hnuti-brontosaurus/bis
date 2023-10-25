@@ -1,15 +1,7 @@
-from os.path import join
-from pathlib import Path
-
-import openpyxl
+from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
-from xlsx2html import xlsx2html
-
-import pandas
-import pdfkit
-from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.http import FileResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.utils.datetime_safe import date
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -24,7 +16,7 @@ from bis.helpers import AgeStats
 from event.models import *
 from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx, get_attendance_list, get_attendance_list_data, export_files
+from xlsx_export.export import export_to_xlsx, get_attendance_list, export_files
 
 
 class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
@@ -131,6 +123,7 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     @admin.display(description='E-maily účastníků a organizátorů')
     def get_participants_table(self, obj):
         def make_cell(item): return f'<td>{item}</td>'
+
         def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
 
         # participants = obj.record.get_all_participants()
@@ -195,16 +188,20 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             del actions['mark_as_archived']
         return actions
 
-    list_display = 'name', 'get_links', 'get_date', 'get_administration_units', 'location', 'category', 'get_tags', 'program', \
-        'get_participants_count', 'get_young_percentage', 'get_total_hours_worked', \
-        'get_event_record_photos_uploaded', 'get_event_finance_receipts_uploaded'
-    list_select_related = 'location', 'category', 'program', 'record'
+    list_display = (
+        'name', 'get_links', 'get_date', 'get_administration_units', 'location',
+        'get_participants_count', 'get_young_percentage', 'get_total_hours_worked',
+        'program', 'category', 'get_tags',
+        'intended_for', 'is_shown_on_web', 'is_canceled', 'is_closed',
+    )
+    list_select_related = 'location', 'category', 'program', 'record', 'intended_for', 'propagation'
 
     @admin.display(description="Odkazy")
     def get_links(self, obj):
-        return mark_safe(f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
-                         f'<a target="_blank" href="/org/akce/{obj.id}/prihlasky" title="Zobrazit přihlášky / účastníky">👪</a><br>'
-                         f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
+        return mark_safe(
+            f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
+            f'<a target="_blank" href="/org/akce/{obj.id}/prihlasky" title="Zobrazit přihlášky / účastníky">👪</a><br>'
+            f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
 
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
     def get_administration_units(self, obj):
@@ -229,15 +226,10 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         if not hasattr(obj, 'record'): return None
         return obj.record.total_hours_worked
 
-    @admin.display(description='Fotky nahrány?', boolean=True)
-    def get_event_record_photos_uploaded(self, obj):
-        if not hasattr(obj, 'record'): return False
-        return bool(len(obj.record.photos.all()))
-
-    @admin.display(description='Účtenky nahrány?', boolean=True)
-    def get_event_finance_receipts_uploaded(self, obj):
-        if not hasattr(obj, 'finance'): return False
-        return bool(len(obj.finance.receipts.all()))
+    @admin.display(description='Zobrazena na webu?', boolean=True)
+    def is_shown_on_web(self, obj):
+        if not hasattr(obj, 'propagation'): return False
+        return obj.propagation.is_shown_on_web
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('administration_units', 'record__participants',
