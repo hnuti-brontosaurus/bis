@@ -11,7 +11,11 @@ def try_to_run(fn, *args, **kwargs):
     try:
         fn(*args, **kwargs)
     except Exception as e:
-        logging.exception(e)
+        logging.exception(e, extra={
+            'fn': str(fn),
+            'args': args,
+            'kwargs': kwargs,
+        })
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -38,8 +42,8 @@ class Command(BaseCommand):
 
         if today.month == 10:
             if today.day == 15:
-                emails.fill_memberships(call=1)
+                try_to_run(emails.fill_memberships, call=1)
             if today.day == 27:
-                emails.fill_memberships(call=2)
+                try_to_run(emails.fill_memberships, call=2)
 
 

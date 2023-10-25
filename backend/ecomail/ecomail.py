@@ -67,24 +67,25 @@ from ecomail.serializers import SendEmailSerializer
 
 def send_email(sender, subject, template_id, recipients, *, reply_to=None, variables=None,
                attachments=None):
-    if settings.TEST or not settings.EMAILS_ENABLED:
-        print("Sending of emails disabled, email data:", locals())
-        return
-
     from_name, from_email = sender
-    if cache.get('emails_paused'): return
     if attachments is None: attachments = []
     if variables is None: variables = {}
     if reply_to is None: reply_to = [from_email]
     recipients = [recipient for recipient in recipients if recipient]
-    if not recipients:
-        logging.error("No recipients for email")
+
+    data = dict(from_email=from_email, from_name=from_name, subject=subject, template_id=template_id,
+                recipients=recipients, variables=variables, attachments=attachments,
+                reply_to=reply_to)
+
+    if settings.TEST or not settings.EMAILS_ENABLED or cache.get('emails_paused'):
+        print("Sending of emails disabled, email data:", data)
         return
 
-    SendEmailSerializer(data=dict(from_email=from_email, from_name=from_name, subject=subject, template_id=template_id,
-                                  recipients=recipients, variables=variables, attachments=attachments,
-                                  reply_to=reply_to)
-                        ).is_valid(raise_exception=True)
+    if not recipients:
+        logging.exception("No recipients for email", extra=data)
+        return
+
+    SendEmailSerializer(data=data).is_valid(raise_exception=True)
 
     contacts = [Contact.objects.get_or_create(email=email)[0] for email in recipients]
     res = send(contacts, "POST", f"transactional/send-template", {
