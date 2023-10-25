@@ -142,7 +142,7 @@ class Event(Model):
 
 @translate_model
 class EventFinance(Model):
-    event = OneToOneField(Event, related_name='finance', on_delete=CASCADE)
+    event = OneToOneField(Event, related_name='finance', on_delete=PROTECT)
 
     bank_account_number = CharField(max_length=63, blank=True)
 
@@ -270,7 +270,7 @@ class EventRegistration(Model):
 
 @translate_model
 class EventRecord(Model):
-    event = OneToOneField(Event, related_name='record', on_delete=CASCADE)
+    event = OneToOneField(Event, related_name='record', on_delete=PROTECT)
 
     total_hours_worked = PositiveIntegerField(null=True, blank=True)
     comment_on_work_done = TextField(blank=True)

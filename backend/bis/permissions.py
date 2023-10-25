@@ -169,7 +169,7 @@ class Permissions:
                     return True
 
         if self.user.is_board_member:
-            if self.model in [DuplicateUser, Membership, AdministrationUnitContactAddress, GeneralMeeting]:
+            if self.model in [Event, DuplicateUser, Membership, AdministrationUnitContactAddress, GeneralMeeting]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
 
