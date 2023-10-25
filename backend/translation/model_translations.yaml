@@ -25,7 +25,7 @@ Location:
     facilities: Zázemí
     address: Adresa
     web: Web
-    is_fully_specified: Plnohodnotná lokalita?
+    is_traditional: Tradiční brontosauří lokalita?
 
 LocationPhoto:
   name: Fotka lokality
@@ -298,7 +298,7 @@ EventRecord:
     comment_on_work_done: Okomentování vykonané práce
     attendance_list_pages: Prezenční listina
     participants: Účastníci
-    note: Poznámka k akci
+    note: Privátní poznámka
     number_of_participants:
       - Počet účastníků
       - Vyplň pouze pokud nejsou vyplnění konkrétní účastníci

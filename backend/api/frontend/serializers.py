@@ -602,7 +602,7 @@ class LocationSerializer(ModelSerializer):
             'description',
             'patron',
             'contact_person',
-            'is_fully_specified',
+            'is_traditional',
             'for_beginners',
             'is_full',
             'is_unexplored',

@@ -3129,7 +3129,7 @@ export type Location = {
   description?: string
   patron: LocationPatron | null
   contact_person: LocationContactPerson | null
-  is_fully_specified?: boolean
+  is_traditional?: boolean
   for_beginners?: boolean
   is_full?: boolean
   is_unexplored?: boolean
@@ -3161,7 +3161,7 @@ export type PatchedLocation = {
   description?: string
   patron?: LocationPatron | null
   contact_person?: LocationContactPerson | null
-  is_fully_specified?: boolean
+  is_traditional?: boolean
   for_beginners?: boolean
   is_full?: boolean
   is_unexplored?: boolean

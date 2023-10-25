@@ -36,7 +36,7 @@ class Location(Model):
     address = CharField(max_length=255, blank=True)
     gps_location = PointField(null=True)
 
-    is_fully_specified = BooleanField(default=False)
+    is_traditional = BooleanField(default=False)
     for_beginners = BooleanField(default=False)
     is_full = BooleanField(default=False)
     is_unexplored = BooleanField(default=False)
@@ -87,7 +87,7 @@ class Location(Model):
                     if field.name in ['id', '_import_id']:
                         continue
 
-                    elif field.name in ['name', 'description', 'address', 'gps_location', 'is_fully_specified',
+                    elif field.name in ['name', 'description', 'address', 'gps_location', 'is_traditional',
                                         'for_beginners', 'is_full', 'is_unexplored', 'program', 'accessibility_from_prague',
                                         'accessibility_from_brno', 'volunteering_work', 'volunteering_work_done',
                                         'volunteering_work_goals', 'options_around', 'facilities', 'web', 'region']:

@@ -32,7 +32,7 @@ export const location = {
   address: 'Adresa',
   web: 'Web',
   gps_location: 'GPS lokace',
-  is_fully_specified: 'Plnohodnotná lokalita?',
+  is_traditional: 'Plnohodnotná lokalita?',
 } as const
 
 export const locationPhoto = {

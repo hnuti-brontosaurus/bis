@@ -146,7 +146,7 @@ class LocationExportSerializer(ModelSerializer):
         model = Location
         fields = (
             'name',
-            'is_fully_specified',
+            'is_traditional',
             'for_beginners',
             'is_full',
             'is_unexplored',
@@ -198,8 +198,8 @@ class RegistrationExportSerializer(ModelSerializer):
 
 class RecordExportSerializer(ModelSerializer):
     get_participants_count = ReadOnlyField(label='Počet účastníků')
-    get_young_participants_count = ReadOnlyField(label='Počet účastníků do 26 let')
-    get_young_percentage = ReadOnlyField(label='% do 26')
+    get_young_participants_count = ReadOnlyField(label='Z toho účastníků do 26 let')
+    get_young_percentage = ReadOnlyField(label='% účastníků do 26 let')
 
     class Meta:
         model = EventRecord
@@ -229,7 +229,7 @@ class EventExportSerializer(ModelSerializer):
     propagation = PropagationExportSerializer()
     registration = RegistrationExportSerializer()
     record = RecordExportSerializer()
-    location_name = SerializerMethodField(label='Název lokality')
+    location_name = SerializerMethodField(label='Místo konání')
 
     @staticmethod
     def get_related(queryset):
