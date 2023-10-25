@@ -187,6 +187,9 @@ def event_not_closed_20_days():
             is_archived=False,
             end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
+        if not event.main_organizer:
+            continue
+
         ecomail.send_email(
             emails['bis'], "Akce je po termínu pro její uzavření", "163",
             [event.main_organizer.email],
