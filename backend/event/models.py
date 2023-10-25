@@ -347,7 +347,7 @@ class EventPropagationImage(Model):
 @translate_model
 class EventAttendanceListPage(Model):
     record = ForeignKey(EventRecord, on_delete=CASCADE, related_name='attendance_list_pages')
-    page = ImageField(upload_to='attendance_list_pages', null=True, blank=True)
+    page = FileField(upload_to='attendance_list_pages', null=True, blank=True)
 
     class Meta:
         ordering = 'id',
