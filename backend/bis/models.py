@@ -621,7 +621,7 @@ class Qualification(Model):
         if not main_organizer.email:
             raise ValidationError("Hlavní organizátor nemá uvedený email")
 
-        qualification_required_for_categories = {'internal__general_meeting', 'internal__section_meeting',
+        qualification_required_for_categories = {'internal__section_meeting',
                                                  'public__volunteering', 'public__only_experiential',
                                                  'public__sports', 'public__educational__course',
                                                  'public__educational__ohb', 'public__other__for_public', }
