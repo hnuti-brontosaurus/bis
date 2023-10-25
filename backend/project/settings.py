@@ -161,9 +161,10 @@ USE_I18N = True
 USE_L10N = False
 USE_TZ = True
 DATE_FORMAT = "j. n. Y"
-SHORT_DATE_FORMAT = "j. n. Y"
+SHORT_DATE_FORMAT = DATE_FORMAT
 DATE_INPUT_FORMATS = [
     "%d. %m. %Y",
+    "%d.%m.%Y",
     "%Y-%m-%d",
 ]
 TIME_FORMAT = "G:i"
@@ -172,15 +173,13 @@ TIME_INPUT_FORMATS = [
     "%H:%M:%S.%f",
     "%H:%M",
 ]
-DATETIME_FORMAT = "j. n. Y, G:i"
-SHORT_DATETIME_FORMAT = "j. n. Y, G:i"
+DATETIME_FORMAT = f"{DATE_FORMAT}, {TIME_FORMAT}"
+SHORT_DATETIME_FORMAT = DATETIME_FORMAT
 DATETIME_INPUT_FORMATS = [
-    "%Y-%m-%d %H:%M:%S",
-    "%Y-%m-%d %H:%M:%S.%f",
-    "%Y-%m-%d %H:%M",
-    "%d. %m. %Y %H:%M:%S",
-    "%d. %m. %Y %H:%M:%S.%f",
-    "%d. %m. %Y %H:%M",
+    date_format + separator + time_format
+    for date_format in DATE_INPUT_FORMATS
+    for separator in [" ", ", "]
+    for time_format in TIME_INPUT_FORMATS
 ]
 
 

@@ -171,7 +171,8 @@ def event_of_administration_unit_filter_factory(title, parameter_name, cache_nam
                 if datetime_query:
                     items = items.filter(**datetime_query)
 
-                return queryset.filter(**{prefix + '__in': items}).distinct()
+                queryset = queryset.filter(**{prefix + '__in': items}).distinct()
+                return queryset.model.objects.filter(id__in=queryset.values_list('id'))
             else:
                 return queryset
 
