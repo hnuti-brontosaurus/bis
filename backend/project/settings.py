@@ -158,8 +158,31 @@ AUTHENTICATION_BACKENDS = ['bis.auth_backend.BISBackend']
 LANGUAGE_CODE = 'cs'
 TIME_ZONE = 'Europe/Prague'
 USE_I18N = True
-USE_L10N = True
+USE_L10N = False
 USE_TZ = True
+DATE_FORMAT = "j. n. Y"
+SHORT_DATE_FORMAT = "j. n. Y"
+DATE_INPUT_FORMATS = [
+    "%d. %m. %Y",
+    "%Y-%m-%d",
+]
+TIME_FORMAT = "G:i"
+TIME_INPUT_FORMATS = [
+    "%H:%M:%S",
+    "%H:%M:%S.%f",
+    "%H:%M",
+]
+DATETIME_FORMAT = "j. n. Y, G:i"
+SHORT_DATETIME_FORMAT = "j. n. Y, G:i"
+DATETIME_INPUT_FORMATS = [
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S.%f",
+    "%Y-%m-%d %H:%M",
+    "%d. %m. %Y %H:%M:%S",
+    "%d. %m. %Y %H:%M:%S.%f",
+    "%d. %m. %Y %H:%M",
+]
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

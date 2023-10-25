@@ -14,6 +14,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
@@ -586,7 +587,7 @@ class Qualification(Model):
         ordering = 'id',
 
     def __str__(self):
-        return f'{self.category} (od {self.valid_since} do {self.valid_till})'
+        return f'{self.category} (od {date_format(self.valid_since)} do {date_format(self.valid_till)})'
 
     def clean(self):
         approved_with = [category.slug for category in self.category.can_be_approved_with.all()]
