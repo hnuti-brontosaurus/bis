@@ -120,7 +120,7 @@ class XLSXWriter:
         self.write_values(self.get_row_values(item))
 
     def events_stats(self, queryset):
-        self.add_worksheet('Uživatelé akcí')
+        self.add_worksheet('Účastníci/orgové akcí')
         participants = User.objects.filter(participated_in_events__event__in=queryset)
         organizers = User.objects.filter(events_where_was_organizer__in=queryset)
         main_organizers = User.objects.filter(events_where_was_as_main_organizer__in=queryset)

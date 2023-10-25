@@ -145,14 +145,7 @@ class LocationExportSerializer(ModelSerializer):
     class Meta:
         model = Location
         fields = (
-            'name',
             'is_traditional',
-            'for_beginners',
-            'is_full',
-            'is_unexplored',
-            'program',
-            'accessibility_from_prague',
-            'accessibility_from_brno',
             'region',
         )
 
@@ -171,7 +164,7 @@ class FinanceExportSerializer(ModelSerializer):
 
 
 class PropagationExportSerializer(ModelSerializer):
-    diets = StringRelatedField(label='Diety', many=True)
+    diets = StringRelatedField(label='Možnosti stravování', many=True)
 
     class Meta:
         model = EventPropagation
@@ -214,15 +207,16 @@ class RecordExportSerializer(ModelSerializer):
 
 
 class EventExportSerializer(ModelSerializer):
+    group = StringRelatedField(label='Druh akce')
     category = StringRelatedField(label='Typ akce')
-    tags = StringRelatedField(label='Tagy akce', many=True)
+    tags = StringRelatedField(label='Štítky akce', many=True)
     program = StringRelatedField(label='Program')
     intended_for = StringRelatedField(label='Pro koho')
     administration_units = StringRelatedField(label='Organizováno', many=True)
     main_organizer = StringRelatedField(label='Hlavní org')
     other_organizers = StringRelatedField(label='Orgové', many=True)
     is_volunteering = ReadOnlyField(label='S dobrovolnickou prací')
-    get_date = ReadOnlyField(label='Hezké datum')
+    get_date = ReadOnlyField(label='Datum konání')
 
     location = LocationExportSerializer()
     finance = FinanceExportSerializer()
@@ -265,6 +259,7 @@ class EventExportSerializer(ModelSerializer):
             'end',
             'location_name',
             'record',
+            'group',
             'category',
             'tags',
             'program',

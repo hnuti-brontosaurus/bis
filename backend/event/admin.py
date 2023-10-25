@@ -210,7 +210,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def get_administration_units(self, obj):
         return mark_safe('<br>'.join([str(au) for au in obj.administration_units.all()]))
 
-    @admin.display(description='Tagy')
+    @admin.display(description='Štítky')
     def get_tags(self, obj):
         return mark_safe('<br>'.join([str(tag) for tag in obj.tags.all()]))
 

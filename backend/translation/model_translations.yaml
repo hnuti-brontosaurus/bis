@@ -176,7 +176,7 @@ Event:
   fields:
     group: Druh
     category: Typ
-    tags: Tagy
+    tags: Štítky
     internal_note: Privátní poznámka
     program: Program
     intended_for: Pro koho?
@@ -197,7 +197,7 @@ Event:
     end: Konec akce
     duration: Délka trvání akce
     online_link:
-      - Webová adresa pro připojení
+      - Odkaz na připojení k online akci
       - Vyplňte, pokud se akce koná online
     number_of_sub_events: Počet akcí v uvedeném období
     administration_units: Organizační jednotky
@@ -289,16 +289,16 @@ EventRegistration:
     is_registration_required: Musí se účastníci na akci přihlásit?
     is_event_full: Je akce plná?
     questionnaire: Dotazník
-    alternative_registration_link: Alternativní adresa pro přihlášení
+    alternative_registration_link: Alternativní odkaz pro registraci na akci
 
 EventRecord:
   name: Záznam z akce
   fields:
     total_hours_worked: Odpracováno člověkohodin
-    comment_on_work_done: Okomentování vykonané práce
+    comment_on_work_done: Komentář k vykonané práci
     attendance_list_pages: Prezenční listina
     participants: Účastníci
-    note: Privátní poznámka
+    note: Poznámka k průběhu akce
     number_of_participants:
       - Počet účastníků
       - Vyplň pouze pokud nejsou vyplnění konkrétní účastníci
@@ -406,12 +406,12 @@ EventCategory:
   name: Typ akce
   name_plural: Typy akcí
 EventTag:
-  name: Tag akce
-  name_plural: Tagy akcí
+  name: Štítek akce
+  name_plural: Štítky akcí
   fields:
     is_active:
       - Je aktivní?
-      - Neaktivní tagy se nezobrazí organizátorovi při vytváření nové akce
+      - Neaktivní štítky se nezobrazí organizátorovi při vytváření nové akce
 EventProgramCategory:
   name: Program akce
   name_plural: Programy akcí
