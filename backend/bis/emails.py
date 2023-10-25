@@ -208,6 +208,9 @@ def event_end_participants_notification(event):
     if not hasattr(event, 'record'):
         return
 
+    if event.end < (date.today() - timedelta(days=60)):
+        return
+
     for participant in event.record.participants.all():
         ecomail.send_email(
             emails['movement'], "Děkujeme za účast na akci Hnutí", "169",
