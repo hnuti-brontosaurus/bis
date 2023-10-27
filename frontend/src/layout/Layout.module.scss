@@ -46,6 +46,11 @@ body {
           margin: 0 4px;
         }
 
+         
+        @include media.for-tablet-portrait-up {
+          margin: 0 10px;
+        }
+
         @include media.for-tablet-landscape-up {
           margin: 0 20px;
         }

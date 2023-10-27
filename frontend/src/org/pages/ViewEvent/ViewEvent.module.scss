@@ -66,12 +66,26 @@
 
   .infoBoxDetail {
     overflow: hidden;
-    width: 26rem;
+    width: 900px;
     max-width: 100%;
+    display: flex;
+    margin: 1rem  0;
+    @include media.for-phone-only {
+      flex-direction: column;
+     }
     .imageWrapper {
       position: relative;
-      border-bottom: 2px solid colors.$bronto;
-
+      border-right: 2px solid colors.$bronto;
+      flex-basis: 40%;
+      @include media.for-phone-only {
+        flex-basis: 100%;
+        border-right: none;
+        border-bottom: 2px solid colors.$bronto;
+       }
+      .mainImage{
+        object-fit: cover;
+        height: 100%;
+      }
       .tags {
         display: flex;
         flex-wrap: wrap;
@@ -90,7 +104,7 @@
     }
 
     .table {
-      margin: 0 auto;
+      margin: 1.3rem auto;
     }
 
     border-radius: 32px;
@@ -98,19 +112,76 @@
     table {
       th {
         padding-right: 1rem;
+        padding-bottom: 0.325rem;
         text-align: right;
       }
       th,
       td {
         vertical-align: top;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .eventInfo{
+    .eventInfoNarrow{
+      max-width: 700px;
+      margin: 50px auto;
+    }
+    table{
+      margin-bottom: 50px;
+
+      tr{
+        border-bottom: 2px solid #eaeaea40;
+      }
+     
+      th{
+        text-align: right;
+        padding: 10px;
+        font-weight: 500;
+        @include media.for-phone-only {
+         min-width: 150px;
+        }
+        @include media.for-tablet-portrait-up {
+          min-width: 200px;
+        }
+
+        @include media.for-tablet-landscape-up {
+          min-width: 250px;
+        }
+      }
+      td{
+        padding: 10px;
       }
     }
   }
 
   .invitationTexts {
+    width: 90%;
+    margin: auto;
+    @include media.for-phone-only {
+     width: 95%;
+    }
+   
     header {
       font-size: 1.25rem;
       margin: 1.3rem 0 0.65rem;
+      font-weight: 700;
+      text-align: center;
+    }
+   
+    .invitationText{
+      margin: 1.3rem 0 0.65rem;
+    }
+    h3,
+    .inlineHeader{
+      font-size: 1.25rem;
+      margin: 1.3rem 0 0.65rem;
+      font-weight: 700;
+    }
+
+    .inlineHeaderSmall{
+      font-size: 1.15rem;
       font-weight: 700;
     }
 
