@@ -182,7 +182,6 @@ export const BasicInfoStep = ({
                 <Controller
                   name="tags"
                   control={control}
-                  rules={{ required }}
                   render={({ field }) => (
                     <fieldset>
                       <InlineSection>
