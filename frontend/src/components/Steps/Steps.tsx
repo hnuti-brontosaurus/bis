@@ -56,7 +56,12 @@ export const Steps = <T extends Record<string, any>>({
   useKeyDown(() => {
     nextStep()
     window.scrollTo(0, 0)
-  }, ['Enter'])
+  }, ['ArrowRight'])
+
+  useKeyDown(() => {
+    prevStep()
+    window.scrollTo(0, 0)
+  }, ['ArrowLeft'])
 
   return (
     <div ref={swipeRef}>
