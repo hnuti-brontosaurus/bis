@@ -42,6 +42,7 @@ import type {
   EventProgramCategory,
   EventPropagationImage,
   EventPropagationImagePayload,
+  EventTag,
   FinanceReceipt,
   HealthInsuranceCompany,
   Location,
@@ -64,7 +65,7 @@ import type {
   UserSearch,
 } from './bisTypes'
 
-export const ALL_USERS = 2000;
+export const ALL_USERS = 2000
 
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
@@ -1073,6 +1074,12 @@ export const api = createApi({
             ...rest,
           }),
         ),
+    }),
+
+    readEventTags: build.query<PaginatedList<EventTag>, void>({
+      query: () => ({
+        url: `categories/event_tags/`,
+      }),
     }),
   }),
 })
