@@ -29,7 +29,7 @@ interface INewApplicationModalProps {
   eventId: number
   eventParticipants: string[]
   defaultUserData: EventApplication
-  openAddNewUser: () => void
+  openAddNewUser: (currentApplication?: EventApplication) => void
 }
 
 const zipcodeRegExp = /\d{3} ?\d{2}/
@@ -100,19 +100,22 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
 
   const { data: userOptions1, isFetching: isOptionsLoading1 } =
     api.endpoints.readUsers.useQuery({
-      search: `${defaultUserData.first_name} ${defaultUserData.last_name}`, pageSize: ALL_USERS
+      search: `${defaultUserData.first_name} ${defaultUserData.last_name}`,
+      pageSize: ALL_USERS,
     })
 
   const { data: userOptions2, isFetching: isOptionsLoading2 } =
     api.endpoints.readUsers.useQuery({
-      search: `${defaultUserData.email?.split('@')[0]}`, pageSize: ALL_USERS
+      search: `${defaultUserData.email?.split('@')[0]}`,
+      pageSize: ALL_USERS,
     })
 
   const { data: userOptions3, isFetching: isOptionsLoading3 } =
     api.endpoints.readUsers.useQuery(
       defaultUserData && defaultUserData.nickname
         ? {
-            search: `${defaultUserData.nickname}`, pageSize: ALL_USERS
+            search: `${defaultUserData.nickname}`,
+            pageSize: ALL_USERS,
           }
         : skipToken,
     )
@@ -711,7 +714,7 @@ retrievedUser.address.region || ''
                               secondary
                               small
                               onClick={() => {
-                                openAddNewUser()
+                                openAddNewUser(currentApplication)
                               }}
                             >
                               Přidej nového uživatele
@@ -740,7 +743,7 @@ retrievedUser.address.region || ''
                     secondary
                     small
                     onClick={() => {
-                      openAddNewUser()
+                      openAddNewUser(currentApplication)
                     }}
                   >
                     Přidej nového uživatele

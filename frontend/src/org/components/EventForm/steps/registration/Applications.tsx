@@ -32,7 +32,7 @@ export const Applications: FC<{
   highlightedApplications?: string[]
   withParticipants?: boolean
   className: string
-  openAddNewUser: () => void
+  openAddNewUser: (currentApplication?: EventApplication) => void
 }> = ({
   event,
   highlightedApplications,
