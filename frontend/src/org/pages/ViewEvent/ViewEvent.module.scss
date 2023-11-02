@@ -69,10 +69,10 @@
     width: 900px;
     max-width: 100%;
     display: flex;
-    margin: 1rem  0;
+    margin: 1rem 0;
     @include media.for-phone-only {
       flex-direction: column;
-     }
+    }
     .imageWrapper {
       position: relative;
       border-right: 2px solid colors.$bronto;
@@ -81,8 +81,8 @@
         flex-basis: 100%;
         border-right: none;
         border-bottom: 2px solid colors.$bronto;
-       }
-      .mainImage{
+      }
+      .mainImage {
         object-fit: cover;
         height: 100%;
       }
@@ -123,24 +123,24 @@
     }
   }
 
-  .eventInfo{
-    .eventInfoNarrow{
+  .eventInfo {
+    .eventInfoNarrow {
       max-width: 700px;
       margin: 50px auto;
     }
-    table{
+    table {
       margin-bottom: 50px;
 
-      tr{
+      tr {
         border-bottom: 2px solid #eaeaea40;
       }
-     
-      th{
+
+      th {
         text-align: right;
         padding: 10px;
         font-weight: 500;
         @include media.for-phone-only {
-         min-width: 150px;
+          min-width: 150px;
         }
         @include media.for-tablet-portrait-up {
           min-width: 200px;
@@ -150,7 +150,7 @@
           min-width: 250px;
         }
       }
-      td{
+      td {
         padding: 10px;
       }
     }
@@ -160,27 +160,27 @@
     width: 90%;
     margin: auto;
     @include media.for-phone-only {
-     width: 95%;
+      width: 95%;
     }
-   
+
     header {
       font-size: 1.25rem;
       margin: 1.3rem 0 0.65rem;
       font-weight: 700;
       text-align: center;
     }
-   
-    .invitationText{
+
+    .invitationText {
       margin: 1.3rem 0 0.65rem;
     }
     h3,
-    .inlineHeader{
+    .inlineHeader {
       font-size: 1.25rem;
       margin: 1.3rem 0 0.65rem;
       font-weight: 700;
     }
 
-    .inlineHeaderSmall{
+    .inlineHeaderSmall {
       font-size: 1.15rem;
       font-weight: 700;
     }

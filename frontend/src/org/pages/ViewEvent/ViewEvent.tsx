@@ -151,6 +151,20 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
     )
   }
 
+  function work() {
+    return(
+      event.propagation?.working_hours ?
+      <tr>
+        <th>Práce</th>
+        <td>
+          Odpracovaných hodin (denně): {event.propagation?.working_hours}<br></br>
+          {event.propagation?.working_days ? 'Počet pracovních dní: ' + event.propagation?.working_days : ''}
+        </td>
+      </tr>
+      :
+      ''
+    )
+  }
 
   return (
     <>
@@ -328,7 +342,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 </tr>
                 <tr>
                   <th>Ubytování</th>
-                  <td> {event.propagation?.accommodation == '' ? '-' : event.propagation?.accommodation}</td>
+                  <td> {!event.propagation || event.propagation?.accommodation == '' ? '-' : event.propagation?.accommodation}</td>
                 </tr>
                 <tr>
                   <th>Strava</th>
@@ -336,16 +350,10 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                     diet.name).join(', ') : '-'}
                   </td>
                 </tr>
-                <tr>
-                  <th>Práce</th>
-                  <td>
-                    Odpracovaných hodin (denně): {event.propagation?.working_hours}<br></br>
-                    {event.propagation?.working_days === null ? '' : 'Počet pracovních dní:' + event.propagation?.working_days}
-                  </td>
-                </tr>
+                {work()}
                 <tr>
                   <th>Web o akci</th>
-                  <td>{event.propagation?.web_url == '' ? '-' : event.propagation?.web_url}</td>
+                  <td>{!event.propagation || event.propagation?.web_url == '' ? '-' : event.propagation?.web_url}</td>
                 </tr>
                 <tr>
                   <th>Poznámka</th>
@@ -415,7 +423,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 </tr>
                 <tr>
                   <th>Těší se na tebe</th>
-                  <td>{event.propagation?.organizers}</td>
+                  <td>{event.propagation ? event.propagation?.organizers : '-'}</td>
                 </tr>
                 <tr>
                   <th>Způsob přihlášení</th>
@@ -427,7 +435,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
           </div>
         </div>
 
-        {/* <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
+       {/*  <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
         {/* <h2 className={styles.dataHeader}>Data</h2>
         <DataView
           data={formattedEvent}
