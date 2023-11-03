@@ -813,7 +813,7 @@ describe('create event', () => {
         .contains('chyby ve validaci')
       cy.get('[class^=SystemMessage_detail]')
         .should('be.visible')
-        .contains('Vyplňte všechna pole VIP propagace, nebo je nechte prázdná')
+        .contains('Vyplňte všechna pole VIP propagace')
     })
   })
 })
