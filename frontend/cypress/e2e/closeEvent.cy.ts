@@ -120,7 +120,7 @@ describe('Close event - evidence and participants', () => {
       }
 
       const clickAddNewParticipant = () => {
-        cy.get('button:contains(Přidej nového účastníka)')
+        cy.get('button:contains(Přidat nového účastníka)')
           .should('be.visible')
           .click()
       }

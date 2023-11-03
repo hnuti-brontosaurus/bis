@@ -358,7 +358,7 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                   clearModalData()
                 }}
               >
-                {'Přidej'}
+                {'Přidat'}
               </Button>
             ) : (
               <>
@@ -520,7 +520,7 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                 }
               }}
             >
-              Pridaj
+              Přidat
             </Button>
             {/* <div
               onClick={e => {
@@ -717,7 +717,7 @@ retrievedUser.address.region || ''
                                 openAddNewUser(currentApplication)
                               }}
                             >
-                              Přidej nového uživatele
+                              Přidat nového uživatele
                             </Button>
                           </span>
                         </td>
@@ -746,7 +746,7 @@ retrievedUser.address.region || ''
                       openAddNewUser(currentApplication)
                     }}
                   >
-                    Přidej nového uživatele
+                    Přidat nového uživatele
                   </Button>
                 </span>
               )}
