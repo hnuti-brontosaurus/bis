@@ -10,7 +10,6 @@ export const getRequiredQualifications = (
   event: Partial<Pick<Event, 'intended_for' | 'group' | 'category'>>,
 ): string[] => {
   const qualificationRequiredForCategories: EventCategory['slug'][] = [
-    'internal__general_meeting',
     'internal__section_meeting',
     'public__volunteering',
     'public__only_experiential',
