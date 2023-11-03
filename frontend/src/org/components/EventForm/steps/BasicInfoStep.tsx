@@ -236,7 +236,7 @@ export const BasicInfoStep = ({
                       options={
                         administrationUnits
                           ? administrationUnits.results.map(unit => ({
-                              label: `${unit.category.name} ${unit.abbreviation}`,
+                              label: `${unit.abbreviation}`,
                               value: unit.id,
                             }))
                           : []
@@ -251,7 +251,7 @@ export const BasicInfoStep = ({
                           )
                           .filter(a => !!a) as AdministrationUnit[]
                       ).map(unit => ({
-                        label: `${unit.category.name} ${unit.abbreviation}`,
+                        label: `${unit.abbreviation}`,
                         value: unit.id,
                       }))}
                     />
