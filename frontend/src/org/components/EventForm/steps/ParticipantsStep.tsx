@@ -17,6 +17,7 @@ import { FC, useState } from 'react'
 import styles from './ParticipantsStep.module.scss'
 import { Applications } from './registration/Applications'
 import { Participants } from './registration/Participants'
+import { ParticipantsStats } from './registration/ParticipantsStats'
 
 export enum ApplicationStates {
   approved = 'approved',
@@ -168,6 +169,10 @@ export const ParticipantsStep: FC<{
           loading={patchEventStatus.isLoading}
         />
       </StyledModal>
+      <ParticipantsStats
+        event={event}
+        otherOrganizers={event.other_organizers}
+      ></ParticipantsStats>
       <Applications
         // @ts-ignore
         event={event}
