@@ -172,7 +172,7 @@ describe('create event', () => {
         memberships: [{ year: 2123 }],
       },
     )
-    cy.get('[type=submit]').contains('Pokračuj').should('be.visible').click()
+    cy.get('[type=submit]').contains('Pokračovat').should('be.visible').click()
 
     cy.get('input[name="propagation.contact_name"]').type('contact name')
     cy.get('input[name="propagation.contact_email"]').type('asdf@example.com')
@@ -889,7 +889,7 @@ const fillForm = () => {
       ],
     },
   )
-  cy.get('[type=submit]').contains('Pokračuj').should('be.visible').click()
+  cy.get('[type=submit]').contains('Pokračovat').should('be.visible').click()
 
   // when we submit too fast, tests fail
   // somehow main_organizer needs time to appear in form data

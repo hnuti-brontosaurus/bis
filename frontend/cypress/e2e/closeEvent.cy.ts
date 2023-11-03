@@ -61,7 +61,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('label:contains(Mám jen jméno + příjmení + email)')
           .should('be.visible')
           .click()
-        cy.get('button:contains(Pokračuj)').click()
+        cy.get('button:contains(Pokračovat)').click()
 
         cy.get('label:contains(Importovat seznam)')
           .should('be.visible')
@@ -116,7 +116,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('label:contains(Mám všechny informace)')
           .should('be.visible')
           .click()
-        cy.get('button:contains(Pokračuj)').click()
+        cy.get('button:contains(Pokračovat)').click()
       }
 
       const clickAddNewParticipant = () => {
@@ -318,7 +318,7 @@ describe('Close event - evidence and participants', () => {
       cy.get('label:contains(Mám všechny informace)')
         .should('be.visible')
         .click()
-      cy.get('button:contains(Pokračuj)').click()
+      cy.get('button:contains(Pokračovat)').click()
 
       // click delete
       cy.get('button[aria-label="Smazat účastníka Jana Novak"]').click()
@@ -345,7 +345,7 @@ describe('Close event - evidence and participants', () => {
       cy.get('label:contains(Mám všechny informace)')
         .should('be.visible')
         .click()
-      cy.get('button:contains(Pokračuj)').click()
+      cy.get('button:contains(Pokračovat)').click()
 
       // close helper
       cy.get('div[id="closeOwlGuide"]').click()
@@ -401,7 +401,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('label:contains(Mám všechny informace)')
           .should('be.visible')
           .click()
-        cy.get('button:contains(Pokračuj)').click()
+        cy.get('button:contains(Pokračovat)').click()
       })
 
       it('[existent users] should import data, save the users as participants and show in table', () => {
