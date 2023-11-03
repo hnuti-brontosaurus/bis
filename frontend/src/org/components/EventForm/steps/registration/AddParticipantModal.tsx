@@ -681,12 +681,35 @@ retrievedUser.address.region || ''
           </div>
         ) : (
           <div className={styles.infoBox}>
-            Podle data z přihlášky jsme našli následující uživatele, kteří už
-            mají svůj účet v BISu:{' '}
-            <p>Zelení - uživatelé, ke kterým máš přístup</p>
+            Podle informací z přihlášky jsme našli v BIS následující uživatele,
+            kteří mají stejné jméno, email nebo telefon. Z těchto uživatelů
+            vyber toho správného a tím propojíš přihlášku s uživatelem v BIS a
+            přesuneš ho do seznamu přihlášených.
             <p>
-              Šedí - uživatelé, ke kterým nemáš přístup; a musíš zadat datum
-              narození, abys je mohl(a) přidat jako účastníky
+              <FaBirthdayCake
+                color={colors.bronto}
+                className={styles.iconInline}
+              />
+              <FaAt color={colors.bronto} className={styles.iconInline} />
+              <FaPhoneAlt
+                color={colors.bronto}
+                className={styles.iconInline}
+              />{' '}
+              - tyto údaje uvedené v přihlášce se shodují s údaji u uživatele,
+              který má už v BIS účet
+            </p>
+            <p>
+              <FaBirthdayCake
+                color={colors.error}
+                className={styles.iconInline}
+              />
+              <FaAt color={colors.error} className={styles.iconInline} />
+              <FaPhoneAlt
+                color={colors.error}
+                className={styles.iconInline}
+              />{' '}
+              - tyto údaje uvedené v přihlášce se neshodují s žádnými údaji
+              uloženými v BIS
             </p>
           </div>
         )}
@@ -709,7 +732,7 @@ retrievedUser.address.region || ''
                         </td>
                         <td colSpan={2} style={{ textAlign: 'end' }}>
                           <span>
-                            Ucastnik neni v BISu?{' '}
+                            Účastník není v BISu?{' '}
                             <Button
                               secondary
                               small
