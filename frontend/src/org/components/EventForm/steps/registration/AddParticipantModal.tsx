@@ -711,6 +711,18 @@ retrievedUser.address.region || ''
               - tyto údaje uvedené v přihlášce se neshodují s žádnými údaji
               uloženými v BIS
             </p>
+            <p>
+              <FaBirthdayCake
+                color={colors.gray300}
+                className={styles.iconInline}
+              />
+              <FaAt color={colors.gray300} className={styles.iconInline} />
+              <FaPhoneAlt
+                color={colors.gray300}
+                className={styles.iconInline}
+              />{' '}
+              - tyto údaje nejsou u uživatele v BIS uloženy
+            </p>
           </div>
         )}
 
