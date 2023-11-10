@@ -37,7 +37,7 @@ export const ParticipantsStats: FC<{
     app => app.state === ApplicationStates.rejected,
   )
 
-  let allUsers = [...applications, ...participants, ...organizers]
+  let allUsers = [...participants, ...organizers]
   let zeroToSix = 0
   let sevenToFifteen = 0
   let sixteenToEighteen = 0
@@ -68,17 +68,33 @@ export const ParticipantsStats: FC<{
     <>
       {!isReadApplicationsLoading && !isReadParticipantsLoading ? (
         <div className={styles.StatsContainer}>
-          Celkový počet <b>{allUsers.length}</b>. Z toho dle skupin: přihlášení:{' '}
-          <b>{applicationsPending.length}</b>, přijatí:{' '}
-          <b>{applicationsAccepted.length}</b>, zamítnutí:{' '}
-          <b>{applicationsRejected.length}</b>, účastníci:{' '}
-          <b>{participants.length + organizers.length}</b> (z toho orgové:{' '}
-          <b>{organizers.length}</b>, neorgové účastníci:{' '}
-          <b>{participants.length}</b>)
-          <br />Z toho dle věku: 0-6 let: <b>{zeroToSix}</b>, 7-15 let:{' '}
-          <b>{sevenToFifteen}</b>, 16-18: <b>{sixteenToEighteen}</b>, 19-26:{' '}
-          <b>{nineteenToTwentySix}</b>, 27+: <b>{twentySevenToInfinity}</b>
-          {unknownAge > 0 ? `, neznámý věk: <b>${unknownAge}</b>` : ''}
+          Počet účastníků: <b>{participants.length + organizers.length}</b>, z
+          toho: organizátoři=<b>{organizers.length}</b>, účastníci=
+          <b>{participants.length}</b>
+          <br />
+          Statistika ůčastníků: 0-6 let=<b>{zeroToSix}</b>, 7-15 let:=
+          <b>{sevenToFifteen}</b>, 16-18 let=<b>{sixteenToEighteen}</b>, 19-26
+          let=<b>{nineteenToTwentySix}</b>, 27+let=
+          <b>{twentySevenToInfinity}</b>, celkem do 26 let=
+          <b>
+            {zeroToSix +
+              sevenToFifteen +
+              sixteenToEighteen +
+              nineteenToTwentySix}
+          </b>
+          {unknownAge > 0 ? (
+            <>
+              , neznámý věk=<b>{unknownAge}</b>
+            </>
+          ) : (
+            ''
+          )}
+          <br />
+          Počet přihlášených: <b>{applications.length}</b>, z toho: přijatí=
+          <b>{applicationsAccepted.length}</b>, zamítnutí=
+          <b>{applicationsRejected.length}</b>, čekající=
+          <b>{applicationsPending.length}</b>
+          <br />
         </div>
       ) : (
         ''
