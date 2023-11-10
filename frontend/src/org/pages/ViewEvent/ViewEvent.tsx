@@ -147,7 +147,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
           </section>
         </>
         :
-        ''
+        null
     )
   }
 
@@ -162,9 +162,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
         </td>
       </tr>
       :
-      ''
+      null
     )
   }
+
+  console.log(event);
+  console.log(event.tags);
 
   return (
     <>
@@ -271,6 +274,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <th>Místo</th>
                 <td>{event.location?.name}</td>
               </tr>
+              { event?.propagation ?
               <tr>
                 <th>Věk</th>
                 <td>
@@ -278,24 +282,29 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   {event.propagation?.maximum_age ?? '?'} let
                 </td>
               </tr>
+              : null}
               <tr>
                 <th>Začátek akce</th>
                 <td>
                   {formatDateTime(event.start, event.start_time ?? undefined)}
                 </td>
               </tr>
-              <tr>
-                <th>Cena</th>
-                <td>{event.propagation?.cost} Kč</td>
-              </tr>
-              <tr>
-                <th>Kontaktní osoba</th>
-                <td>
-                  <div>{event.propagation?.contact_name}</div>
-                  <div>{event.propagation?.contact_phone}</div>
-                  <div>{event.propagation?.contact_email}</div>
-                </td>
-              </tr>
+              { event?.propagation ?
+              <>
+                <tr>
+                  <th>Cena</th>
+                  <td>{event.propagation?.cost} Kč</td>
+                </tr>
+                <tr>
+                  <th>Kontaktní osoba</th>
+                  <td>
+                    <div>{event.propagation?.contact_name}</div>
+                    <div>{event.propagation?.contact_phone}</div>
+                    <div>{event.propagation?.contact_email}</div>
+                  </td>
+                </tr>
+              </>
+              : null}
             </tbody>
           </table>
         </div>
@@ -319,6 +328,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <th>Organizační jednotka</th>
                   <td>{eventAdministrationUnits}</td>
                 </tr>
+               {/*  {event.tags ?
+                  <tr>
+                    <th>Tagy</th>
+                    <td>{event.tags.map((tag => tag.name).join(', '))}</td>
+                  </tr>
+                : ''} */}
                 <tr>
                   <th>Pro koho</th>
                   <td>{event.intended_for.name}</td>
@@ -335,32 +350,39 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <th>Počet akcí v uvedeném období</th>
                   <td>{event?.number_of_sub_events}</td>
                 </tr>
-                <tr>
-                  <th>Věk</th>
-                  <td>{event.propagation?.minimum_age ?? '?'} -{' '}
-                    {event.propagation?.maximum_age ?? '?'} let</td>
-                </tr>
-                <tr>
-                  <th>Ubytování</th>
-                  <td> {!event.propagation || event.propagation?.accommodation == '' ? '-' : event.propagation?.accommodation}</td>
-                </tr>
-                <tr>
-                  <th>Strava</th>
-                  <td>{event.propagation?.diets && event.propagation?.diets.length > 0 ? event.propagation?.diets.map(diet =>
-                    diet.name).join(', ') : '-'}
-                  </td>
-                </tr>
+                {event?.propagation ?
+                <>
+                  <tr>
+                    <th>Věk</th>
+                    <td>{event.propagation?.minimum_age ?? '?'} -{' '}
+                      {event.propagation?.maximum_age ?? '?'} let</td>
+                  </tr>
+                  <tr>
+                    <th>Ubytování</th>
+                    <td> {!event.propagation || event.propagation?.accommodation == '' ? '-' : event.propagation?.accommodation}</td>
+                  </tr>
+                  <tr>
+                    <th>Strava</th>
+                    <td>{event.propagation?.diets && event.propagation?.diets.length > 0 ? event.propagation?.diets.map(diet =>
+                      diet.name).join(', ') : '-'}
+                    </td>
+                  </tr>
+                </>
+                : null}
                 {work()}
+                {event?.propagation ?
                 <tr>
                   <th>Web o akci</th>
                   <td>{!event.propagation || event.propagation?.web_url == '' ? '-' : event.propagation?.web_url}</td>
                 </tr>
+                : null}
                 <tr>
                   <th>Poznámka</th>
                   <td>{event.internal_note == '' ? '-' : event.internal_note}</td>
                 </tr>
               </tbody>
             </table>
+           { event?.propagation ?
             <div className={styles.invitationTexts}>
               {vip()}
               <header>Co na nás čeká</header>
@@ -396,8 +418,10 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 }}
               />
             </div>
+            : null }
           </div>
-
+          
+          { event?.propagation ?
           <div className={styles.imageList}>
             {otherImages.map(img => (
               <img
@@ -408,6 +432,8 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               />
             ))}
           </div>
+          :null}
+         
           <div className={styles.eventInfoNarrow}>
             <table className={styles.table}>
               <tbody>
@@ -421,10 +447,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                     organizer.display_name)).join(', ')}
                   </td>
                 </tr>
+                { event?.propagation ?
                 <tr>
                   <th>Těší se na tebe</th>
                   <td>{event.propagation ? event.propagation?.organizers : '-'}</td>
                 </tr>
+                : null}
                 <tr>
                   <th>Způsob přihlášení</th>
                   <td>{registration()}</td>
@@ -436,12 +464,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
         </div>
 
        {/*  <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
-        {/* <h2 className={styles.dataHeader}>Data</h2>
+        <h2 className={styles.dataHeader}>Data</h2>
         <DataView
           data={formattedEvent}
           translations={combinedTranslations.event}
           genericTranslations={combinedTranslations.generic}
-        /> */}
+        />
       </div>
     </>
   )
