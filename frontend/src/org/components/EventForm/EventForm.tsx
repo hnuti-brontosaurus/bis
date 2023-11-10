@@ -86,6 +86,7 @@ const shapes = {
     'number_of_sub_events',
     'category',
     'program',
+    'tags',
     'administration_units',
   ],
   intendedFor: ['intended_for', 'vip_propagation'],

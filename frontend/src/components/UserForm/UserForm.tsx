@@ -3,7 +3,7 @@
  */
 import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from 'app/services/bis'
-import { User, UserPayload } from 'app/services/bisTypes'
+import { EventApplication, User, UserPayload } from 'app/services/bisTypes'
 import {
   Actions,
   BirthdayInput,
@@ -47,23 +47,54 @@ export type UserFormShape = Omit<
 }
 
 // transform user data to initial form data
-export const data2form = (user: User): UserFormShape => {
-  return merge({}, omit(user, 'pronoun', 'address', 'contact_address'), {
-    email: user.email ?? '',
-    pronoun: user.pronoun?.id ?? 0,
-    address: omit(user.address, 'region'),
-    contact_address: omit(user.contact_address, 'region'),
-    close_person: user.close_person ?? {
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
+export const data2form = (
+  user?: User,
+  dataFromApplication?: EventApplication,
+): UserFormShape => {
+  if (dataFromApplication) {
+    const data = {
+      first_name: dataFromApplication?.first_name ?? '',
+      last_name: dataFromApplication?.last_name ?? '',
+      phone: dataFromApplication?.phone ?? '',
+      email: dataFromApplication?.email ?? '',
+      birthday: dataFromApplication?.birthday ?? '',
+      isChild: dataFromApplication?.birthday
+        ? dayjs().diff(dayjs(dataFromApplication.birthday), 'year') < 15
+        : undefined,
+      close_person: {
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+      },
+      address: { street: '', city: '', zip_code: '' },
+      contact_address: { street: '', city: '', zip_code: '' },
+      health_insurance_company: 0,
+    }
+    return data
+  }
+
+  const userEdit = merge(
+    {},
+    omit(user, 'pronoun', 'address', 'contact_address'),
+    {
+      email: user?.email ?? '',
+      pronoun: user?.pronoun?.id ?? 0,
+      address: omit(user?.address, 'region'),
+      contact_address: omit(user?.contact_address, 'region'),
+      close_person: user?.close_person ?? {
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+      },
+      health_insurance_company: user?.health_insurance_company?.id ?? 0,
+      isChild: user?.birthday
+        ? dayjs().diff(dayjs(user.birthday), 'year') < 15
+        : undefined,
     },
-    health_insurance_company: user.health_insurance_company?.id ?? 0,
-    isChild: user.birthday
-      ? dayjs().diff(dayjs(user.birthday), 'year') < 15
-      : undefined,
-  })
+  )
+  return userEdit
 }
 
 // transform form data to edit user payload
@@ -221,6 +252,7 @@ export { validationSchema as userValidationSchema }
 export const UserForm = ({
   id,
   initialData,
+  dataFromApplication,
   isSelf = false,
   onSubmit,
   onCancel,
@@ -234,6 +266,7 @@ export const UserForm = ({
   onSubmit: (data: UserPayload, id?: string) => void
   onCancel: () => void
   initialData?: User
+  dataFromApplication?: EventApplication
   validateImmediately?: boolean
   loading?: boolean
 }) => {
@@ -254,8 +287,10 @@ export const UserForm = ({
         contact_address: { street: '', city: '', zip_code: '' },
         subscribed_to_newsletter: true,
       },
-      initialData ? data2form(initialData) : {},
-      persistedData,
+      initialData || dataFromApplication
+        ? data2form(initialData, dataFromApplication)
+        : {},
+      dataFromApplication ? {} : persistedData,
       withOverwriteArray,
     ),
     resolver: yupResolver(validationSchema),

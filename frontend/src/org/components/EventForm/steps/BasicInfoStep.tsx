@@ -32,6 +32,7 @@ export const BasicInfoStep = ({
   const { data: programs } = api.endpoints.readPrograms.useQuery()
   const { data: administrationUnits } =
     api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
+  const { data: tags } = api.endpoints.readEventTags.useQuery()
 
   // trigger validation of fields which are dependent on other fields
   useEffect(() => {
@@ -174,6 +175,51 @@ export const BasicInfoStep = ({
                       </option>
                     ))}
                 </select>
+              </FormInputError>
+            </FullSizeElement>
+            <FullSizeElement>
+              <FormInputError>
+                <Controller
+                  name="tags"
+                  control={control}
+                  render={({ field }) => (
+                    <fieldset>
+                      <InlineSection>
+                        {tags &&
+                          tags.results!.map(
+                            ({ id, name, slug, description, is_active }) =>
+                              is_active ? (
+                                <div key={slug} title={description}>
+                                  <label key={slug} className="checkboxLabel">
+                                    <input
+                                      ref={field.ref}
+                                      key={slug}
+                                      type="checkbox"
+                                      name={field.name}
+                                      id={slug}
+                                      value={id}
+                                      checked={field.value?.includes(id)}
+                                      onChange={e => {
+                                        // check when unchecked and vise-versa
+                                        const targetId = Number(e.target.value)
+                                        const set = new Set(field.value)
+                                        if (set.has(targetId)) {
+                                          set.delete(targetId)
+                                        } else {
+                                          set.add(targetId)
+                                        }
+                                        field.onChange(Array.from(set))
+                                      }}
+                                    />{' '}
+                                    {name}
+                                  </label>
+                                </div>
+                              ) : null,
+                          )}
+                      </InlineSection>
+                    </fieldset>
+                  )}
+                />
               </FormInputError>
             </FullSizeElement>
           </FormSection>

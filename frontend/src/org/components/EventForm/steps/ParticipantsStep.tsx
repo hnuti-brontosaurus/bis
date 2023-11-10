@@ -1,6 +1,11 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { api } from 'app/services/bis'
-import type { Event, User, UserPayload } from 'app/services/bisTypes'
+import type {
+  Event,
+  EventApplication,
+  User,
+  UserPayload,
+} from 'app/services/bisTypes'
 import { StyledModal } from 'components'
 import { UserForm } from 'components/UserForm/UserForm'
 import {
@@ -33,6 +38,9 @@ export const ParticipantsStep: FC<{
 
   const [lastAddedId, setLastAddedId] = useState<string>()
   const [timeOfLastAddition, setTimeOfLastAddition] = useState<number>(0)
+  const [currentApplication, setCurrentApplication] = useState<
+    EventApplication | undefined
+  >()
 
   const showMessage = useShowMessage()
   const handleCancelUserForm = () => {
@@ -54,6 +62,7 @@ export const ParticipantsStep: FC<{
     )
 
   const handleClickEditParticipant = (data: User) => {
+    setCurrentApplication(undefined)
     setUserModalData(data)
     setUserModalOpen(true)
   }
@@ -147,8 +156,13 @@ export const ParticipantsStep: FC<{
         onClose={handleCancelUserForm}
       >
         <UserForm
-          id={(userModalData?.id ?? 'new') + '-participant'}
+          id={
+            (userModalData?.id ?? 'new') +
+            (currentApplication?.id ?? '') +
+            '-participant'
+          }
           initialData={userModalData}
+          dataFromApplication={currentApplication}
           onCancel={handleCancelUserForm}
           onSubmit={handleSubmitUserForm}
           loading={patchEventStatus.isLoading}
@@ -165,7 +179,9 @@ export const ParticipantsStep: FC<{
         }
         withParticipants={!onlyApplications}
         className={styles.centeredTableBlock}
-        openAddNewUser={() => {
+        openAddNewUser={(currentApplication?: EventApplication) => {
+          setCurrentApplication(currentApplication)
+          setUserModalData(undefined)
           setUserModalOpen(true)
         }}
       />
@@ -183,6 +199,7 @@ export const ParticipantsStep: FC<{
           eventName={event.name}
           participantsMap={participantsMap}
           onClickAddNewParticipant={() => {
+            setCurrentApplication(undefined)
             setUserModalData(undefined)
             setUserModalOpen(true)
           }}
