@@ -487,6 +487,15 @@ export const EventForm: FC<{
     start: methods.basicInfo.watch('start'),
   }
 
+  const currentProgram = methods.basicInfo.watch('program')
+  const akcePriroda = 1
+  const akcePamatky = 2
+  const akcePsb = 5
+  const hasVIPPropagationOption =
+    currentProgram == akcePriroda ||
+    currentProgram == akcePamatky ||
+    currentProgram == akcePsb
+
   const isNotOnWeb =
     methods.registration.watch('propagation.is_shown_on_web') === false
 
@@ -508,7 +517,11 @@ export const EventForm: FC<{
         <BasicInfoStep methods={methods.basicInfo} />
       </Step>
       <Step name="pro koho" hasError={hasFormError(methods.intendedFor)}>
-        <IntendedForStep methods={methods.intendedFor} isCamp={isCamp} />
+        <IntendedForStep
+          methods={methods.intendedFor}
+          isCamp={isCamp}
+          hasVIPPropagationOption={hasVIPPropagationOption}
+        />
       </Step>
       <Step name="místo konání" hasError={hasFormError(methods.location)}>
         <LocationStep methods={methods.location} />

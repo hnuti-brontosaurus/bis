@@ -19,9 +19,11 @@ import { MethodsShapes } from '..'
 export const IntendedForStep = ({
   methods,
   isCamp,
+  hasVIPPropagationOption,
 }: {
   methods: MethodsShapes['intendedFor']
   isCamp: boolean
+  hasVIPPropagationOption: boolean
 }) => {
   const { data: intendedFor } = api.endpoints.readIntendedFor.useQuery()
   const { watch, register, trigger, control, unregister, setValue, formState } =
@@ -69,6 +71,8 @@ export const IntendedForStep = ({
       Promise.resolve().then(() => trigger('vip_propagation'))
   }, [trigger, isVipPropagationRequired, formState.isSubmitted])
 
+  const prvoucastnici = 5
+
   if (!intendedFor) return <Loading>Připravujeme formulář</Loading>
 
   return (
@@ -114,7 +118,7 @@ export const IntendedForStep = ({
           </FormSection>
           {
             /* not great hardcoded id */
-            +watch('intended_for') === 5 && (
+            +watch('intended_for') === prvoucastnici && hasVIPPropagationOption && (
               <>
                 <FullSizeElement>
                   <InfoBox>
