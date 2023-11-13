@@ -198,8 +198,11 @@ export const BasicInfoStep = ({
                                       name={field.name}
                                       id={slug}
                                       value={id}
-                                      checked={field.value?.includes(id)}
+                                      checked={(
+                                        field.value as number[]
+                                      )?.includes(id)}
                                       onChange={e => {
+                                        if (typeof field.value === 'number') {
                                         // check when unchecked and vise-versa
                                         const targetId = Number(e.target.value)
                                         const set = new Set(field.value)
@@ -209,6 +212,7 @@ export const BasicInfoStep = ({
                                           set.add(targetId)
                                         }
                                         field.onChange(Array.from(set))
+                                        }
                                       }}
                                     />{' '}
                                     {name}
