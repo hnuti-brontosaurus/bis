@@ -12,7 +12,7 @@ import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
 import { ClearPageMargin, Content, Header, Layout } from 'layout/Layout'
 import { OpportunityTable } from 'org/components/OpportunityTable'
-import { FaPlus } from 'react-icons/fa'
+import { FaExternalLinkAlt, FaPlus } from 'react-icons/fa'
 import { ExternalButtonLink } from 'components/Button/Button'
 
 export const OpportunityList = () => {
@@ -36,11 +36,11 @@ export const OpportunityList = () => {
             tabs={[]}
             actions={[
               <ExternalButtonLink
-                tertiary
                 href="https://docs.google.com/forms/d/e/1FAIpQLSdkhNLXC3YvMFgykj8r8KrQ_-xwfcZr13Hsfyy5Diyyvx2JLg/viewform"
                 target="__blank"
                 rel="noopener noreferrer"
               >
+                <FaExternalLinkAlt />
                 Chci se zapojit
               </ExternalButtonLink>,
               <ButtonLink key="new" to="/org/prilezitosti/vytvorit">
