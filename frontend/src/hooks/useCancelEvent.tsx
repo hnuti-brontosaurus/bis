@@ -43,7 +43,7 @@ export const useCancelEvent = () => {
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>
@@ -102,7 +102,7 @@ export const useRestoreCanceledEvent = () => {
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>

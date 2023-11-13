@@ -43,7 +43,8 @@ export const SelectFullUsers = forwardRef<any, SelectObjectsProps<User>>(
       api.endpoints.readUsers.useQuery(
         debouncedSearchQuery.length >= 2
           ? {
-              search: debouncedSearchQuery, pageSize: ALL_USERS
+              search: debouncedSearchQuery,
+              pageSize: ALL_USERS,
             }
           : skipToken,
       )
@@ -91,7 +92,8 @@ export const SelectFullUser = forwardRef<any, SelectObjectProps<User>>(
       api.endpoints.readUsers.useQuery(
         debouncedSearchQuery.length >= 2
           ? {
-              search: debouncedSearchQuery, pageSize: ALL_USERS
+              search: debouncedSearchQuery,
+              pageSize: ALL_USERS,
             }
           : skipToken,
       )
@@ -227,9 +229,9 @@ export const BirthdayForm = ({
           />
         </FormInputError>
         <Actions>
-          <Button type="reset">Zruš</Button>
+          <Button type="reset">Zrušit</Button>
           <Button primary type="submit">
-            Pokračuj
+            Pokračovat
           </Button>
         </Actions>
       </form>
@@ -328,7 +330,7 @@ export const useReadFullUser = () => {
               </div>
             )
           },
-          title: 'Zadej datum narození',
+          title: 'Zadat datum narození',
           message: user.display_name,
         })
       })) as string

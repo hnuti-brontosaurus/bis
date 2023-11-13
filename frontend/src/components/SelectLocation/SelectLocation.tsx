@@ -256,7 +256,7 @@ export const SelectLocation = forwardRef<
               styles.buttonNewLocalization,
             )}
           >
-            Vyber existující místo konání
+            Vybrat existující místo konání
           </Button>
         ) : (
           <Button
@@ -333,7 +333,7 @@ export const SelectLocation = forwardRef<
                 styles.buttonNewLocalization,
               )}
             >
-              Vyber existující místo konání
+              Vybrat existující místo konání
             </Button>
           ) : (
             <Button

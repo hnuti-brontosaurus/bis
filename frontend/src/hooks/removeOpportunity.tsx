@@ -41,7 +41,7 @@ export const useRemoveOpportunity = () => {
                       onClose()
                     }}
                   >
-                    Zruš
+                    Zrušit
                   </Button>
                   <Button
                     danger
@@ -50,7 +50,7 @@ export const useRemoveOpportunity = () => {
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>

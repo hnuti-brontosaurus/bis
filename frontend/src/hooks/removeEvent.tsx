@@ -34,7 +34,7 @@ export const useRemoveEvent = () => {
                       onClose()
                     }}
                   >
-                    Zruš
+                    Zrušit
                   </Button>
                   <Button
                     danger
@@ -43,7 +43,7 @@ export const useRemoveEvent = () => {
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>
