@@ -39,7 +39,8 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
-import styles from './ViewEvent.module.scss'
+import styles from './ViewEvent.module.scss';
+import { EventTag } from 'app/services/bisTypes'
 
 export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
   const params = useParams()
@@ -328,12 +329,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <th>Organizační jednotka</th>
                   <td>{eventAdministrationUnits}</td>
                 </tr>
-               {/*  {event.tags ?
+                {event.tags && event.tags.length > 0 ?
                   <tr>
                     <th>Tagy</th>
-                    <td>{event.tags.map((tag => tag.name).join(', '))}</td>
+                    <td>{event.tags.map(tag => tag.name).join(', ')}</td>
                   </tr>
-                : ''} */}
+                : null}
                 <tr>
                   <th>Pro koho</th>
                   <td>{event.intended_for.name}</td>
