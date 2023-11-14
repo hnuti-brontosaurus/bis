@@ -237,8 +237,8 @@ export const CloseEvent = () => {
         onCancel={handleCancel}
       />
       <GuideOwl id="po-akce-guide-owl">
-        Akce musí být uzavřená (tj. mít kompletně vyplněné údaje po akci) do 20
-        dnů od skončení.
+        Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po akci) do 20 dnů od skončení.<br/>
+        Akci uzavřeš tak, že klikneš na tlačítko "uložit a uzavřít"
       </GuideOwl>
     </>
   )
