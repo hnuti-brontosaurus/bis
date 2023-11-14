@@ -144,6 +144,9 @@ $step-button-line-height-phone: 1rem;
 .floatingStepArrow {
   width: 60px;
   height: 60px;
+  background-color: colors.$bronto;
+  border-radius: 30px;
+  border-width: 1px;
   path {
     fill: colors.$bronto-300;
   }
