@@ -224,7 +224,7 @@ export const Applications: FC<{
             setShowAddParticipantModal(true)
           }}
           disabled={application.state === ApplicationStates.rejected}
-          tooltipContent={'Přidej účastníka'}
+          tooltipContent={'Přidat účastníka'}
           color={colors.bronto}
         />
       )}
@@ -248,8 +248,8 @@ export const Applications: FC<{
         disabled={application.state === 'approved'}
         tooltipContent={
           application.state === 'rejected'
-            ? 'Obnov přihlášku'
-            : 'Odmítni přihlášku'
+            ? 'Obnovit přihlášku'
+            : 'Odmítnout přihlášku'
         }
         color={
           application.state === ApplicationStates.rejected
@@ -274,7 +274,7 @@ export const Applications: FC<{
             }}
             isLoading={isExportLoading}
           >
-            Export do excelu
+            Exportovat do excelu
           </Button>
           <Button
             secondary
@@ -283,7 +283,7 @@ export const Applications: FC<{
             isLoading={isGeneratingPdf}
             onClick={() => generateAndSavePdf()}
           >
-            Tiskni prezenční listinu
+            Tisknout prezenční listinu
           </Button>
           <Button
             secondary
@@ -291,7 +291,7 @@ export const Applications: FC<{
             type="button"
             onClick={() => setShowEmailListModal(true)}
           >
-            Zobraz seznam e-mailů
+            Zobrazit seznam e-mailů
           </Button>
           <Button
             primary
@@ -301,7 +301,7 @@ export const Applications: FC<{
               setShowNewApplicationModal(true)
             }}
           >
-            Přidej novou přihlášku
+            Přidat novou přihlášku
           </Button>
         </div>
 

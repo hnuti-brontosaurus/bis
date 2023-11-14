@@ -92,18 +92,18 @@ export const BirthdayInputCheck: FC<IBirthdayInputCheck> = ({
           type="submit"
           onClick={() => setCheckAndAdd(true)}
         >
-          zkontroluj a přidej{' '}
+          Zkontrolovat a přidat{' '}
         </Button>
       )}
       {retrievedUser &&
       retrievedUser._search_id === result._search_id &&
       retrievedUserIsUsed ? (
         <Button className={styles.birthsdayButton} secondary type="submit">
-          přidej k účastníkům
+          Přidat k účastníkům
         </Button>
       ) : (
         <Button className={styles.birthsdayButton} secondary type="submit">
-          zkontroluj
+          Zkontrolovat
         </Button>
       )}
     </form>

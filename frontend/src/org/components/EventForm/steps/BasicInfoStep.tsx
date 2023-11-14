@@ -9,6 +9,7 @@ import {
   Label,
   Loading,
   NumberInput,
+  Help,
 } from 'components'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useEffect } from 'react'
@@ -189,33 +190,42 @@ export const BasicInfoStep = ({
                           tags.results!.map(
                             ({ id, name, slug, description, is_active }) =>
                               is_active ? (
-                                <div key={slug} title={description}>
-                                  <label key={slug} className="checkboxLabel">
-                                    <input
-                                      ref={field.ref}
-                                      key={slug}
-                                      type="checkbox"
-                                      name={field.name}
-                                      id={slug}
-                                      value={id}
-                                      checked={(
+                                <div key={slug}>
+                                  <label key={slug}>
+                                    <span className="checkboxLabelWrapper">
+                                      <span className="checkboxLabel">
+                                        <input
+                                          ref={field.ref}
+                                          key={slug}
+                                          type="checkbox"
+                                          name={field.name}
+                                          id={slug}
+                                          value={id}
+                                          checked={(
                                         field.value as number[]
                                       )?.includes(id)}
-                                      onChange={e => {
-                                        if (typeof field.value === 'number') {
+                                          onChange={e => {
+                                            if (typeof field.value === 'number') {
                                         // check when unchecked and vise-versa
-                                        const targetId = Number(e.target.value)
-                                        const set = new Set(field.value)
-                                        if (set.has(targetId)) {
-                                          set.delete(targetId)
-                                        } else {
-                                          set.add(targetId)
-                                        }
-                                        field.onChange(Array.from(set))
-                                        }
+                                            const targetId = Number(
+                                              e.target.value,
+                                            )
+                                            const set = new Set(field.value)
+                                            if (set.has(targetId)) {
+                                              set.delete(targetId)
+                                            } else {
+                                              set.add(targetId)
+                                            }
+                                            field.onChange(Array.from(set))
+                                            }
                                       }}
-                                    />{' '}
-                                    {name}
+                                        />{' '}
+                                        {name}
+                                      </span>
+                                    </span>
+                                    <span className="checkboxDesription">
+                                      <Help>{description}</Help>
+                                    </span>
                                   </label>
                                 </div>
                               ) : null,
@@ -240,7 +250,7 @@ export const BasicInfoStep = ({
                       options={
                         administrationUnits
                           ? administrationUnits.results.map(unit => ({
-                              label: `${unit.category.name} ${unit.abbreviation}`,
+                              label: `${unit.abbreviation}`,
                               value: unit.id,
                             }))
                           : []
@@ -255,7 +265,7 @@ export const BasicInfoStep = ({
                           )
                           .filter(a => !!a) as AdministrationUnit[]
                       ).map(unit => ({
-                        label: `${unit.category.name} ${unit.abbreviation}`,
+                        label: `${unit.abbreviation}`,
                         value: unit.id,
                       }))}
                     />

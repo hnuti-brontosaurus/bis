@@ -4,7 +4,7 @@ export const NotFound = () => {
   return (
     <Error status={404} message="Tady nic není…">
       <div>
-        Pokračuj na{' '}
+        Pokračovat na{' '}
         <ButtonLink tertiary to="/">
           hlavní stránku
         </ButtonLink>
