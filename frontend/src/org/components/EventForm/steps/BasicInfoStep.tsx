@@ -1,5 +1,5 @@
 import { api } from 'app/services/bis'
-import { AdministrationUnit } from 'app/services/bisTypes'
+import { AdministrationUnit, EventTag } from 'app/services/bisTypes'
 import {
   FormInputError,
   FormSection,
@@ -201,13 +201,43 @@ export const BasicInfoStep = ({
                                           name={field.name}
                                           id={slug}
                                           value={id}
-                                          checked={field.value?.includes(id)}
+                                          checked={
+                                            field.value
+                                              ?.map(
+                                                (val: number | EventTag) => {
+                                                  if (typeof val === 'number') {
+                                                    return val
+                                                  } else if (
+                                                    typeof val === 'object'
+                                                  ) {
+                                                    return val.id
+                                                  }
+                                                },
+                                              )
+                                              .includes(id) ?? false
+                                          }
                                           onChange={e => {
                                             // check when unchecked and vise-versa
                                             const targetId = Number(
                                               e.target.value,
                                             )
-                                            const set = new Set(field.value)
+                                            const currentSet: number[] = []
+                                            field.value?.forEach(
+                                              (item: number | EventTag) => {
+                                                if (typeof item === 'number') {
+                                                  if (
+                                                    !currentSet.includes(item)
+                                                  )
+                                                    currentSet.push(item)
+                                                } else if (
+                                                  !currentSet.includes(item.id)
+                                                ) {
+                                                  // item is EventTag
+                                                  currentSet.push(item.id)
+                                                }
+                                              },
+                                            )
+                                            const set = new Set(currentSet)
                                             if (set.has(targetId)) {
                                               set.delete(targetId)
                                             } else {

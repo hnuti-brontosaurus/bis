@@ -124,12 +124,17 @@
   }
 
   .eventInfo {
+    margin-bottom: 50px;
     .eventInfoNarrow {
       max-width: 700px;
-      margin: 50px auto;
+      margin: auto;
+      &:nth-child(1){
+        margin: 50px auto 0 auto;
+      }
     }
     table {
-      margin-bottom: 50px;
+      margin: auto;
+      width: 100%;
 
       tr {
         border-bottom: 2px solid #eaeaea40;
@@ -139,13 +144,13 @@
         text-align: right;
         padding: 10px;
         font-weight: 500;
+        width: 30%;
         @include media.for-phone-only {
           min-width: 150px;
         }
         @include media.for-tablet-portrait-up {
           min-width: 200px;
         }
-
         @include media.for-tablet-landscape-up {
           min-width: 250px;
         }
@@ -158,7 +163,7 @@
 
   .invitationTexts {
     width: 90%;
-    margin: auto;
+    margin: 50px auto;
     @include media.for-phone-only {
       width: 95%;
     }
@@ -201,7 +206,9 @@
   .imageList {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 1rem;
+    margin-bottom: 50px;
 
     .image {
       border-radius: 20px;

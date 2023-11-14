@@ -1,3 +1,4 @@
+import { EventTag } from './bisTypes'
 import { emptySplitApi as api } from './emptyApi'
 const injectedRtkApi = api.injectEndpoints({
   endpoints: build => ({
@@ -2815,7 +2816,7 @@ export type Event = {
   start_time?: string | null
   end: string
   number_of_sub_events?: number
-  tags?: number[]
+  tags?: number[] | EventTag[]
   location: number
   online_link?: string
   group: EventGroupCategory
