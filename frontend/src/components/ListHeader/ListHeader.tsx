@@ -19,11 +19,13 @@ export const ListHeader = ({
   return (
     <header className={classNames(styles.header, themeClass)}>
       <h1>{header}</h1>
-      {actions.map(element =>
-        cloneElement(element, {
-          className: styles.headerActionButton,
-        }),
-      )}
+      <span>
+        {actions.map(element =>
+          cloneElement(element, {
+            className: styles.headerActionButton,
+          }),
+        )}
+      </span>
       <nav className={styles.tabs}>
         {tabs.map(({ name, to, key }) => (
           <NavLink
