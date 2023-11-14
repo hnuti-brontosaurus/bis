@@ -282,7 +282,7 @@ export const Participants: FC<{
           }}
           isLoading={isExportLoading}
         >
-          Export do excelu
+          Exportovat do excelu
         </Button>
         {/* TODO It would be awesome if import and export use excel in the same format */}
         <div className={styles.excelButtons}>
@@ -297,7 +297,7 @@ export const Participants: FC<{
           }}
           isLoading={isGeneratingPdf}
         >
-          Tiskni prezenční listinu
+          Tisknout prezenční listinu
         </Button>
         {participants && participants?.results?.length > 0 && (
           <Button
@@ -306,11 +306,11 @@ export const Participants: FC<{
             type="button"
             onClick={() => setShowEmailListModal(true)}
           >
-            Zobraz seznam e-mailů
+            Zobrazit seznam e-mailů
           </Button>
         )}
         <Button type="button" primary small onClick={handleClickNewParticipant}>
-          Přidej nového účastníka
+          Přidat nového účastníka
         </Button>
       </div>
       {!isReadParticipantsLoading ? (

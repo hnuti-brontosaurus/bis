@@ -36,7 +36,7 @@ export const useRejectApplication = () => {
                       onClose()
                     }}
                   >
-                    Zruš
+                    Zrušit
                   </Button>
                   <Button
                     danger
@@ -45,7 +45,7 @@ export const useRejectApplication = () => {
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>

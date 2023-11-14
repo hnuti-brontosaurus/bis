@@ -58,7 +58,7 @@ export const useConfirmWithModal = ({
                       onClose()
                     }}
                   >
-                    Zruš
+                    Zrušit
                   </Button>
                   <Button
                     danger
@@ -67,7 +67,7 @@ export const useConfirmWithModal = ({
                       onClose()
                     }}
                   >
-                    Pokračuj
+                    Pokračovat
                   </Button>
                 </Actions>
               </div>

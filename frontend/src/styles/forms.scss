@@ -90,11 +90,23 @@ input[type='reset'] {
   }
 }
 
+.checkboxDesription, .checkboxLabelWrapper {
+  display: inline-block;
+  align-items: center;
+}
+
+.checkboxDesription {
+  margin-right: 2em;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
 .checkboxLabel {
   display: grid;
   padding: 12px;
+  padding-right: 6px;
   overflow: hidden;
-  grid-template-columns: 1em auto 2em;
+  grid-template-columns: 1em auto;
   gap: 1em;
   align-items: center;
   width: 100%;

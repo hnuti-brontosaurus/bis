@@ -26,7 +26,7 @@ export const AdminOutlet = () => {
         <p>Hnutí Brontosaurus</p>
       </div>
       <div>
-        Pokračuj na{' '}
+        Pokračovat na{' '}
         <ButtonLink tertiary to="/">
           domácí stránku
         </ButtonLink>
