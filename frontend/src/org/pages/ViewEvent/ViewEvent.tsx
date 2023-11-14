@@ -166,9 +166,6 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
     )
   }
 
-  console.log(event);
-  console.log(event.tags);
-
   return (
     <>
       <Breadcrumbs eventName={event && event.name} />
@@ -471,12 +468,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
         </div>
 
        {/*  <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
-        <h2 className={styles.dataHeader}>Data</h2>
+       {/*  <h2 className={styles.dataHeader}>Data</h2>
         <DataView
           data={formattedEvent}
           translations={combinedTranslations.event}
           genericTranslations={combinedTranslations.generic}
-        />
+        /> */}
       </div>
     </>
   )

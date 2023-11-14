@@ -202,23 +202,23 @@ export const BasicInfoStep = ({
                                           id={slug}
                                           value={id}
                                           checked={(
-                                        field.value as number[]
-                                      )?.includes(id)}
+                                              field.value as number[]
+                                            )?.includes(id)}
                                           onChange={e => {
                                             if (typeof field.value === 'number') {
-                                        // check when unchecked and vise-versa
-                                            const targetId = Number(
-                                              e.target.value,
-                                            )
-                                            const set = new Set(field.value)
-                                            if (set.has(targetId)) {
-                                              set.delete(targetId)
-                                            } else {
-                                              set.add(targetId)
+                                              // check when unchecked and vise-versa
+                                              const targetId = Number(
+                                                e.target.value,
+                                              )
+                                              const set = new Set(field.value)
+                                              if (set.has(targetId)) {
+                                                set.delete(targetId)
+                                              } else {
+                                                set.add(targetId)
+                                              }
+                                              field.onChange(Array.from(set))
                                             }
-                                            field.onChange(Array.from(set))
-                                            }
-                                      }}
+                                          }}
                                         />{' '}
                                         {name}
                                       </span>
