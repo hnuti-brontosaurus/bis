@@ -165,11 +165,14 @@ def event_of_administration_unit_filter_factory(title, parameter_name, cache_nam
                 items = self.rel_model.objects.all()
                 if self.value():
                     if prefix == 'memberships':
-                        items = items.filter(administration_unit=self.value())
+                        datetime_query['administration_unit'] = self.value()
                     else:
-                        items = items.filter(administration_units=self.value())
-                if datetime_query:
-                    items = items.filter(**datetime_query)
+                        datetime_query['administration_units'] = self.value()
+
+                items = items.filter(**datetime_query)
+
+                if parameter_name == "memberships__administration_unit":
+                    setattr(request, 'membership_stats_query', datetime_query)
 
                 queryset = queryset.filter(**{prefix + '__in': items}).distinct()
                 return queryset.model.objects.filter(id__in=queryset.values_list('id'))

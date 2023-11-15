@@ -157,7 +157,7 @@ class MemberDuringYearsFilter(CacheRangeNumericFilter):
 
 
 MemberOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
-    'Dle: Členství ve organizační jednotce',
+    'Členství ve organizační jednotce',
     'memberships__administration_unit',
     MemberDuringYearsFilter.cache_name
 )

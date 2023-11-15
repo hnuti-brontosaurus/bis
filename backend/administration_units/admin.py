@@ -1,3 +1,5 @@
+from datetime import date
+
 from dateutil.utils import today
 from django.contrib import admin
 from django.contrib.admin import ModelAdmin
@@ -77,9 +79,10 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
 
     @admin.display(description='Statistika členských příspěvků')
     def get_membership_stats(self, obj):
+        year = date.today().year
         return MembershipStats(
-            f"organizační jednotky {obj.abbreviation}",
-            User.objects.filter(memberships__administration_unit=obj)
+            f"organizační jednotky {obj.abbreviation} za rok {year}",
+            dict(administration_unit=obj, year=year)
         ).as_table()
 
 

@@ -1,10 +1,10 @@
 import re
 from collections import Counter
-from datetime import date
 from functools import wraps
 from time import time
 
 from dateutil.relativedelta import relativedelta
+from django.apps import apps
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
@@ -197,20 +197,20 @@ class AgeStats:
 
 
 class MembershipStats:
-    def __init__(self, header, queryset, year=date.today().year):
+    def __init__(self, header, query):
         self.header = header
-        self.year = year
-        self.queryset = queryset
+        self.query = query
 
     def get_header(self):
-        return f"Sumarizace členských příspěvků {self.header} za rok {self.year}"
+        return f"Sumarizace členských příspěvků {self.header}"
 
     def get_data(self):
         data = {
-            category.name: (self.queryset.filter(
-                memberships__year=self.year,
-                memberships__category=category
-            ).count(), category.price)
+            category.name: (
+                apps.get_model('bis', 'Membership').objects.filter(
+                    category=category,
+                    **self.query
+                ).count(), category.price)
             for category in MembershipCategory.objects.all()
         }
         total = sum(v[0] * v[1] for v in data.values())

@@ -3,6 +3,7 @@ from django.utils.datetime_safe import date
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
+from administration_units.models import AdministrationUnit
 from bis.admin_filters import EventStatsDateFilter, UserStatsDateFilter
 from bis.helpers import AgeStats, MembershipStats
 from bis.models import User
@@ -24,7 +25,24 @@ def user_stats(context, changelist):
 
         stats.append(AgeStats('lidí', queryset, to_date))
 
-        stats.append(MembershipStats(f"{queryset.count()} lidí", queryset ))
+        year = date.today().year
+        header = f"{queryset.count()} lidí"
+        membership_stats_query = getattr(context['request'], 'membership_stats_query', {})
+        if not membership_stats_query:
+            membership_stats_query = dict(year=year)
+
+        membership_stats_query["user__in"] = queryset
+
+        if year := membership_stats_query.get('year'):
+            header += f' za rok {year}'
+        if year := membership_stats_query.get('year__gte'):
+            header += f' od roku {year}'
+        if year := membership_stats_query.get('year__lte'):
+            header += f' do roku {year}'
+        if administration_unit := membership_stats_query.get('administration_unit'):
+            header += f' organizační jednotky {AdministrationUnit.objects.get(id=administration_unit).abbreviation}'
+
+        stats.append(MembershipStats(header, membership_stats_query))
 
     event_stats_date = getattr(context['request'], EventStatsDateFilter.cache_name, None)
     if queryset.model is Event and event_stats_date:
