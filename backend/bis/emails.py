@@ -1,4 +1,3 @@
-import logging
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -117,7 +116,7 @@ def event_created(event):
             'main_organizer': event.main_organizer.get_name(),
             'main_organizer_email': event.main_organizer.email,
             'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}",
-            'backend_link':f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
+            'backend_link': f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
         }
     )
 
@@ -160,13 +159,13 @@ def event_ended_notify_organizers():
             }
         )
 
+def get_unclosed_events():
+    return Event.objects.exclude(is_canceled=True).exclude(is_closed=True).exclude(is_archived=True)
+
 
 def event_not_closed_10_days():
-    for event in Event.objects.filter(
-            is_canceled=False,
-            is_closed=False,
-            is_archived=False,
-            end=date.today() - timedelta(days=10),
+    for event in get_unclosed_events().filter(
+        end=date.today() - timedelta(days=10),
     ):
         ecomail.send_email(
             emails['bis'], "Blížící se termín uzavření akce", "162",
@@ -182,11 +181,8 @@ def event_not_closed_10_days():
 
 
 def event_not_closed_20_days():
-    for event in Event.objects.filter(
-            is_canceled=False,
-            is_closed=False,
-            is_archived=False,
-            end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
+    for event in get_unclosed_events().filter(
+        end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
         if not event.main_organizer:
             continue
@@ -224,10 +220,7 @@ def event_end_participants_notification(event):
 
 def notify_not_closed_events_summary():
     for program in EventProgramCategory.objects.exclude(slug='none'):
-        events = Event.objects.filter(
-            is_canceled=False,
-            is_closed=False,
-            is_archived=False,
+        events = get_unclosed_events().filter(
             end__lte=date.today() - timedelta(days=20),
             program__slug__in=[program.slug, 'none']
         )
@@ -331,7 +324,7 @@ def event_closed(event: Event):
         variables={
             'event': event.name,
             'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}",
-            'backend_link':f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
+            'backend_link': f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
         }
     )
 
