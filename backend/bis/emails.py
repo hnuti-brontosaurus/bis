@@ -106,8 +106,8 @@ def event_created(event):
         }
     )
 
-    chairmen = [administration_unit.chairman for administration_unit in event.administration_units.all()]
-    recipients = [chairman.email for chairman in chairmen if chairman != event.main_organizer]
+    recipients = [(au.email or au.chairman.email) for au in event.administration_units.all()]
+    recipients = [email for email in recipients if email != event.main_organizer.email]
     ecomail.send_email(
         emails['bis'], 'Informace, že někdo založil akci pod mým ZČ', '150',
         recipients,
