@@ -200,7 +200,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def get_links(self, obj):
         return mark_safe(
             f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
-            f'<a target="_blank" href="/org/akce/{obj.id}/prihlasky" title="Zobrazit přihlášky / účastníky">👪</a><br>'
+            f'<a target="_blank" href="/org/akce/{obj.id}/uzavrit" title="Zobrazit přihlášky / účastníky">👪</a><br>'
             f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
 
     @admin.display(description=_('models.AdministrationUnit.name_plural'))
@@ -290,7 +290,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")
             if "_redirect_to_fe_attendance_list" in request.POST:
-                return HttpResponseRedirect(f"/org/akce/{object_id}/prihlasky")
+                return HttpResponseRedirect(f"/org/akce/{object_id}/uzavrit")
             if "_files_export" in request.POST:
                 return export_files(obj)
 
