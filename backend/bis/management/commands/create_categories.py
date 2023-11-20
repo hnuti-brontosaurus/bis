@@ -148,9 +148,9 @@ class Command(BaseCommand):
         self.create_event_categories(event_categories)
 
         EventTag.objects.update_or_create(slug='retro_event', defaults=dict(name='Retro akce',
-                                                                            description='Retro akce k oslavám 50 let HB'))
-        EventTag.objects.update_or_create(slug='region_event', defaults=dict(name='Akce v regionech',
-                                                                             description='Akce v regionech k oslavám 50 let HB'))
+                                                                            description='Historické úspěné akce, které chceme ve výročním roce zopakovat, připomenout či obnovit. Akce týmů, které již neorganizují, ale rádi by se ve výročí 50 let HB zase sešli a něco spolu udělali. Zkrátka retro akce.'))
+        EventTag.objects.update_or_create(slug='region_event', defaults=dict(name='Akce Brontosarus v regionech',
+                                                                             description='Dobrovolnické akce, jež mají za cíl udělat kus užitečné práce pro přírodu, krajinu či památky a zároveň dobrovolnicví představit veřejnosti a oslovit lidi k zapojení. Akce mohou také prezentovat činnost Brontosaura v daném regionu. Typicky půjde o půldenní, jednodenní, max. víkendové akce konané v období 19. – 28. 4. 2024.'))
 
         GrantCategory.objects.update_or_create(slug='msmt', defaults=dict(name='mšmt'))
         GrantCategory.objects.update_or_create(slug='other', defaults=dict(name='z jiných projektů'))
