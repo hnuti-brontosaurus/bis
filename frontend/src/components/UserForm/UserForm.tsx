@@ -61,7 +61,7 @@ export const data2form = (
       isChild: dataFromApplication?.birthday
         ? dayjs().diff(dayjs(dataFromApplication.birthday), 'year') < 15
         : undefined,
-      close_person: {
+      close_person: dataFromApplication?.close_person ?? {
         first_name: '',
         last_name: '',
         email: '',
