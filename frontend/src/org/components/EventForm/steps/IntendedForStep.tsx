@@ -47,8 +47,6 @@ export const IntendedForStep = ({
     return () => subscription.unsubscribe()
   }, [watch, intendedFor?.results, unregister, setValue])
 
-  const vipPropagation = watch('vip_propagation')
-
   // trigger vip_propagation validation
   useEffect(() => {
     if (formState.isSubmitted)
