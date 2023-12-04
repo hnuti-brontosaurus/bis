@@ -10,7 +10,7 @@ import {
   InlineSection,
   Loading,
 } from 'components'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { Controller, FormProvider } from 'react-hook-form'
 import { getIdBySlug, requireBoolean } from 'utils/helpers'
 import { required, vipPropagationRequired } from 'utils/validationMessages'
@@ -48,28 +48,13 @@ export const IntendedForStep = ({
   }, [watch, intendedFor?.results, unregister, setValue])
 
   const vipPropagation = watch('vip_propagation')
-  const isVipPropagationRequired = useMemo(() => {
-    if (
-      vipPropagation?.goals_of_event ||
-      vipPropagation?.program ||
-      vipPropagation?.short_invitation_text ||
-      vipPropagation?.rover_propagation
-    )
-      return true
-    else return false
-  }, [
-    vipPropagation?.goals_of_event,
-    vipPropagation?.program,
-    vipPropagation?.rover_propagation,
-    vipPropagation?.short_invitation_text,
-  ])
 
   // trigger vip_propagation validation
   useEffect(() => {
     if (formState.isSubmitted)
       // trigger in next tick, to fix revalidating first field
       Promise.resolve().then(() => trigger('vip_propagation'))
-  }, [trigger, isVipPropagationRequired, formState.isSubmitted])
+  }, [trigger, hasVIPPropagationOption, formState.isSubmitted])
 
   const prvoucastnici = 5
 
@@ -161,7 +146,7 @@ export const IntendedForStep = ({
                 </FullSizeElement>
 
                 <FullSizeElement>
-                  <FormSubheader required={isVipPropagationRequired}>
+                  <FormSubheader required={hasVIPPropagationOption}>
                     Cíle akce a přínos pro prvoúčastníky
                   </FormSubheader>
                   <InfoBox>
@@ -173,14 +158,14 @@ export const IntendedForStep = ({
                     <textarea
                       {...register('vip_propagation.goals_of_event', {
                         required:
-                          isVipPropagationRequired && vipPropagationRequired,
+                          hasVIPPropagationOption && vipPropagationRequired,
                       })}
                     ></textarea>
                   </FormInputError>
                 </FullSizeElement>
 
                 <FullSizeElement>
-                  <FormSubheader required={isVipPropagationRequired}>
+                  <FormSubheader required={hasVIPPropagationOption}>
                     Programové pojetí akce pro prvoúčastníky
                   </FormSubheader>
                   <InfoBox>
@@ -194,14 +179,14 @@ export const IntendedForStep = ({
                     <textarea
                       {...register('vip_propagation.program', {
                         required:
-                          isVipPropagationRequired && vipPropagationRequired,
+                          hasVIPPropagationOption && vipPropagationRequired,
                       })}
                     ></textarea>
                   </FormInputError>
                 </FullSizeElement>
 
                 <FullSizeElement>
-                  <FormSubheader required={isVipPropagationRequired}>
+                  <FormSubheader required={hasVIPPropagationOption}>
                     Krátký zvací text do propagace
                   </FormSubheader>
                   <InfoBox>
@@ -213,7 +198,7 @@ export const IntendedForStep = ({
                       {...register('vip_propagation.short_invitation_text', {
                         maxLength: 200,
                         required:
-                          isVipPropagationRequired && vipPropagationRequired,
+                          hasVIPPropagationOption && vipPropagationRequired,
                       })}
                     ></textarea>
                   </FormInputError>
@@ -224,7 +209,7 @@ export const IntendedForStep = ({
                   isCamp && (
                     <FormSubsection
                       header="Propagovat akci v Roverském kmeni"
-                      required={isVipPropagationRequired}
+                      required={isCamp && hasVIPPropagationOption}
                       help="Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 100 Kč."
                     >
                       <FormInputError>
