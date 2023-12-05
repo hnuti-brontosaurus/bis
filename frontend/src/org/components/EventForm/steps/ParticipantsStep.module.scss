@@ -11,6 +11,11 @@ h2 {
   table-layout: auto;
   width: 100%;
   margin-top: 16px;
+  @include media.for-phone-only {
+    max-width: inherit;
+    overflow: auto;
+    display: block;
+  }
   th,
   td {
     padding: 0.5rem;
