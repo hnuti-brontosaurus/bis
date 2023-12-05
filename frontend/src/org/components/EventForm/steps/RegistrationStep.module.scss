@@ -76,6 +76,39 @@
   }
 }
 
+.showInfoButton {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  text-decoration: underline;
+  svg {
+    margin-left: 6px;
+  }
+}
+
+.imageWrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 1rem;
+  @include media.for-tablet-landscape-up {
+    flex-direction: row;
+  }
+  .applicationImage {
+    margin: 20px;
+    max-height: none;
+    object-fit: cover;
+    box-shadow: 0px 0px 18px 0px rgba($color: #000000, $alpha: 0.25);
+    @include media.for-tablet-landscape-up {
+      max-height: 600px;
+      max-width: 50%;
+    }
+    @include media.for-phone-only {
+      margin: 10px 0;
+    }
+  }
+}
+
 // .questionsBox {
 //   width: 100%;
 //   padding: 1.5rem;
