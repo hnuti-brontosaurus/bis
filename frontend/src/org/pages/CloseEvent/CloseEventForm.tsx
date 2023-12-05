@@ -284,16 +284,28 @@ export const CloseEventForm = ({
       )(),
     ])
 
-    if (isValid) {
+    if (is_closed && !isValid) {
+      // TODO make nicer
+      showMessage({
+        type: 'error',
+        message: 'Opravte, prosím, chyby ve validaci',
+        detail: validationErrors2Message(
+          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
+          translations.event,
+          translations.generic,
+        ),
+      })
+    } else {
       const data = mergeWith(
         {},
         evidence,
         participants,
         { is_closed },
         {
-          photos: evidence.photos.filter(photo => photo.photo),
-          pages: evidence.pages.filter(page => page.page),
-          receipts: evidence.receipts.filter(receipt => receipt.receipt),
+          photos: evidence?.photos?.filter(photo => photo.photo) || [],
+          pages: evidence?.pages?.filter(page => page.page) || [],
+          receipts:
+            evidence?.receipts?.filter(receipt => receipt.receipt) || [],
         },
         withOverwriteArray,
       )
@@ -306,17 +318,6 @@ export const CloseEventForm = ({
 
       await onSubmit(formData2payload(data))
       clearPersist()
-    } else {
-      // TODO make nicer
-      showMessage({
-        type: 'error',
-        message: 'Opravte, prosím, chyby ve validaci',
-        detail: validationErrors2Message(
-          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
-          translations.event,
-          translations.generic,
-        ),
-      })
     }
   }
 
