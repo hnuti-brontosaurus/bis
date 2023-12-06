@@ -98,6 +98,7 @@ class Permissions:
 
         if self.user.is_board_member:
             if self.model in [Donor, DuplicateUser, Membership, AdministrationUnitAddress,
+                              AdministrationSubUnit,
                               AdministrationUnitContactAddress, GeneralMeeting, AdministrationSubUnitAddress]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
