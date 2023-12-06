@@ -127,6 +127,23 @@ GeneralMeeting:
   name_plural: Valné hromady
   fields:
     administration_unit: Organizační jednotka
+AdministrationSubUnit:
+  name: Oddíl
+  name_plural: Oddíly
+  fields:
+    administration_unit: Organizační jednotka
+    is_for_kids: Jedná se o BRĎO oddíl?
+    www: Webové stránky
+    facebook: Facebook
+    instagram: Instagram
+    main_leader: Hlavní vedoucí
+    sub_leaders: Oddíloví vedoucí
+    is_active: Je aktivní?
+
+AdministrationSubUnitAddress:
+  name: Adresa
+  fields:
+    sub_unit: Oddíl
 
 
 BrontosaurusMovement:

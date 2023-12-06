@@ -87,7 +87,11 @@ class AdministrationUnitViewSet(ReadOnlyModelViewSet):
         'vice_chairman',
         'manager',
     ).prefetch_related(
-        'board_members'
+        'board_members',
+        'sub_units',
+        'sub_units__main_leader',
+        'sub_units__sub_leaders',
+        'sub_units__address',
     )
     serializer_class = AdministrationUnitSerializer
     filterset_class = AdministrationUnitFilter

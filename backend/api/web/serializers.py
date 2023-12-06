@@ -3,7 +3,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import SlugRelatedField, StringRelatedField
 from rest_framework.serializers import ModelSerializer
 
-from administration_units.models import AdministrationUnit
+from administration_units.models import AdministrationUnit, AdministrationSubUnit
 from bis.models import User, Location, LocationPhoto
 from categories.serializers import OpportunityCategorySerializer, EventCategorySerializer, \
     EventProgramCategorySerializer, AdministrationUnitCategorySerializer, LocationAccessibilityCategorySerializer, \
@@ -203,6 +203,33 @@ class OpportunitySerializer(ModelSerializer):
         return instance.contact_email or instance.contact_person and instance.contact_person.email
 
 
+class AdministrationSubUnitSerializer(ModelSerializer):
+    phone = PhoneNumberField()
+    main_leader = UserSerializer()
+    sub_leaders = UserSerializer(many=True)
+    address = StringRelatedField()
+
+    class Meta:
+        model = AdministrationSubUnit
+
+        fields = (
+            'id',
+            'name',
+            'description',
+            'is_for_kids',
+            'is_active',
+            'phone',
+            'email',
+            'www',
+            'facebook',
+            'instagram',
+            'address',
+            'gps_location',
+            'main_leader',
+            'sub_leaders',
+        )
+
+
 class AdministrationUnitSerializer(ModelSerializer):
     phone = PhoneNumberField()
     category = AdministrationUnitCategorySerializer()
@@ -212,6 +239,7 @@ class AdministrationUnitSerializer(ModelSerializer):
     board_members = UserSerializer(many=True)
     address = StringRelatedField()
     contact_address = StringRelatedField()
+    sub_units = AdministrationSubUnitSerializer(many=True)
 
     class Meta:
         model = AdministrationUnit
@@ -226,6 +254,8 @@ class AdministrationUnitSerializer(ModelSerializer):
             'phone',
             'email',
             'www',
+            'facebook',
+            'instagram',
             'ic',
             'address',
             'contact_address',
@@ -238,4 +268,5 @@ class AdministrationUnitSerializer(ModelSerializer):
             'vice_chairman',
             'manager',
             'board_members',
+            'sub_units',
         )

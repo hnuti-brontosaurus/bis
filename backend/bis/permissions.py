@@ -1,5 +1,5 @@
 from administration_units.models import BrontosaurusMovement, AdministrationUnit, AdministrationUnitAddress, \
-    AdministrationUnitContactAddress, GeneralMeeting
+    AdministrationUnitContactAddress, GeneralMeeting, AdministrationSubUnit, AdministrationSubUnitAddress
 from bis.models import Qualification, User, UserAddress, UserContactAddress, UserEmail, Location, LocationPhoto, \
     Membership, LocationContactPerson, UserClosePerson, LocationPatron, EYCACard
 from donations.models import Donation, UploadBankRecords, VariableSymbol, Donor
@@ -23,6 +23,7 @@ class Permissions:
         return self.user.can_see_all or \
             self.model in [Location, LocationPhoto, LocationContactPerson, LocationPatron,
                            AdministrationUnit, AdministrationUnitAddress, AdministrationUnitContactAddress,
+                           AdministrationSubUnit, AdministrationSubUnitAddress,
                            GeneralMeeting]
 
     def is_readonly(self):
@@ -97,7 +98,7 @@ class Permissions:
 
         if self.user.is_board_member:
             if self.model in [Donor, DuplicateUser, Membership, AdministrationUnitAddress,
-                              AdministrationUnitContactAddress, GeneralMeeting]:
+                              AdministrationUnitContactAddress, GeneralMeeting, AdministrationSubUnitAddress]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
 
@@ -135,7 +136,8 @@ class Permissions:
 
         if self.user.is_board_member:
             if self.model in [DuplicateUser, Membership, AdministrationUnit, AdministrationUnitAddress,
-                              AdministrationUnitContactAddress, GeneralMeeting]:
+                              AdministrationUnitContactAddress, AdministrationSubUnit, AdministrationSubUnitAddress,
+                              GeneralMeeting]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
 
@@ -169,7 +171,8 @@ class Permissions:
                     return True
 
         if self.user.is_board_member:
-            if self.model in [Event, DuplicateUser, Membership, AdministrationUnitContactAddress, GeneralMeeting]:
+            if self.model in [Event, DuplicateUser, Membership, AdministrationUnitContactAddress, GeneralMeeting,
+                              AdministrationSubUnitAddress]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
 

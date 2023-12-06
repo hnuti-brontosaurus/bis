@@ -74,6 +74,9 @@ class AdministrationUnit(Model):
 
         AdministrationUnit.objects.bulk_update([self], ["_history"])
 
+        for sub_unit in self.sub_units.all():
+            sub_unit.record_history(date)
+
     @permission_cache
     def has_edit_permission(self, user):
         return user in self.board_members.all()
@@ -105,6 +108,49 @@ class GeneralMeeting(Model):
 
     class Meta:
         ordering = 'date',
+
+
+@translate_model
+class AdministrationSubUnit(Model):
+    administration_unit = ForeignKey(AdministrationUnit, related_name='sub_units', on_delete=PROTECT)
+    name = CharField(max_length=255, unique=True)
+    description = TextField(blank=True, max_length=400)
+
+    is_for_kids = BooleanField()
+    is_active = BooleanField(default=True)
+
+    phone = PhoneNumberField()
+    email = EmailField()
+    www = URLField(blank=True)
+    facebook = URLField(blank=True)
+    instagram = URLField(blank=True)
+    gps_location = PointField(null=True)
+    _history = JSONField(default=dict)
+
+    main_leader = ForeignKey('bis.User', related_name='main_leader_of', on_delete=PROTECT)
+    sub_leaders = ManyToManyField('bis.User', related_name='sub_leader_of', blank=True)
+
+    class Meta:
+        ordering = 'name',
+
+    def __str__(self):
+        return self.name
+
+    def record_history(self, date):
+        record_history(self._history, date, self.main_leader, "Hlavní vedoucí")
+        for user in self.sub_leaders.all():
+            record_history(self._history, date, user, 'Oddílový vedoucí')
+
+        AdministrationSubUnit.objects.bulk_update([self], ["_history"])
+
+    @permission_cache
+    def has_edit_permission(self, user):
+        return self.administration_unit.has_edit_permission(user)
+
+
+@translate_model
+class AdministrationSubUnitAddress(BaseAddress):
+    sub_unit = OneToOneField(AdministrationSubUnit, on_delete=CASCADE, related_name='address')
 
 
 @translate_model

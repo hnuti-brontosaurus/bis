@@ -6,11 +6,11 @@ from django.contrib.admin import ModelAdmin
 from django.contrib.gis.db.models import PointField
 from django.utils.safestring import mark_safe
 from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedTabularInline
+from nested_admin.nested import NestedTabularInline, NestedModelAdmin, NestedStackedInline
 from solo.admin import SingletonModelAdmin
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement, AdministrationUnitAddress, \
-    AdministrationUnitContactAddress, GeneralMeeting
+    AdministrationUnitContactAddress, GeneralMeeting, AdministrationSubUnit, AdministrationSubUnitAddress
 from bis.admin_filters import IsAdministrationUnitActiveFilter
 from bis.admin_helpers import get_admin_list_url, LatLongWidget
 from bis.admin_permissions import PermissionMixin
@@ -32,9 +32,27 @@ class GeneralMeetingAdmin(PermissionMixin, NestedTabularInline):
     model = GeneralMeeting
     extra = 1
 
+class AdministrationSubUnitAddressAdmin(PermissionMixin, NestedTabularInline):
+    model = AdministrationSubUnitAddress
+
+class AdministrationSubUnitAdmin(PermissionMixin, NestedStackedInline):
+    model = AdministrationSubUnit
+    extra = 0
+    formfield_overrides = {
+        PointField: {'widget': LatLongWidget},
+    }
+    autocomplete_fields = 'main_leader', 'sub_leaders'
+    exclude = '_history',
+    readonly_fields = 'history',
+    inlines = AdministrationSubUnitAddressAdmin,
+
+    @admin.display(description='Historie')
+    def history(self, obj):
+        return show_history(obj._history)
+
 
 @admin.register(AdministrationUnit)
-class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
+class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
     actions = [export_to_xlsx]
     list_display = 'abbreviation', 'is_active', 'address', 'phone', 'email', 'www', 'chairman', 'category'
     search_fields = 'abbreviation', 'name', 'address__city', 'address__street', 'address__zip_code', 'phone', 'email'
@@ -50,7 +68,7 @@ class AdministrationUnitAdmin(PermissionMixin, ModelAdmin):
     list_select_related = 'address', 'chairman', 'category'
     readonly_fields = 'history', 'get_members', 'get_organizers', 'get_membership_stats'
 
-    inlines = AdministrationUnitAddressAdmin, AdministrationUnitContactAddressAdmin, GeneralMeetingAdmin
+    inlines = AdministrationUnitAddressAdmin, AdministrationUnitContactAddressAdmin, GeneralMeetingAdmin, AdministrationSubUnitAdmin
 
     @admin.display(description='Historie')
     def history(self, obj):
