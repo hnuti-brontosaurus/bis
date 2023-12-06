@@ -137,9 +137,6 @@ class DonorExportSerializer(ModelSerializer):
 
 
 class LocationExportSerializer(ModelSerializer):
-    program = StringRelatedField(label='Program lokality')
-    accessibility_from_prague = StringRelatedField(label='Dostupnost z Prahy')
-    accessibility_from_brno = StringRelatedField(label='Dostupnost z Brna')
     region = StringRelatedField(label='Kraj')
 
     class Meta:

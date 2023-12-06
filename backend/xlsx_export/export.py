@@ -15,6 +15,7 @@ import xlsxwriter
 from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import FileResponse
 from rest_framework.serializers import ModelSerializer
 from xlsx2html import xlsx2html
@@ -57,8 +58,11 @@ class XLSXWriter:
         self.header_keys = []
         self.widths = {}
 
-    def from_queryset(self, queryset, serializer_class):
-        self.add_worksheet(queryset.model._meta.verbose_name_plural)
+    def from_queryset(self, queryset, serializer_class, name=None):
+        if name is None:
+            name = queryset.model._meta.verbose_name_plural
+
+        self.add_worksheet(name)
 
         for page in Paginator(queryset, 100):
             print_progress('exporting xlsx', page.number, page.paginator.num_pages)
@@ -120,7 +124,7 @@ class XLSXWriter:
         self.write_values(self.get_row_values(item))
 
     def events_stats(self, queryset):
-        self.add_worksheet('Účastníci/orgové akcí')
+        self.add_worksheet('Účastníci a orgové akcí')
         participants = User.objects.filter(participated_in_events__event__in=queryset)
         organizers = User.objects.filter(events_where_was_organizer__in=queryset)
         main_organizers = User.objects.filter(events_where_was_as_main_organizer__in=queryset)
@@ -152,6 +156,16 @@ class XLSXWriter:
 
             row = {a: b for a, b in zip(self.header_keys, row)}
             self.write_row(row)
+
+        for i in [0, 1, 3, 4, 6, 7]:
+            self.worksheet.set_column(i, i, width=30)
+
+        participants = participants.annotate(count=Count('id')).distinct().order_by('-count')
+        organizers = organizers.annotate(count=Count('id')).distinct().order_by('-count')
+        main_organizers = main_organizers.annotate(count=Count('id')).distinct().order_by('-count')
+        self.from_queryset(participants, UserExportSerializer, 'Účastníci')
+        self.from_queryset(organizers, UserExportSerializer, 'Organizátoři')
+        self.from_queryset(main_organizers, UserExportSerializer, 'Hlavní organizátoři')
 
 
 @admin.action(description='Exportuj data')
