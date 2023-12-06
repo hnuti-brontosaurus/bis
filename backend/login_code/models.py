@@ -18,7 +18,7 @@ def one_hour_later():
 
 class ThrottleLog(models.Model):
     key = models.CharField(max_length=255)
-    created = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     @classmethod
     def check_throttled(cls, prefix, key, max_count, timedelta_hours):

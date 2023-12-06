@@ -189,6 +189,7 @@ Event:
     is_closed:
       - Je akce uzavřena?
       - Příznak, zda-li jsou všechny povinné údaje po akci vyplněny
+    closed_at: Čas uzavření akce
     is_archived:
       - Je akce archivovaná?
       - Zarchivovaná akce nelze editovat

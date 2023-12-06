@@ -31,7 +31,7 @@ class EventApplication(Model):
     health_issues = TextField(blank=True)
     pronoun = ForeignKey(PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name='applications')
 
-    created_at = DateTimeField(auto_now=True)
+    created_at = DateTimeField(auto_now_add=True)
     note = TextField(blank=True)
 
     class Meta:

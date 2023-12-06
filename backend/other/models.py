@@ -46,7 +46,7 @@ class DuplicateUser(Model):
 class Feedback(Model):
     user = ForeignKey(User, on_delete=CASCADE, related_name='feedbacks')
     feedback = TextField()
-    created_at = DateTimeField(auto_now=True)
+    created_at = DateTimeField(auto_now_add=True)
     is_resolved = BooleanField(default=False)
 
     @classmethod

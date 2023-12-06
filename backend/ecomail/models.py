@@ -15,7 +15,7 @@ class Contact(models.Model):
 
 class ContactLog(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.PROTECT)
-    created = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField()
     log = models.TextField()
 

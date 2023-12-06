@@ -109,7 +109,7 @@ class Comment(BaseModel):
     game = ForeignKey(Game, on_delete=CASCADE, related_name='comments')
     author = ForeignKey(User, on_delete=PROTECT, related_name='game_comments')
     is_hidden = BooleanField(default=False)
-    created_at = DateTimeField(auto_now=True)
+    created_at = DateTimeField(auto_now_add=True)
     comment = TextField()
 
     def __str__(self):
