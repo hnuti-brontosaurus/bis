@@ -183,6 +183,8 @@ def event_not_closed_10_days():
 def event_not_closed_20_days():
     for event in get_unclosed_events().filter(
         end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
+    ).filter(
+        end__gte=date(2023, 11, 1)  # remove notification for old events, can be removed after 3.1.2024
     ):
         if not event.main_organizer:
             continue
