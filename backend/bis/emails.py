@@ -121,24 +121,48 @@ def event_created(event):
     )
 
 
-def events_created_summary():
-    for program in EventProgramCategory.objects.exclude(slug='none'):
-        events = Event.objects.filter(
+def get_unclosed_events():
+    return Event.objects.exclude(is_canceled=True).exclude(is_closed=True).exclude(is_archived=True)
+
+
+def events_to_list(events):
+    events = "".join(
+        f"<li>"
+        f"{event.name}, {event.get_date()}, "
+        f'<a href="{settings.FULL_HOSTNAME}/org/akce/{event.id}">BIS</a>, '
+        f'<a href="{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/">Administrace</a>'
+        f"</li>"
+        for event in events)
+    return f'<ul>{events}</ul>'
+
+
+def events_summary():
+    for program in EventProgramCategory.objects.all():
+        new_events = Event.objects.filter(
             is_canceled=False,
             created_at__gte=date.today() - timedelta(days=7),
-            program__slug__in=[program.slug, 'none']
+            program__slug=program.slug
         )
-        if not events.count():
-            continue
 
-        events = "".join(f"<li>{event.name}, {event.get_date()}, Program: {program.name}</li>" for event in events)
+        closed_events = Event.objects.filter(
+            closed_at__gte=date.today() - timedelta(days=7),
+            program__slug=program.slug
+        )
+
+        unclosed_events = get_unclosed_events().filter(
+            end__lte=date.today() - timedelta(days=20),
+            program__slug=program.slug
+        )
+
         ecomail.send_email(
             emails['bis'],
             "Seznam zadaných akcí koordinátorovi",
             "153",
             [program.email],
             variables={
-                'events': f'<ul>{events}</ul>'
+                'new_events': events_to_list(new_events),
+                'closed_events': events_to_list(closed_events),
+                'unclosed_events': events_to_list(unclosed_events),
             }
         )
 
@@ -159,13 +183,10 @@ def event_ended_notify_organizers():
             }
         )
 
-def get_unclosed_events():
-    return Event.objects.exclude(is_canceled=True).exclude(is_closed=True).exclude(is_archived=True)
-
 
 def event_not_closed_10_days():
     for event in get_unclosed_events().filter(
-        end=date.today() - timedelta(days=10),
+            end=date.today() - timedelta(days=10),
     ):
         ecomail.send_email(
             emails['bis'], "Blížící se termín uzavření akce", "162",
@@ -182,7 +203,7 @@ def event_not_closed_10_days():
 
 def event_not_closed_20_days():
     for event in get_unclosed_events().filter(
-        end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
+            end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ).filter(
         end__gte=date(2023, 11, 1)  # remove notification for old events, can be removed after 3.1.2024
     ):
@@ -216,27 +237,6 @@ def event_end_participants_notification(event):
             variables={
                 'vokativ': participant.vokativ,
                 'event_name': event.name,
-            }
-        )
-
-
-def notify_not_closed_events_summary():
-    for program in EventProgramCategory.objects.exclude(slug='none'):
-        events = get_unclosed_events().filter(
-            end__lte=date.today() - timedelta(days=20),
-            program__slug__in=[program.slug, 'none']
-        )
-        if not events.count():
-            continue
-
-        events = "".join(f"<li>{event.name}, {event.get_date()}, Program: {program.name}</li>" for event in events)
-        ecomail.send_email(
-            emails['bis'],
-            "Seznam neuzavřených akcí",
-            "154",
-            [program.email],
-            variables={
-                'events': f'<ul>{events}</ul>'
             }
         )
 
@@ -311,22 +311,6 @@ def opportunities_created_summary():
         [emails['volunteering'][1]],
         variables={
             'opportunities': f'<ul>{opportunities}</ul>'
-        }
-    )
-
-
-def event_closed(event: Event):
-    programs = EventProgramCategory.objects.exclude(slug='none')
-    if event.program.slug != 'none':
-        programs = [event.program]
-
-    ecomail.send_email(
-        emails['bis'], 'Organizátor vyplnil akci', '192',
-        [program.email for program in programs],
-        variables={
-            'event': event.name,
-            'bis_link': f"{settings.FULL_HOSTNAME}/org/akce/{event.id}",
-            'backend_link': f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/",
         }
     )
 

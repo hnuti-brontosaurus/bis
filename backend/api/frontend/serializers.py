@@ -572,7 +572,6 @@ class EventSerializer(ModelSerializer):
             validated_data['closed_at'] = date.today()
         instance = super().update(instance, validated_data)
         if is_closing:
-            emails.event_closed(instance)
             emails.event_end_participants_notification(instance)
         return instance
 

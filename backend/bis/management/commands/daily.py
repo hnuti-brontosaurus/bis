@@ -32,13 +32,12 @@ class Command(BaseCommand):
         today = date.today()
         # weekly
         if today.weekday() == 0:
-            try_to_run(emails.events_created_summary)
+            try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
 
         # monthly
         if today.day == 1:
             try_to_run(call_command, "archive_events")
-            try_to_run(emails.notify_not_closed_events_summary)
 
         if today.month == 10:
             if today.day == 15:
