@@ -209,11 +209,14 @@ export const CloseEvent = () => {
       ...deletedReceiptPromises,
     ])
 
-    showMessage({
-      type: 'success',
+    showMessage({ 
+      type: evidence.is_closed ? 'success' : 'warning',
       message:
         'Evidence akce byla úspěšně uložena' +
-        (evidence.is_closed ? ' a uzavřena' : ''),
+        (evidence.is_closed
+          ? ' a uzavřena'
+          : '. Nezapomeň akci ještě uzavřít! Akci uzavřeš kliknutím na tlačítko "uložit a uzavřít" do 20 dnů od skončení akce.'),
+      timeout: evidence.is_closed ? 5000 : 10_000
     })
 
     navigate(`/org/akce/${eventId}`)
