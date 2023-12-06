@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 from functools import cached_property
 from os.path import basename
 from uuid import uuid4
@@ -409,9 +410,10 @@ class User(AbstractBaseUser):
         return mark_safe("<br>".join(emails))
 
     @admin.display(description='Aktivní kvalifikace')
-    def get_qualifications(self):
+    def get_qualifications(self, to_date=None):
+        if to_date is None: to_date = timezone.now().date()
         if (self.age or 0) < 15: return []
-        return [q for q in self.qualifications.all() if q.valid_since <= timezone.now().date() <= q.valid_till]
+        return [q for q in self.qualifications.all() if q.valid_since <= to_date <= q.valid_till]
 
     @admin.display(description='Aktivní členství')
     def get_memberships(self):
@@ -605,12 +607,24 @@ class Qualification(Model):
         super().save(*args, **kwargs)
 
     @classmethod
-    def user_has_required_qualification(cls, user, required_one_of):
-        qualifications = user.get_qualifications()
+    def user_has_required_qualification(cls, user, required_one_of, to_date=None):
+        qualifications = user.get_qualifications(to_date)
         for qualification in qualifications:
             for slug in qualification.category.get_slugs():
                 if slug in required_one_of:
                     return True
+
+    @classmethod
+    def get_expiring_qualifications(cls, to_date):
+        for qualification in cls.objects.filter(
+            valid_till=to_date
+        ):
+            if not cls.user_has_required_qualification(
+                qualification.user,
+                [qualification.category.slug],
+                to_date + timedelta(days=1)
+            ):
+                yield qualification
 
     @classmethod
     def validate_main_organizer(cls, event, main_organizer: User):
@@ -660,7 +674,7 @@ class Qualification(Model):
             required_one_of = {'instructor', 'consultant_for_kids'}
 
         if required_one_of:
-            if not cls.user_has_required_qualification(main_organizer, required_one_of):
+            if not cls.user_has_required_qualification(main_organizer, required_one_of, event.start):
                 categories = [str(QualificationCategory.objects.get(slug=slug)) for slug in required_one_of]
                 raise ValidationError(f'Hlavní organizátor {main_organizer} musí mít kvalifikaci '
                                       f'{" nebo ".join(categories)} nebo kvalifikací nadřazenou.')

@@ -260,11 +260,21 @@ def get_consultants():
 
 
 def qualification_about_to_end():
-    for qualification in Qualification.objects.filter(
-            valid_till=date.today() + timedelta(days=90),
-    ):
+    for qualification in Qualification.get_expiring_qualifications(date.today() + timedelta(days=90)):
         ecomail.send_email(
             emails['education'], 'Blíží se konec platnosti kvalifikace', '155',
+            [qualification.user.email],
+            variables={
+                'vokativ': qualification.user.vokativ,
+                'qualification': qualification.category.name,
+                **get_consultants(),
+            }
+        )
+
+def qualification_ended():
+    for qualification in Qualification.get_expiring_qualifications(date.today()):
+        ecomail.send_email(
+            emails['education'], 'Konec platnosti kvalifikace', '156',
             [qualification.user.email],
             variables={
                 'vokativ': qualification.user.vokativ,
