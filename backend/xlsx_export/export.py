@@ -73,6 +73,8 @@ class XLSXWriter:
 
         self.add_worksheet(name)
 
+        queryset = serializer_class.get_related(queryset)
+
         for page in Paginator(queryset, 100):
             print_progress("exporting xlsx", page.number, page.paginator.num_pages)
             serializer = serializer_class(page.object_list, many=True)
@@ -208,8 +210,6 @@ def export_to_xlsx(model_admin, request, queryset):
         ]
         if s.Meta.model is queryset.model
     ][0]
-    queryset = serializer_class.get_related(queryset)
-
     writer = XLSXWriter(queryset.model._meta.verbose_name_plural)
     writer.from_queryset(queryset, serializer_class)
     if queryset.model is Event:
