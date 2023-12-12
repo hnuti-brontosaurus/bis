@@ -106,6 +106,7 @@ class UserViewSet(PermissionViewSetBase):
         "memberships",
         "memberships__category",
         "qualifications",
+        "qualification_notes",
         "qualifications__category",
         "qualifications__approved_by",
         "roles",

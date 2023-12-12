@@ -31,6 +31,7 @@ from bis.models import (
     LocationPhoto,
     Membership,
     Qualification,
+    QualificationNote,
     User,
     UserAddress,
     UserClosePerson,
@@ -201,6 +202,14 @@ class QualificationAdmin(PermissionMixin, NestedTabularInline):
     readonly_fields = ("valid_till",)
     autocomplete_fields = ("approved_by",)
     exclude = ("_import_id",)
+    empty_value_display = "Doplní se automaticky"
+
+
+class QualificationNoteAdmin(PermissionMixin, NestedTabularInline):
+    model = QualificationNote
+    fk_name = "user"
+    extra = 0
+    autocomplete_fields = ("created_by",)
     empty_value_display = "Doplní se automaticky"
 
 
@@ -508,6 +517,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             UserContactAddressAdmin,
             ClosePersonAdmin,
             QualificationAdmin,
+            QualificationNoteAdmin,
             AllMembershipAdmin,
             MembershipAdmin,
             UserOfferedHelpAdmin,

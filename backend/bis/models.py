@@ -870,3 +870,17 @@ class Qualification(Model):
                     f"Hlavní organizátor {main_organizer} musí mít kvalifikaci "
                     f'{" nebo ".join(categories)} nebo kvalifikací nadřazenou.'
                 )
+
+
+@translate_model
+class QualificationNote(Model):
+    user = ForeignKey(User, on_delete=CASCADE, related_name="qualification_notes")
+    created_by = ForeignKey(User, on_delete=CASCADE, related_name="+")
+    note = TextField()
+    created_at = DateField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("id",)
+
+    def __str__(self):
+        return f"Poznámka ze {self.created_at}"

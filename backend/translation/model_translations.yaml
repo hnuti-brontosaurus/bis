@@ -186,6 +186,10 @@ Qualification:
     valid_till: Platnost do
     valid_since: Platnost od
     approved_by: Schválilo
+QualificationNote:
+  name: Poznámka ke kvalifikacím uživatele
+  name_plural: Poznámky ke kvalifikacím uživatele
+  fields:
 
 Event:
   name: Akce

@@ -9,6 +9,7 @@ from bis.models import (
     LocationPatron,
     Membership,
     Qualification,
+    QualificationNote,
     User,
     UserAddress,
     UserClosePerson,
@@ -374,13 +375,13 @@ class MembershipSerializer(ModelSerializer):
         )
 
 
-class QualificationApprovedBySerializer(BaseContactSerializer):
+class QualificationResponsibleUserSerializer(BaseContactSerializer):
     class Meta(BaseContactSerializer.Meta):
         model = User
 
 
 class QualificationSerializer(ModelSerializer):
-    approved_by = QualificationApprovedBySerializer()
+    approved_by = QualificationResponsibleUserSerializer()
 
     category = QualificationCategorySerializer()
 
@@ -391,6 +392,18 @@ class QualificationSerializer(ModelSerializer):
             "valid_since",
             "valid_till",
             "approved_by",
+        )
+
+
+class QualificationNoteSerializer(ModelSerializer):
+    created_by = QualificationResponsibleUserSerializer()
+
+    class Meta:
+        model = QualificationNote
+        fields = (
+            "created_at",
+            "created_by",
+            "note",
         )
 
 
@@ -408,6 +421,7 @@ class UserSerializer(ModelSerializer):
     contact_address = UserContactAddressSerializer(allow_null=True)
     memberships = MembershipSerializer(many=True, read_only=True)
     qualifications = QualificationSerializer(many=True, read_only=True)
+    qualification_notes = QualificationNoteSerializer(many=True, read_only=True)
     display_name = SerializerMethodField()
     eyca_card = EYCACardSerializer(allow_null=True)
 
@@ -444,6 +458,7 @@ class UserSerializer(ModelSerializer):
             "eyca_card",
             "memberships",
             "qualifications",
+            "qualification_notes",
         )
         read_only_fields = "date_joined", "is_active", "roles"
 

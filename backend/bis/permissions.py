@@ -15,6 +15,7 @@ from bis.models import (
     LocationPhoto,
     Membership,
     Qualification,
+    QualificationNote,
     User,
     UserAddress,
     UserClosePerson,
@@ -138,7 +139,13 @@ class Permissions:
             return False
 
         if self.user.is_education_member:
-            if self.model in [User, Qualification, DuplicateUser, Feedback]:
+            if self.model in [
+                User,
+                Qualification,
+                QualificationNote,
+                DuplicateUser,
+                Feedback,
+            ]:
                 return True
 
         # for any user
@@ -191,7 +198,7 @@ class Permissions:
         return False
 
     def has_change_permission(self, obj=None):
-        if self.model in [VariableSymbol, Qualification]:
+        if self.model in [VariableSymbol, Qualification, QualificationNote]:
             return False
         if self.is_readonly():
             return False
