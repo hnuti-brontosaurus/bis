@@ -15,6 +15,7 @@ def get_today():
 @translate_model
 class Donor(Model):
     user = OneToOneField(User, related_name="donor", on_delete=PROTECT)
+    formal_vokativ = CharField(max_length=63, blank=True)
     subscribed_to_newsletter = BooleanField(default=True)
     is_public = BooleanField(default=True)
     has_recurrent_donation = BooleanField(default=False)

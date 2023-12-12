@@ -1,6 +1,7 @@
 from datetime import date
 
 from bis.models import Location, Qualification, User, UserEmail
+from categories.models import PronounCategory
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save

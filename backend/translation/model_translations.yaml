@@ -469,6 +469,9 @@ Donor:
   name: Dárce
   name_plural: Dárci
   fields:
+    formal_vokativ:
+      - Formální oslovení
+      - Pro účely potvrzení o daru
     subscribed_to_newsletter: Odebírá novinky?
     is_public:
       - Chce zveřejnit?

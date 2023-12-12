@@ -9,6 +9,9 @@ from bis.admin_filters import (
     RecurringDonorWhoStoppedFilter,
 )
 from bis.admin_permissions import PermissionMixin
+from django.contrib import messages
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -19,7 +22,7 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
-from xlsx_export.export import export_to_xlsx
+from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 
 @admin.register(Donation)
@@ -57,11 +60,13 @@ class VariableSymbolInline(PermissionMixin, NestedTabularInline):
 
 @admin.register(Donor)
 class DonorAdmin(PermissionMixin, NestedModelAdmin):
+    change_form_template = "bis/donor_change_form.html"
     actions = [export_to_xlsx]
     list_display = (
         "user",
         "get_user_email",
         "get_user_phone",
+        "formal_vokativ",
         "get_user_pronoun",
         "date_joined",
         "get_donations_sum",
@@ -151,6 +156,19 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
     @admin.display(description="Darovací kampaně")
     def get_donations_sources(self, obj):
         return list(set(donation.donation_source for donation in obj.donations.all()))
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if object_id:
+            to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+            obj = self.get_object(request, unquote(object_id), to_field)
+
+            if "_donation_confirmation_pdf_export" in request.POST:
+                try:
+                    return get_donation_confirmation(obj)
+                except AssertionError as e:
+                    messages.error(request, str(e))
+
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 @admin.register(UploadBankRecords)

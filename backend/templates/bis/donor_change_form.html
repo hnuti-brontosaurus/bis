@@ -1,0 +1,12 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {% if original.id %}
+        <div class="submit-row">
+          Potvrzení o daru:
+            <input type="submit" value="pdf" name="_donation_confirmation_pdf_export"/>
+            <br>
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -1,6 +1,7 @@
 import os
 from collections import Counter
 from copy import copy
+from datetime import date
 from itertools import zip_longest
 from os.path import join
 from pathlib import Path
@@ -20,6 +21,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import FileResponse
 from event.models import Event
+from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
 from rest_framework.serializers import ModelSerializer
 from translation.translate import _
@@ -384,3 +386,86 @@ def export_files(event: Event):
         make_archive(file.name, "zip")
 
     return FileResponse(open(file.name, "rb"))
+
+
+RESOLUTION_DPI = 300
+ANTIALIASING = 3
+
+
+def mm_to_px(*args):
+    x = args
+    if len(args) == 1:
+        x = args[0]
+    if isinstance(x, int) or isinstance(x, float):
+        return int(RESOLUTION_DPI * ANTIALIASING * 0.03937 * x)
+
+    return type(x)([mm_to_px(i) for i in x])
+
+
+def text_into_lines(draw, font, text, max_width):
+    tokens = text.split(" ")
+    sizes = [draw.textbbox((0, 0), token, font) for token in tokens]
+    lines = [[]]
+    width = 0
+    space_width = draw.textbbox((0, 0), " ", font)[2]
+    for token, size in zip(tokens, sizes):
+        if width + size[2] > max_width:
+            lines.append([])
+            width = 0
+        lines[-1].append(token)
+        width += size[2] + space_width
+    lines = [" ".join(line) for line in lines]
+    return "\n".join(lines)
+
+
+def get_donation_confirmation(donor):
+    fixtures = Path(join(BASE_DIR, "xlsx_export", "fixtures"))
+
+    # template is here https://docs.google.com/document/d/1mu5JAIUywyCz4LcbQ3BcQjHFAHbkhQ09/edit
+    # and converted using https://pdf2png.com/
+    background = Image.open(fixtures / "donation_confirmation_template.png")
+    page = Image.new("RGB", background.size, (255, 255, 255))
+    page.paste(background)
+    page = page.resize((page.width * 3, page.height * 3))
+
+    draw = ImageDraw.Draw(page)
+    font = ImageFont.truetype(str(fixtures / "ARIAL.TTF"), size=3 * 34)
+
+    today = date.today()
+    year = today.year - 1 if today.month < 6 else today.year
+    created_at = today
+    if today.month < 6:
+        created_at = min(today, date(today.year, 1, 31))
+
+    text = f"{created_at.day}. {created_at.month}. {created_at.year}"
+    text_params = dict(fill=(0, 0, 0), font=font, spacing=1.5 * 34)
+    draw.text((1244 * 3, 379 * 3 - 1), text, **text_params)
+
+    total = sum(
+        donation.amount for donation in donor.donations.filter(donated_at__year=year)
+    )
+
+    assert donor.user.pronoun, f"Uživatel dárce {donor} nemá nastavené oslovení"
+    pronoun = donor.user.pronoun.slug
+    pronoun_texts = ["pan/slečna/paní", "poskytl/a"]
+    if pronoun == "man":
+        pronoun_texts = ["pan", "poskytl"]
+    if pronoun == "woman":
+        pronoun_texts = ["paní", "poskytla"]
+
+    text = (
+        f"Potvrzujeme, že {pronoun_texts[0]} {donor.user.first_name} {donor.user.last_name}, "
+        f"trvale bytem {donor.user.address}, "
+        f"v roce {year} {pronoun_texts[1]} dar Hnutí Brontosaurus ve výši {total} Kč. "
+    )
+
+    text += "Tento dar byl v souladu se Zákonem č. 586/1992 Sb., o daních z příjmů, ve znění pozdějších předpisů dle § 15 odst. 1, poskytnut na podporu mládeže a ekologické účely."
+    text = text_into_lines(draw, font, text, 4000)
+    draw.text((176 * 3, 600 * 3 - 1), text, **text_params)
+
+    page = page.resize((page.width // 3, page.height // 3), Image.ANTIALIAS)
+    tmp_pdf = NamedTemporaryFile(
+        mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
+    )
+    page.save(tmp_pdf.name)
+    return FileResponse(open(tmp_pdf.name, "rb"))
