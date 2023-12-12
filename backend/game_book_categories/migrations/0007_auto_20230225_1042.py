@@ -4,71 +4,70 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0006_auto_20230218_1609'),
+        ("game_book_categories", "0006_auto_20230218_1609"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tag',
-            name='description',
+            model_name="tag",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AddField(
-            model_name='tag',
-            name='slug',
-            field=models.SlugField(default=''),
+            model_name="tag",
+            name="slug",
+            field=models.SlugField(default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='gamelengthcategory',
-            name='description',
+            model_name="gamelengthcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='locationcategory',
-            name='description',
+            model_name="locationcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='materialrequirementcategory',
-            name='description',
+            model_name="materialrequirementcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='mentalcategory',
-            name='description',
+            model_name="mentalcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='organizersnumbercategory',
-            name='description',
+            model_name="organizersnumbercategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='participantagecategory',
-            name='description',
+            model_name="participantagecategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='participantnumbercategory',
-            name='description',
+            model_name="participantnumbercategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='physicalcategory',
-            name='description',
+            model_name="physicalcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='preparationlengthcategory',
-            name='description',
+            model_name="preparationlengthcategory",
+            name="description",
             field=models.CharField(blank=True, max_length=120),
         ),
         migrations.AlterField(
-            model_name='tag',
-            name='emoji',
+            model_name="tag",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
     ]

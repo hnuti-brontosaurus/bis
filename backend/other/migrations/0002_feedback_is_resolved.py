@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('other', '0001_initial'),
+        ("other", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='feedback',
-            name='is_resolved',
+            model_name="feedback",
+            name="is_resolved",
             field=models.BooleanField(default=False),
         ),
     ]

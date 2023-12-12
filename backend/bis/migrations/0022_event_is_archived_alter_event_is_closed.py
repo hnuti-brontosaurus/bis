@@ -4,20 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0021_alter_event_created_at'),
+        ("bis", "0021_alter_event_created_at"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='is_archived',
-            field=models.BooleanField(default=False, help_text='Zarchivovaná akce nelze editovat'),
+            model_name="event",
+            name="is_archived",
+            field=models.BooleanField(
+                default=False, help_text="Zarchivovaná akce nelze editovat"
+            ),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='is_closed',
+            model_name="event",
+            name="is_closed",
             field=models.BooleanField(default=False),
         ),
     ]

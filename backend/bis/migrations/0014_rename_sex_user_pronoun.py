@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0013_alter_user_vokativ'),
+        ("bis", "0013_alter_user_vokativ"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='user',
-            old_name='sex',
-            new_name='pronoun',
+            model_name="user",
+            old_name="sex",
+            new_name="pronoun",
         ),
     ]

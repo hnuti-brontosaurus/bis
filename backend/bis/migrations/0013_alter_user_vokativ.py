@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0012_user_vokativ'),
+        ("bis", "0012_user_vokativ"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='vokativ',
+            model_name="user",
+            name="vokativ",
             field=models.CharField(blank=True, max_length=63),
         ),
     ]

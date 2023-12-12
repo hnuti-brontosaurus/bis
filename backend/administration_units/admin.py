@@ -1,22 +1,30 @@
 from datetime import date
 
-from dateutil.utils import today
-from django.contrib import admin
-from django.contrib.admin import ModelAdmin
-from django.contrib.gis.db.models import PointField
-from django.utils.safestring import mark_safe
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedTabularInline, NestedModelAdmin, NestedStackedInline
-from solo.admin import SingletonModelAdmin
-
-from administration_units.models import AdministrationUnit, BrontosaurusMovement, AdministrationUnitAddress, \
-    AdministrationUnitContactAddress, GeneralMeeting, AdministrationSubUnit, AdministrationSubUnitAddress
+from administration_units.models import (
+    AdministrationSubUnit,
+    AdministrationSubUnitAddress,
+    AdministrationUnit,
+    AdministrationUnitAddress,
+    AdministrationUnitContactAddress,
+    BrontosaurusMovement,
+    GeneralMeeting,
+)
 from bis.admin_filters import IsAdministrationUnitActiveFilter
-from bis.admin_helpers import get_admin_list_url, LatLongWidget
+from bis.admin_helpers import LatLongWidget, get_admin_list_url
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats
 from bis.models import User
 from common.history import show_history
+from dateutil.utils import today
+from django.contrib import admin
+from django.contrib.gis.db.models import PointField
+from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
+from solo.admin import SingletonModelAdmin
 from xlsx_export.export import export_to_xlsx
 
 
@@ -32,21 +40,23 @@ class GeneralMeetingAdmin(PermissionMixin, NestedTabularInline):
     model = GeneralMeeting
     extra = 1
 
+
 class AdministrationSubUnitAddressAdmin(PermissionMixin, NestedTabularInline):
     model = AdministrationSubUnitAddress
+
 
 class AdministrationSubUnitAdmin(PermissionMixin, NestedStackedInline):
     model = AdministrationSubUnit
     extra = 0
     formfield_overrides = {
-        PointField: {'widget': LatLongWidget},
+        PointField: {"widget": LatLongWidget},
     }
-    autocomplete_fields = 'main_leader', 'sub_leaders'
-    exclude = '_history',
-    readonly_fields = 'history',
-    inlines = AdministrationSubUnitAddressAdmin,
+    autocomplete_fields = "main_leader", "sub_leaders"
+    exclude = ("_history",)
+    readonly_fields = ("history",)
+    inlines = (AdministrationSubUnitAddressAdmin,)
 
-    @admin.display(description='Historie')
+    @admin.display(description="Historie")
     def history(self, obj):
         return show_history(obj._history)
 
@@ -54,63 +64,106 @@ class AdministrationSubUnitAdmin(PermissionMixin, NestedStackedInline):
 @admin.register(AdministrationUnit)
 class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
     actions = [export_to_xlsx]
-    list_display = 'abbreviation', 'is_active', 'address', 'phone', 'email', 'www', 'chairman', 'category'
-    search_fields = 'abbreviation', 'name', 'address__city', 'address__street', 'address__zip_code', 'phone', 'email'
-    list_filter = IsAdministrationUnitActiveFilter, 'category', 'is_for_kids', \
-        ('address__region', MultiSelectRelatedDropdownFilter)
+    list_display = (
+        "abbreviation",
+        "is_active",
+        "address",
+        "phone",
+        "email",
+        "www",
+        "chairman",
+        "category",
+    )
+    search_fields = (
+        "abbreviation",
+        "name",
+        "address__city",
+        "address__street",
+        "address__zip_code",
+        "phone",
+        "email",
+    )
+    list_filter = (
+        IsAdministrationUnitActiveFilter,
+        "category",
+        "is_for_kids",
+        ("address__region", MultiSelectRelatedDropdownFilter),
+    )
     formfield_overrides = {
-        PointField: {'widget': LatLongWidget},
+        PointField: {"widget": LatLongWidget},
     }
 
-    autocomplete_fields = 'chairman', 'vice_chairman', 'manager', 'board_members'
+    autocomplete_fields = "chairman", "vice_chairman", "manager", "board_members"
 
-    exclude = '_import_id', '_history'
-    list_select_related = 'address', 'chairman', 'category'
-    readonly_fields = 'history', 'get_members', 'get_organizers', 'get_membership_stats'
+    exclude = "_import_id", "_history"
+    list_select_related = "address", "chairman", "category"
+    readonly_fields = "history", "get_members", "get_organizers", "get_membership_stats"
 
-    inlines = AdministrationUnitAddressAdmin, AdministrationUnitContactAddressAdmin, GeneralMeetingAdmin, AdministrationSubUnitAdmin
+    inlines = (
+        AdministrationUnitAddressAdmin,
+        AdministrationUnitContactAddressAdmin,
+        GeneralMeetingAdmin,
+        AdministrationSubUnitAdmin,
+    )
 
-    @admin.display(description='Historie')
+    @admin.display(description="Historie")
     def history(self, obj):
         return show_history(obj._history)
 
-    @admin.display(description='Uživatelé s platným členstvím v tomto OJ')
+    @admin.display(description="Uživatelé s platným členstvím v tomto OJ")
     def get_members(self, obj):
-        return get_admin_list_url(User, 'link', {
-            'memberships__administration_unit': obj.id,
-            'memberships__year_from': today().year,
-            'memberships__year_to': today().year,
-        })
+        return get_admin_list_url(
+            User,
+            "link",
+            {
+                "memberships__administration_unit": obj.id,
+                "memberships__year_from": today().year,
+                "memberships__year_to": today().year,
+            },
+        )
 
-    @admin.display(description='Kvalifikovaní organizátoři s platným členstvím v tomto OJ')
+    @admin.display(
+        description="Kvalifikovaní organizátoři s platným členstvím v tomto OJ"
+    )
     def get_organizers(self, obj):
-        return get_admin_list_url(User, 'link', {
-            'memberships__administration_unit': obj.id,
-            'memberships__year_from': today().year,
-            'memberships__year_to': today().year,
-            'qualifications__valid_since__range__gte': today(),
-        })
+        return get_admin_list_url(
+            User,
+            "link",
+            {
+                "memberships__administration_unit": obj.id,
+                "memberships__year_from": today().year,
+                "memberships__year_to": today().year,
+                "qualifications__valid_since__range__gte": today(),
+            },
+        )
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.save()
 
-    @admin.display(description='Statistika členských příspěvků')
+    @admin.display(description="Statistika členských příspěvků")
     def get_membership_stats(self, obj):
         year = date.today().year
         return MembershipStats(
             f"organizační jednotky {obj.abbreviation} za rok {year}",
-            dict(administration_unit=obj, year=year)
+            dict(administration_unit=obj, year=year),
         ).as_table()
 
 
 @admin.register(BrontosaurusMovement)
 class BrontosaurusMovementAdmin(PermissionMixin, SingletonModelAdmin):
-    autocomplete_fields = 'director', 'finance_director', 'bis_administrators', 'office_workers', 'audit_committee', \
-        'executive_committee', 'education_members'
-    readonly_fields = 'history',
-    exclude = '_history',
+    autocomplete_fields = (
+        "director",
+        "finance_director",
+        "bis_administrators",
+        "office_workers",
+        "audit_committee",
+        "executive_committee",
+        "education_members",
+    )
+    readonly_fields = ("history",)
+    exclude = ("_history",)
 
-    @admin.display(description='Historie')
+    @admin.display(description="Historie")
     def history(self, obj):
         return show_history(obj._history)

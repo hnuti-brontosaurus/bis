@@ -1,18 +1,17 @@
-from django_filters import *
-
-from bis.models import User, Location
+import django_filters
+from bis.models import Location, User
 from event.models import Event
 
 
-class NumberInFilter(BaseInFilter, NumberFilter):
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
 
 
-class UUIDInFilter(BaseInFilter, UUIDFilter):
+class UUIDInFilter(django_filters.BaseInFilter, django_filters.UUIDFilter):
     pass
 
 
-class UserFilter(FilterSet):
+class UserFilter(django_filters.FilterSet):
     id = UUIDInFilter()
     _search_id = UUIDInFilter()
 
@@ -21,7 +20,7 @@ class UserFilter(FilterSet):
         fields = []
 
 
-class EventFilter(FilterSet):
+class EventFilter(django_filters.FilterSet):
     id = NumberInFilter()
 
     class Meta:
@@ -29,7 +28,7 @@ class EventFilter(FilterSet):
         fields = []
 
 
-class LocationFilter(FilterSet):
+class LocationFilter(django_filters.FilterSet):
     id = NumberInFilter()
 
     class Meta:

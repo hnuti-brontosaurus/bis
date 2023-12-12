@@ -1,16 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchVector
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.forms import inlineformset_factory
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
-from django.views.generic import TemplateView, CreateView, UpdateView, DetailView
+from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
 from django.views.generic.edit import ModelFormMixin
-
-from game_book.forms import GameForm, FilterForm, CommentForm
-from game_book.models import Game, GameFile, Comment, CommentFile
+from game_book.forms import CommentForm, FilterForm, GameForm
+from game_book.models import Comment, CommentFile, Game, GameFile
 
 pages = {"pages": {"game_book": "Programy", "new_game": "Vytvořit nový"}}
 
@@ -23,53 +22,59 @@ class GameBookView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         games = Game.objects.select_related(
-            'contributor',
-            'administration_unit',
-            'physical_category',
-            'mental_category',
-            'game_length_category',
-            'preparation_length_category',
-            'material_requirement_category',
-            'organizers_number_category',
+            "contributor",
+            "administration_unit",
+            "physical_category",
+            "mental_category",
+            "game_length_category",
+            "preparation_length_category",
+            "material_requirement_category",
+            "organizers_number_category",
         ).prefetch_related(
-            'thumbs_up',
-            'favourites',
-            'watchers',
-            'tags',
-            'location_category',
-            'participant_number_category',
-            'participant_age_category',
+            "thumbs_up",
+            "favourites",
+            "watchers",
+            "tags",
+            "location_category",
+            "participant_number_category",
+            "participant_age_category",
         )
         context["form"] = form = FilterForm(self.request.GET)
-        setattr(form, 'hide_validation_classes', True)
+        setattr(form, "hide_validation_classes", True)
 
         if form.is_valid():
             data = form.cleaned_data
             for field, value in data.items():
                 if not value:
                     pass
-                elif field == 'order':
-                    games = games.order_by(data['order'])  # todo order by other fields
-                elif field == 'search_input':
+                elif field == "order":
+                    games = games.order_by(data["order"])  # todo order by other fields
+                elif field == "search_input":
                     games = games.annotate(
-                        search=SearchVector('name', 'origin', 'short_description', 'goal', 'description', 'motivation',
-                                            'notes'),
+                        search=SearchVector(
+                            "name",
+                            "origin",
+                            "short_description",
+                            "goal",
+                            "description",
+                            "motivation",
+                            "notes",
+                        ),
                     ).filter(search=value)
-                elif field.endswith('category') or field == 'tags':
+                elif field.endswith("category") or field == "tags":
                     games = games.filter(**{f"{field}__in": value})
-                elif field == 'only_my_games':
+                elif field == "only_my_games":
                     games = games.filter(contributor=self.request.user)
-                elif field == 'only_my_favourites':
+                elif field == "only_my_favourites":
                     games = games.filter(favourites=self.request.user)
-                elif field == 'only_watched_by_me':
+                elif field == "only_watched_by_me":
                     games = games.filter(watchers=self.request.user)
-                elif field == 'contributor':
+                elif field == "contributor":
                     games = games.filter(contributor___str__icontains=value)
                 else:
                     games = games.filter(**{field: value})
         else:
             assert False
-
 
         paginator = Paginator(games, 12)
         page = self.request.GET.get("page")
@@ -87,8 +92,12 @@ class GameBookView(TemplateView):
         return context
 
 
-GameFileFormSet = inlineformset_factory(Game, GameFile, fields=['file'], extra=1, can_delete_extra=False)
-CommentFileFormSet = inlineformset_factory(Comment, CommentFile, fields=['file'], extra=1, can_delete=False)
+GameFileFormSet = inlineformset_factory(
+    Game, GameFile, fields=["file"], extra=1, can_delete_extra=False
+)
+CommentFileFormSet = inlineformset_factory(
+    Comment, CommentFile, fields=["file"], extra=1, can_delete=False
+)
 
 
 class FormsetHandlingMixin:
@@ -96,7 +105,7 @@ class FormsetHandlingMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.setdefault('formset', self.formset_class(instance=self.object))
+        context.setdefault("formset", self.formset_class(instance=self.object))
         return context
 
     def post(self, request, *args, **kwargs):
@@ -143,7 +152,7 @@ class GameView(ModelFormMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.setdefault('formset', self.formset_class())
+        context.setdefault("formset", self.formset_class())
         return context
 
     def post(self, request, *args, **kwargs):
@@ -159,7 +168,9 @@ class GameView(ModelFormMixin, DetailView):
         form.instance.author = self.request.user
         form.instance.game = self.get_object()
 
-        formset = self.formset_class(request.POST, request.FILES, instance=form.instance)
+        formset = self.formset_class(
+            request.POST, request.FILES, instance=form.instance
+        )
         if not formset.is_valid():
             messages.error(request, "Chyba v uložení komentáře, zkontroluj data")
             return self.render_to_response(self.get_context_data(formset=formset))
@@ -174,11 +185,12 @@ class GameView(ModelFormMixin, DetailView):
     def put(self, *args, **kwargs):
         return self.post(*args, **kwargs)
 
+
 @csrf_protect
 def toggle(request, pk, what):
     game = get_object_or_404(Game, pk=pk)
     on = True
-    if what == 'is_verified':
+    if what == "is_verified":
         # todo check if editor
         game.is_verified = not game.is_verified
         game.save()

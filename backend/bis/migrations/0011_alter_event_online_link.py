@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0010_eycacard'),
+        ("bis", "0010_eycacard"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='event',
-            name='online_link',
-            field=models.URLField(blank=True, help_text='Vyplňte, pokud se akce koná online'),
+            model_name="event",
+            name="online_link",
+            field=models.URLField(
+                blank=True, help_text="Vyplňte, pokud se akce koná online"
+            ),
         ),
     ]

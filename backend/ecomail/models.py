@@ -8,7 +8,7 @@ class Contact(models.Model):
         return self.email
 
     class Meta:
-        ordering = ['id']
+        ordering = ["id"]
         verbose_name = "Kontakt"
         verbose_name_plural = "Kontakty"
 
@@ -20,7 +20,7 @@ class ContactLog(models.Model):
     log = models.TextField()
 
     class Meta:
-        ordering = ['id']
+        ordering = ["id"]
         verbose_name = "Záznam aktivity kontaktu"
         verbose_name_plural = "Záznamy aktivity kontaktu"
 

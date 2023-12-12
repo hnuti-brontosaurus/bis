@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('questionnaire', '0003_eventapplication_state'),
+        ("questionnaire", "0003_eventapplication_state"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='answer',
-            name='data',
+            model_name="answer",
+            name="data",
             field=models.JSONField(default=dict),
         ),
         migrations.AddField(
-            model_name='question',
-            name='data',
+            model_name="question",
+            name="data",
             field=models.JSONField(default=dict),
         ),
     ]

@@ -3,17 +3,16 @@ from collections import Counter
 from functools import wraps
 from time import time
 
+from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 
-from categories.models import MembershipCategory
-
 
 def print_progress(name, i, total):
-    key = f'progress_of_{slugify(name)}'
+    key = f"progress_of_{slugify(name)}"
 
     if i >= total - 1:
         cache.set(key, None)
@@ -49,7 +48,7 @@ def cache_into_self(name):
 
 
 def permission_cache(f):
-    return cache_into_self('permission_cache')(f)
+    return cache_into_self("permission_cache")(f)
 
 
 def update_roles(*roles):
@@ -78,13 +77,13 @@ def update_roles(*roles):
 
 class paused_validation:
     def __enter__(self):
-        self.validation_paused = not cache.get('skip_validation')
+        self.validation_paused = not cache.get("skip_validation")
         if self.validation_paused:
-            cache.set('skip_validation', True)
+            cache.set("skip_validation", True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.validation_paused:
-            cache.set('skip_validation', False)
+            cache.set("skip_validation", False)
 
 
 def with_paused_validation(f):
@@ -97,13 +96,13 @@ def with_paused_validation(f):
 
 class paused_emails:
     def __enter__(self):
-        self.emails_paused = not cache.get('emails_paused')
+        self.emails_paused = not cache.get("emails_paused")
         if self.emails_paused:
-            cache.set('emails_paused', True)
+            cache.set("emails_paused", True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.emails_paused:
-            cache.set('emails_paused', False)
+            cache.set("emails_paused", False)
 
 
 def with_paused_emails(f):
@@ -141,7 +140,9 @@ class AgeStats:
         self.total = queryset.count()
         self.header = header
 
-        birthdays = queryset.filter(birthday__isnull=False).values_list('birthday', flat=True)
+        birthdays = queryset.filter(birthday__isnull=False).values_list(
+            "birthday", flat=True
+        )
         ages = [relativedelta(date, birthday).years for birthday in birthdays]
         self.without_birthday = self.total - len(ages)
         self.unborn = len([age for age in ages if age < 0])
@@ -155,45 +156,51 @@ class AgeStats:
         return self.format_count(total)
 
     def format_count(self, count):
-        if not count: return None
+        if not count:
+            return None
         alive = self.total - self.unborn
-        if not alive: return count
+        if not alive:
+            return count
 
-        return f'{count} - {count / alive * 100:.1f}%'
+        return f"{count} - {count / alive * 100:.1f}%"
 
     def get_header(self):
-        return f'Statistika věku {self.total} {self.header} ke dni {self.date}'
+        return f"Statistika věku {self.total} {self.header} ke dni {self.date}"
 
     def get_data(self):
         data = {
-            'celkem': self.total,
-            'nenarození': self.unborn,
-            'věk neznámý': self.format_count(self.without_birthday),
-            'nezletilí (0-17)': self.age_stats(0, 17),
-            'mládež (0-26)': self.age_stats(0, 26),
-            'středoškoláci (15-20)': self.age_stats(15, 20),
-            'do 6 let': self.age_stats(0, 6),
-            '7 až 15 let': self.age_stats(7, 15),
-            '16 až 18 let': self.age_stats(16, 18),
-            '19 až 26 let': self.age_stats(19, 26),
-            '27 a více let': self.age_stats(27, self.oldest),
+            "celkem": self.total,
+            "nenarození": self.unborn,
+            "věk neznámý": self.format_count(self.without_birthday),
+            "nezletilí (0-17)": self.age_stats(0, 17),
+            "mládež (0-26)": self.age_stats(0, 26),
+            "středoškoláci (15-20)": self.age_stats(15, 20),
+            "do 6 let": self.age_stats(0, 6),
+            "7 až 15 let": self.age_stats(7, 15),
+            "16 až 18 let": self.age_stats(16, 18),
+            "19 až 26 let": self.age_stats(19, 26),
+            "27 a více let": self.age_stats(27, self.oldest),
         }
         return {key: str(value) for key, value in data.items() if value}
 
     def as_table(self):
         data = self.get_data()
 
-        def make_cell(item): return f'<td>{item.replace(" - ", "<br>")}</td>'
+        def make_cell(item):
+            return f'<td>{item.replace(" - ", "<br>")}</td>'
 
-        def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+        def make_row(items):
+            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
 
-        header = f'<tr><th colspan={len(data)}>{self.get_header()}</th></tr>'
+        header = f"<tr><th colspan={len(data)}>{self.get_header()}</th></tr>"
 
-        return mark_safe(f"<table>"
-                         f"{header}"
-                         f"{make_row(data.keys())}"
-                         f"{make_row(data.values())}"
-                         f"</table>")
+        return mark_safe(
+            f"<table>"
+            f"{header}"
+            f"{make_row(data.keys())}"
+            f"{make_row(data.values())}"
+            f"</table>"
+        )
 
 
 class MembershipStats:
@@ -207,41 +214,48 @@ class MembershipStats:
     def get_data(self):
         data = {
             category.name: (
-                apps.get_model('bis', 'Membership').objects.filter(
-                    category=category,
-                    **self.query
-                ).count(), category.price)
+                apps.get_model("bis", "Membership")
+                .objects.filter(category=category, **self.query)
+                .count(),
+                category.price,
+            )
             for category in MembershipCategory.objects.all()
         }
         total = sum(v[0] * v[1] for v in data.values())
-        data = {key: f"{v[0] * v[1]} Kč ({v[0]}x{v[1]})" for key, v in data.items() if v[0]}
+        data = {
+            key: f"{v[0] * v[1]} Kč ({v[0]}x{v[1]})" for key, v in data.items() if v[0]
+        }
         data["Celkem"] = f"{total} Kč"
         return data
 
     def as_table(self):
         data = self.get_data()
 
-        def make_cell(item): return f'<td>{item.replace(" - ", "<br>")}</td>'
+        def make_cell(item):
+            return f'<td>{item.replace(" - ", "<br>")}</td>'
 
-        def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+        def make_row(items):
+            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
 
-        header = f'<tr><th colspan={len(data)}>{self.get_header()}</th></tr>'
-        return mark_safe(f"<table>"
-                         f"{header}"
-                         f"{make_row(data.keys())}"
-                         f"{make_row(data.values())}"
-                         f"</table>")
+        header = f"<tr><th colspan={len(data)}>{self.get_header()}</th></tr>"
+        return mark_safe(
+            f"<table>"
+            f"{header}"
+            f"{make_row(data.keys())}"
+            f"{make_row(data.values())}"
+            f"</table>"
+        )
 
 
 def to_snake_case(name):
-    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    name = re.sub('__([A-Z])', r'_\1', name)
-    name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+    name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    name = re.sub("__([A-Z])", r"_\1", name)
+    name = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
     return name.lower()
 
 
 def filter_queryset_with_multiple_or_queries(queryset, queries):
     ids = set()
     for query in queries:
-        ids = ids.union(queryset.filter(query).order_by().values_list('id', flat=True))
+        ids = ids.union(queryset.filter(query).order_by().values_list("id", flat=True))
     return queryset.filter(id__in=ids)

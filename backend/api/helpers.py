@@ -3,6 +3,7 @@ import binascii
 import re
 from typing import TypedDict
 
+from common.thumbnails import ThumbnailImageField, get_thumbnail_path
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
@@ -11,14 +12,12 @@ from rest_framework.fields import FileField, ImageField
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import ModelSerializer
 
-from common.thumbnails import get_thumbnail_path, ThumbnailImageField
-
 
 class Pagination(PageNumberPagination):
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
 
 
-def parse_request_data(serializer_class, data_name='data'):
+def parse_request_data(serializer_class, data_name="data"):
     def decorator(fn):
         def wrapper(request, *args, **kwargs):
             serializer = serializer_class(data=getattr(request, data_name))
@@ -45,14 +44,16 @@ class Base64FieldMixin:
 
     def to_internal_value(self, base64_data):
         try:
-            assert isinstance(base64_data, str), 'Expects base64 string'
+            assert isinstance(base64_data, str), "Expects base64 string"
             assert ";base64," in base64_data, '";base64," not in data'
             header, base64_data = base64_data.split(";base64,", 1)
-            assert re.match(r'data:\w+/\w+;filename=.*', header), 'header does not match "data:\w+/\w+;filename=.*"'
+            assert re.match(
+                r"data:\w+/\w+;filename=.*", header
+            ), 'header does not match "data:\w+/\w+;filename=.*"'
             header = header[5:]
-            content_type, filename = header.split(';')
-            filename = filename.split('=', 1)[1]
-            extension = content_type.split('/', 1)[1]
+            content_type, filename = header.split(";")
+            filename = filename.split("=", 1)[1]
+            extension = content_type.split("/", 1)[1]
 
         except AssertionError as e:
             raise ValidationError(e)
@@ -64,9 +65,7 @@ class Base64FieldMixin:
 
         complete_file_name = filename + "." + extension
         data = SimpleUploadedFile(
-            name=complete_file_name,
-            content=decoded_file,
-            content_type=content_type
+            name=complete_file_name, content=decoded_file, content_type=content_type
         )
 
         return super().to_internal_value(data)
@@ -77,7 +76,10 @@ class Base64ImageField(Base64FieldMixin, ImageField):
 
 
 class ThumbnailedBase64ImageField(Base64ImageField):
-    UrlsType = TypedDict('UrlsType', {size: str for size in list(settings.THUMBNAIL_SIZES.keys()) + ['original']})
+    UrlsType = TypedDict(
+        "UrlsType",
+        {size: str for size in list(settings.THUMBNAIL_SIZES.keys()) + ["original"]},
+    )
 
     def to_representation(self, value) -> UrlsType:
         if not value:
@@ -90,11 +92,12 @@ class ThumbnailedBase64ImageField(Base64ImageField):
             return None
 
         urls = {
-            size: '/media/' + get_thumbnail_path(name, size) for size in settings.THUMBNAIL_SIZES
+            size: "/media/" + get_thumbnail_path(name, size)
+            for size in settings.THUMBNAIL_SIZES
         }
-        urls['original'] = url
+        urls["original"] = url
 
-        request = self.context.get('request', None)
+        request = self.context.get("request", None)
         if request:
             for key, value in urls.items():
                 urls[key] = request.build_absolute_uri(value)
@@ -107,5 +110,7 @@ class Base64FileField(Base64FieldMixin, FileField):
 
 
 ModelSerializer.serializer_field_mapping[models.ImageField] = Base64ImageField
-ModelSerializer.serializer_field_mapping[ThumbnailImageField] = ThumbnailedBase64ImageField
+ModelSerializer.serializer_field_mapping[
+    ThumbnailImageField
+] = ThumbnailedBase64ImageField
 ModelSerializer.serializer_field_mapping[models.FileField] = Base64FileField

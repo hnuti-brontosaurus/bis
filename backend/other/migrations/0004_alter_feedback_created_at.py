@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('other', '0003_alter_duplicateuser_other_alter_duplicateuser_user'),
+        ("other", "0003_alter_duplicateuser_other_alter_duplicateuser_user"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='feedback',
-            name='created_at',
+            model_name="feedback",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

@@ -1,11 +1,10 @@
 from datetime import timedelta
 from random import randint
 
+from bis.models import User
 from django.db import models
 from django.utils.timezone import now
-from rest_framework.exceptions import Throttled, AuthenticationFailed
-
-from bis.models import User
+from rest_framework.exceptions import AuthenticationFailed, Throttled
 
 
 def get_code():
@@ -22,9 +21,14 @@ class ThrottleLog(models.Model):
 
     @classmethod
     def check_throttled(cls, prefix, key, max_count, timedelta_hours):
-        key = f'{prefix}_{key}'
+        key = f"{prefix}_{key}"
 
-        if cls.objects.filter(key=key, created__gte=now() - timedelta(hours=timedelta_hours)).count() > max_count:
+        if (
+            cls.objects.filter(
+                key=key, created__gte=now() - timedelta(hours=timedelta_hours)
+            ).count()
+            > max_count
+        ):
             raise Throttled(timedelta_hours * 3600)
 
         cls.objects.create(key=key)
@@ -33,11 +37,11 @@ class ThrottleLog(models.Model):
 class LoginCode(models.Model):
     code = models.CharField(max_length=4, default=get_code)
     valid_till = models.DateTimeField(default=one_hour_later)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_codes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="login_codes")
 
     @classmethod
     def check_throttled(cls, user):
-        ThrottleLog.check_throttled('login_code', user.email, 10, 1)
+        ThrottleLog.check_throttled("login_code", user.email, 10, 1)
 
     @classmethod
     def make(cls, user):
@@ -52,7 +56,9 @@ class LoginCode(models.Model):
         while len(code) < 4:
             code = "0" + code
 
-        login_code = cls.objects.filter(user=user, code=code, valid_till__gte=now()).first()
+        login_code = cls.objects.filter(
+            user=user, code=code, valid_till__gte=now()
+        ).first()
 
         if login_code is None:
             raise AuthenticationFailed()

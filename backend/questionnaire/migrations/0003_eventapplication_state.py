@@ -4,16 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('questionnaire', '0002_eventapplication_note'),
+        ("questionnaire", "0002_eventapplication_note"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='eventapplication',
-            name='state',
-            field=models.CharField(choices=[('pending', 'Čeká na schválení'), ('cancelled', 'Zrušena'), ('rejected', 'Zamítnuta'), ('approved', 'Potvrzena')], default='pending', max_length=15),
+            model_name="eventapplication",
+            name="state",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Čeká na schválení"),
+                    ("cancelled", "Zrušena"),
+                    ("rejected", "Zamítnuta"),
+                    ("approved", "Potvrzena"),
+                ],
+                default="pending",
+                max_length=15,
+            ),
             preserve_default=False,
         ),
     ]

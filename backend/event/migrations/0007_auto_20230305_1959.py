@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def migrate(apps, schema_editor):
-    VIPEventPropagation = apps.get_model('event', 'VIPEventPropagation')
+    VIPEventPropagation = apps.get_model("event", "VIPEventPropagation")
 
     for p in VIPEventPropagation.objects.all():
         p.event = p.event_propagation.event
@@ -13,9 +13,7 @@ def migrate(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('event', '0006_vipeventpropagation_event'),
+        ("event", "0006_vipeventpropagation_event"),
     ]
 
-    operations = [
-        migrations.RunPython(migrate, migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(migrate, migrations.RunPython.noop)]

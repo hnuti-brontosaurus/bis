@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('event', '0012_alter_eventfinance_event_alter_eventrecord_event'),
+        ("event", "0012_alter_eventfinance_event_alter_eventrecord_event"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='eventattendancelistpage',
-            name='page',
-            field=models.FileField(blank=True, null=True, upload_to='attendance_list_pages'),
+            model_name="eventattendancelistpage",
+            name="page",
+            field=models.FileField(
+                blank=True, null=True, upload_to="attendance_list_pages"
+            ),
         ),
     ]

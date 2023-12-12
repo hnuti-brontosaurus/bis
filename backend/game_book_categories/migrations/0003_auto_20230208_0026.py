@@ -4,55 +4,54 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0002_auto_20230208_0024'),
+        ("game_book_categories", "0002_auto_20230208_0024"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='gamelengthcategory',
-            name='name',
+            model_name="gamelengthcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='locationcategory',
-            name='name',
+            model_name="locationcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='materialrequirementcategory',
-            name='name',
+            model_name="materialrequirementcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='mentalcategory',
-            name='name',
+            model_name="mentalcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='organizersnumbercategory',
-            name='name',
+            model_name="organizersnumbercategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='participantagecategory',
-            name='name',
+            model_name="participantagecategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='participantnumbercategory',
-            name='name',
+            model_name="participantnumbercategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='physicalcategory',
-            name='name',
+            model_name="physicalcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
         migrations.AlterField(
-            model_name='preparationlengthcategory',
-            name='name',
+            model_name="preparationlengthcategory",
+            name="name",
             field=models.CharField(max_length=30),
         ),
     ]

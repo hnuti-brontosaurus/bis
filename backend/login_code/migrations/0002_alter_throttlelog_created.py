@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('login_code', '0001_initial'),
+        ("login_code", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='throttlelog',
-            name='created',
+            model_name="throttlelog",
+            name="created",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

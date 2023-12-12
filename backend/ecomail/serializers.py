@@ -7,7 +7,9 @@ class DeleteContactSerializer(serializers.Serializer):
 
 class CreateContactSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    data = serializers.DictField(child=serializers.CharField(), allow_empty=True, required=False)
+    data = serializers.DictField(
+        child=serializers.CharField(), allow_empty=True, required=False
+    )
 
 
 class SetSubscriptionStatusSerializer(serializers.Serializer):
@@ -27,8 +29,13 @@ class SendEmailSerializer(serializers.Serializer):
     from_name = serializers.CharField()
     subject = serializers.CharField()
     template_id = serializers.IntegerField()
-    recipients = serializers.ListSerializer(child=serializers.EmailField(), allow_empty=False)
+    recipients = serializers.ListSerializer(
+        child=serializers.EmailField(), allow_empty=False
+    )
     reply_to = serializers.ListSerializer(
-        child=serializers.EmailField(required=True), allow_empty=True, required=False)
+        child=serializers.EmailField(required=True), allow_empty=True, required=False
+    )
     variables = serializers.DictField(allow_empty=True, required=False)
-    attachments = serializers.ListSerializer(child=AttachmentSerializer(), allow_empty=True, required=False)
+    attachments = serializers.ListSerializer(
+        child=AttachmentSerializer(), allow_empty=True, required=False
+    )

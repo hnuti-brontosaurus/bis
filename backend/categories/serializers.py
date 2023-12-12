@@ -1,6 +1,25 @@
+from categories.models import (
+    AdministrationUnitCategory,
+    DietCategory,
+    DonationSourceCategory,
+    EventCategory,
+    EventGroupCategory,
+    EventIntendedForCategory,
+    EventProgramCategory,
+    EventTag,
+    GrantCategory,
+    HealthInsuranceCompany,
+    LocationAccessibilityCategory,
+    LocationProgramCategory,
+    MembershipCategory,
+    OpportunityCategory,
+    OrganizerRoleCategory,
+    PronounCategory,
+    QualificationCategory,
+    RoleCategory,
+    TeamRoleCategory,
+)
 from rest_framework.serializers import ModelSerializer
-
-from categories.models import *
 
 
 class GrantCategorySerializer(ModelSerializer):
@@ -66,7 +85,7 @@ class EventProgramCategorySerializer(ModelSerializer):
 class DonationSourceCategorySerializer(ModelSerializer):
     class Meta:
         model = DonationSourceCategory
-        exclude = '_import_id',
+        exclude = ("_import_id",)
 
 
 class OrganizerRoleCategorySerializer(ModelSerializer):

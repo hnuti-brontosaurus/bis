@@ -4,129 +4,207 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='GameLengthCategory',
+            name="GameLengthCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='LocationCategory',
+            name="LocationCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='MaterialRequirementCategory',
+            name="MaterialRequirementCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='MentalCategory',
+            name="MentalCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='OrganizersNumberCategory',
+            name="OrganizersNumberCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ParticipantAgeCategory',
+            name="ParticipantAgeCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ParticipantNumberCategory',
+            name="ParticipantNumberCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='PhysicalCategory',
+            name="PhysicalCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='PreparationLengthCategory',
+            name="PreparationLengthCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
-                ('description', models.CharField(max_length=60)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
+                ("description", models.CharField(max_length=60)),
             ],
             options={
-                'ordering': ('id',),
-                'abstract': False,
+                "ordering": ("id",),
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Tag',
+            name="Tag",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=15)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=15)),
             ],
             options={
-                'ordering': ('id',),
+                "ordering": ("id",),
             },
         ),
     ]

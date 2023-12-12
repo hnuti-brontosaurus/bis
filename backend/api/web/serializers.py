@@ -1,17 +1,29 @@
+from administration_units.models import AdministrationSubUnit, AdministrationUnit
+from bis.models import Location, LocationPhoto, User
+from categories.serializers import (
+    AdministrationUnitCategorySerializer,
+    DietCategorySerializer,
+    EventCategorySerializer,
+    EventGroupCategorySerializer,
+    EventIntendedForCategorySerializer,
+    EventProgramCategorySerializer,
+    EventTagSerializer,
+    LocationAccessibilityCategorySerializer,
+    LocationProgramCategorySerializer,
+    OpportunityCategorySerializer,
+)
+from event.models import (
+    Event,
+    EventPropagation,
+    EventPropagationImage,
+    EventRegistration,
+)
+from opportunities.models import Opportunity
 from phonenumber_field.serializerfields import PhoneNumberField
+from questionnaire.models import Question, Questionnaire
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import SlugRelatedField, StringRelatedField
 from rest_framework.serializers import ModelSerializer
-
-from administration_units.models import AdministrationUnit, AdministrationSubUnit
-from bis.models import User, Location, LocationPhoto
-from categories.serializers import OpportunityCategorySerializer, EventCategorySerializer, \
-    EventProgramCategorySerializer, AdministrationUnitCategorySerializer, LocationAccessibilityCategorySerializer, \
-    EventIntendedForCategorySerializer, DietCategorySerializer, EventGroupCategorySerializer, EventTagSerializer, \
-    LocationProgramCategorySerializer
-from event.models import Event, EventPropagation, EventRegistration, EventPropagationImage
-from opportunities.models import Opportunity
-from questionnaire.models import Questionnaire, Question
 
 
 class UserSerializer(ModelSerializer):
@@ -20,7 +32,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = 'id', 'name', 'email', 'phone'
+        fields = "id", "name", "email", "phone"
 
     def get_name(self, instance) -> str:
         return instance.get_name()
@@ -29,7 +41,7 @@ class UserSerializer(ModelSerializer):
 class EventPropagationImageSerializer(ModelSerializer):
     class Meta:
         model = EventPropagationImage
-        fields = 'image',
+        fields = ("image",)
 
 
 class EventPropagationSerializer(ModelSerializer):
@@ -42,23 +54,23 @@ class EventPropagationSerializer(ModelSerializer):
     class Meta:
         model = EventPropagation
         fields = (
-            'minimum_age',
-            'maximum_age',
-            'cost',
-            'accommodation',
-            'working_days',
-            'working_hours',
-            'diets',
-            'organizers',
-            'web_url',
-            'invitation_text_introduction',
-            'invitation_text_practical_information',
-            'invitation_text_work_description',
-            'invitation_text_about_us',
-            'contact_name',
-            'contact_phone',
-            'contact_email',
-            'images',
+            "minimum_age",
+            "maximum_age",
+            "cost",
+            "accommodation",
+            "working_days",
+            "working_hours",
+            "diets",
+            "organizers",
+            "web_url",
+            "invitation_text_introduction",
+            "invitation_text_practical_information",
+            "invitation_text_work_description",
+            "invitation_text_about_us",
+            "contact_name",
+            "contact_phone",
+            "contact_email",
+            "images",
         )
 
     def get_contact_name(self, instance) -> str:
@@ -74,7 +86,7 @@ class EventPropagationSerializer(ModelSerializer):
 class QuestionSerializer(ModelSerializer):
     class Meta:
         model = Question
-        fields = 'id', 'question', 'data', 'is_required', 'order'
+        fields = "id", "question", "data", "is_required", "order"
 
 
 class QuestionnaireSerializer(ModelSerializer):
@@ -82,7 +94,7 @@ class QuestionnaireSerializer(ModelSerializer):
 
     class Meta:
         model = Questionnaire
-        fields = 'introduction', 'after_submit_text', 'questions'
+        fields = "introduction", "after_submit_text", "questions"
 
 
 class EventRegistrationSerializer(ModelSerializer):
@@ -90,13 +102,18 @@ class EventRegistrationSerializer(ModelSerializer):
 
     class Meta:
         model = EventRegistration
-        fields = 'is_registration_required', 'is_event_full', 'questionnaire', 'alternative_registration_link'
+        fields = (
+            "is_registration_required",
+            "is_event_full",
+            "questionnaire",
+            "alternative_registration_link",
+        )
 
 
 class LocationPhotoSerializer(ModelSerializer):
     class Meta:
         model = LocationPhoto
-        fields = 'photo',
+        fields = ("photo",)
 
 
 class LocationSerializer(ModelSerializer):
@@ -110,22 +127,22 @@ class LocationSerializer(ModelSerializer):
     class Meta:
         model = Location
         fields = (
-            'name',
-            'description',
-            'patron',
-            'program',
-            'accessibility_from_prague',
-            'accessibility_from_brno',
-            'volunteering_work',
-            'volunteering_work_done',
-            'volunteering_work_goals',
-            'options_around',
-            'facilities',
-            'web',
-            'address',
-            'gps_location',
-            'region',
-            'photos',
+            "name",
+            "description",
+            "patron",
+            "program",
+            "accessibility_from_prague",
+            "accessibility_from_brno",
+            "volunteering_work",
+            "volunteering_work_done",
+            "volunteering_work_goals",
+            "options_around",
+            "facilities",
+            "web",
+            "address",
+            "gps_location",
+            "region",
+            "photos",
         )
 
 
@@ -139,27 +156,29 @@ class EventSerializer(ModelSerializer):
     tags = EventTagSerializer(many=True)
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
-    administration_units = SlugRelatedField(slug_field='abbreviation', read_only=True, many=True)
+    administration_units = SlugRelatedField(
+        slug_field="abbreviation", read_only=True, many=True
+    )
 
     class Meta:
         model = Event
 
         fields = (
-            'id',
-            'name',
-            'start',
-            'start_time',
-            'end',
-            'duration',
-            'location',
-            'group',
-            'category',
-            'tags',
-            'program',
-            'intended_for',
-            'administration_units',
-            'propagation',
-            'registration',
+            "id",
+            "name",
+            "start",
+            "start_time",
+            "end",
+            "duration",
+            "location",
+            "group",
+            "category",
+            "tags",
+            "program",
+            "intended_for",
+            "administration_units",
+            "propagation",
+            "registration",
         )
 
 
@@ -174,33 +193,45 @@ class OpportunitySerializer(ModelSerializer):
         model = Opportunity
 
         fields = (
-            'id',
-            'category',
-            'name',
-            'start',
-            'end',
-            'on_web_start',
-            'on_web_end',
-            'location',
-            'introduction',
-            'description',
-            'location_benefits',
-            'personal_benefits',
-            'requirements',
-            'contact_name',
-            'contact_phone',
-            'contact_email',
-            'image',
+            "id",
+            "category",
+            "name",
+            "start",
+            "end",
+            "on_web_start",
+            "on_web_end",
+            "location",
+            "introduction",
+            "description",
+            "location_benefits",
+            "personal_benefits",
+            "requirements",
+            "contact_name",
+            "contact_phone",
+            "contact_email",
+            "image",
         )
 
     def get_contact_name(self, instance) -> str:
-        return instance.contact_name or instance.contact_person and instance.contact_person.get_name()
+        return (
+            instance.contact_name
+            or instance.contact_person
+            and instance.contact_person.get_name()
+        )
 
     def get_contact_phone(self, instance) -> str:
-        return str(instance.contact_phone) or instance.contact_person and str(instance.contact_person.phone)
+        return (
+            str(instance.contact_phone)
+            or instance.contact_person
+            and str(instance.contact_person.phone)
+        )
 
     def get_contact_email(self, instance) -> str:
-        return instance.contact_email or instance.contact_person and instance.contact_person.email
+        return (
+            instance.contact_email
+            or instance.contact_person
+            and instance.contact_person.email
+        )
 
 
 class AdministrationSubUnitSerializer(ModelSerializer):
@@ -213,20 +244,20 @@ class AdministrationSubUnitSerializer(ModelSerializer):
         model = AdministrationSubUnit
 
         fields = (
-            'id',
-            'name',
-            'description',
-            'is_for_kids',
-            'is_active',
-            'phone',
-            'email',
-            'www',
-            'facebook',
-            'instagram',
-            'address',
-            'gps_location',
-            'main_leader',
-            'sub_leaders',
+            "id",
+            "name",
+            "description",
+            "is_for_kids",
+            "is_active",
+            "phone",
+            "email",
+            "www",
+            "facebook",
+            "instagram",
+            "address",
+            "gps_location",
+            "main_leader",
+            "sub_leaders",
         )
 
 
@@ -245,28 +276,28 @@ class AdministrationUnitSerializer(ModelSerializer):
         model = AdministrationUnit
 
         fields = (
-            'id',
-            'name',
-            'abbreviation',
-            'description',
-            'image',
-            'is_for_kids',
-            'phone',
-            'email',
-            'www',
-            'facebook',
-            'instagram',
-            'ic',
-            'address',
-            'contact_address',
-            'bank_account_number',
-            'existed_since',
-            'existed_till',
-            'gps_location',
-            'category',
-            'chairman',
-            'vice_chairman',
-            'manager',
-            'board_members',
-            'sub_units',
+            "id",
+            "name",
+            "abbreviation",
+            "description",
+            "image",
+            "is_for_kids",
+            "phone",
+            "email",
+            "www",
+            "facebook",
+            "instagram",
+            "ic",
+            "address",
+            "contact_address",
+            "bank_account_number",
+            "existed_since",
+            "existed_till",
+            "gps_location",
+            "category",
+            "chairman",
+            "vice_chairman",
+            "manager",
+            "board_members",
+            "sub_units",
         )

@@ -1,19 +1,21 @@
-from django.core.management.base import BaseCommand
-from django.utils.datetime_safe import date
-
 from bis.helpers import print_progress
 from bis.models import User
 from bis.signals import with_paused_user_str_signal
+from django.core.management.base import BaseCommand
+from django.utils.datetime_safe import date
 
 
 class Command(BaseCommand):
     @with_paused_user_str_signal
     def handle(self, *args, **options):
-        users = User.objects.all().prefetch_related('memberships', 'qualifications',
-                                                    'events_where_was_organizer',
-                                                    'participated_in_events__event')
+        users = User.objects.all().prefetch_related(
+            "memberships",
+            "qualifications",
+            "events_where_was_organizer",
+            "participated_in_events__event",
+        )
         for i, user in enumerate(users):
-            print_progress('setting date joined', i, len(users))
+            print_progress("setting date joined", i, len(users))
             dates = [user.date_joined]
 
             for membership in user.memberships.all():

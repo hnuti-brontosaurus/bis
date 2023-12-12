@@ -1,7 +1,24 @@
 from os.path import basename
 
+from administration_units.models import AdministrationUnit
+from bis.helpers import (
+    filter_queryset_with_multiple_or_queries,
+    permission_cache,
+    update_roles,
+)
+from bis.models import Location, Qualification, User
+from categories.models import (
+    DietCategory,
+    EventCategory,
+    EventGroupCategory,
+    EventIntendedForCategory,
+    EventProgramCategory,
+    EventTag,
+    GrantCategory,
+)
+from common.abstract_models import BaseContact
+from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.gis.db.models import *
 from django.core.cache import cache
@@ -9,20 +26,11 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from phonenumber_field.modelfields import PhoneNumberField
 from tinymce.models import HTMLField
-
-from administration_units.models import AdministrationUnit
-from bis import emails
-from bis.helpers import permission_cache, update_roles, filter_queryset_with_multiple_or_queries, on_save
-from bis.models import Location, User, Qualification
-from categories.models import GrantCategory, EventIntendedForCategory, DietCategory, \
-    EventCategory, EventProgramCategory, EventGroupCategory, EventTag
-from common.abstract_models import BaseContact
-from common.thumbnails import ThumbnailImageField
 from translation.translate import translate_model
 
 
 class EventDraft(Model):
-    owner = ForeignKey(User, related_name='event_drafts', on_delete=CASCADE)
+    owner = ForeignKey(User, related_name="event_drafts", on_delete=CASCADE)
     data = JSONField()
 
     @permission_cache
@@ -45,31 +53,42 @@ class Event(Model):
     start_time = TimeField(blank=True, null=True)
     end = DateField()
     number_of_sub_events = PositiveIntegerField(default=1)
-    location = ForeignKey(Location, on_delete=PROTECT, related_name='events')
+    location = ForeignKey(Location, on_delete=PROTECT, related_name="events")
     online_link = URLField(blank=True)
 
-    group = ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name='events')
-    category = ForeignKey(EventCategory, on_delete=PROTECT, related_name='events')
-    tags = ManyToManyField(EventTag, related_name='events', blank=True)
-    program = ForeignKey(EventProgramCategory, on_delete=PROTECT, related_name='events')
-    intended_for = ForeignKey(EventIntendedForCategory, on_delete=PROTECT, related_name='events')
+    group = ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name="events")
+    category = ForeignKey(EventCategory, on_delete=PROTECT, related_name="events")
+    tags = ManyToManyField(EventTag, related_name="events", blank=True)
+    program = ForeignKey(EventProgramCategory, on_delete=PROTECT, related_name="events")
+    intended_for = ForeignKey(
+        EventIntendedForCategory, on_delete=PROTECT, related_name="events"
+    )
 
-    administration_units = ManyToManyField(AdministrationUnit, related_name='events')
-    main_organizer = ForeignKey(User, on_delete=PROTECT, related_name='events_where_was_as_main_organizer', null=True)
-    other_organizers = ManyToManyField(User, related_name='events_where_was_organizer', blank=True)
-    created_by = ForeignKey(User, on_delete=PROTECT, related_name='created_events', null=True)
+    administration_units = ManyToManyField(AdministrationUnit, related_name="events")
+    main_organizer = ForeignKey(
+        User,
+        on_delete=PROTECT,
+        related_name="events_where_was_as_main_organizer",
+        null=True,
+    )
+    other_organizers = ManyToManyField(
+        User, related_name="events_where_was_organizer", blank=True
+    )
+    created_by = ForeignKey(
+        User, on_delete=PROTECT, related_name="created_events", null=True
+    )
     created_at = DateField(auto_now_add=True)
     closed_at = DateField(blank=True, null=True)
 
     is_attendance_list_required = BooleanField(default=False)
     internal_note = TextField(blank=True)
 
-    _import_id = CharField(max_length=15, default='')
+    _import_id = CharField(max_length=15, default="")
     duration = PositiveIntegerField()
 
     class Meta:
-        ordering = '-start',
-        app_label = 'bis'
+        ordering = ("-start",)
+        app_label = "bis"
 
     def __str__(self):
         return self.name
@@ -78,23 +97,26 @@ class Event(Model):
         if self.main_organizer:
             Qualification.validate_main_organizer(self, self.main_organizer)
 
-    @update_roles('main_organizer')
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not cache.get('skip_validation'): self.clean()
+    @update_roles("main_organizer")
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if not cache.get("skip_validation"):
+            self.clean()
         super().save(force_insert, force_update, using, update_fields)
 
     def is_volunteering(self):
-        return self.category.slug == 'public__volunteering'
+        return self.category.slug == "public__volunteering"
 
     def is_for_kids(self):
-        return self.intended_for.slug in ['for_kids', 'for_parents_with_kids']
+        return self.intended_for.slug in ["for_kids", "for_parents_with_kids"]
 
-    @admin.display(description='Termín akce')
+    @admin.display(description="Termín akce")
     def get_date(self):
-        result = f'{self.end.day}. {self.end.month}. {self.end.year}'
+        result = f"{self.end.day}. {self.end.month}. {self.end.year}"
 
         if self.start != self.end:
-            result = '- ' + result
+            result = "- " + result
             if self.start.year != self.end.year:
                 result = f"{self.start.year}. " + result
             if self.start.month != self.end.month:
@@ -108,7 +130,7 @@ class Event(Model):
 
     @classmethod
     def filter_queryset(cls, queryset, perm):
-        if perm.source == 'backend':
+        if perm.source == "backend":
             if perm.user.is_education_member:
                 return queryset
 
@@ -136,27 +158,32 @@ class Event(Model):
 
     @permission_cache
     def has_edit_permission(self, user, ignore_archived=False):
-        if self.is_archived and not ignore_archived: return False
-        return user in self.other_organizers.all() or \
-               self.administration_units.filter(board_members=user).exists()
+        if self.is_archived and not ignore_archived:
+            return False
+        return (
+            user in self.other_organizers.all()
+            or self.administration_units.filter(board_members=user).exists()
+        )
 
 
 @translate_model
 class EventFinance(Model):
-    event = OneToOneField(Event, related_name='finance', on_delete=PROTECT)
+    event = OneToOneField(Event, related_name="finance", on_delete=PROTECT)
 
     bank_account_number = CharField(max_length=63, blank=True)
 
-    grant_category = ForeignKey(GrantCategory, on_delete=PROTECT, related_name='events', null=True, blank=True)
+    grant_category = ForeignKey(
+        GrantCategory, on_delete=PROTECT, related_name="events", null=True, blank=True
+    )
     grant_amount = PositiveIntegerField(null=True, blank=True)
     total_event_cost = PositiveIntegerField(null=True, blank=True)
-    budget = FileField(upload_to='budgets', blank=True)
+    budget = FileField(upload_to="budgets", blank=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
-        return f'Finance k akci {self.event}'
+        return f"Finance k akci {self.event}"
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
@@ -164,11 +191,11 @@ class EventFinance(Model):
 
 @translate_model
 class EventFinanceReceipt(Model):
-    finance = ForeignKey(EventFinance, on_delete=CASCADE, related_name='receipts')
-    receipt = FileField(upload_to='receipts')
+    finance = ForeignKey(EventFinance, on_delete=CASCADE, related_name="receipts")
+    receipt = FileField(upload_to="receipts")
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return basename(self.receipt.name)
@@ -185,7 +212,7 @@ class EventFinanceReceipt(Model):
 
 @translate_model
 class EventPropagation(Model):
-    event = OneToOneField(Event, related_name='propagation', on_delete=CASCADE)
+    event = OneToOneField(Event, related_name="propagation", on_delete=CASCADE)
 
     is_shown_on_web = BooleanField()
 
@@ -195,7 +222,7 @@ class EventPropagation(Model):
     accommodation = CharField(max_length=255, blank=True)
     working_hours = PositiveSmallIntegerField(null=True, blank=True)
     working_days = PositiveSmallIntegerField(null=True, blank=True)
-    diets = ManyToManyField(DietCategory, related_name='events', blank=True)
+    diets = ManyToManyField(DietCategory, related_name="events", blank=True)
     organizers = CharField(max_length=255)
     web_url = URLField(blank=True)
     _contact_url = URLField(blank=True)
@@ -213,28 +240,39 @@ class EventPropagation(Model):
     def clean(self):
         if self.event.is_volunteering():
             if not self.invitation_text_work_description:
-                raise ValidationError('Popis dobrovolnické pomoci je povinný pro dobrovolnické akce')
+                raise ValidationError(
+                    "Popis dobrovolnické pomoci je povinný pro dobrovolnické akce"
+                )
 
             if not self.working_hours:
-                raise ValidationError('Počet odpracovaných hodin (denně pro vícedenní akce) je povinný pro '
-                                      'dobrovolnické akce')
+                raise ValidationError(
+                    "Počet odpracovaných hodin (denně pro vícedenní akce) je povinný pro "
+                    "dobrovolnické akce"
+                )
 
-            if not self.working_days and self.event.group.slug == 'camp':
-                raise ValidationError('Počet pracovních dní je povinný pro dobrovolnické tábory')
+            if not self.working_days and self.event.group.slug == "camp":
+                raise ValidationError(
+                    "Počet pracovních dní je povinný pro dobrovolnické tábory"
+                )
 
         if not self.contact_phone and not self.contact_email:
-            raise ValidationError("Kontaktní telefon či kontaktní e-mail musí být vyplněn")
+            raise ValidationError(
+                "Kontaktní telefon či kontaktní e-mail musí být vyplněn"
+            )
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not cache.get('skip_validation'): self.clean()
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if not cache.get("skip_validation"):
+            self.clean()
         self.contact_email = self.contact_email.lower()
         super().save(force_insert, force_update, using, update_fields)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
-        return f'Propagace k akci {self.event}'
+        return f"Propagace k akci {self.event}"
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
@@ -242,7 +280,9 @@ class EventPropagation(Model):
 
 @translate_model
 class VIPEventPropagation(Model):
-    event = OneToOneField(Event, related_name='vip_propagation', on_delete=CASCADE, blank=True, null=True)
+    event = OneToOneField(
+        Event, related_name="vip_propagation", on_delete=CASCADE, blank=True, null=True
+    )
 
     goals_of_event = TextField(blank=True)
     program = TextField(blank=True)
@@ -253,17 +293,17 @@ class VIPEventPropagation(Model):
 
 @translate_model
 class EventRegistration(Model):
-    event = OneToOneField(Event, related_name='registration', on_delete=CASCADE)
+    event = OneToOneField(Event, related_name="registration", on_delete=CASCADE)
 
     is_registration_required = BooleanField(default=True)
     alternative_registration_link = URLField(blank=True)
     is_event_full = BooleanField(default=False)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
-        return f'Přihlášení k akci {self.event}'
+        return f"Přihlášení k akci {self.event}"
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
@@ -271,21 +311,21 @@ class EventRegistration(Model):
 
 @translate_model
 class EventRecord(Model):
-    event = OneToOneField(Event, related_name='record', on_delete=PROTECT)
+    event = OneToOneField(Event, related_name="record", on_delete=PROTECT)
 
     total_hours_worked = PositiveIntegerField(null=True, blank=True)
     comment_on_work_done = TextField(blank=True)
-    participants = ManyToManyField(User, 'participated_in_events', blank=True)
+    participants = ManyToManyField(User, "participated_in_events", blank=True)
     number_of_participants = PositiveIntegerField(null=True, blank=True)
     number_of_participants_under_26 = PositiveIntegerField(null=True, blank=True)
 
     note = TextField(blank=True)
 
     class Meta:
-        ordering = '-event__start',
+        ordering = ("-event__start",)
 
     def __str__(self):
-        return f'Záznam z akce {self.event}'
+        return f"Záznam z akce {self.event}"
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
@@ -294,23 +334,32 @@ class EventRecord(Model):
         return self.number_of_participants or len(self.get_all_participants())
 
     def get_young_participants_count(self):
-        under_26 = len([p for p in self.get_all_participants() if
-                        p.birthday and relativedelta(self.event.start, p.birthday).years <= 26])
+        under_26 = len(
+            [
+                p
+                for p in self.get_all_participants()
+                if p.birthday
+                and relativedelta(self.event.start, p.birthday).years <= 26
+            ]
+        )
         return self.number_of_participants_under_26 or under_26
 
     def get_young_percentage(self):
         participants_count = self.get_participants_count()
-        if not participants_count: return '0%'
+        if not participants_count:
+            return "0%"
         return f"{int(self.get_young_participants_count() / participants_count * 100)}%"
 
     def get_all_participants(self):
-        all_participants = self.participants.all().union(self.event.other_organizers.all())
-        return User.objects.filter(id__in=all_participants.values_list('id'))
+        all_participants = self.participants.all().union(
+            self.event.other_organizers.all()
+        )
+        return User.objects.filter(id__in=all_participants.values_list("id"))
 
 
 @translate_model
 class EventContact(BaseContact):
-    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name='contacts')
+    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name="contacts")
 
     def has_edit_permission(self, user):
         return self.record.has_edit_permission(user)
@@ -319,19 +368,18 @@ class EventContact(BaseContact):
         pass
 
 
-
 @translate_model
 class EventPropagationImage(Model):
-    propagation = ForeignKey(EventPropagation, on_delete=CASCADE, related_name='images')
+    propagation = ForeignKey(EventPropagation, on_delete=CASCADE, related_name="images")
     order = PositiveIntegerField()
-    image = ThumbnailImageField(upload_to='event_propagation_images', max_length=200)
+    image = ThumbnailImageField(upload_to="event_propagation_images", max_length=200)
 
-    @admin.display(description='Náhled')
+    @admin.display(description="Náhled")
     def image_tag(self):
         return mark_safe(f'<img src="{self.image.urls["small"]}" />')
 
     class Meta:
-        ordering = 'order',
+        ordering = ("order",)
 
     def __str__(self):
         return basename(self.image.name)
@@ -347,11 +395,13 @@ class EventPropagationImage(Model):
 
 @translate_model
 class EventAttendanceListPage(Model):
-    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name='attendance_list_pages')
-    page = FileField(upload_to='attendance_list_pages', null=True, blank=True)
+    record = ForeignKey(
+        EventRecord, on_delete=CASCADE, related_name="attendance_list_pages"
+    )
+    page = FileField(upload_to="attendance_list_pages", null=True, blank=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return basename(self.page.name)
@@ -364,17 +414,20 @@ class EventAttendanceListPage(Model):
     def has_edit_permission(self, user):
         return self.record.has_edit_permission(user)
 
+
 @translate_model
 class EventPhoto(Model):
-    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name='photos')
-    photo = ThumbnailImageField(upload_to='event_photos')
+    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name="photos")
+    photo = ThumbnailImageField(upload_to="event_photos")
 
-    @admin.display(description='Náhled')
+    @admin.display(description="Náhled")
     def photo_tag(self):
-        return mark_safe(f'<img style="max-height: 10rem; max-width: 20rem" src="{self.photo.url}" />')
+        return mark_safe(
+            f'<img style="max-height: 10rem; max-width: 20rem" src="{self.photo.url}" />'
+        )
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return basename(self.photo.name)

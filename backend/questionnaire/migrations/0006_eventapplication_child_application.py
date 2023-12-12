@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('questionnaire', '0005_rename_sex_eventapplication_pronoun'),
+        ("questionnaire", "0005_rename_sex_eventapplication_pronoun"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='eventapplication',
-            name='child_application',
+            model_name="eventapplication",
+            name="child_application",
             field=models.BooleanField(default=False),
         ),
     ]

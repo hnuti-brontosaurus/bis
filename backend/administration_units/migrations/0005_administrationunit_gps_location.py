@@ -5,15 +5,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('administration_units', '0004_auto_20230129_1147'),
+        ("administration_units", "0004_auto_20230129_1147"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='administrationunit',
-            name='gps_location',
+            model_name="administrationunit",
+            name="gps_location",
             field=django.contrib.gis.db.models.fields.PointField(null=True, srid=4326),
         ),
     ]

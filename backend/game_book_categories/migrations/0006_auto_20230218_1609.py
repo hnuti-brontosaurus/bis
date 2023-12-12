@@ -4,55 +4,54 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0005_auto_20230218_1607'),
+        ("game_book_categories", "0005_auto_20230218_1607"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='gamelengthcategory',
-            name='emoji',
+            model_name="gamelengthcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='locationcategory',
-            name='emoji',
+            model_name="locationcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='materialrequirementcategory',
-            name='emoji',
+            model_name="materialrequirementcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='mentalcategory',
-            name='emoji',
+            model_name="mentalcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='organizersnumbercategory',
-            name='emoji',
+            model_name="organizersnumbercategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='participantagecategory',
-            name='emoji',
+            model_name="participantagecategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='participantnumbercategory',
-            name='emoji',
+            model_name="participantnumbercategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='physicalcategory',
-            name='emoji',
+            model_name="physicalcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
         migrations.AlterField(
-            model_name='preparationlengthcategory',
-            name='emoji',
+            model_name="preparationlengthcategory",
+            name="emoji",
             field=models.CharField(max_length=3),
         ),
     ]

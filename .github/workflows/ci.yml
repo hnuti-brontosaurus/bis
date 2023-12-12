@@ -21,6 +21,12 @@ jobs:
       - name: Disable make sync
         run: touch submodule_sync
 
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit
+        run: pre-commit run -a
+
       - name: Build image
         run: make
 

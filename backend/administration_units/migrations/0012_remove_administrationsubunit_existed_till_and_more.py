@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('administration_units', '0011_administrationsubunit_existed_till'),
+        ("administration_units", "0011_administrationsubunit_existed_till"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='administrationsubunit',
-            name='existed_till',
+            model_name="administrationsubunit",
+            name="existed_till",
         ),
         migrations.AddField(
-            model_name='administrationsubunit',
-            name='is_active',
+            model_name="administrationsubunit",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
     ]

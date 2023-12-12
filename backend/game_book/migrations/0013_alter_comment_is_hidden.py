@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book', '0012_alter_game_is_draft'),
+        ("game_book", "0012_alter_game_is_draft"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='comment',
-            name='is_hidden',
-            field=models.BooleanField(default=False, help_text='Zobrazit komentář pouze autorovi?'),
+            model_name="comment",
+            name="is_hidden",
+            field=models.BooleanField(
+                default=False, help_text="Zobrazit komentář pouze autorovi?"
+            ),
         ),
     ]

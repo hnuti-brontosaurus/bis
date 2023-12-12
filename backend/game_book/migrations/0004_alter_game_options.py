@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book', '0003_auto_20230211_1809'),
+        ("game_book", "0003_auto_20230211_1809"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='game',
-            options={'ordering': ('-created_at',)},
+            name="game",
+            options={"ordering": ("-created_at",)},
         ),
     ]

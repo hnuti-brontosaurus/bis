@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book', '0010_alter_game_tags'),
+        ("game_book", "0010_alter_game_tags"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='game',
-            name='is_draft',
+            model_name="game",
+            name="is_draft",
             field=models.BooleanField(default=True),
         ),
     ]

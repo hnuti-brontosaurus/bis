@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('ecomail', '0001_initial'),
+        ("ecomail", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='contactlog',
-            name='created',
+            model_name="contactlog",
+            name="created",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

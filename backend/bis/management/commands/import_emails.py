@@ -1,18 +1,23 @@
 import json
 from pathlib import Path
 
-from django.core.management.base import BaseCommand
-
 from bis.models import User
 from bis.signals import with_paused_user_str_signal
+from django.core.management.base import BaseCommand
 from ecomail.helpers import send
 from xlsx_export.export import XLSXWriter
 from xlsx_export.serializers import UserExportSerializer
 
 
 class Command(BaseCommand):
-    status = {1: 'subscribed', 2: 'unsubscribed', 3: 'soft bounce', 4: 'hard bounce', 5: 'spam complaint',
-              6: 'unconfirmed'}
+    status = {
+        1: "subscribed",
+        2: "unsubscribed",
+        3: "soft bounce",
+        4: "hard bounce",
+        5: "spam complaint",
+        6: "unconfirmed",
+    }
 
     def get_subscribers(self):
         data = []
@@ -21,33 +26,38 @@ class Command(BaseCommand):
             page += 1
 
             print(page)
-            result = send([], 'GET', 'lists/28/subscribers', params=dict(page=page))
+            result = send([], "GET", "lists/28/subscribers", params=dict(page=page))
             print(result)
-            data += result['data']
-            if not result['next_page_url']:
+            data += result["data"]
+            if not result["next_page_url"]:
                 break
 
         return data
 
     @with_paused_user_str_signal
     def handle(self, *args, **options):
-        path = Path('data.json')
+        path = Path("data.json")
 
         if path.exists():
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         else:
             data = self.get_subscribers()
 
-            with open(path, 'w', encoding='ut-8') as f:
+            with open(path, "w", encoding="ut-8") as f:
                 json.dump(data, f)
 
-        bis_emails = set(User.objects.values_list('email', flat=True))
-        data_emails = [u for u in data if '+' not in u['email']]
-        data_emails = [u for u in data_emails if u['status'] == 1]
-        data_emails = set([u['email'] for u in data_emails])
-        print(len(bis_emails), len(data_emails), len(bis_emails.intersection(data_emails)),
-              len(bis_emails - data_emails), len(data_emails - bis_emails))
+        bis_emails = set(User.objects.values_list("email", flat=True))
+        data_emails = [u for u in data if "+" not in u["email"]]
+        data_emails = [u for u in data_emails if u["status"] == 1]
+        data_emails = set([u["email"] for u in data_emails])
+        print(
+            len(bis_emails),
+            len(data_emails),
+            len(bis_emails.intersection(data_emails)),
+            len(bis_emails - data_emails),
+            len(data_emails - bis_emails),
+        )
         #
         # q = []
         # for item in data:

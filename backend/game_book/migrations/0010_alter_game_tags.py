@@ -4,16 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0007_auto_20230225_1042'),
-        ('game_book', '0009_auto_20230225_1036'),
+        ("game_book_categories", "0007_auto_20230225_1042"),
+        ("game_book", "0009_auto_20230225_1036"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='tags',
-            field=models.ManyToManyField(blank=True, help_text='Pokud ti nějaký tag chybí, napiš mi na sbornik@brontosaurus.cz, díky!', related_name='games', to='game_book_categories.Tag'),
+            model_name="game",
+            name="tags",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Pokud ti nějaký tag chybí, napiš mi na sbornik@brontosaurus.cz, díky!",
+                related_name="games",
+                to="game_book_categories.Tag",
+            ),
         ),
     ]

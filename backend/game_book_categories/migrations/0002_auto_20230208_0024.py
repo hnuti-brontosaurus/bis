@@ -4,64 +4,63 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0001_initial'),
+        ("game_book_categories", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='gamelengthcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="gamelengthcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='locationcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="locationcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='materialrequirementcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="materialrequirementcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='mentalcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="mentalcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='organizersnumbercategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="organizersnumbercategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='participantagecategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="participantagecategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='participantnumbercategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="participantnumbercategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='physicalcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="physicalcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='preparationlengthcategory',
-            name='slug',
-            field=models.SlugField(default='asd'),
+            model_name="preparationlengthcategory",
+            name="slug",
+            field=models.SlugField(default="asd"),
             preserve_default=False,
         ),
     ]

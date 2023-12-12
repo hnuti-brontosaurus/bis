@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0015_alter_event_is_canceled_alter_event_is_closed_and_more'),
+        ("bis", "0015_alter_event_is_canceled_alter_event_is_closed_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='user',
-            options={'ordering': ('last_name',)},
+            name="user",
+            options={"ordering": ("last_name",)},
         ),
     ]

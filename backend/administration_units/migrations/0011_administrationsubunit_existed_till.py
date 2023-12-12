@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('administration_units', '0010_alter_administrationsubunit_options_and_more'),
+        ("administration_units", "0010_alter_administrationsubunit_options_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='administrationsubunit',
-            name='existed_till',
+            model_name="administrationsubunit",
+            name="existed_till",
             field=models.DateField(blank=True, null=True),
         ),
     ]

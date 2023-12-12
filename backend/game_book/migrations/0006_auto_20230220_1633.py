@@ -4,26 +4,25 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book', '0005_alter_game_created_at'),
+        ("game_book", "0005_alter_game_created_at"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='comment',
-            options={'ordering': ('-id',)},
+            name="comment",
+            options={"ordering": ("-id",)},
         ),
         migrations.AlterModelOptions(
-            name='game',
-            options={'ordering': ('-id',)},
+            name="game",
+            options={"ordering": ("-id",)},
         ),
         migrations.AlterModelOptions(
-            name='gamelist',
-            options={'ordering': ('-id',)},
+            name="gamelist",
+            options={"ordering": ("-id",)},
         ),
         migrations.AlterModelOptions(
-            name='playedat',
-            options={'ordering': ('-id',)},
+            name="playedat",
+            options={"ordering": ("-id",)},
         ),
     ]

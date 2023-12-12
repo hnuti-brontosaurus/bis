@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0008_user_subscribed_to_newsletter'),
+        ("bis", "0008_user_subscribed_to_newsletter"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='location',
-            name='is_fully_specified',
+            model_name="location",
+            name="is_fully_specified",
             field=models.BooleanField(default=False),
         ),
     ]

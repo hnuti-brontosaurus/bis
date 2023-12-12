@@ -3,7 +3,6 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.db.models import *
-
 from translation.translate import translate_model
 
 
@@ -13,7 +12,7 @@ class GrantCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -25,7 +24,7 @@ class EventIntendedForCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -37,7 +36,7 @@ class DietCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -47,8 +46,12 @@ class DietCategory(Model):
 class QualificationCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)
-    parents = ManyToManyField('QualificationCategory', related_name='included_qualifications')
-    can_approve = ManyToManyField('QualificationCategory', related_name='can_be_approved_with')
+    parents = ManyToManyField(
+        "QualificationCategory", related_name="included_qualifications"
+    )
+    can_approve = ManyToManyField(
+        "QualificationCategory", related_name="can_be_approved_with"
+    )
 
     def get_slugs(self):
         yield self.slug
@@ -56,7 +59,7 @@ class QualificationCategory(Model):
             yield from child.get_slugs()
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -68,7 +71,7 @@ class AdministrationUnitCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -81,7 +84,7 @@ class MembershipCategory(Model):
     price = PositiveSmallIntegerField()
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -93,10 +96,10 @@ class MembershipCategory(Model):
 
         years = relativedelta(date(today().year, 1, 1), user.birthday).years
         if years < 15:
-            return 'kid'
+            return "kid"
         elif years <= 26:
-            return 'student'
-        return 'adult'
+            return "student"
+        return "adult"
 
     @classmethod
     def get_extended(cls, user):
@@ -105,11 +108,11 @@ class MembershipCategory(Model):
 
         years = relativedelta(date(today().year, 1, 1), user.birthday).years
         if years < 15:
-            slug = 'kid'
+            slug = "kid"
         elif years <= 26:
-            slug = 'student'
+            slug = "student"
         else:
-            slug = 'adult'
+            slug = "adult"
 
         return cls.objects.get(slug=slug)
 
@@ -120,7 +123,7 @@ class EventGroupCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -132,7 +135,7 @@ class EventCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -146,7 +149,7 @@ class EventTag(Model):
     is_active = BooleanField(default=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -159,7 +162,7 @@ class EventProgramCategory(Model):
     email = EmailField()
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -172,7 +175,7 @@ class DonationSourceCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -184,7 +187,7 @@ class OrganizerRoleCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -196,7 +199,7 @@ class TeamRoleCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -209,7 +212,7 @@ class OpportunityCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return f"{self.name} - {self.description}"
@@ -221,7 +224,7 @@ class LocationProgramCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -233,7 +236,7 @@ class LocationAccessibilityCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -245,7 +248,7 @@ class RoleCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
@@ -257,7 +260,7 @@ class HealthInsuranceCompany(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return f"{self.slug} - {self.name}"
@@ -269,12 +272,12 @@ class PronounCategory(Model):
     slug = SlugField(unique=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
         return self.name
 
     @classmethod
     def get_variables(cls, user):
-        slug = (user and user.pronoun and user.pronoun.slug) or 'unknown'
-        return {"m": slug == 'man', "f": slug == 'female'}
+        slug = (user and user.pronoun and user.pronoun.slug) or "unknown"
+        return {"m": slug == "man", "f": slug == "female"}

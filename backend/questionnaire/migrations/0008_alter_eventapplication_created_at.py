@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('questionnaire', '0007_rename_child_application_eventapplication_is_child_application'),
+        (
+            "questionnaire",
+            "0007_rename_child_application_eventapplication_is_child_application",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='eventapplication',
-            name='created_at',
+            model_name="eventapplication",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

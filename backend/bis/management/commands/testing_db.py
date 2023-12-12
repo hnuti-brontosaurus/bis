@@ -1,38 +1,34 @@
+import typing as t
 from datetime import timedelta
 from os.path import join
-import typing as t
-
-from django.core.management import call_command
-from django.core.management.base import BaseCommand
-from django.core.management.base import BaseCommand
-from django.utils.datetime_safe import date
 
 from administration_units.models import (
     AdministrationUnit,
     AdministrationUnitAddress,
     BrontosaurusMovement,
 )
-from bis.models import User, Qualification, Location, Membership
+from bis.models import Location, Membership, Qualification, User
 from categories.models import (
-    MembershipCategory,
-    EventCategory,
-    EventProgramCategory,
-    QualificationCategory,
     AdministrationUnitCategory,
-    EventIntendedForCategory,
+    EventCategory,
     EventGroupCategory,
+    EventIntendedForCategory,
+    EventProgramCategory,
+    MembershipCategory,
     PronounCategory,
+    QualificationCategory,
 )
-from event.models import Event, EventPropagation,EventPropagationImage,  EventRecord
-
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
+from django.utils.datetime_safe import date
+from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
 from project.settings import BASE_DIR
 
 
 class Command(BaseCommand):
-
     # Some events require propagation images.
     # TODO: Generate simple image for testing during runtime.
-    event_propagation_image_path = join(BASE_DIR, 'bis', 'static', 'favicon.png')
+    event_propagation_image_path = join(BASE_DIR, "bis", "static", "favicon.png")
 
     def __init__(self, *args, **kwargs):
         self._email_number = 0
@@ -84,7 +80,9 @@ class Command(BaseCommand):
                 qualification_valid_since_date,
                 qualification_approved_by,
             ) = qualification
-            ctg_qualification = QualificationCategory.objects.get(slug=qualification_slug)
+            ctg_qualification = QualificationCategory.objects.get(
+                slug=qualification_slug
+            )
             Qualification.objects.create(
                 user=new_user,
                 category=ctg_qualification,
@@ -96,7 +94,9 @@ class Command(BaseCommand):
     def create_brontosaurus(self):
         # Brontosaurus movement structure, one person for each role.
         director = self.create_user("Pan", "Ředitel", "director@hb.nope")
-        finance_director = self.create_user("Finanční", "Ředitel", "finance_director@hb.nope")
+        finance_director = self.create_user(
+            "Finanční", "Ředitel", "finance_director@hb.nope"
+        )
         kancl = self.create_user("Zaměstnanec", "Kancl", "office_worker@hb.nope")
         krk = self.create_user("Zaměstnanec", "KRK", "auditor@hb.nope")
         vv = self.create_user("Zaměstnanec", "VV", "executive@hb.nope")
@@ -242,28 +242,31 @@ class Command(BaseCommand):
             event.record.participants.set(participants)
 
         # Event propagation
-        main_organizer_full_name = f'{main_organizer.first_name} {main_organizer.last_name}'
-        event_propagation = EventPropagation.objects.create(event=event,
-                is_shown_on_web=False,
-                working_hours=8,
-                cost='100',
-                accommodation='',
-                organizers=main_organizer_full_name,
-                web_url='',
-                _contact_url='',
-                invitation_text_introduction='Co nás čeká?',
-                invitation_text_practical_information='Co, kde a jak',
-                invitation_text_work_description='Dobrovolnická pomoc',
-                invitation_text_about_us='Malá ochutnávka',
-                contact_name=main_organizer_full_name,
-                contact_phone=self._random_phonenum(),
-                contact_email=main_organizer.email,
-            )
+        main_organizer_full_name = (
+            f"{main_organizer.first_name} {main_organizer.last_name}"
+        )
+        event_propagation = EventPropagation.objects.create(
+            event=event,
+            is_shown_on_web=False,
+            working_hours=8,
+            cost="100",
+            accommodation="",
+            organizers=main_organizer_full_name,
+            web_url="",
+            _contact_url="",
+            invitation_text_introduction="Co nás čeká?",
+            invitation_text_practical_information="Co, kde a jak",
+            invitation_text_work_description="Dobrovolnická pomoc",
+            invitation_text_about_us="Malá ochutnávka",
+            contact_name=main_organizer_full_name,
+            contact_phone=self._random_phonenum(),
+            contact_email=main_organizer.email,
+        )
 
         EventPropagationImage.objects.create(
             propagation=event_propagation,
             image=self.event_propagation_image_path,
-            order=0
+            order=0,
         )
 
         return event
@@ -286,91 +289,327 @@ class Command(BaseCommand):
         # Adults
         adult_members = [
             self.create_user("Jan", "Novák", self._next_email(), sex_slug="man"),
-            self.create_user("Alžběta", "Dvořáková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Alžběta", "Dvořáková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Jan", "Svoboda", self._next_email(), sex_slug="man"),
-            self.create_user("Simona", "Pagáčová", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Simona", "Pagáčová", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Jan", "Bodláček", self._next_email(), sex_slug="man"),
-            self.create_user("Kristýna", "Dvořáková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Kristýna", "Dvořáková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Jan", "Hnědý", self._next_email(), sex_slug="man"),
-            self.create_user("Kateřina", "Dvořáková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Kateřina", "Dvořáková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Přemysl", "Bodláček", self._next_email(), sex_slug="man"),
             self.create_user("Tomáš", "Novák", self._next_email(), sex_slug="man"),
-            self.create_user("Simona", "Vyškovská", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Simona", "Vyškovská", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Tomáš", "Svoboda", self._next_email(), sex_slug="man"),
             self.create_user("Tomáš", "Bodláček", self._next_email(), sex_slug="man"),
             self.create_user("Tomáš", "Hnědý", self._next_email(), sex_slug="man"),
             self.create_user("Martin", "Novák", self._next_email(), sex_slug="man"),
-            self.create_user("Alžběta", "Sroková", self._next_email(), sex_slug="woman"),
-            self.create_user("Kateřina", "Sroková", self._next_email(), sex_slug="woman"),
-            self.create_user("Kateřina", "Pagáčová", self._next_email(), sex_slug="woman"),
-            self.create_user("Simona", "Dvořáková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Alžběta", "Sroková", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Kateřina", "Sroková", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Kateřina", "Pagáčová", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Simona", "Dvořáková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Martin", "Svoboda", self._next_email(), sex_slug="man"),
             self.create_user("Martin", "Bodláček", self._next_email(), sex_slug="man"),
             self.create_user("Martin", "Hnědý", self._next_email(), sex_slug="man"),
-            self.create_user("Kristýna", "Pagáčová", self._next_email(), sex_slug="woman"),
-            self.create_user("Veronika", "Dvořáková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Kristýna", "Pagáčová", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Veronika", "Dvořáková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Michal", "Novák", self._next_email(), sex_slug="man"),
             self.create_user("Michal", "Svoboda", self._next_email(), sex_slug="man"),
             self.create_user("Michal", "Bodláček", self._next_email(), sex_slug="man"),
-            self.create_user("Kristýna", "Sroková", self._next_email(), sex_slug="woman"),
-            self.create_user("Veronika", "Vyškovská", self._next_email(), sex_slug="woman"),
-            self.create_user("Veronika", "Sroková", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Kristýna", "Sroková", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Veronika", "Vyškovská", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Veronika", "Sroková", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Michal", "Hnědý", self._next_email(), sex_slug="man"),
-            self.create_user("Kristýna", "Svoboda", self._next_email(), sex_slug="woman"),
-            self.create_user("Kateřina", "Vyškovská", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Kristýna", "Svoboda", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Kateřina", "Vyškovská", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Přemysl", "Novák", self._next_email(), sex_slug="man"),
             self.create_user("Přemysl", "Svoboda", self._next_email(), sex_slug="man"),
-            self.create_user("Veronika", "Pagáčová", self._next_email(), sex_slug="woman"),
-            self.create_user("Alžběta", "Vyškovská", self._next_email(), sex_slug="woman"),
-            self.create_user("Alžběta", "Pagáčová", self._next_email(), sex_slug="woman"),
+            self.create_user(
+                "Veronika", "Pagáčová", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Alžběta", "Vyškovská", self._next_email(), sex_slug="woman"
+            ),
+            self.create_user(
+                "Alžběta", "Pagáčová", self._next_email(), sex_slug="woman"
+            ),
             self.create_user("Přemysl", "Hnědý", self._next_email(), sex_slug="man"),
             self.create_user("Simona", "Sroková", self._next_email(), sex_slug="woman"),
         ]
         # Students
         student_members = [
-            self.create_user("Tomáš", "Vojtek", self._next_email(), sex_slug="man", birthday=date(1998, 5, 1)),
-            self.create_user("Dalimil", "Kučný", self._next_email(), sex_slug="man", birthday=date(1998, 11, 15)),
-            self.create_user("Milan", "Benna", self._next_email(), sex_slug="man", birthday=date(1999, 5, 12)),
-            self.create_user("Oliver", "Staněk", self._next_email(), sex_slug="man", birthday=date(2000, 2, 11)),
-            self.create_user("Tomáš", "Kolouch", self._next_email(), sex_slug="man", birthday=date(2000, 4, 12)),
-            self.create_user("Věra", "Balcová", self._next_email(), sex_slug="woman", birthday=date(2001, 4, 25)),
-            self.create_user("Radka", "Leová", self._next_email(), sex_slug="woman", birthday=date(2001, 6, 29)),
-            self.create_user("Hana", "Míčová", self._next_email(), sex_slug="woman", birthday=date(2002, 8, 1)),
-            self.create_user("Alice", "Ježíková", self._next_email(), sex_slug="woman", birthday=date(2003, 2, 8)),
-            self.create_user("Monika", "Veselá", self._next_email(), sex_slug="woman", birthday=date(1997, 1, 13)),
-            self.create_user("Tomáš", "Paprota", self._next_email(), sex_slug="man", birthday=date(1999, 4, 12)),
-            self.create_user("Pavel", "Vaško", self._next_email(), sex_slug="man", birthday=date(1999, 4, 25)),
-            self.create_user("Dalibor", "Hanzlík", self._next_email(), sex_slug="man", birthday=date(2000, 8, 6)),
-            self.create_user("Hana", "Paprotová", self._next_email(), sex_slug="woman", birthday=date(2004, 12, 17)),
-            self.create_user("Erik", "Vaško", self._next_email(), sex_slug="man", birthday=date(2003, 2, 8)),
-            self.create_user("Monika", "Chaloupková", self._next_email(), sex_slug="woman", birthday=date(2004, 5, 18)),
-            self.create_user("Daniela", "Lukášová", self._next_email(), sex_slug="woman", birthday=date(2000, 5, 1)),
-            self.create_user("Věra", "Balcová", self._next_email(), sex_slug="woman", birthday=date(2001, 1, 2)),
-            self.create_user("Radka", "Leová", self._next_email(), sex_slug="woman", birthday=date(2000, 3, 8)),
-            self.create_user("Hana", "Hanzlík", self._next_email(), sex_slug="woman", birthday=date(1999, 8, 7)),
-            self.create_user("Daniela", "Ježíková", self._next_email(), sex_slug="woman", birthday=date(1998, 2, 26)),
-            self.create_user("Monika", "Vaško", self._next_email(), sex_slug="woman", birthday=date(2004, 1, 13)),
+            self.create_user(
+                "Tomáš",
+                "Vojtek",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(1998, 5, 1),
+            ),
+            self.create_user(
+                "Dalimil",
+                "Kučný",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(1998, 11, 15),
+            ),
+            self.create_user(
+                "Milan",
+                "Benna",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(1999, 5, 12),
+            ),
+            self.create_user(
+                "Oliver",
+                "Staněk",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(2000, 2, 11),
+            ),
+            self.create_user(
+                "Tomáš",
+                "Kolouch",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(2000, 4, 12),
+            ),
+            self.create_user(
+                "Věra",
+                "Balcová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2001, 4, 25),
+            ),
+            self.create_user(
+                "Radka",
+                "Leová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2001, 6, 29),
+            ),
+            self.create_user(
+                "Hana",
+                "Míčová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2002, 8, 1),
+            ),
+            self.create_user(
+                "Alice",
+                "Ježíková",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2003, 2, 8),
+            ),
+            self.create_user(
+                "Monika",
+                "Veselá",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(1997, 1, 13),
+            ),
+            self.create_user(
+                "Tomáš",
+                "Paprota",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(1999, 4, 12),
+            ),
+            self.create_user(
+                "Pavel",
+                "Vaško",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(1999, 4, 25),
+            ),
+            self.create_user(
+                "Dalibor",
+                "Hanzlík",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(2000, 8, 6),
+            ),
+            self.create_user(
+                "Hana",
+                "Paprotová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2004, 12, 17),
+            ),
+            self.create_user(
+                "Erik",
+                "Vaško",
+                self._next_email(),
+                sex_slug="man",
+                birthday=date(2003, 2, 8),
+            ),
+            self.create_user(
+                "Monika",
+                "Chaloupková",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2004, 5, 18),
+            ),
+            self.create_user(
+                "Daniela",
+                "Lukášová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2000, 5, 1),
+            ),
+            self.create_user(
+                "Věra",
+                "Balcová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2001, 1, 2),
+            ),
+            self.create_user(
+                "Radka",
+                "Leová",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2000, 3, 8),
+            ),
+            self.create_user(
+                "Hana",
+                "Hanzlík",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(1999, 8, 7),
+            ),
+            self.create_user(
+                "Daniela",
+                "Ježíková",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(1998, 2, 26),
+            ),
+            self.create_user(
+                "Monika",
+                "Vaško",
+                self._next_email(),
+                sex_slug="woman",
+                birthday=date(2004, 1, 13),
+            ),
         ]
         # Oganizers with qualification
         organizers = [
-            self.create_user("Oganizátor", "Honza", self._next_email(), sex_slug="man", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátor", "Filip", self._next_email(), sex_slug="man", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátor", "Pepa", self._next_email(), sex_slug="man", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátor", "Jarda", self._next_email(), sex_slug="man", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátor", "Ondra", self._next_email(), sex_slug="man", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátorka", "Monča", self._next_email(), sex_slug="woman", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátorka", "Janča", self._next_email(), sex_slug="woman", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátorka", "Bára", self._next_email(), sex_slug="woman", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátorka", "Natka", self._next_email(), sex_slug="woman", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
-            self.create_user("Oganizátorka", "Nikča", self._next_email(), sex_slug="woman", qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman)),
+            self.create_user(
+                "Oganizátor",
+                "Honza",
+                self._next_email(),
+                sex_slug="man",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátor",
+                "Filip",
+                self._next_email(),
+                sex_slug="man",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátor",
+                "Pepa",
+                self._next_email(),
+                sex_slug="man",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátor",
+                "Jarda",
+                self._next_email(),
+                sex_slug="man",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátor",
+                "Ondra",
+                self._next_email(),
+                sex_slug="man",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátorka",
+                "Monča",
+                self._next_email(),
+                sex_slug="woman",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátorka",
+                "Janča",
+                self._next_email(),
+                sex_slug="woman",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátorka",
+                "Bára",
+                self._next_email(),
+                sex_slug="woman",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátorka",
+                "Natka",
+                self._next_email(),
+                sex_slug="woman",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
+            self.create_user(
+                "Oganizátorka",
+                "Nikča",
+                self._next_email(),
+                sex_slug="woman",
+                qualification=("weekend_organizer", date(2018, 1, 1), zc_chairman),
+            ),
         ]
 
         for member in adult_members:
-            self.add_administration_unit_member(basic_section, member, membership=("adult", 2010))
+            self.add_administration_unit_member(
+                basic_section, member, membership=("adult", 2010)
+            )
         for member in student_members:
-            self.add_administration_unit_member(basic_section, member, membership=("student", 2015))
+            self.add_administration_unit_member(
+                basic_section, member, membership=("student", 2015)
+            )
         for member in organizers:
-            self.add_administration_unit_member(basic_section, member, membership=("adult", 2018))
+            self.add_administration_unit_member(
+                basic_section, member, membership=("adult", 2018)
+            )
 
         all_members = adult_members + student_members + organizers
 
@@ -378,7 +617,12 @@ class Command(BaseCommand):
         event_starting_date = date(2019, 1, 1)
         event_ending_date = date(2023, 2, 1)
         time_delta = timedelta(weeks=10)
-        category_slugs = ["public__volunteering", "public__only_experiential", "public__club__lecture", "public__other__for_public"]
+        category_slugs = [
+            "public__volunteering",
+            "public__only_experiential",
+            "public__club__lecture",
+            "public__other__for_public",
+        ]
 
         current_event_time = event_starting_date
         event_number = 1
@@ -390,7 +634,9 @@ class Command(BaseCommand):
             main_organizer = organizers[event_number % len(organizers)]
             event_name = f"Událost od {main_organizer.last_name} ({event_number})"
             # Max 3 other organizers
-            other_organizers = organizers[event_number % 3 : event_number % 3 + (event_number % 4)] + [main_organizer]
+            other_organizers = organizers[
+                event_number % 3 : event_number % 3 + (event_number % 4)
+            ] + [main_organizer]
             participants = all_members[event_number % 8 :: event_number % 4 + 2]
             self.create_event(
                 event_name,

@@ -1,7 +1,6 @@
-from django.contrib import admin
-
 from bis.admin_permissions import PermissionMixin
 from categories.models import *
+from django.contrib import admin
 
 
 @admin.register(GrantCategory)
@@ -21,7 +20,7 @@ class DietCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(QualificationCategory)
 class QualificationCategoryAdmin(PermissionMixin, admin.ModelAdmin):
-    list_display = 'name', 'get_parents'
+    list_display = "name", "get_parents"
 
     @admin.display(description="Nadřazené kvalifikace")
     def get_parents(self, instance):
@@ -35,7 +34,7 @@ class AdministrationUnitCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(MembershipCategory)
 class MembershipCategoryAdmin(PermissionMixin, admin.ModelAdmin):
-    list_display = 'name', 'price'
+    list_display = "name", "price"
 
 
 @admin.register(EventGroupCategory)
@@ -50,7 +49,7 @@ class EventCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(EventTag)
 class EventTagAdmin(PermissionMixin, admin.ModelAdmin):
-    list_display = 'name', 'description', 'is_active'
+    list_display = "name", "description", "is_active"
 
 
 @admin.register(EventProgramCategory)

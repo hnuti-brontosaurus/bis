@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0011_alter_event_online_link'),
+        ("bis", "0011_alter_event_online_link"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='vokativ',
-            field=models.CharField(default='', max_length=63),
+            model_name="user",
+            name="vokativ",
+            field=models.CharField(default="", max_length=63),
             preserve_default=False,
         ),
     ]

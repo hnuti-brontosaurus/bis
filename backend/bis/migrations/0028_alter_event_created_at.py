@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0027_event_closed_at'),
+        ("bis", "0027_event_closed_at"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='event',
-            name='created_at',
+            model_name="event",
+            name="created_at",
             field=models.DateField(auto_now_add=True),
         ),
     ]
