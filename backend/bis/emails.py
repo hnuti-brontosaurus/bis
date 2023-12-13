@@ -1,3 +1,4 @@
+from base64 import b64encode
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
@@ -14,6 +15,7 @@ emails = {
     "movement": ("Hnutí Brontosaurus", "hnuti@brontosaurus.cz"),
     "education": ("Vzdělávání", "vzdelavani@brontosaurus.cz"),
     "volunteering": ("Dobrovolnictví", "dobrovolnictvi@brontosaurus.cz"),
+    "adoption": ("Adopce Brontosaura", "adopce@brontosaurus.cz"),
 }
 
 
@@ -398,3 +400,23 @@ def fill_memberships(call):
                 "administration_unit": administration_unit.abbreviation,
             },
         )
+
+
+def donation_confirmation(donor, confirmation, year):
+    ecomail.send_email(
+        emails["adoption"],
+        "Poděkování a potvrzení o daru HB",
+        "167",
+        ["adopce@brontosaurus.cz"],
+        variables={
+            "formal_vokativ": donor.formal_vokativ,
+            **PronounCategory.get_variables(donor.user),
+        },
+        attachments=[
+            {
+                "content_type": "pdf",
+                "name": f"Potvrzení o daru, {donor.user.last_name} {year}.pdf",
+                "data": b64encode(confirmation.read()).decode(),
+            }
+        ],
+    )

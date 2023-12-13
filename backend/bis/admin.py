@@ -38,6 +38,7 @@ from bis.models import (
     UserContactAddress,
     UserEmail,
 )
+from bis.permissions import Permissions
 from categories.models import MembershipCategory, PronounCategory
 from dateutil.utils import today
 from django.contrib import admin, messages
@@ -249,7 +250,8 @@ class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
 
 @admin.action(description="Označ vybrané mužským oslovením")
 def mark_as_man(model_admin, request, queryset):
-    if not all([obj.has_edit_permission(request.user) for obj in queryset]):
+    perms = Permissions(request.user, User, "backend")
+    if not all([perms.has_change_permission(obj) for obj in queryset]):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
@@ -258,7 +260,8 @@ def mark_as_man(model_admin, request, queryset):
 
 @admin.action(description="Označ vybrané ženským oslovením")
 def mark_as_woman(model_admin, request, queryset):
-    if not all([obj.has_edit_permission(request.user) for obj in queryset]):
+    perms = Permissions(request.user, User, "backend")
+    if not all([perms.has_change_permission(obj) for obj in queryset]):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )

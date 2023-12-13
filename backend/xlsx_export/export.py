@@ -445,8 +445,7 @@ def get_donation_confirmation(donor):
         donation.amount for donation in donor.donations.filter(donated_at__year=year)
     )
 
-    assert donor.user.pronoun, f"Uživatel dárce {donor} nemá nastavené oslovení"
-    pronoun = donor.user.pronoun.slug
+    pronoun = donor.user.pronoun and donor.user.pronoun.slug
     pronoun_texts = ["pan/slečna/paní", "poskytl/a"]
     if pronoun == "man":
         pronoun_texts = ["pan", "poskytl"]
@@ -468,4 +467,4 @@ def get_donation_confirmation(donor):
         mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
     )
     page.save(tmp_pdf.name)
-    return FileResponse(open(tmp_pdf.name, "rb"))
+    return open(tmp_pdf.name, "rb"), year

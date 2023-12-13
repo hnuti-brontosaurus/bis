@@ -9,11 +9,14 @@ from bis.admin_filters import (
     RecurringDonorWhoStoppedFilter,
 )
 from bis.admin_permissions import PermissionMixin
+from bis.emails import donation_confirmation
+from bis.permissions import Permissions
+from categories.models import PronounCategory
 from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
-from django.http import HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse
 from donations.helpers import upload_bank_records
 from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
@@ -58,10 +61,41 @@ class VariableSymbolInline(PermissionMixin, NestedTabularInline):
     extra = 0
 
 
+@admin.action(description="Označ vybrané mužským oslovením")
+def mark_as_man(model_admin, request, queryset):
+    if not all([obj.has_edit_permission(request.user) for obj in queryset]):
+        return model_admin.message_user(
+            request, "Nemáš právo editovat vybrané objekty", ERROR
+        )
+    queryset.update(user__pronoun=PronounCategory.objects.get(slug="man"))
+
+
+@admin.action(description="Označ vybrané ženským oslovením")
+def mark_as_woman(model_admin, request, queryset):
+    perms = Permissions(request.user, Donor, "backend")
+    if not all([perms.has_change_permission(obj) for obj in queryset]):
+        return model_admin.message_user(
+            request, "Nemáš právo editovat vybrané objekty", ERROR
+        )
+    queryset.update(user__pronoun=PronounCategory.objects.get(slug="woman"))
+
+
+@admin.action(description="Zašli potvrzení o daru")
+def send_donation_confirmation(model_admin, request, queryset):
+    perms = Permissions(request.user, Donor, "backend")
+    if not all([perms.has_change_permission(obj) for obj in queryset]):
+        return model_admin.message_user(
+            request, "Nemáš právo editovat vybrané objekty", ERROR
+        )
+    for obj in queryset:
+        donation_confirmation(obj, *get_donation_confirmation(obj))
+    messages.info(request, f"Úspěšně posláno {queryset.count()} potvrzení")
+
+
 @admin.register(Donor)
 class DonorAdmin(PermissionMixin, NestedModelAdmin):
     change_form_template = "bis/donor_change_form.html"
-    actions = [export_to_xlsx]
+    actions = [send_donation_confirmation, mark_as_woman, mark_as_man, export_to_xlsx]
     list_display = (
         "user",
         "get_user_email",
@@ -163,10 +197,10 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
             obj = self.get_object(request, unquote(object_id), to_field)
 
             if "_donation_confirmation_pdf_export" in request.POST:
-                try:
-                    return get_donation_confirmation(obj)
-                except AssertionError as e:
-                    messages.error(request, str(e))
+                return FileResponse(get_donation_confirmation(obj)[0])
+            if "_donation_confirmation_pdf_email" in request.POST:
+                donation_confirmation(obj, *get_donation_confirmation(obj))
+                messages.info(request, "Potvrzení o daru úspěšně odesláno")
 
         return super().changeform_view(request, object_id, form_url, extra_context)
 
