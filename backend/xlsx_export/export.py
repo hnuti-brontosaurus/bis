@@ -20,6 +20,7 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import FileResponse
+from django.utils.formats import date_format
 from event.models import Event
 from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
@@ -437,7 +438,7 @@ def get_donation_confirmation(donor):
     if today.month < 6:
         created_at = min(today, date(today.year, 1, 31))
 
-    text = f"{created_at.day}. {created_at.month}. {created_at.year}"
+    text = date_format(created_at)
     text_params = dict(fill=(0, 0, 0), font=font, spacing=1.5 * 34)
     draw.text((1244 * 3, 379 * 3 - 1), text, **text_params)
 
