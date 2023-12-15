@@ -44,8 +44,18 @@ class Command(BaseCommand):
         if today.day == 1:
             try_to_run(call_command, "archive_events")
 
-        if today.month == 10:
-            if today.day == 15:
-                try_to_run(emails.fill_memberships, call=1)
-            if today.day == 27:
-                try_to_run(emails.fill_memberships, call=2)
+        day_of_year = (today.day, today.month)
+
+        if day_of_year == (15, 10):
+            try_to_run(emails.fill_memberships, call=1)
+        if day_of_year == (27, 10):
+            try_to_run(emails.fill_memberships, call=2)
+
+        if day_of_year in [
+            (15, 1),
+            (15, 3),
+            (15, 5),
+            (15, 9),
+            (30, 11),
+        ]:
+            try_to_run(emails.send_opportunities_summary)

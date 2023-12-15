@@ -2,9 +2,12 @@ from base64 import b64encode
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
+from bis.helpers import make_a, make_ul
 from bis.models import Qualification
 from categories.models import EventProgramCategory, PronounCategory
+from dateutil.utils import today
 from django.conf import settings
+from django.utils.formats import date_format
 from ecomail import ecomail
 from event.models import Event
 from opportunities.models import Opportunity
@@ -138,15 +141,13 @@ def get_unclosed_events():
 
 
 def events_to_list(events):
-    events = "".join(
-        f"<li>"
+    return make_ul(
         f"{event.name}, {event.get_date()}, "
-        f'<a href="{settings.FULL_HOSTNAME}/org/akce/{event.id}">BIS</a>, '
-        f'<a href="{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}/change/">Administrace</a>'
-        f"</li>"
+        + make_a("BIS", f"{settings.FULL_HOSTNAME}/org/akce/{event.id}")
+        + ", "
+        + make_a("Administrace", f"{settings.FULL_HOSTNAME}/admin/bis/event/{event.id}")
         for event in events
     )
-    return f"<ul>{events}</ul>"
 
 
 def events_summary():
@@ -419,4 +420,27 @@ def donation_confirmation(donor, confirmation, year):
                 "data": b64encode(confirmation.read()).decode(),
             }
         ],
+    )
+
+
+def send_opportunities_summary():
+    opportunities = Opportunity.objects.filter(
+        on_web_start__lte=today(),
+        on_web_end__gte=today(),
+    )
+    opportunities = make_ul(
+        make_a(
+            opportunity.name,
+            f"https://brontosaurus.cz/zapoj-se/prilezitost/{opportunity.id}/",
+        )
+        + f", {opportunity.location}, {date_format(opportunity.start)} - {date_format(opportunity.end)}"
+        for opportunity in opportunities
+    )
+    ecomail.send_email(
+        emails["bis"],
+        "Příležitosti",
+        "201",
+        # ["organizatori@brontosaurus.cz"],
+        ["lamanchy@gmail.com"],
+        variables={"opportunities": opportunities},
     )

@@ -259,3 +259,12 @@ def filter_queryset_with_multiple_or_queries(queryset, queries):
     for query in queries:
         ids = ids.union(queryset.filter(query).order_by().values_list("id", flat=True))
     return queryset.filter(id__in=ids)
+
+
+def make_a(content, link):
+    return f'<a href="{link}">{content}</a>'
+
+
+def make_ul(data):
+    data = "".join(f"<li>{item}</li>" for item in data)
+    return f"<ul>{data}</ul>"
