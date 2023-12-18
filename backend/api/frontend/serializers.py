@@ -508,7 +508,7 @@ class UserSerializer(ModelSerializer):
 
     def get_excluded_fields(self, fields):
         if self.context["request"].user.id != fields.get("id"):
-            return ["donor", "eyca_card"]
+            return ["donor"]
 
         return []
 
