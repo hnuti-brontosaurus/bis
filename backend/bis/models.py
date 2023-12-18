@@ -244,6 +244,7 @@ class User(AbstractBaseUser):
     phone = PhoneNumberField(blank=True)
     email = EmailField(unique=True, blank=True, null=True)
     birthday = DateField(null=True)
+    photo = ThumbnailImageField(upload_to="user_photos", null=True, blank=True)
 
     subscribed_to_newsletter = BooleanField(default=True)
 
@@ -710,7 +711,6 @@ class UserClosePerson(BaseContact):
 @translate_model
 class EYCACard(Model):
     user = OneToOneField(User, on_delete=CASCADE, related_name="eyca_card")
-    photo = ThumbnailImageField(upload_to="eyca_photos")
     number = CharField(max_length=63)
     submitted_for_creation = BooleanField(default=False)
     sent_to_user = BooleanField(default=False)

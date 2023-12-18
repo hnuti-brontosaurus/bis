@@ -390,6 +390,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                     "pronoun",
                     "phone",
                     "get_all_emails",
+                    "photo",
                 ]
             },
         ],

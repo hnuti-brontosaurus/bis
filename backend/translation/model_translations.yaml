@@ -62,7 +62,6 @@ EYCACard:
   name: EYCA karta
   name_plural: EYCA karty
   fields:
-    photo: Fotka
     number: Číslo kartičky
     submitted_for_creation: Předáno k výrobě
     sent_to_user: Odesláno uživateli

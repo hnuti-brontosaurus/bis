@@ -349,7 +349,6 @@ class EYCACardSerializer(ModelSerializer):
     class Meta:
         model = EYCACard
         fields = (
-            "photo",
             "number",
             "submitted_for_creation",
             "sent_to_user",
@@ -443,6 +442,7 @@ class UserSerializer(ModelSerializer):
             "email",
             "all_emails",
             "birthday",
+            "photo",
             "close_person",
             "subscribed_to_newsletter",
             "health_insurance_company",
