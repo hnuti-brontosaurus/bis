@@ -24,13 +24,16 @@ from django.utils.formats import date_format
 from event.models import Event
 from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
+from questionnaire.models import EventApplication
 from rest_framework.serializers import ModelSerializer
 from translation.translate import _
 from xlsx2html import xlsx2html
+from xlsx_export.helpers import text_into_lines
 from xlsx_export.serializers import (
     AdministrationUnitExportSerializer,
     DonationExportSerializer,
     DonorExportSerializer,
+    EventApplicationExportSerializer,
     EventExportSerializer,
     UserExportSerializer,
 )
@@ -83,11 +86,17 @@ class XLSXWriter:
             serializer = serializer_class(page.object_list, many=True)
             for item in serializer.data:
                 if not self.row:
-                    self.write_header(serializer.child.get_fields())
+                    self.write_header(self.get_fields(serializer, queryset))
                 self.write_row(item)
 
         for i, key in enumerate(self.header_keys):
             self.worksheet.set_column(i, i, width=self.widths[key])
+
+    def get_fields(self, serializer, queryset):
+        fields = serializer.child.get_fields()
+        if fn := getattr(serializer.child, "get_extra_fields", None):
+            fields.update(fn(queryset))
+        return fields
 
     def write_values(self, values):
         values = {key: value for key, value in values}
@@ -210,6 +219,7 @@ def export_to_xlsx(model_admin, request, queryset):
             DonorExportSerializer,
             DonationExportSerializer,
             AdministrationUnitExportSerializer,
+            EventApplicationExportSerializer,
         ]
         if s.Meta.model is queryset.model
     ][0]
@@ -323,8 +333,11 @@ def get_attendance_list(event: Event):
         },
     )
 
+    applications = EventApplication.objects.filter(
+        state__in=["pending", "approved"], event_registration__event=event
+    )
     return {
-        "xlsx": FileResponse(open(tmp_xlsx.name, "rb")),
+        "xlsx": export_to_xlsx(_, _, applications),
         "pdf": FileResponse(open(tmp_pdf.name, "rb")),
     }
 
@@ -387,36 +400,6 @@ def export_files(event: Event):
         make_archive(file.name, "zip")
 
     return FileResponse(open(file.name, "rb"))
-
-
-RESOLUTION_DPI = 300
-ANTIALIASING = 3
-
-
-def mm_to_px(*args):
-    x = args
-    if len(args) == 1:
-        x = args[0]
-    if isinstance(x, int) or isinstance(x, float):
-        return int(RESOLUTION_DPI * ANTIALIASING * 0.03937 * x)
-
-    return type(x)([mm_to_px(i) for i in x])
-
-
-def text_into_lines(draw, font, text, max_width):
-    tokens = text.split(" ")
-    sizes = [draw.textbbox((0, 0), token, font) for token in tokens]
-    lines = [[]]
-    width = 0
-    space_width = draw.textbbox((0, 0), " ", font)[2]
-    for token, size in zip(tokens, sizes):
-        if width + size[2] > max_width:
-            lines.append([])
-            width = 0
-        lines[-1].append(token)
-        width += size[2] + space_width
-    lines = [" ".join(line) for line in lines]
-    return "\n".join(lines)
 
 
 def get_donation_confirmation(donor):

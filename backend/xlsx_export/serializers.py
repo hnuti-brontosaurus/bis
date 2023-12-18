@@ -9,6 +9,7 @@ from event.models import (
     EventRegistration,
 )
 from opportunities.models import OfferedHelp
+from questionnaire.models import EventApplication, Question
 from rest_framework.fields import ReadOnlyField, SerializerMethodField
 from rest_framework.relations import StringRelatedField
 from rest_framework.serializers import ModelSerializer
@@ -371,3 +372,62 @@ class AdministrationUnitExportSerializer(ModelSerializer):
             "vice_chairman",
             "manager",
         )
+
+
+class EventApplicationClosePersonExportSerializer(ModelSerializer):
+    class Meta:
+        model = UserClosePerson
+        fields = (
+            "first_name",
+            "last_name",
+            "phone",
+            "email",
+        )
+
+
+class EventApplicationExportSerializer(ModelSerializer):
+    close_person = EventApplicationClosePersonExportSerializer()
+    address = StringRelatedField(label="Adresa")
+    pronoun = StringRelatedField(label="Oslovení")
+
+    @staticmethod
+    def get_related(queryset):
+        return queryset.select_related(
+            "pronoun",
+            "close_person",
+            "address",
+        ).prefetch_related(
+            "answers",
+        )
+
+    class Meta:
+        model = EventApplication
+        fields = (
+            "state",
+            "is_child_application",
+            "first_name",
+            "last_name",
+            "nickname",
+            "phone",
+            "email",
+            "birthday",
+            "health_issues",
+            "pronoun",
+            "created_at",
+            "note",
+            "close_person",
+            "address",
+        )
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        for answer in instance.answers.all():
+            result[str(answer.question.id)] = answer.answer
+        return result
+
+    def get_extra_fields(self, queryset):
+        questions = Question.objects.filter(
+            questionnaire__event_registration=queryset.first().event_registration
+        )
+        for question in questions:
+            yield str(question.id), question.question
