@@ -1,54 +1,116 @@
 from datetime import date
 
+from api.helpers import catch_related_object_does_not_exist
+from bis.helpers import AgeStats
+from bis.models import (
+    EYCACard,
+    Location,
+    LocationContactPerson,
+    LocationPatron,
+    Membership,
+    Qualification,
+    QualificationNote,
+    User,
+    UserAddress,
+    UserClosePerson,
+    UserContactAddress,
+)
+from categories.serializers import (
+    DietCategorySerializer,
+    DonationSourceCategorySerializer,
+    EventCategorySerializer,
+    EventGroupCategorySerializer,
+    EventIntendedForCategorySerializer,
+    EventProgramCategorySerializer,
+    EventTagSerializer,
+    GrantCategorySerializer,
+    HealthInsuranceCompanySerializer,
+    LocationAccessibilityCategorySerializer,
+    LocationProgramCategorySerializer,
+    MembershipCategorySerializer,
+    OpportunityCategorySerializer,
+    OrganizerRoleCategorySerializer,
+    PronounCategorySerializer,
+    QualificationCategorySerializer,
+    RoleCategorySerializer,
+    TeamRoleCategorySerializer,
+)
 from dateutil.utils import today
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import ManyToManyField
+from donations.models import Donation, Donor
+from event.models import (
+    Event,
+    EventAttendanceListPage,
+    EventContact,
+    EventDraft,
+    EventFinance,
+    EventFinanceReceipt,
+    EventPhoto,
+    EventPropagation,
+    EventPropagationImage,
+    EventRecord,
+    EventRegistration,
+    VIPEventPropagation,
+)
+from opportunities.models import OfferedHelp, Opportunity
+from other.models import DashboardItem
+from questionnaire.models import (
+    Answer,
+    EventApplication,
+    EventApplicationAddress,
+    EventApplicationClosePerson,
+    Question,
+    Questionnaire,
+)
+from regions.serializers import RegionSerializer
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SerializerMethodField, CharField, DateField, IntegerField, UUIDField, ChoiceField
+from rest_framework.fields import (
+    CharField,
+    ChoiceField,
+    DateField,
+    IntegerField,
+    SerializerMethodField,
+    UUIDField,
+)
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.relations import SlugRelatedField
-from rest_framework.serializers import ModelSerializer as DRFModelSerializer, ListSerializer, Serializer
+from rest_framework.serializers import ListSerializer
+from rest_framework.serializers import ModelSerializer as DRFModelSerializer
+from rest_framework.serializers import Serializer
 from rest_framework.utils import model_meta
 
-from api.helpers import catch_related_object_does_not_exist
 from bis import emails
-from bis.helpers import AgeStats
-from bis.models import User, Location, UserAddress, UserContactAddress, Membership, Qualification, UserClosePerson, \
-    LocationContactPerson, LocationPatron, EYCACard
-from categories.serializers import DonationSourceCategorySerializer, EventProgramCategorySerializer, \
-    OrganizerRoleCategorySerializer, TeamRoleCategorySerializer, MembershipCategorySerializer, \
-    QualificationCategorySerializer, HealthInsuranceCompanySerializer, PronounCategorySerializer, \
-    RoleCategorySerializer, \
-    GrantCategorySerializer, EventIntendedForCategorySerializer, DietCategorySerializer, EventCategorySerializer, \
-    LocationProgramCategorySerializer, LocationAccessibilityCategorySerializer, OpportunityCategorySerializer, \
-    EventGroupCategorySerializer, EventTagSerializer
-from donations.models import Donor, Donation
-from event.models import Event, EventFinance, EventPropagation, EventRegistration, EventRecord, EventFinanceReceipt, \
-    EventPropagationImage, EventPhoto, VIPEventPropagation, EventDraft, EventContact, EventAttendanceListPage
-from opportunities.models import Opportunity, OfferedHelp
-from other.models import DashboardItem
-from questionnaire.models import Questionnaire, Question, EventApplication, EventApplicationClosePerson, \
-    EventApplicationAddress, Answer
-from regions.serializers import RegionSerializer
 
 
 class ModelSerializer(DRFModelSerializer):
     @staticmethod
     def only_null_doesnt_mean_it_is_not_required(model_field, field_kwargs):
         if model_field.null and not model_field.blank:
-            field_kwargs.pop('allow_null', None)
+            field_kwargs.pop("allow_null", None)
             if not model_field.has_default():
-                field_kwargs.pop('required', None)
+                field_kwargs.pop("required", None)
 
     def build_standard_field(self, field_name, model_field):
-        field_class, field_kwargs = super().build_standard_field(field_name, model_field)
+        field_class, field_kwargs = super().build_standard_field(
+            field_name, model_field
+        )
         self.only_null_doesnt_mean_it_is_not_required(model_field, field_kwargs)
         return field_class, field_kwargs
 
     def build_relational_field(self, field_name, relation_info):
-        field_class, field_kwargs = super().build_relational_field(field_name, relation_info)
-        model_field, related_model, to_many, to_field, has_through_model, reverse = relation_info
+        field_class, field_kwargs = super().build_relational_field(
+            field_name, relation_info
+        )
+        (
+            model_field,
+            related_model,
+            to_many,
+            to_field,
+            has_through_model,
+            reverse,
+        ) = relation_info
         self.only_null_doesnt_mean_it_is_not_required(model_field, field_kwargs)
         return field_class, field_kwargs
 
@@ -61,18 +123,31 @@ class ModelSerializer(DRFModelSerializer):
     @property
     def m2m_fields(self):
         info = model_meta.get_field_info(self.Meta.model)
-        return [field_name for field_name, relation_info in info.relations.items() if (
-                isinstance(relation_info.model_field, ManyToManyField) or
-                isinstance(getattr(relation_info.related_model, relation_info.to_field or '', None), ManyToManyField)
-        )]
+        return [
+            field_name
+            for field_name, relation_info in info.relations.items()
+            if (
+                isinstance(relation_info.model_field, ManyToManyField)
+                or isinstance(
+                    getattr(
+                        relation_info.related_model, relation_info.to_field or "", None
+                    ),
+                    ManyToManyField,
+                )
+            )
+        ]
 
     @property
     def nested_serializers(self):
         result = {}
         for field_name, field in self.fields.items():
-            if isinstance(field, ListSerializer): field = field.child
+            if isinstance(field, ListSerializer):
+                field = field.child
             if isinstance(field, ModelSerializer):
-                result[field_name] = type(field), self.Meta.model._meta.get_field(field_name).remote_field.name
+                result[field_name] = (
+                    type(field),
+                    self.Meta.model._meta.get_field(field_name).remote_field.name,
+                )
         return result
 
     def get_excluded_fields(self, fields):
@@ -93,18 +168,24 @@ class ModelSerializer(DRFModelSerializer):
 
     @staticmethod
     def is_serializer_with_id(field):
-        if isinstance(field, ListSerializer): field = field.child
-        return isinstance(field, DRFModelSerializer) and 'id' in field.get_fields()
+        if isinstance(field, ListSerializer):
+            field = field.child
+        return isinstance(field, DRFModelSerializer) and "id" in field.get_fields()
 
     def get_fields(self):
         fields = super().get_fields()
 
         # replace serializers with id field with default PrimaryKeyRelatedField
-        if 'request' in self.context and self.context['request'].method not in SAFE_METHODS:
+        if (
+            "request" in self.context
+            and self.context["request"].method not in SAFE_METHODS
+        ):
             _declared_fields, self._declared_fields = self._declared_fields, []
-            self._declared_fields = {key: field for
-                                     key, field in _declared_fields.items()
-                                     if not self.is_serializer_with_id(field)}
+            self._declared_fields = {
+                key: field
+                for key, field in _declared_fields.items()
+                if not self.is_serializer_with_id(field)
+            }
             without_id_serializers = super().get_fields()
             self._declared_fields = _declared_fields
 
@@ -120,7 +201,9 @@ class ModelSerializer(DRFModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        nested_serializers = self.extract_fields(validated_data, self.nested_serializers.keys())
+        nested_serializers = self.extract_fields(
+            validated_data, self.nested_serializers.keys()
+        )
         m2m_fields = self.extract_fields(validated_data, self.m2m_fields)
 
         instance = self.Meta.model.objects.create(**validated_data)
@@ -130,7 +213,11 @@ class ModelSerializer(DRFModelSerializer):
                 continue
 
             serializer_class, reverse_field = self.nested_serializers[field]
-            serializer = serializer_class(data=self.initial_data[field], context=self.context, many=type(value) == list)
+            serializer = serializer_class(
+                data=self.initial_data[field],
+                context=self.context,
+                many=type(value) == list,
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save(**{reverse_field: instance})
 
@@ -142,7 +229,9 @@ class ModelSerializer(DRFModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         m2m_fields = self.extract_fields(validated_data, self.m2m_fields)
-        nested_serializers = self.extract_fields(validated_data, self.nested_serializers.keys())
+        nested_serializers = self.extract_fields(
+            validated_data, self.nested_serializers.keys()
+        )
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -158,8 +247,12 @@ class ModelSerializer(DRFModelSerializer):
                     nested_instance.delete()
                 continue
 
-            serializer = serializer_class(instance=nested_instance, data=self.initial_data[field],
-                                          context=self.context, many=type(value) == list)
+            serializer = serializer_class(
+                instance=nested_instance,
+                data=self.initial_data[field],
+                context=self.context,
+                many=type(value) == list,
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save(**{reverse_field: instance})
 
@@ -176,20 +269,20 @@ class BaseAddressSerializer(ModelSerializer):
 
     class Meta:
         fields = (
-            'street',
-            'city',
-            'zip_code',
-            'region',
+            "street",
+            "city",
+            "zip_code",
+            "region",
         )
 
 
 class BaseContactSerializer(ModelSerializer):
     class Meta:
         fields = (
-            'first_name',
-            'last_name',
-            'email',
-            'phone',
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
         )
 
 
@@ -199,28 +292,30 @@ class DonationSerializer(ModelSerializer):
     class Meta:
         model = Donation
         fields = (
-            'donated_at',
-            'amount',
-            'donation_source',
+            "donated_at",
+            "amount",
+            "donation_source",
         )
 
 
 class DonorSerializer(ModelSerializer):
-    variable_symbols = SlugRelatedField(slug_field='variable_symbol', read_only=True, many=True)
+    variable_symbols = SlugRelatedField(
+        slug_field="variable_symbol", read_only=True, many=True
+    )
     donations = DonationSerializer(many=True, read_only=True)
 
     class Meta:
         model = Donor
         fields = (
-            'subscribed_to_newsletter',
-            'is_public',
-            'date_joined',
-            'regional_center_support',
-            'basic_section_support',
-            'variable_symbols',
-            'donations',
+            "subscribed_to_newsletter",
+            "is_public",
+            "date_joined",
+            "regional_center_support",
+            "basic_section_support",
+            "variable_symbols",
+            "donations",
         )
-        read_only_fields = 'id', 'date_joined'
+        read_only_fields = "id", "date_joined"
 
 
 class OfferedHelpSerializer(ModelSerializer):
@@ -231,12 +326,12 @@ class OfferedHelpSerializer(ModelSerializer):
     class Meta:
         model = OfferedHelp
         fields = (
-            'programs',
-            'organizer_roles',
-            'additional_organizer_role',
-            'team_roles',
-            'additional_team_role',
-            'info',
+            "programs",
+            "organizer_roles",
+            "additional_organizer_role",
+            "team_roles",
+            "additional_team_role",
+            "info",
         )
 
 
@@ -254,17 +349,16 @@ class EYCACardSerializer(ModelSerializer):
     class Meta:
         model = EYCACard
         fields = (
-            'photo',
-            'number',
-            'submitted_for_creation',
-            'sent_to_user',
-            'valid_till',
+            "number",
+            "submitted_for_creation",
+            "sent_to_user",
+            "valid_till",
         )
         read_only_fields = (
-            'number',
-            'submitted_for_creation',
-            'sent_to_user',
-            'valid_till',
+            "number",
+            "submitted_for_creation",
+            "sent_to_user",
+            "valid_till",
         )
 
 
@@ -274,29 +368,41 @@ class MembershipSerializer(ModelSerializer):
     class Meta:
         model = Membership
         fields = (
-            'category',
-            'administration_unit',
-            'year',
+            "category",
+            "administration_unit",
+            "year",
         )
 
 
-class QualificationApprovedBySerializer(BaseContactSerializer):
+class QualificationResponsibleUserSerializer(BaseContactSerializer):
     class Meta(BaseContactSerializer.Meta):
         model = User
 
 
 class QualificationSerializer(ModelSerializer):
-    approved_by = QualificationApprovedBySerializer()
+    approved_by = QualificationResponsibleUserSerializer()
 
     category = QualificationCategorySerializer()
 
     class Meta:
         model = Qualification
         fields = (
-            'category',
-            'valid_since',
-            'valid_till',
-            'approved_by',
+            "category",
+            "valid_since",
+            "valid_till",
+            "approved_by",
+        )
+
+
+class QualificationNoteSerializer(ModelSerializer):
+    created_by = QualificationResponsibleUserSerializer()
+
+    class Meta:
+        model = QualificationNote
+        fields = (
+            "created_at",
+            "created_by",
+            "note",
         )
 
 
@@ -306,7 +412,7 @@ class ClosePersonSerializer(BaseContactSerializer):
 
 
 class UserSerializer(ModelSerializer):
-    all_emails = SlugRelatedField(slug_field='email', many=True, read_only=True)
+    all_emails = SlugRelatedField(slug_field="email", many=True, read_only=True)
     close_person = ClosePersonSerializer(allow_null=True)
     donor = DonorSerializer(allow_null=True)
     offers = OfferedHelpSerializer(allow_null=True)
@@ -314,6 +420,7 @@ class UserSerializer(ModelSerializer):
     contact_address = UserContactAddressSerializer(allow_null=True)
     memberships = MembershipSerializer(many=True, read_only=True)
     qualifications = QualificationSerializer(many=True, read_only=True)
+    qualification_notes = QualificationNoteSerializer(many=True, read_only=True)
     display_name = SerializerMethodField()
     eyca_card = EYCACardSerializer(allow_null=True)
 
@@ -324,65 +431,84 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id',
-            '_search_id',
-            'first_name',
-            'last_name',
-            'nickname',
-            'birth_name',
-            'display_name',
-            'phone',
-            'email',
-            'all_emails',
-            'birthday',
-            'close_person',
-            'subscribed_to_newsletter',
-            'health_insurance_company',
-            'health_issues',
-            'pronoun',
-            'is_active',
-            'date_joined',
-            'roles',
-            'donor',
-            'offers',
-            'address',
-            'contact_address',
-            'eyca_card',
-            'memberships',
-            'qualifications',
+            "id",
+            "_search_id",
+            "first_name",
+            "last_name",
+            "nickname",
+            "birth_name",
+            "display_name",
+            "phone",
+            "email",
+            "all_emails",
+            "birthday",
+            "photo",
+            "close_person",
+            "subscribed_to_newsletter",
+            "health_insurance_company",
+            "health_issues",
+            "pronoun",
+            "is_active",
+            "date_joined",
+            "roles",
+            "donor",
+            "offers",
+            "address",
+            "contact_address",
+            "eyca_card",
+            "memberships",
+            "qualifications",
+            "qualification_notes",
         )
-        read_only_fields = 'date_joined', 'is_active', 'roles'
+        read_only_fields = "date_joined", "is_active", "roles"
 
     def update(self, instance, validated_data):
-        email = validated_data.get('email')
+        email = validated_data.get("email")
         if email and email != instance.email:
-            user = self.context['request'].user
+            user = self.context["request"].user
             if instance != user:
                 if user.is_superuser:
                     pass
                 elif user.is_office_worker:
                     if instance.is_superuser:
-                        raise ValidationError('Cannot change email of superuser as office worker')
+                        raise ValidationError(
+                            "Cannot change email of superuser as office worker"
+                        )
                 elif user.is_board_member:
                     if instance.is_superuser or instance.is_office_worker:
-                        raise ValidationError('Cannot change email of superuser or office worker as board member')
+                        raise ValidationError(
+                            "Cannot change email of superuser or office worker as board member"
+                        )
                     if instance.is_board_member:
                         for user_administration_unit in user.administration_units.all():
-                            for instance_administration_unit in instance.administration_units.all():
-                                if user_administration_unit == instance_administration_unit:
+                            for (
+                                instance_administration_unit
+                            ) in instance.administration_units.all():
+                                if (
+                                    user_administration_unit
+                                    == instance_administration_unit
+                                ):
                                     break
                             else:
-                                raise ValidationError('Cannot change email of board member of different administration unit then yours')
+                                raise ValidationError(
+                                    "Cannot change email of board member of different administration unit then yours"
+                                )
                 elif user.is_organizer:
-                    if instance.is_superuser or instance.is_office_worker or instance.is_board_member:
-                        raise ValidationError('Cannot change email of superuser, office worker or board member as '
-                                              'organizer')
+                    if (
+                        instance.is_superuser
+                        or instance.is_office_worker
+                        or instance.is_board_member
+                    ):
+                        raise ValidationError(
+                            "Cannot change email of superuser, office worker or board member as "
+                            "organizer"
+                        )
 
         return super().update(instance, validated_data)
 
     def get_excluded_fields(self, fields):
-        if self.context['request'].user.id != fields.get('id'):
-            return ['donor', 'eyca_card']
+        if self.context["request"].user.id != fields.get("id"):
+            return ["donor"]
 
         return []
 
@@ -396,11 +522,11 @@ class FinanceSerializer(ModelSerializer):
     class Meta:
         model = EventFinance
         fields = (
-            'bank_account_number',
-            'grant_category',
-            'grant_amount',
-            'total_event_cost',
-            'budget',
+            "bank_account_number",
+            "grant_category",
+            "grant_amount",
+            "total_event_cost",
+            "budget",
         )
 
 
@@ -408,10 +534,10 @@ class VIPPropagationSerializer(ModelSerializer):
     class Meta:
         model = VIPEventPropagation
         fields = (
-            'goals_of_event',
-            'program',
-            'short_invitation_text',
-            'rover_propagation',
+            "goals_of_event",
+            "program",
+            "short_invitation_text",
+            "rover_propagation",
         )
 
 
@@ -421,24 +547,24 @@ class PropagationSerializer(ModelSerializer):
     class Meta:
         model = EventPropagation
         fields = (
-            'is_shown_on_web',
-            'minimum_age',
-            'maximum_age',
-            'cost',
-            'accommodation',
-            'working_hours',
-            'working_days',
-            'diets',
-            'organizers',
-            'web_url',
-            '_contact_url',
-            'invitation_text_introduction',
-            'invitation_text_practical_information',
-            'invitation_text_work_description',
-            'invitation_text_about_us',
-            'contact_name',
-            'contact_phone',
-            'contact_email',
+            "is_shown_on_web",
+            "minimum_age",
+            "maximum_age",
+            "cost",
+            "accommodation",
+            "working_hours",
+            "working_days",
+            "diets",
+            "organizers",
+            "web_url",
+            "_contact_url",
+            "invitation_text_introduction",
+            "invitation_text_practical_information",
+            "invitation_text_work_description",
+            "invitation_text_about_us",
+            "contact_name",
+            "contact_phone",
+            "contact_email",
         )
 
 
@@ -446,8 +572,8 @@ class QuestionnaireSerializer(ModelSerializer):
     class Meta:
         model = Questionnaire
         fields = (
-            'introduction',
-            'after_submit_text',
+            "introduction",
+            "after_submit_text",
         )
 
 
@@ -457,10 +583,10 @@ class RegistrationSerializer(ModelSerializer):
     class Meta:
         model = EventRegistration
         fields = (
-            'is_registration_required',
-            'alternative_registration_link',
-            'is_event_full',
-            'questionnaire',
+            "is_registration_required",
+            "alternative_registration_link",
+            "is_event_full",
+            "questionnaire",
         )
 
 
@@ -484,20 +610,26 @@ class RecordSerializer(ModelSerializer):
     class Meta:
         model = EventRecord
         fields = (
-            'total_hours_worked',
-            'comment_on_work_done',
-            'participants',
-            'number_of_participants',
-            'number_of_participants_under_26',
-            'note',
-            'contacts',
-            'age_stats',
+            "total_hours_worked",
+            "comment_on_work_done",
+            "participants",
+            "number_of_participants",
+            "number_of_participants_under_26",
+            "note",
+            "contacts",
+            "age_stats",
         )
 
     def get_age_stats(self, instance) -> dict:
         return {
-            "at_start_of_event": AgeStats('', instance.get_all_participants(), instance.event.start).get_data(),
-            "at_start_of_year": AgeStats('', instance.get_all_participants(), date(instance.event.start.year, 1, 1)).get_data()
+            "at_start_of_event": AgeStats(
+                "", instance.get_all_participants(), instance.event.start
+            ).get_data(),
+            "at_start_of_year": AgeStats(
+                "",
+                instance.get_all_participants(),
+                date(instance.event.start.year, 1, 1),
+            ).get_data(),
         }
 
 
@@ -517,39 +649,39 @@ class EventSerializer(ModelSerializer):
     class Meta:
         model = Event
         fields = (
-            'id',
-            'name',
-            'is_canceled',
-            'is_closed',
-            'is_archived',
-            'start',
-            'start_time',
-            'end',
-            'number_of_sub_events',
-            'location',
-            'online_link',
-            'group',
-            'category',
-            'tags',
-            'program',
-            'intended_for',
-            'administration_units',
-            'main_organizer',
-            'other_organizers',
-            'is_attendance_list_required',
-            'internal_note',
-            'duration',
-            'finance',
-            'propagation',
-            'vip_propagation',
-            'registration',
-            'record',
+            "id",
+            "name",
+            "is_canceled",
+            "is_closed",
+            "is_archived",
+            "start",
+            "start_time",
+            "end",
+            "number_of_sub_events",
+            "location",
+            "online_link",
+            "group",
+            "category",
+            "tags",
+            "program",
+            "intended_for",
+            "administration_units",
+            "main_organizer",
+            "other_organizers",
+            "is_attendance_list_required",
+            "internal_note",
+            "duration",
+            "finance",
+            "propagation",
+            "vip_propagation",
+            "registration",
+            "record",
         )
-        read_only_fields = ['duration']
+        read_only_fields = ["duration"]
 
     def get_excluded_fields(self, fields):
-        if self.context['request'].user.is_member_only:
-            return ['internal_note', 'finance', 'record']
+        if self.context["request"].user.is_member_only:
+            return ["internal_note", "finance", "record"]
 
         return []
 
@@ -557,20 +689,21 @@ class EventSerializer(ModelSerializer):
         locked_year = today().year - 1
         if today().month < 3:
             locked_year -= 1
-        if validated_data['start'].year <= locked_year:
+        if validated_data["start"].year <= locked_year:
             raise DjangoValidationError("Cannot create events in the past")
 
-        validated_data['created_by'] = self.context['request'].user
+        validated_data["created_by"] = self.context["request"].user
         instance = super().create(validated_data)
 
         emails.event_created(instance)
         return instance
 
     def update(self, instance, validated_data):
-        was_closed = instance.is_closed
+        is_closing = not instance.is_closed and validated_data.get("is_closed")
+        if is_closing:
+            validated_data["closed_at"] = date.today()
         instance = super().update(instance, validated_data)
-        if not was_closed and instance.is_closed:
-            emails.event_closed(instance)
+        if is_closing:
             emails.event_end_participants_notification(instance)
         return instance
 
@@ -597,27 +730,27 @@ class LocationSerializer(ModelSerializer):
     class Meta:
         model = Location
         fields = (
-            'id',
-            'name',
-            'description',
-            'patron',
-            'contact_person',
-            'is_traditional',
-            'for_beginners',
-            'is_full',
-            'is_unexplored',
-            'program',
-            'accessibility_from_prague',
-            'accessibility_from_brno',
-            'volunteering_work',
-            'volunteering_work_done',
-            'volunteering_work_goals',
-            'options_around',
-            'facilities',
-            'web',
-            'address',
-            'gps_location',
-            'region',
+            "id",
+            "name",
+            "description",
+            "patron",
+            "contact_person",
+            "is_traditional",
+            "for_beginners",
+            "is_full",
+            "is_unexplored",
+            "program",
+            "accessibility_from_prague",
+            "accessibility_from_brno",
+            "volunteering_work",
+            "volunteering_work_done",
+            "volunteering_work_goals",
+            "options_around",
+            "facilities",
+            "web",
+            "address",
+            "gps_location",
+            "region",
         )
 
 
@@ -627,28 +760,30 @@ class OpportunitySerializer(ModelSerializer):
     class Meta:
         model = Opportunity
         fields = (
-            'id',
-            'category',
-            'name',
-            'start',
-            'end',
-            'on_web_start',
-            'on_web_end',
-            'location',
-            'introduction',
-            'description',
-            'location_benefits',
-            'personal_benefits',
-            'requirements',
-            'contact_name',
-            'contact_phone',
-            'contact_email',
-            'image',
+            "id",
+            "category",
+            "name",
+            "start",
+            "end",
+            "on_web_start",
+            "on_web_end",
+            "location",
+            "introduction",
+            "description",
+            "location_benefits",
+            "personal_benefits",
+            "requirements",
+            "contact_name",
+            "contact_phone",
+            "contact_email",
+            "image",
         )
 
     def create(self, validated_data):
-        validated_data['contact_person'] = User.objects.get(id=self.context['view'].kwargs['user_id'])
-        assert validated_data['contact_person'] == self.context['request'].user
+        validated_data["contact_person"] = User.objects.get(
+            id=self.context["view"].kwargs["user_id"]
+        )
+        assert validated_data["contact_person"] == self.context["request"].user
         instance = super().create(validated_data)
         emails.opportunity_created(instance)
         return instance
@@ -658,13 +793,15 @@ class FinanceReceiptSerializer(ModelSerializer):
     class Meta:
         model = EventFinanceReceipt
         fields = (
-            'id',
-            'receipt',
+            "id",
+            "receipt",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['finance'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).finance
+        validated_data["finance"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).finance
         return super().create(validated_data)
 
 
@@ -672,14 +809,16 @@ class EventPropagationImageSerializer(ModelSerializer):
     class Meta:
         model = EventPropagationImage
         fields = (
-            'id',
-            'order',
-            'image',
+            "id",
+            "order",
+            "image",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['propagation'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).propagation
+        validated_data["propagation"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).propagation
         return super().create(validated_data)
 
 
@@ -687,13 +826,15 @@ class EventPhotoSerializer(ModelSerializer):
     class Meta:
         model = EventPhoto
         fields = (
-            'id',
-            'photo',
+            "id",
+            "photo",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['record'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).record
+        validated_data["record"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).record
         return super().create(validated_data)
 
 
@@ -701,13 +842,15 @@ class AttendanceListPageSerializer(ModelSerializer):
     class Meta:
         model = EventAttendanceListPage
         fields = (
-            'id',
-            'page',
+            "id",
+            "page",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['record'] = Event.objects.get(id=self.context['view'].kwargs['event_id']).record
+        validated_data["record"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).record
         return super().create(validated_data)
 
 
@@ -715,17 +858,18 @@ class QuestionSerializer(ModelSerializer):
     class Meta:
         model = Question
         fields = (
-            'id',
-            'question',
-            'data',
-            'is_required',
-            'order',
+            "id",
+            "question",
+            "data",
+            "is_required",
+            "order",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['questionnaire'] = \
-            Event.objects.get(id=self.context['view'].kwargs['event_id']).registration.questionnaire
+        validated_data["questionnaire"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).registration.questionnaire
         return super().create(validated_data)
 
 
@@ -745,9 +889,9 @@ class AnswerSerializer(ModelSerializer):
     class Meta:
         model = Answer
         fields = (
-            'question',
-            'answer',
-            'data',
+            "question",
+            "answer",
+            "data",
         )
 
 
@@ -761,36 +905,37 @@ class EventApplicationSerializer(ModelSerializer):
     class Meta:
         model = EventApplication
         fields = (
-            'id',
-            'user',
-            'state',
-            'first_name',
-            'last_name',
-            'nickname',
-            'phone',
-            'email',
-            'birthday',
-            'health_issues',
-            'pronoun',
-            'created_at',
-            'close_person',
-            'address',
-            'answers',
-            'note',
-            'is_child_application',
+            "id",
+            "user",
+            "state",
+            "first_name",
+            "last_name",
+            "nickname",
+            "phone",
+            "email",
+            "birthday",
+            "health_issues",
+            "pronoun",
+            "created_at",
+            "close_person",
+            "address",
+            "answers",
+            "note",
+            "is_child_application",
         )
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data['event_registration'] = \
-            Event.objects.get(id=self.context['view'].kwargs['event_id']).registration
+        validated_data["event_registration"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).registration
         instance = super().create(validated_data)
         emails.application_created(instance)
         return instance
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all([key in ['user', 'state'] for key in validated_data]):
+        if not all([key in ["user", "state"] for key in validated_data]):
             raise ValidationError("Only user and state are editable")
         return super().update(instance, validated_data)
 
@@ -801,10 +946,10 @@ class UserSearchSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            '_search_id',
-            'display_name',
-            'first_name',
-            'last_name',
+            "_search_id",
+            "display_name",
+            "first_name",
+            "last_name",
         )
 
     def get_display_name(self, instance) -> str:
@@ -814,17 +959,20 @@ class UserSearchSerializer(ModelSerializer):
 class EventDraftSerializer(ModelSerializer):
     class Meta:
         model = EventDraft
-        fields = 'id', 'data',
+        fields = (
+            "id",
+            "data",
+        )
 
     def create(self, validated_data):
-        validated_data['owner'] = self.context['request'].user
+        validated_data["owner"] = self.context["request"].user
         return super().create(validated_data)
 
 
 class DashboardItemSerializer(ModelSerializer):
     class Meta:
         model = DashboardItem
-        fields = 'date', 'name', 'description'
+        fields = "date", "name", "description"
 
 
 class GetUnknownUserRequestSerializer(Serializer):
@@ -834,11 +982,11 @@ class GetUnknownUserRequestSerializer(Serializer):
 
 
 class GetAttendanceListRequestSerializer(Serializer):
-    formatting = ChoiceField(['pdf', 'xlsx'], default='pdf')
+    formatting = ChoiceField(["pdf", "xlsx"], default="pdf")
 
 
 class AttendanceListResponseSerializer(Serializer):
-    format = ChoiceField(['pdf', 'xlsx'], default='pdf')
+    format = ChoiceField(["pdf", "xlsx"], default="pdf")
 
 
 class EventRouterKwargsSerializer(Serializer):

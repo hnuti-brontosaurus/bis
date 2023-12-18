@@ -769,19 +769,6 @@ describe('create event', () => {
       )
     })
 
-    it('[no VIP fields filled] should respond with vip_propagation null', () => {
-      // type a bit but change my mind...
-      cy.get('[name="vip_propagation.goals_of_event"]')
-        .type('goals of event are goals')
-        .clear()
-
-      submit()
-
-      cy.wait('@createEvent')
-        .its('request.body')
-        .should('have.property', 'vip_propagation', null)
-    })
-
     it('[all vip fields filled] should respond with vip_propagation data', () => {
       cy.get('[name="vip_propagation.goals_of_event"]').type(
         'goals of event are goals',

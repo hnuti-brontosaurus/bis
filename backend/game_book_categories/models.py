@@ -1,8 +1,5 @@
 from django.db.models import *
-
 from translation.translate import translate_model
-
-
 
 
 @translate_model
@@ -13,11 +10,12 @@ class BaseCategory(Model):
     emoji = CharField(max_length=3)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
         abstract = True
 
     def __str__(self):
         return f"{self.emoji} {self.name}"
+
 
 @translate_model
 class Tag(BaseCategory):

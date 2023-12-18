@@ -4,19 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0001_initial'),
+        ("categories", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='qualificationcategory',
-            name='parent',
+            model_name="qualificationcategory",
+            name="parent",
         ),
         migrations.AddField(
-            model_name='qualificationcategory',
-            name='parents',
-            field=models.ManyToManyField(related_name='included_qualifications', to='categories.QualificationCategory'),
+            model_name="qualificationcategory",
+            name="parents",
+            field=models.ManyToManyField(
+                related_name="included_qualifications",
+                to="categories.QualificationCategory",
+            ),
         ),
     ]

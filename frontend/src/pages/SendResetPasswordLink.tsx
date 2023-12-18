@@ -86,7 +86,7 @@ export const SendResetPasswordLink = () => {
                     // https://stackoverflow.com/a/24980411 quite random regex
                     // TODO needs to be replaced with django-rest-framework version or something else better than this
                     value:
-                      /^[^<>()[\]\\,;:%#^\s@"$&!@]+@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z0-9]+\.)+[a-zA-Z]{2,}))$/,
+                      /^[^<>()[\]\\,;:%#^\s@"$&!@]+@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}))$/,
                   },
                 })}
               />

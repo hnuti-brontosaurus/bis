@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0005_alter_qualification_valid_till'),
+        ("bis", "0005_alter_qualification_valid_till"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='qualification',
-            name='valid_till',
+            model_name="qualification",
+            name="valid_till",
             field=models.DateField(),
         ),
     ]

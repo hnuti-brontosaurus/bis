@@ -1,30 +1,35 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.contrib.admin.options import TO_FIELD_VAR
-from django.contrib.admin.utils import unquote
-from django.http import HttpResponseRedirect
-from django.utils.datetime_safe import date
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.forms import SortableHiddenMixin
-from nested_admin.nested import NestedTabularInline, NestedModelAdmin, NestedStackedInline
-from rangefilter.filters import DateRangeFilter
-
 from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
+from django.http import HttpResponseRedirect
+from django.utils.datetime_safe import date
 from event.models import *
-from questionnaire.admin import QuestionnaireAdmin, EventApplicationAdmin
+from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.forms import SortableHiddenMixin
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
+from questionnaire.admin import EventApplicationAdmin, QuestionnaireAdmin
+from rangefilter.filters import DateRangeFilter
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx, get_attendance_list, export_files
+from xlsx_export.export import export_files, export_to_xlsx, get_attendance_list
 
 
-class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
+class EventPropagationImageAdmin(
+    PermissionMixin, SortableHiddenMixin, NestedTabularInline
+):
     model = EventPropagationImage
-    sortable_field_name = 'order'
-    readonly_fields = 'image_tag',
+    sortable_field_name = "order"
+    readonly_fields = ("image_tag",)
     extra = 3
-    classes = 'collapse',
+    classes = ("collapse",)
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
@@ -33,66 +38,71 @@ class EventPropagationImageAdmin(PermissionMixin, SortableHiddenMixin, NestedTab
             def clean(_self):
                 super().clean()
                 forms = [form for form in _self.forms if form.is_valid()]
-                forms = [form for form in forms if form.cleaned_data.get('image')]
-                forms = [form for form in forms if not (_self.can_delete and _self._should_delete_form(form))]
+                forms = [form for form in forms if form.cleaned_data.get("image")]
+                forms = [
+                    form
+                    for form in forms
+                    if not (_self.can_delete and _self._should_delete_form(form))
+                ]
                 if len(forms) < 1 and request._event_propagation_needs_image:
-                    raise ValidationError('Nutno nahrát alespoň jeden obrázek')
+                    raise ValidationError("Nutno nahrát alespoň jeden obrázek")
 
         return New1
 
 
 class EventPhotoAdmin(PermissionMixin, NestedTabularInline):
     model = EventPhoto
-    readonly_fields = 'photo_tag',
+    readonly_fields = ("photo_tag",)
     extra = 3
-    classes = 'collapse',
+    classes = ("collapse",)
 
 
 class AttendanceListPageAdmin(PermissionMixin, NestedTabularInline):
     model = EventAttendanceListPage
     extra = 3
-    classes = 'collapse',
+    classes = ("collapse",)
 
 
 class EventContactAdmin(PermissionMixin, NestedTabularInline):
     model = EventContact
-    classes = 'collapse',
+    classes = ("collapse",)
 
 
 class EventFinanceReceiptAdmin(PermissionMixin, NestedStackedInline):
     model = EventFinanceReceipt
-    classes = 'collapse',
+    classes = ("collapse",)
 
 
 class EventFinanceAdmin(PermissionMixin, NestedStackedInline):
     model = EventFinance
-    classes = 'collapse',
+    classes = ("collapse",)
 
-    exclude = 'grant_category', 'grant_amount', 'total_event_cost'
+    exclude = "grant_category", "grant_amount", "total_event_cost"
 
-    inlines = EventFinanceReceiptAdmin,
+    inlines = (EventFinanceReceiptAdmin,)
 
 
 class EventVIPPropagationAdmin(PermissionMixin, NestedStackedInline):
     model = VIPEventPropagation
-    classes = 'collapse',
+    classes = ("collapse",)
 
 
 class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
     model = EventPropagation
-    inlines = EventPropagationImageAdmin,
-    classes = 'collapse',
+    inlines = (EventPropagationImageAdmin,)
+    classes = ("collapse",)
 
-    exclude = '_contact_url',
+    exclude = ("_contact_url",)
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
 
         class New1(formset):
             def clean(_self):
-                request._event_propagation_needs_image = (
-                        bool(getattr(_self, 'cleaned_data', [True])[0])
-                        and not (_self.can_delete and _self._should_delete_form(_self.forms[0]))
+                request._event_propagation_needs_image = bool(
+                    getattr(_self, "cleaned_data", [True])[0]
+                ) and not (
+                    _self.can_delete and _self._should_delete_form(_self.forms[0])
                 )
                 return super().clean()
 
@@ -101,7 +111,7 @@ class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
 
 class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
     model = EventRegistration
-    classes = 'collapse',
+    classes = ("collapse",)
     inlines = QuestionnaireAdmin, EventApplicationAdmin
 
 
@@ -109,22 +119,36 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     model = EventRecord
     inlines = EventPhotoAdmin, AttendanceListPageAdmin, EventContactAdmin
 
-    readonly_fields = 'get_participants_age_stats_event_start', 'get_participants_age_stats_year_start', 'get_participants_table'
-    autocomplete_fields = 'participants',
+    readonly_fields = (
+        "get_participants_age_stats_event_start",
+        "get_participants_age_stats_year_start",
+        "get_participants_table",
+    )
+    autocomplete_fields = ("participants",)
 
-    @admin.display(description='Statistika věku účastníků a organizátorů k začátku akce')
+    @admin.display(
+        description="Statistika věku účastníků a organizátorů k začátku akce"
+    )
     def get_participants_age_stats_event_start(self, obj):
-        return AgeStats('účastníků', obj.get_all_participants(), obj.event.start).as_table()
+        return AgeStats(
+            "účastníků", obj.get_all_participants(), obj.event.start
+        ).as_table()
 
-    @admin.display(description='Statistika věku účastníků a organizátorů k začátku roku')
+    @admin.display(
+        description="Statistika věku účastníků a organizátorů k začátku roku"
+    )
     def get_participants_age_stats_year_start(self, obj):
-        return AgeStats('účastníků', obj.get_all_participants(), date(obj.event.start.year, 1, 1)).as_table()
+        return AgeStats(
+            "účastníků", obj.get_all_participants(), date(obj.event.start.year, 1, 1)
+        ).as_table()
 
-    @admin.display(description='E-maily účastníků a organizátorů')
+    @admin.display(description="E-maily účastníků a organizátorů")
     def get_participants_table(self, obj):
-        def make_cell(item): return f'<td>{item}</td>'
+        def make_cell(item):
+            return f"<td>{item}</td>"
 
-        def make_row(items): return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+        def make_row(items):
+            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
 
         # participants = obj.record.get_all_participants()
         # header = []
@@ -141,107 +165,160 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         return mark_safe("".join(html))
 
     def get_formset(self, request, obj=None, **kwargs):
-        kwargs.update({'help_texts': {
-            'get_participants_age_stats_year_start': 'Pro podmínky dotací',
-        }})
+        kwargs.update(
+            {
+                "help_texts": {
+                    "get_participants_age_stats_year_start": "Pro podmínky dotací",
+                }
+            }
+        )
         return super().get_formset(request, obj, **kwargs)
 
 
-@admin.action(description='Zarchivovat akce')
+@admin.action(description="Zarchivovat akce")
 def mark_as_archived(model_admin, request, queryset):
     queryset.update(is_archived=True)
 
 
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
-    change_form_template = 'bis/event_change_form.html'
+    change_form_template = "bis/event_change_form.html"
 
     actions = [mark_as_archived, export_to_xlsx]
-    inlines = EventFinanceAdmin, EventPropagationAdmin, EventVIPPropagationAdmin, EventRegistrationAdmin, EventRecordAdmin
-    filter_horizontal = 'other_organizers',
+    inlines = (
+        EventFinanceAdmin,
+        EventPropagationAdmin,
+        EventVIPPropagationAdmin,
+        EventRegistrationAdmin,
+        EventRecordAdmin,
+    )
+    filter_horizontal = ("other_organizers",)
 
     list_filter = [
-        list_filter_extra_text("Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
-                               "přidrž tlačítko ctrl/shift"),
-        AutocompleteFilterFactory(_('models.AdministrationUnit.name'), 'administration_units'),
-        ('start', DateRangeFilter),
-        ('end', DateRangeFilter),
-        ('group', MultiSelectRelatedDropdownFilter),
-        ('category', MultiSelectRelatedDropdownFilter),
-        ('tags', MultiSelectRelatedDropdownFilter),
-        ('program', MultiSelectRelatedDropdownFilter),
-        'propagation__is_shown_on_web',
-        ('intended_for', MultiSelectRelatedDropdownFilter),
-        'is_canceled',
-        'is_closed',
-        'is_archived',
-        'registration__is_registration_required',
-        'registration__is_event_full',
-        'is_attendance_list_required',
-        ('location__region', MultiSelectRelatedDropdownFilter),
-        ('main_organizer__birthday', EventStatsDateFilter),
+        list_filter_extra_text(
+            "Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
+            "přidrž tlačítko ctrl/shift"
+        ),
+        AutocompleteFilterFactory(
+            _("models.AdministrationUnit.name"), "administration_units"
+        ),
+        ("start", DateRangeFilter),
+        ("end", DateRangeFilter),
+        ("group", MultiSelectRelatedDropdownFilter),
+        ("category", MultiSelectRelatedDropdownFilter),
+        ("tags", MultiSelectRelatedDropdownFilter),
+        ("program", MultiSelectRelatedDropdownFilter),
+        "propagation__is_shown_on_web",
+        ("intended_for", MultiSelectRelatedDropdownFilter),
+        "is_canceled",
+        "is_closed",
+        "is_archived",
+        "registration__is_registration_required",
+        "registration__is_event_full",
+        "is_attendance_list_required",
+        ("location__region", MultiSelectRelatedDropdownFilter),
+        ("main_organizer__birthday", EventStatsDateFilter),
     ]
 
     def get_actions(self, request):
         actions = super().get_actions(request)
         if not (request.user.is_superuser or request.user.is_office_worker):
-            del actions['mark_as_archived']
+            del actions["mark_as_archived"]
         return actions
 
     list_display = (
-        'name', 'get_links', 'get_date', 'get_administration_units', 'location',
-        'get_participants_count', 'get_young_percentage', 'get_total_hours_worked',
-        'program', 'category', 'get_tags',
-        'intended_for', 'is_shown_on_web', 'is_canceled', 'is_closed',
+        "name",
+        "get_links",
+        "get_date",
+        "get_administration_units",
+        "location",
+        "get_participants_count",
+        "get_young_percentage",
+        "get_total_hours_worked",
+        "program",
+        "category",
+        "get_tags",
+        "intended_for",
+        "is_shown_on_web",
+        "is_canceled",
+        "is_closed",
     )
-    list_select_related = 'location', 'category', 'program', 'record', 'intended_for', 'propagation'
+    list_select_related = (
+        "location",
+        "category",
+        "program",
+        "record",
+        "intended_for",
+        "propagation",
+    )
 
     @admin.display(description="Odkazy")
     def get_links(self, obj):
         return mark_safe(
             f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
             f'<a target="_blank" href="/org/akce/{obj.id}/uzavrit" title="Zobrazit přihlášky / účastníky">👪</a><br>'
-            f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>')
+            f'<a target="_blank" href="https://brontosaurus.cz/akce/{obj.id}/" title="Zobrazit na webu">🌐</a><br>'
+        )
 
-    @admin.display(description=_('models.AdministrationUnit.name_plural'))
+    @admin.display(description=_("models.AdministrationUnit.name_plural"))
     def get_administration_units(self, obj):
-        return mark_safe('<br>'.join([str(au) for au in obj.administration_units.all()]))
+        return mark_safe(
+            "<br>".join([str(au) for au in obj.administration_units.all()])
+        )
 
-    @admin.display(description='Štítky')
+    @admin.display(description="Štítky")
     def get_tags(self, obj):
-        return mark_safe('<br>'.join([str(tag) for tag in obj.tags.all()]))
+        return mark_safe("<br>".join([str(tag) for tag in obj.tags.all()]))
 
-    @admin.display(description='Počet účastníků + organizátorů')
+    @admin.display(description="Počet účastníků + organizátorů")
     def get_participants_count(self, obj):
-        if not hasattr(obj, 'record'): return None
+        if not hasattr(obj, "record"):
+            return None
         return obj.record.get_participants_count()
 
-    @admin.display(description='% do 26 let')
+    @admin.display(description="% do 26 let")
     def get_young_percentage(self, obj):
-        if not hasattr(obj, 'record'): return None
+        if not hasattr(obj, "record"):
+            return None
         return obj.record.get_young_percentage()
 
-    @admin.display(description='Odpracováno hodin')
+    @admin.display(description="Odpracováno hodin")
     def get_total_hours_worked(self, obj):
-        if not hasattr(obj, 'record'): return None
+        if not hasattr(obj, "record"):
+            return None
         return obj.record.total_hours_worked
 
-    @admin.display(description='Zobrazena na webu?', boolean=True)
+    @admin.display(description="Zobrazena na webu?", boolean=True)
     def is_shown_on_web(self, obj):
-        if not hasattr(obj, 'propagation'): return False
+        if not hasattr(obj, "propagation"):
+            return False
         return obj.propagation.is_shown_on_web
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('administration_units', 'record__participants',
-                                                              'record__photos', 'finance__receipts', 'tags')
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                "administration_units",
+                "record__participants",
+                "record__photos",
+                "finance__receipts",
+                "tags",
+            )
+        )
 
-    date_hierarchy = 'start'
-    search_fields = 'name',
-    readonly_fields = 'duration', 'created_by', 'created_at'
+    date_hierarchy = "start"
+    search_fields = ("name",)
+    readonly_fields = "duration", "created_by", "created_at", "closed_at"
 
-    autocomplete_fields = 'main_organizer', 'other_organizers', 'location', 'administration_units',
+    autocomplete_fields = (
+        "main_organizer",
+        "other_organizers",
+        "location",
+        "administration_units",
+    )
 
-    exclude = '_import_id',
+    exclude = ("_import_id",)
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super(EventAdmin, self).get_form(request, obj, change, **kwargs)
@@ -251,14 +328,25 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             def clean(_self):
                 super().clean()
                 if not user.is_superuser and not user.is_office_worker:
-                    if not any([
-                        any([au in user.administration_units.all() for au in
-                             _self.cleaned_data.get('administration_units', [])]),
-                        _self.cleaned_data.get('main_organizer') == user,
-                        user in _self.cleaned_data.get('other_organizers', []).all(),
-                    ]):
-                        raise ValidationError('Akci musíš vytvořit pod svou organizační jednotkou nebo '
-                                              'musíš být v organizátorském týmu')
+                    if not any(
+                        [
+                            any(
+                                [
+                                    au in user.administration_units.all()
+                                    for au in _self.cleaned_data.get(
+                                        "administration_units", []
+                                    )
+                                ]
+                            ),
+                            _self.cleaned_data.get("main_organizer") == user,
+                            user
+                            in _self.cleaned_data.get("other_organizers", []).all(),
+                        ]
+                    ):
+                        raise ValidationError(
+                            "Akci musíš vytvořit pod svou organizační jednotkou nebo "
+                            "musíš být v organizátorském týmu"
+                        )
 
                 return _self.cleaned_data
 
@@ -268,24 +356,33 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         super().save_related(request, form, formsets, change)
         form.instance.save()
 
-    def changeform_view(self, request, object_id=None, form_url="",
-                        extra_context=None):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if object_id:
             to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
             obj = self.get_object(request, unquote(object_id), to_field)
-            has_record = hasattr(obj, 'record')
+            has_record = hasattr(obj, "record")
             if "_attendance_list_xlsx_export" in request.POST:
-                return get_attendance_list(obj)['xlsx']
+                return get_attendance_list(obj)["xlsx"]
             if "_attendance_list_pdf_export" in request.POST:
-                return get_attendance_list(obj)['pdf']
+                return get_attendance_list(obj)["pdf"]
             if "_participants_xlsx_export" in request.POST:
-                participants = has_record and obj.record.get_all_participants() or User.objects.none()
+                participants = (
+                    has_record
+                    and obj.record.get_all_participants()
+                    or obj.other_organizers.all()
+                )
                 return export_to_xlsx(self, request, participants)
             if "_attendance_list_emails_export" in request.POST:
-                participants = has_record and obj.record.participants.all() or User.objects.none()
+                participants = (
+                    has_record and obj.record.participants.all() or User.objects.none()
+                )
                 return export_emails(..., ..., participants)
             if "_attendance_list_all_emails_export" in request.POST:
-                participants = has_record and obj.record.get_all_participants() or User.objects.none()
+                participants = (
+                    has_record
+                    and obj.record.get_all_participants()
+                    or obj.other_organizers.all()
+                )
                 return export_emails(..., ..., participants)
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")

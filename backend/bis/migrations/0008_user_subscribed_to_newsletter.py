@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0007_remove_event_is_internal'),
+        ("bis", "0007_remove_event_is_internal"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='subscribed_to_newsletter',
+            model_name="user",
+            name="subscribed_to_newsletter",
             field=models.BooleanField(default=True),
         ),
     ]

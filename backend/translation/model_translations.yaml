@@ -62,7 +62,6 @@ EYCACard:
   name: EYCA karta
   name_plural: EYCA karty
   fields:
-    photo: Fotka
     number: Číslo kartičky
     submitted_for_creation: Předáno k výrobě
     sent_to_user: Odesláno uživateli
@@ -127,6 +126,23 @@ GeneralMeeting:
   name_plural: Valné hromady
   fields:
     administration_unit: Organizační jednotka
+AdministrationSubUnit:
+  name: Oddíl
+  name_plural: Oddíly
+  fields:
+    administration_unit: Organizační jednotka
+    is_for_kids: Jedná se o BRĎO oddíl?
+    www: Webové stránky
+    facebook: Facebook
+    instagram: Instagram
+    main_leader: Hlavní vedoucí
+    sub_leaders: Oddíloví vedoucí
+    is_active: Je aktivní?
+
+AdministrationSubUnitAddress:
+  name: Adresa
+  fields:
+    sub_unit: Oddíl
 
 
 BrontosaurusMovement:
@@ -169,6 +185,10 @@ Qualification:
     valid_till: Platnost do
     valid_since: Platnost od
     approved_by: Schválilo
+QualificationNote:
+  name: Poznámka ke kvalifikacím uživatele
+  name_plural: Poznámky ke kvalifikacím uživatele
+  fields:
 
 Event:
   name: Akce
@@ -189,6 +209,7 @@ Event:
     is_closed:
       - Je akce uzavřena?
       - Příznak, zda-li jsou všechny povinné údaje po akci vyplněny
+    closed_at: Čas uzavření akce
     is_archived:
       - Je akce archivovaná?
       - Zarchivovaná akce nelze editovat
@@ -447,6 +468,9 @@ Donor:
   name: Dárce
   name_plural: Dárci
   fields:
+    formal_vokativ:
+      - Formální oslovení
+      - Pro účely potvrzení o daru
     subscribed_to_newsletter: Odebírá novinky?
     is_public:
       - Chce zveřejnit?

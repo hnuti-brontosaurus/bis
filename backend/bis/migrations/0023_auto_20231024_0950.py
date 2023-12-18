@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def migrate(apps, schema_editor):
-    Event = apps.get_model('bis', 'Event')
+    Event = apps.get_model("bis", "Event")
     events = []
     for event in Event.objects.all():
         event.is_archived = event.is_closed
@@ -15,9 +15,7 @@ def migrate(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('bis', '0022_event_is_archived_alter_event_is_closed'),
+        ("bis", "0022_event_is_archived_alter_event_is_closed"),
     ]
 
-    operations = [
-        migrations.RunPython(migrate, migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(migrate, migrations.RunPython.noop)]

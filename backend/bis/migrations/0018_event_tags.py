@@ -4,16 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0007_eventtag'),
-        ('bis', '0017_event_created_by'),
+        ("categories", "0007_eventtag"),
+        ("bis", "0017_event_created_by"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='tags',
-            field=models.ManyToManyField(related_name='events', to='categories.eventtag'),
+            model_name="event",
+            name="tags",
+            field=models.ManyToManyField(
+                related_name="events", to="categories.eventtag"
+            ),
         ),
     ]

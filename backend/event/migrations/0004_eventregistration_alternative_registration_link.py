@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('event', '0003_alter_eventcontact_record'),
+        ("event", "0003_alter_eventcontact_record"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='eventregistration',
-            name='alternative_registration_link',
+            model_name="eventregistration",
+            name="alternative_registration_link",
             field=models.URLField(blank=True),
         ),
     ]

@@ -5,20 +5,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('administration_units', '0006_alter_brontosaurusmovement_audit_committee_and_more'),
+        (
+            "administration_units",
+            "0006_alter_brontosaurusmovement_audit_committee_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='administrationunit',
-            name='description',
+            model_name="administrationunit",
+            name="description",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='administrationunit',
-            name='image',
-            field=common.thumbnails.ThumbnailImageField(blank=True, upload_to='administration_unit_images'),
+            model_name="administrationunit",
+            name="image",
+            field=common.thumbnails.ThumbnailImageField(
+                blank=True, upload_to="administration_unit_images"
+            ),
         ),
     ]

@@ -11,11 +11,15 @@ def try_to_run(fn, *args, **kwargs):
     try:
         fn(*args, **kwargs)
     except Exception as e:
-        logging.exception(e, extra={
-            'fn': str(fn),
-            'args': args,
-            'kwargs': kwargs,
-        })
+        logging.exception(
+            e,
+            extra={
+                "fn": str(fn),
+                "args": args,
+                "kwargs": kwargs,
+            },
+        )
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -28,22 +32,30 @@ class Command(BaseCommand):
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.qualification_about_to_end)
+        try_to_run(emails.qualification_ended)
 
         today = date.today()
         # weekly
         if today.weekday() == 0:
-            try_to_run(emails.events_created_summary)
+            try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
 
         # monthly
         if today.day == 1:
             try_to_run(call_command, "archive_events")
-            try_to_run(emails.notify_not_closed_events_summary)
 
-        if today.month == 10:
-            if today.day == 15:
-                try_to_run(emails.fill_memberships, call=1)
-            if today.day == 27:
-                try_to_run(emails.fill_memberships, call=2)
+        day_of_year = (today.day, today.month)
 
+        if day_of_year == (15, 10):
+            try_to_run(emails.fill_memberships, call=1)
+        if day_of_year == (27, 10):
+            try_to_run(emails.fill_memberships, call=2)
 
+        if day_of_year in [
+            (15, 1),
+            (15, 3),
+            (15, 5),
+            (15, 9),
+            (30, 11),
+        ]:
+            try_to_run(emails.send_opportunities_summary)

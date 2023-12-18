@@ -1,11 +1,11 @@
 try:
-    from project.global_settings import *
+    from project.global_settings import *  # nopycln: import
 except ImportError:
     pass
 
 from glob import glob
 from os import environ
-from os.path import join, dirname, abspath
+from os.path import abspath, dirname, join
 
 import sentry_sdk
 import yaml
@@ -16,25 +16,27 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 def load_environment_variables_from_docker_compose_file():
     try:
-        with open(join(dirname(BASE_DIR), 'docker-compose/.dev.yaml'), 'r') as stream:
+        with open(join(dirname(BASE_DIR), "docker-compose/.dev.yaml"), "r") as stream:
             content = yaml.safe_load(stream)
-            for key, value in content['services']['backend']['environment'].items():
+            for key, value in content["services"]["backend"]["environment"].items():
                 if key not in environ:
                     environ[key] = str(value)
 
     except FileNotFoundError:
-        print("Environment file not found (that is expected, when using docker-compose)")
+        print(
+            "Environment file not found (that is expected, when using docker-compose)"
+        )
 
 
 load_environment_variables_from_docker_compose_file()
 
-SECRET_KEY = environ['SECRET_KEY']
+SECRET_KEY = environ["SECRET_KEY"]
 
-DEBUG = bool(int(environ['DEBUG']))
-TEST = bool(int(environ['TEST']))
+DEBUG = bool(int(environ["DEBUG"]))
+TEST = bool(int(environ["TEST"]))
 
-FULL_HOSTNAME = environ['FULL_HOSTNAME']
-ALLOWED_HOSTS = environ['ALLOWED_HOSTS'].split(',')
+FULL_HOSTNAME = environ["FULL_HOSTNAME"]
+ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
 
 # linux
 # sudo apt-get install binutils libproj-dev gdal-bin
@@ -44,8 +46,8 @@ ALLOWED_HOSTS = environ['ALLOWED_HOSTS'].split(',')
 # brew install gdal
 # brew install libgeoip
 try:
-    GDAL_LIBRARY_PATH = glob('/usr/lib/libgdal.so.*')[0]
-    GEOS_LIBRARY_PATH = glob('/usr/lib/libgeos_c.so.*')[0]
+    GDAL_LIBRARY_PATH = glob("/usr/lib/libgdal.so.*")[0]
+    GEOS_LIBRARY_PATH = glob("/usr/lib/libgeos_c.so.*")[0]
 except IndexError:
     pass
 
@@ -54,109 +56,111 @@ except IndexError:
 INSTALLED_APPS = [
     # 'dal',
     # 'dal_select2',
-    'admin_numeric_filter',
-    'project.apps.MyAdminConfig',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.gis',
-    'rangefilter',
-    'nested_admin',
-    'rest_framework',
-    'rest_framework_gis',
-    'rest_framework.authtoken',
-    'phonenumber_field',
-    'corsheaders',
-    'bis',
-    'categories',
-    'questionnaire',
-    'event',
-    'other',
-    'donations',
-    'administration_units',
-    'debug_toolbar',
-    'login_code',
-    'ecomail',
-    'solo',
-    'admin_auto_filters',
-    'django_filters',
-    'tinymce',
-    'opportunities',
-    'more_admin_filters',
-    'regions',
-    'drf_spectacular',
-    'game_book',
-    'game_book_categories',
-    'django_bootstrap5',
-    'django_cleanup.apps.CleanupConfig', # needs to be last
+    "admin_numeric_filter",
+    "project.apps.MyAdminConfig",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.gis",
+    "rangefilter",
+    "nested_admin",
+    "rest_framework",
+    "rest_framework_gis",
+    "rest_framework.authtoken",
+    "phonenumber_field",
+    "corsheaders",
+    "bis",
+    "categories",
+    "questionnaire",
+    "event",
+    "other",
+    "donations",
+    "administration_units",
+    "debug_toolbar",
+    "login_code",
+    "ecomail",
+    "solo",
+    "admin_auto_filters",
+    "django_filters",
+    "tinymce",
+    "opportunities",
+    "more_admin_filters",
+    "regions",
+    "drf_spectacular",
+    "game_book",
+    "game_book_categories",
+    "django_bootstrap5",
+    "django_cleanup.apps.CleanupConfig",  # needs to be last
 ]
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'project.urls'
+ROOT_URLCONF = "project.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'project.wsgi.application'
+WSGI_APPLICATION = "project.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': environ['DB_HOST'],
-        'PORT': environ['DB_PORT'],
-        'NAME': environ['DB_NAME'],
-        'USER': environ['DB_USERNAME'],
-        'PASSWORD': environ['DB_PASSWORD'],
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "HOST": environ["DB_HOST"],
+        "PORT": environ["DB_PORT"],
+        "NAME": environ["DB_NAME"],
+        "USER": environ["DB_USERNAME"],
+        "PASSWORD": environ["DB_PASSWORD"],
     }
 }
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 #
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-AUTHENTICATION_BACKENDS = ['bis.auth_backend.BISBackend']
+AUTHENTICATION_BACKENDS = ["bis.auth_backend.BISBackend"]
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'cs'
-TIME_ZONE = 'Europe/Prague'
+LANGUAGE_CODE = "cs"
+TIME_ZONE = "Europe/Prague"
 USE_I18N = True
 USE_L10N = False
 USE_TZ = True
@@ -186,11 +190,11 @@ DATETIME_INPUT_FORMATS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/backend_static/'
-MEDIA_URL = '/media/'
+STATIC_URL = "/backend_static/"
+MEDIA_URL = "/media/"
 
-STATIC_ROOT = join(BASE_DIR, 'backend_static')
-MEDIA_ROOT = join(BASE_DIR, 'media')
+STATIC_ROOT = join(BASE_DIR, "backend_static")
+MEDIA_ROOT = join(BASE_DIR, "media")
 
 #
 # Upload limits
@@ -201,31 +205,31 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 
 #
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': [
-        'rest_framework.filters.SearchFilter',
-        'django_filters.rest_framework.DjangoFilterBackend'
+    "DEFAULT_FILTER_BACKENDS": [
+        "rest_framework.filters.SearchFilter",
+        "django_filters.rest_framework.DjangoFilterBackend",
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'api.helpers.Pagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_PAGINATION_CLASS": "api.helpers.Pagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 TOKEN_EXPIRE_AFTER_INACTIVITY_SECONDS = 20 * 60
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'BIS API',
-    'DESCRIPTION': 'API Brontosauřího informačního systému, veřejné pro web, interní pro frontend',
-    'VERSION': '1.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "BIS API",
+    "DESCRIPTION": "API Brontosauřího informačního systému, veřejné pro web, interní pro frontend",
+    "VERSION": "1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # API settings
-API_BASE = environ['API_BASE']
+API_BASE = environ["API_BASE"]
 
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS = [FULL_HOSTNAME]
@@ -235,73 +239,73 @@ if not DEBUG:
         CSRF_TRUSTED_ORIGINS += ["http://localhost", "http://localhost:3000"]
         CORS_ALLOWED_ORIGINS += ["http://localhost", "http://localhost:3000"]
 
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # phonenumber_field
-PHONENUMBER_DEFAULT_REGION = 'CZ'
-PHONENUMBER_DEFAULT_FORMAT = 'INTERNATIONAL'
+PHONENUMBER_DEFAULT_REGION = "CZ"
+PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 
 # sentry.io logging
 if not DEBUG:
     sentry_sdk.init(
-        dsn=environ['SENTRY_DSN'],
+        dsn=environ["SENTRY_DSN"],
         integrations=[DjangoIntegration()],
-
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
         traces_sample_rate=0.0,
-
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
-        send_default_pii=True
+        send_default_pii=True,
     )
 
 # app
-APP_NAME = environ['APP_NAME']
+APP_NAME = environ["APP_NAME"]
 
-EMAIL = environ['EMAIL']
+EMAIL = environ["EMAIL"]
 
-AUTH_USER_MODEL = 'bis.User'
+AUTH_USER_MODEL = "bis.User"
 
 SKIP_VALIDATION = False
-EMAILS_ENABLED = bool(int(environ['EMAILS_ENABLED']))
+EMAILS_ENABLED = bool(int(environ["EMAILS_ENABLED"]))
 
-ECOMAIL_API_KEY = environ['ECOMAIL_API_KEY']
+ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
 
 # darujme
-DARUJME_API_KEY = environ['DARUJME_API_KEY']
-DARUJME_SECRET = environ['DARUJME_SECRET']
+DARUJME_API_KEY = environ["DARUJME_API_KEY"]
+DARUJME_SECRET = environ["DARUJME_SECRET"]
 
 if DEBUG:
     import socket  # only if you haven't already imported this
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
-    DEBUG_TOOLBAR_CONFIG = {'PROFILER_MAX_DEPTH': 20}
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + [
+        "127.0.0.1",
+        "10.0.2.2",
+    ]
+    DEBUG_TOOLBAR_CONFIG = {"PROFILER_MAX_DEPTH": 20}
 
 TINYMCE_DEFAULT_CONFIG = {
-    'menubar': False,
-    'plugins': 'autolink,lists,link,image,charmap,preview,searchreplace,'
-               'fullscreen,paste,code,help,wordcount,media',
-    'toolbar': 'undo redo | formatselect | bold italic | '
-               'bullist numlist | link emoticons | fullscreen removeformat | help',
-    'toolbar_mode': 'wrap',
-    'block_formats': 'Paragraph=p; Nadpis=h3',
-    'fontsize_formats': "12pt"
+    "menubar": False,
+    "plugins": "autolink,lists,link,image,charmap,preview,searchreplace,"
+    "fullscreen,paste,code,help,wordcount,media",
+    "toolbar": "undo redo | formatselect | bold italic | "
+    "bullist numlist | link emoticons | fullscreen removeformat | help",
+    "toolbar_mode": "wrap",
+    "block_formats": "Paragraph=p; Nadpis=h3",
+    "fontsize_formats": "12pt",
 }
 
 THUMBNAIL_SIZES = {
-    'small': 352,
-    'medium': 720,
-    'large': 1920,
+    "small": 352,
+    "medium": 720,
+    "large": 1920,
 }
 
 BOOTSTRAP5 = {
-    'required_css_class': 'required',
-    'field_renderers': {
-        'default': 'game_book.filters.GameBookFieldRenderer',
+    "required_css_class": "required",
+    "field_renderers": {
+        "default": "game_book.filters.GameBookFieldRenderer",
     },
 }
 LOGIN_URL = "/logout"
-

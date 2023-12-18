@@ -2,8 +2,9 @@
 
 from django.db import migrations
 
+
 def migrate(apps, schema_editor):
-    Event = apps.get_model('bis', 'Event')
+    Event = apps.get_model("bis", "Event")
     events = []
     for event in Event.objects.all():
         if event.start < event.created_at.date():
@@ -12,11 +13,10 @@ def migrate(apps, schema_editor):
 
     Event.objects.bulk_update(events, ["created_at"])
 
+
 class Migration(migrations.Migration):
     dependencies = [
-        ('bis', '0019_event_created_at'),
+        ("bis", "0019_event_created_at"),
     ]
 
-    operations = [
-        migrations.RunPython(migrate, migrations.RunPython.noop)
-    ]
+    operations = [migrations.RunPython(migrate, migrations.RunPython.noop)]

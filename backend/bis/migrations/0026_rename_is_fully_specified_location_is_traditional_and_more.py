@@ -4,21 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0011_alter_eventprogramcategory_email'),
-        ('bis', '0025_rename_is_complete_event_is_closed'),
+        ("categories", "0011_alter_eventprogramcategory_email"),
+        ("bis", "0025_rename_is_complete_event_is_closed"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='location',
-            old_name='is_fully_specified',
-            new_name='is_traditional',
+            model_name="location",
+            old_name="is_fully_specified",
+            new_name="is_traditional",
         ),
         migrations.AlterField(
-            model_name='event',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='events', to='categories.eventtag'),
+            model_name="event",
+            name="tags",
+            field=models.ManyToManyField(
+                blank=True, related_name="events", to="categories.eventtag"
+            ),
         ),
     ]

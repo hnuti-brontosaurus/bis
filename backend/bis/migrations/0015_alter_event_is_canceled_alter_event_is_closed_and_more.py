@@ -4,25 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0014_rename_sex_user_pronoun'),
+        ("bis", "0014_rename_sex_user_pronoun"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='event',
-            name='is_canceled',
-            field=models.BooleanField(default=False, help_text='Akce se nebude konat / nekonala'),
+            model_name="event",
+            name="is_canceled",
+            field=models.BooleanField(
+                default=False, help_text="Akce se nebude konat / nekonala"
+            ),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='is_closed',
-            field=models.BooleanField(default=False, help_text='Uzavřená akce nelze editovat, je archivována'),
+            model_name="event",
+            name="is_closed",
+            field=models.BooleanField(
+                default=False, help_text="Uzavřená akce nelze editovat, je archivována"
+            ),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='is_complete',
-            field=models.BooleanField(default=False, help_text='Příznak, zda-li jsou všechny povinné údaje po akci vyplněny'),
+            model_name="event",
+            name="is_complete",
+            field=models.BooleanField(
+                default=False,
+                help_text="Příznak, zda-li jsou všechny povinné údaje po akci vyplněny",
+            ),
         ),
     ]

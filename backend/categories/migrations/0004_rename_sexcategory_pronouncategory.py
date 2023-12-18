@@ -4,16 +4,15 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0014_rename_sex_user_pronoun'),
-        ('questionnaire', '0005_rename_sex_eventapplication_pronoun'),
-        ('categories', '0003_qualificationcategory_can_approve'),
+        ("bis", "0014_rename_sex_user_pronoun"),
+        ("questionnaire", "0005_rename_sex_eventapplication_pronoun"),
+        ("categories", "0003_qualificationcategory_can_approve"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='SexCategory',
-            new_name='PronounCategory',
+            old_name="SexCategory",
+            new_name="PronounCategory",
         ),
     ]

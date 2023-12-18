@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0006_alter_qualification_valid_till'),
+        ("bis", "0006_alter_qualification_valid_till"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='event',
-            name='is_internal',
+            model_name="event",
+            name="is_internal",
         ),
     ]

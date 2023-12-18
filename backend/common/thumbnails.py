@@ -1,24 +1,24 @@
 import os
-from os import symlink, makedirs
-from os.path import splitext, join, exists
+from os import makedirs, symlink
+from os.path import exists, join, splitext
 
-from PIL import Image, UnidentifiedImageError
 from django.conf import settings
-from django.db.models import ImageField
-from django.db.models import signals
+from django.db.models import ImageField, signals
+from PIL import Image, UnidentifiedImageError
 
 
 def get_thumbnail_path(file_name, size_name):
     file_name, file_extension = splitext(file_name)
-    return join('thumbnails', f"{file_name}_{size_name}{file_extension}")
+    return join("thumbnails", f"{file_name}_{size_name}{file_extension}")
 
 
 class ThumbnailImageField(ImageField):
     def contribute_to_class(self, cls, name, **kwargs):
         old_init = cls.__init__
+
         def new_init(_self, *args, **kwargs):
             old_init(_self, *args, **kwargs)
-            setattr(_self, f'old_{name}', getattr(_self, name))
+            setattr(_self, f"old_{name}", getattr(_self, name))
 
         cls.__init__ = new_init
 
@@ -32,7 +32,9 @@ class ThumbnailImageField(ImageField):
         self.do_remove_thumbnails(old_file)
 
         if file := getattr(instance, self.attname):
-            thumbnail_dir_path = join(settings.BASE_DIR, 'media', 'thumbnails', self.upload_to)
+            thumbnail_dir_path = join(
+                settings.BASE_DIR, "media", "thumbnails", self.upload_to
+            )
             makedirs(thumbnail_dir_path, exist_ok=True)
 
             file_path = join(settings.MEDIA_ROOT, file.name)
@@ -42,7 +44,9 @@ class ThumbnailImageField(ImageField):
                 image = None
 
             for size_name, size in settings.THUMBNAIL_SIZES.items():
-                thumbnail_path = join(settings.MEDIA_ROOT, get_thumbnail_path(file.name, size_name))
+                thumbnail_path = join(
+                    settings.MEDIA_ROOT, get_thumbnail_path(file.name, size_name)
+                )
 
                 if exists(thumbnail_path):
                     continue
@@ -63,10 +67,13 @@ class ThumbnailImageField(ImageField):
 
     @staticmethod
     def do_remove_thumbnails(file):
-        if not file: return
+        if not file:
+            return
 
         for size_name, size in settings.THUMBNAIL_SIZES.items():
-            thumbnail_path = join(settings.MEDIA_ROOT, get_thumbnail_path(file.name, size_name))
+            thumbnail_path = join(
+                settings.MEDIA_ROOT, get_thumbnail_path(file.name, size_name)
+            )
 
             if exists(thumbnail_path):
                 os.remove(thumbnail_path)

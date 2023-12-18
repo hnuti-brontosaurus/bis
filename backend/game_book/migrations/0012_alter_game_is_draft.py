@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book', '0011_game_is_draft'),
+        ("game_book", "0011_game_is_draft"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='is_draft',
-            field=models.BooleanField(default=True, help_text='Je program finálně zpracován, či ještě něco chybí doladit?'),
+            model_name="game",
+            name="is_draft",
+            field=models.BooleanField(
+                default=True,
+                help_text="Je program finálně zpracován, či ještě něco chybí doladit?",
+            ),
         ),
     ]

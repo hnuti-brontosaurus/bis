@@ -144,7 +144,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
                 <span>{`${currentApplication.close_person.first_name} ${currentApplication.close_person.last_name}`}</span>
                 {currentApplication.close_person.email && (
                   <>
-                    <span>email: nnnn</span>
+                    <span>email:</span>
                     <EmailButton>
                       {currentApplication.close_person.email}
                     </EmailButton>

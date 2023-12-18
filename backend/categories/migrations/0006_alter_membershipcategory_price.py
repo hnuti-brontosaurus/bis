@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0005_membershipcategory_price'),
+        ("categories", "0005_membershipcategory_price"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='membershipcategory',
-            name='price',
+            model_name="membershipcategory",
+            name="price",
             field=models.PositiveSmallIntegerField(),
         ),
     ]

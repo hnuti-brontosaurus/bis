@@ -1,25 +1,32 @@
-from django.contrib.gis.db.models import *
-from phonenumber_field.modelfields import PhoneNumberField
-
-from bis import emails
 from bis.helpers import on_save
 from bis.models import User
 from categories.models import PronounCategory
-from common.abstract_models import BaseContact, BaseAddress
-from event.models import EventRegistration, Event
+from common.abstract_models import BaseAddress, BaseContact
+from django.contrib.gis.db.models import *
+from event.models import Event, EventRegistration
+from phonenumber_field.modelfields import PhoneNumberField
 from translation.translate import translate_model
+
+from bis import emails
 
 
 @translate_model
 class EventApplication(Model):
-    event_registration = ForeignKey(EventRegistration, related_name='applications', on_delete=PROTECT)
-    user = ForeignKey(User, related_name='applications', on_delete=PROTECT, null=True, blank=True)
-    state = CharField(max_length=15, choices=[
-        ('pending', 'Čeká na schválení'),
-        ('cancelled', 'Zrušena'),
-        ('rejected', 'Zamítnuta'),
-        ('approved', 'Potvrzena'),
-    ])
+    event_registration = ForeignKey(
+        EventRegistration, related_name="applications", on_delete=PROTECT
+    )
+    user = ForeignKey(
+        User, related_name="applications", on_delete=PROTECT, null=True, blank=True
+    )
+    state = CharField(
+        max_length=15,
+        choices=[
+            ("pending", "Čeká na schválení"),
+            ("cancelled", "Zrušena"),
+            ("rejected", "Zamítnuta"),
+            ("approved", "Potvrzena"),
+        ],
+    )
 
     is_child_application = BooleanField(default=False)
     first_name = CharField(max_length=63)
@@ -29,16 +36,22 @@ class EventApplication(Model):
     email = EmailField(blank=True, null=True)
     birthday = DateField(blank=True, null=True)
     health_issues = TextField(blank=True)
-    pronoun = ForeignKey(PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name='applications')
+    pronoun = ForeignKey(
+        PronounCategory,
+        on_delete=PROTECT,
+        null=True,
+        blank=True,
+        related_name="applications",
+    )
 
-    created_at = DateTimeField(auto_now=True)
+    created_at = DateTimeField(auto_now_add=True)
     note = TextField(blank=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
-        return f'Přihláška na akci'
+        return f"Přihláška na akci"
 
     @classmethod
     def filter_queryset(cls, queryset, perm):
@@ -51,30 +64,38 @@ class EventApplication(Model):
 
 @translate_model
 class EventApplicationClosePerson(BaseContact):
-    application = OneToOneField(EventApplication, related_name='close_person', on_delete=CASCADE)
+    application = OneToOneField(
+        EventApplication, related_name="close_person", on_delete=CASCADE
+    )
 
 
 @translate_model
 class EventApplicationAddress(BaseAddress):
-    application = OneToOneField(EventApplication, related_name='address', on_delete=CASCADE)
+    application = OneToOneField(
+        EventApplication, related_name="address", on_delete=CASCADE
+    )
 
 
 @translate_model
 class Questionnaire(Model):
     # one-to-one relationship to event
     # holds relations to its questions and answers
-    event_registration = OneToOneField(EventRegistration, on_delete=CASCADE, related_name='questionnaire')
+    event_registration = OneToOneField(
+        EventRegistration, on_delete=CASCADE, related_name="questionnaire"
+    )
     introduction = TextField(blank=True)
     after_submit_text = TextField(blank=True)
 
     class Meta:
-        ordering = 'id',
+        ordering = ("id",)
 
     def __str__(self):
-        return 'Dotazník'
+        return "Dotazník"
 
     def has_edit_permission(self, user):
-        return not hasattr(self, 'event_registration') or self.event_registration.has_edit_permission(user)
+        return not hasattr(
+            self, "event_registration"
+        ) or self.event_registration.has_edit_permission(user)
 
 
 @translate_model
@@ -83,10 +104,12 @@ class Question(Model):
     data = JSONField(default=dict)
     is_required = BooleanField(default=True)
     order = PositiveIntegerField(default=0)
-    questionnaire = ForeignKey(Questionnaire, on_delete=CASCADE, related_name='questions')
+    questionnaire = ForeignKey(
+        Questionnaire, on_delete=CASCADE, related_name="questions"
+    )
 
     class Meta:
-        ordering = 'order',
+        ordering = ("order",)
 
     def __str__(self):
         return self.question
@@ -103,16 +126,18 @@ class Question(Model):
 @translate_model
 class Answer(Model):
     # holds answer for specific question
-    question = ForeignKey(Question, on_delete=CASCADE, related_name='answers')
-    application = ForeignKey(EventApplication, on_delete=CASCADE, related_name='answers')
+    question = ForeignKey(Question, on_delete=CASCADE, related_name="answers")
+    application = ForeignKey(
+        EventApplication, on_delete=CASCADE, related_name="answers"
+    )
     answer = TextField()
     data = JSONField(default=dict)
 
     class Meta:
-        ordering = 'question__order',
+        ordering = ("question__order",)
 
     def __str__(self):
-        return f'Odpověď na otázku {self.question}'
+        return f"Odpověď na otázku {self.question}"
 
     def has_edit_permission(self, user):
         return False

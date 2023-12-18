@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0009_eventprogramcategory_notification_email'),
+        ("categories", "0009_eventprogramcategory_notification_email"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='eventprogramcategory',
-            old_name='notification_email',
-            new_name='email',
+            model_name="eventprogramcategory",
+            old_name="notification_email",
+            new_name="email",
         ),
     ]

@@ -5,32 +5,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('game_book_categories', '0002_auto_20230208_0024'),
+        ("game_book_categories", "0002_auto_20230208_0024"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('game_book', '0001_initial'),
+        ("game_book", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='game',
-            name='favourites',
-            field=models.ManyToManyField(blank=True, related_name='favourite_games', to=settings.AUTH_USER_MODEL),
+            model_name="game",
+            name="favourites",
+            field=models.ManyToManyField(
+                blank=True, related_name="favourite_games", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='tags',
-            field=models.ManyToManyField(blank=True, related_name='games', to='game_book_categories.Tag'),
+            model_name="game",
+            name="tags",
+            field=models.ManyToManyField(
+                blank=True, related_name="games", to="game_book_categories.Tag"
+            ),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='thumbs_up',
-            field=models.ManyToManyField(blank=True, related_name='thumbed_up_games', to=settings.AUTH_USER_MODEL),
+            model_name="game",
+            name="thumbs_up",
+            field=models.ManyToManyField(
+                blank=True, related_name="thumbed_up_games", to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='game',
-            name='watchers',
-            field=models.ManyToManyField(blank=True, related_name='watched_games', to=settings.AUTH_USER_MODEL),
+            model_name="game",
+            name="watchers",
+            field=models.ManyToManyField(
+                blank=True, related_name="watched_games", to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

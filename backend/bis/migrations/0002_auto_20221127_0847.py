@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0001_initial'),
+        ("bis", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='start_time',
+            model_name="event",
+            name="start_time",
             field=models.TimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='event',
-            name='start',
+            model_name="event",
+            name="start",
             field=models.DateField(),
         ),
     ]

@@ -11,7 +11,7 @@ class IsSuperuser(BasePermission):
         return bool(request.user and request.user.is_superuser)
 
 
-@api_view(['post'])
+@api_view(["post"])
 @permission_classes([IsSuperuser])
 def manage(request, command):
     ThreadPoolExecutor().submit(call_command, command)

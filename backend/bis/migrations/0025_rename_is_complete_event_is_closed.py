@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('bis', '0024_remove_event_is_closed'),
+        ("bis", "0024_remove_event_is_closed"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='event',
-            old_name='is_complete',
-            new_name='is_closed',
+            model_name="event",
+            old_name="is_complete",
+            new_name="is_closed",
         ),
     ]

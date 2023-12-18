@@ -1,9 +1,6 @@
-from datetime import timedelta
-
+from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from dateutil.utils import today
 from django.core.management.base import BaseCommand
-
-from administration_units.models import AdministrationUnit, BrontosaurusMovement
 
 
 class Command(BaseCommand):

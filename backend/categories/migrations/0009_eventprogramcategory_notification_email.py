@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0008_alter_eventtag_is_active'),
+        ("categories", "0008_alter_eventtag_is_active"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='eventprogramcategory',
-            name='notification_email',
-            field=models.EmailField(default='hnuti@brontosaurus.cz', max_length=254),
+            model_name="eventprogramcategory",
+            name="notification_email",
+            field=models.EmailField(default="hnuti@brontosaurus.cz", max_length=254),
         ),
     ]

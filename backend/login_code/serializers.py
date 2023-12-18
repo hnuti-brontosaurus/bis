@@ -1,4 +1,4 @@
-from rest_framework.fields import EmailField, CharField
+from rest_framework.fields import CharField, EmailField
 from rest_framework.serializers import Serializer
 
 

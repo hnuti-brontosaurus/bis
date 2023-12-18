@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { QuestionType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import {
@@ -13,10 +14,12 @@ import {
 } from 'components'
 import { form as formTexts } from 'config/static/event'
 import { Controller, FormProvider, useFieldArray } from 'react-hook-form'
-import { FaPlus, FaTrashAlt } from 'react-icons/fa'
+import { FaPlus, FaTrashAlt, FaAngleUp, FaAngleDown } from 'react-icons/fa'
 import { requireBoolean } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
 import { MethodsShapes } from '..'
+import applicationImage from 'assets/prihlaska.png'
+import applicationImageChild from 'assets/prihlaska_dite.png'
 import styles from './RegistrationStep.module.scss'
 
 const questionTypes: { type: QuestionType; name: string }[] = [
@@ -37,6 +40,11 @@ export const RegistrationStep = ({
   })
 
   const isNotOnWeb = watch('propagation.is_shown_on_web') === false
+
+  const [showInfo, setShowInfo] = useState(false);
+  const handleClickShowInfo = () => {
+    setShowInfo(!showInfo);
+  };
 
   return (
     <FormProvider {...methods}>
@@ -166,6 +174,35 @@ export const RegistrationStep = ({
                   header="Přihláška"
                   help={formTexts.registration.questionnaire.help}
                 >
+                  <button 
+                    type="button" 
+                    onClick={handleClickShowInfo}
+                    className={styles.showInfoButton}
+                  >
+                    {showInfo ? 
+                    <>
+                      Skrýt info
+                      <FaAngleUp />
+                    </>
+                     : 
+                     <>
+                      Zobraz si více informací a výhod standardní přihlášky 
+                      <FaAngleDown />
+                     </>
+                     }
+                  </button>
+                  {showInfo ?
+                    <InfoBox>
+                      <strong>Standardní přihláška vám ulehčí práci, zjednoduší a sjednotí přihlašování účastníkům a poskytuje stejné funkce jako google formulář.</strong><br/><br/>
+                      U Standartní přihlášky na brontowebu se na webu HB vždy automaticky zobrazí standartní přihláška HB s dotazem na jméno, příjmení, datum narození, telefon, e-mail a prostorem pro poznámku. Pokud se přihlašuje dítě, je tam možné vyplnit i kontaktní údaje na rodiče.<br/><br/>
+                      Pokud si k přihlášce chcete přidat jakýkoliv vlastní vlastní text nebo otázky, můžete si vytvořit vlastní část dotazníku, která se k Standartní přihlášce připojí.<br/><br/>
+                      Vyplněné Standardní přihlášky vám automaticky budou chodit na kontaktní e-mail uvedený u akce. Zároveň se přihlášky automaticky propíšou do BIS. <strong>Jedním kliknutím si pak vytvoříš seznam účastníků nebo vygeneruješ prezenční listinu.</strong>
+                      <div className={styles.imageWrapper}>
+                        <img className={styles.applicationImage} src={applicationImage} alt="přihláška" />
+                        <img className={styles.applicationImage} src={applicationImageChild} alt="přihláška dítě" />
+                      </div>
+                    </InfoBox>
+                  : null }
                   <FormSubsection
                     header="Úvod k dotazníku"
                     help={

@@ -8,12 +8,23 @@
   min-width: 100%;
   counter-reset: section;
   border: 2px solid colors.$gray-200;
-  margin: 1rem 0 0;
-  padding: 1rem 2rem 1rem;
   @include media.for-big-desktop-up {
     padding: 2rem 2rem 4rem;
     margin: 1rem 0;
   }
+  @include media.for-phone-only {
+    margin: 5x 0 0;
+    padding: 5px 10px 5px;
+  }
+  @include media.for-tablet-portrait-up {
+    margin: .5rem 0 0;
+    padding: .5rem 1rem .5rem;
+  }
+  @include media.for-tablet-landscape-up {
+    margin: 1rem 0 0;
+    padding: 1rem 2rem 1rem;
+  }
+
   gap: 1rem;
   display: flex;
   flex-grow: 0;

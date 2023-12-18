@@ -1,8 +1,7 @@
 from datetime import date
 
-from django.core.management.base import BaseCommand
-
 from bis.helpers import with_paused_validation
+from django.core.management.base import BaseCommand
 from event.models import Event
 
 
