@@ -108,9 +108,7 @@ export const ViewProfile = () => {
               </tr>
               <tr>
                 <th>Oslovení</th>
-                <td>
-                  {user.pronoun?.name.length > 0 ? user.pronoun?.name : '-'}
-                </td>
+                <td>{user.pronoun ? user.pronoun?.name : '-'}</td>
               </tr>
               <tr>
                 <th>Rodné příjmení</th>
