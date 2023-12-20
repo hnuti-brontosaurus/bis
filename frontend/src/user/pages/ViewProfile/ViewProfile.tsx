@@ -40,11 +40,11 @@ export const ViewProfile = () => {
       ...rest,
     }),
   )
-  const formattedUser = mergeWith(
+  /* const formattedUser = mergeWith(
     omit(user, 'id', '_search_id', 'display_name'),
     { memberships: formattedMemberships },
     withOverwriteArray,
-  )
+  ) */
 
   const ALL_COLUMNS = 8
 
@@ -116,7 +116,7 @@ export const ViewProfile = () => {
               </tr>
               <tr>
                 <th>Datum narození</th>
-                <td>{user.birthday ? formatDateTime(user.birthday) : null}</td>
+                <td>{user.birthday ? formatDateTime(user.birthday) : '-'}</td>
               </tr>
 
               <tr>
@@ -247,7 +247,10 @@ export const ViewProfile = () => {
                             {qualif.category?.name}
                             <br />
                           </span>
-                          Datum získání: {formatDateTime(qualif.valid_since)}
+                          Datum získání:{' '}
+                          {qualif.valid_since
+                            ? formatDateTime(qualif.valid_since)
+                            : '-'}
                           <br />
                           Kvalifikaci udělil: {
                             qualif.approved_by?.first_name
@@ -255,7 +258,9 @@ export const ViewProfile = () => {
                           {qualif.approved_by?.last_name}
                           <br />
                           Platnost kvalifikace do:{' '}
-                          {formatDateTime(qualif.valid_till)}
+                          {qualif.valid_till
+                            ? formatDateTime(qualif.valid_till)
+                            : '-'}
                         </div>
                       ))
                     : '-'}
@@ -285,7 +290,7 @@ export const ViewProfile = () => {
               <tr>
                 <th>EYCA nebo členská karta</th>
                 <td>
-                  {user.eyca_card ? (
+                  {user.eyca_card?.valid_till ? (
                     'ano, platnost do: ' +
                     formatDateTime(user.eyca_card?.valid_till)
                   ) : (
@@ -305,7 +310,9 @@ export const ViewProfile = () => {
               </tr>
               <tr>
                 <th>Datum vzniku tvého profilu v BIS</th>
-                <td>{formatDateTime(user.date_joined)}</td>
+                <td>
+                  {user.date_joined ? formatDateTime(user.date_joined) : '-'}
+                </td>
               </tr>
             </tbody>
           </table>
