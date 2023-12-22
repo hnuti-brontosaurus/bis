@@ -107,6 +107,9 @@
     margin: 1rem 0 1rem 2rem;
     list-style-type: disc;
   }
+  a {
+    text-decoration: underline;
+  }
 }
 
 // this must be a direct child of a Form[Sub[sub]]Section

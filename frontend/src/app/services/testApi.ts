@@ -2902,6 +2902,12 @@ export type EycaCard = {
   sent_to_user: boolean
   valid_till: string
 }
+export type Photo = {
+  large: string
+  medium: string
+  original: string
+  small: string
+}
 export type Membership = {
   category: MembershipCategory
   administration_unit: number
@@ -2946,6 +2952,7 @@ export type User = {
   eyca_card: EycaCard | null
   memberships: Membership[]
   qualifications: Qualification[]
+  photo: Photo
 }
 export type PaginatedUserList = {
   count?: number
