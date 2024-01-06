@@ -58,7 +58,7 @@ export const ViewProfile = () => {
   const compareEmails = () => {
     const otherEmails = user.all_emails?.filter(e => e !== user.email)
 
-    if (otherEmails.length > 0) {
+    if (otherEmails?.length > 0) {
       return (
         <tr>
           <th>Všechny e-maily</th>
@@ -266,7 +266,7 @@ export const ViewProfile = () => {
               <tr>
                 <th>Kvalifikace</th>
                 <td>
-                  {user.qualifications.length > 0 ? (
+                  {user.qualifications?.length > 0 ? (
                     <>
                       {currentQualifications?.map(qualif => (
                         <div
@@ -321,7 +321,7 @@ export const ViewProfile = () => {
               <tr>
                 <th>Členství</th>
                 <td>
-                  {formattedMemberships.length > 0
+                  {formattedMemberships?.length > 0
                     ? sortedMemberships.map(memb =>
                         memb.year >= currentYear ? (
                           <Fragment key={memb.category?.id}>
