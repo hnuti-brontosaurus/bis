@@ -56,7 +56,7 @@ export const ViewProfile = () => {
 
   //email helpers
   const compareEmails = () => {
-    const otherEmails = user.all_emails.filter(e => e !== user.email)
+    const otherEmails = user.all_emails?.filter(e => e !== user.email)
 
     if (otherEmails.length > 0) {
       return (
@@ -77,12 +77,12 @@ export const ViewProfile = () => {
 
   const currentTime = new Date().getTime()
 
-  const currentQualifications = sortedQualifications.filter(qualification => {
+  const currentQualifications = sortedQualifications?.filter(qualification => {
     const validTillDate = new Date(qualification.valid_till).getTime()
     return validTillDate >= currentTime
   })
 
-  const pastQualifications = sortedQualifications.filter(qualification => {
+  const pastQualifications = sortedQualifications?.filter(qualification => {
     const validTillDate = new Date(qualification.valid_till).getTime()
     return validTillDate < currentTime
   })
