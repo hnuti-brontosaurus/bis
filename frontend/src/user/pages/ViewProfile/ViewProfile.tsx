@@ -32,6 +32,7 @@ export const ViewProfile = () => {
 
   useTitle(title)
 
+  //membership helpers
   const formattedMemberships = user.memberships.map(
     ({ administration_unit, ...rest }) => ({
       administration_unit:
@@ -40,22 +41,57 @@ export const ViewProfile = () => {
       ...rest,
     }),
   )
+
+  const sortedMemberships = formattedMemberships
+    .slice()
+    .sort((a, b) => b.year - a.year)
+
+  const currentYear = new Date().getFullYear()
+
+  const hasCurrentMemberships = sortedMemberships.some(
+    memb => memb.year >= currentYear,
+  )
+
+  const ALL_COLUMNS = 8
+
+  //email helpers
+  const compareEmails = () => {
+    const otherEmails = user.all_emails.filter(e => e !== user.email)
+
+    if (otherEmails.length > 0) {
+      return (
+        <tr>
+          <th>Všechny e-maily</th>
+          <td>{user.all_emails.join(', ')}</td>
+        </tr>
+      )
+    }
+  }
+
+  // qualification helpers
+  const sortedQualifications = [...user.qualifications].sort((a, b) => {
+    const dateA = new Date(a.valid_since).getTime()
+    const dateB = new Date(b.valid_since).getTime()
+    return dateB - dateA
+  })
+
+  const currentTime = new Date().getTime()
+
+  const currentQualifications = sortedQualifications.filter(qualification => {
+    const validTillDate = new Date(qualification.valid_till).getTime()
+    return validTillDate >= currentTime
+  })
+
+  const pastQualifications = sortedQualifications.filter(qualification => {
+    const validTillDate = new Date(qualification.valid_till).getTime()
+    return validTillDate < currentTime
+  })
+
   /* const formattedUser = mergeWith(
     omit(user, 'id', '_search_id', 'display_name'),
     { memberships: formattedMemberships },
     withOverwriteArray,
   ) */
-
-  const ALL_COLUMNS = 8
-
-  const compareEmails = (
-    email: string | null | undefined,
-    allEmails: string[],
-  ) => {
-    if (!email || !allEmails) return false
-    const filteredEmails = allEmails.filter(e => e && e === email)
-    return filteredEmails.length >= 1
-  }
 
   return (
     <>
@@ -136,14 +172,7 @@ export const ViewProfile = () => {
                 <th>E-mail</th>
                 <td>{user.email}</td>
               </tr>
-              {compareEmails(user.email, user.all_emails) ? (
-                ''
-              ) : (
-                <tr>
-                  <th>Všechny e-maily</th>
-                  <td>{user.all_emails}</td>
-                </tr>
-              )}
+              {compareEmails()}
               <tr>
                 <th>Telefon</th>
                 <td>{user.phone ? user.phone : '-'}</td>
@@ -237,8 +266,9 @@ export const ViewProfile = () => {
               <tr>
                 <th>Kvalifikace</th>
                 <td>
-                  {user.qualifications.length > 0
-                    ? user.qualifications?.map(qualif => (
+                  {user.qualifications.length > 0 ? (
+                    <>
+                      {currentQualifications?.map(qualif => (
                         <div
                           className={styles.tableDiv}
                           key={qualif.category?.id}
@@ -262,28 +292,66 @@ export const ViewProfile = () => {
                             ? formatDateTime(qualif.valid_till)
                             : '-'}
                         </div>
-                      ))
-                    : '-'}
+                      ))}
+
+                      {pastQualifications?.map(qualif => (
+                        <div
+                          className={styles.tableDiv}
+                          key={qualif.category?.id}
+                        >
+                          <i>
+                            {qualif.category?.name},{' '}
+                            {qualif.valid_since
+                              ? formatDateTime(qualif.valid_since)
+                              : '-'}{' '}
+                            –{' '}
+                            {qualif.valid_till
+                              ? formatDateTime(qualif.valid_till)
+                              : '-'}
+                            <br />
+                          </i>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    '-'
+                  )}
                 </td>
               </tr>
               <tr>
                 <th>Členství</th>
                 <td>
                   {formattedMemberships.length > 0
-                    ? formattedMemberships.map(memb => (
-                        <Fragment key={memb.category?.id}>
-                          <span className={styles.bold}>
-                            Organizační jednotka:{' '}
-                          </span>
-                          {memb.administration_unit}
-                          <br />
-                          <span className={styles.bold}>Typ členství: </span>
-                          {memb.category?.name}
-                          <br />
-                          <span className={styles.bold}>Členství v roce: </span>
-                          {memb.year}
-                        </Fragment>
-                      ))
+                    ? sortedMemberships.map(memb =>
+                        memb.year >= currentYear ? (
+                          <Fragment key={memb.category?.id}>
+                            <span className={styles.bold}>
+                              Organizační jednotka:{' '}
+                            </span>
+                            {memb.administration_unit}
+                            <br />
+                            <span className={styles.bold}>Typ členství: </span>
+                            {memb.category?.name}
+                            <br />
+                            <span className={styles.bold}>
+                              Členství v roce:{' '}
+                            </span>
+                            {memb.year}
+                            <br />
+                            {hasCurrentMemberships ? (
+                              <br key="last-br" />
+                            ) : null}
+                          </Fragment>
+                        ) : (
+                          <Fragment key={memb.category?.id}>
+                            <i>
+                              {memb.administration_unit}, {memb.category?.name},{' '}
+                              {memb.year}
+                            </i>
+                            <br />
+                          </Fragment>
+                        ),
+                      )
                     : '-'}
                 </td>
               </tr>
