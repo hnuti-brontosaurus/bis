@@ -428,6 +428,7 @@ def get_donation_confirmation(donor):
     total = sum(
         donation.amount for donation in donor.donations.filter(donated_at__year=year)
     )
+    assert total > 0, f"{donor} za poslední rok nic nedaroval"
 
     pronoun = donor.user.pronoun and donor.user.pronoun.slug
     pronoun_texts = ["pan/slečna/paní", "poskytl/a"]

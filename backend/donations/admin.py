@@ -87,9 +87,14 @@ def send_donation_confirmation(model_admin, request, queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
+    i = 0
     for obj in queryset:
-        donation_confirmation(obj, *get_donation_confirmation(obj))
-    messages.info(request, f"Úspěšně posláno {queryset.count()} potvrzení")
+        try:
+            donation_confirmation(obj, *get_donation_confirmation(obj))
+            i += 1
+        except AssertionError as e:
+            messages.error(request, str(e))
+    messages.info(request, f"Úspěšně posláno {i} potvrzení")
 
 
 @admin.register(Donor)
@@ -196,11 +201,14 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
             to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
             obj = self.get_object(request, unquote(object_id), to_field)
 
-            if "_donation_confirmation_pdf_export" in request.POST:
-                return FileResponse(get_donation_confirmation(obj)[0])
-            if "_donation_confirmation_pdf_email" in request.POST:
-                donation_confirmation(obj, *get_donation_confirmation(obj))
-                messages.info(request, "Potvrzení o daru úspěšně odesláno")
+            try:
+                if "_donation_confirmation_pdf_export" in request.POST:
+                    return FileResponse(get_donation_confirmation(obj)[0])
+                if "_donation_confirmation_pdf_email" in request.POST:
+                    donation_confirmation(obj, *get_donation_confirmation(obj))
+                    messages.info(request, "Potvrzení o daru úspěšně odesláno")
+            except AssertionError as e:
+                messages.error(request, str(e))
 
         return super().changeform_view(request, object_id, form_url, extra_context)
 
