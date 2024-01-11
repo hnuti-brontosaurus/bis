@@ -52,6 +52,7 @@ User:
     roles: Role
     internal_note: Poznámka ústředí
     subscribed_to_newsletter: Odebírá novinky?
+    last_after_event_email: Poslední e-mail po akci
 
 
 UserClosePerson:

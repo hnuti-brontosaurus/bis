@@ -254,7 +254,12 @@ def event_end_participants_notification(event):
     if event.end < (date.today() - timedelta(days=60)):
         return
 
-    for participant in event.record.participants.all():
+    participants_to_notify = event.record.participants.exclude(
+        last_after_event_email__gte=date.today() - timedelta(days=6 * 30)
+    )
+    for participant in event.record.participants.exclude(
+        last_after_event_email__gte=date.today() - timedelta(days=6 * 30)
+    ):
         ecomail.send_email(
             emails["movement"],
             "Děkujeme za účast na akci Hnutí",
@@ -265,6 +270,7 @@ def event_end_participants_notification(event):
                 "event_name": event.name,
             },
         )
+    participants_to_notify.update(last_after_event_email=date.today())
 
 
 def get_consultants():

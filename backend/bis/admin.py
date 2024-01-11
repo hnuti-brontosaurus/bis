@@ -373,6 +373,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         "get_donor",
         "get_board_member_of",
         "get_token",
+        "last_after_event_email",
     )
     exclude = "groups", "user_permissions", "password", "is_superuser", "_str"
 
@@ -422,6 +423,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                     "is_active",
                     "last_login",
                     "date_joined",
+                    "last_after_event_email",
                     "get_board_member_of",
                     "vokativ",
                 ],
