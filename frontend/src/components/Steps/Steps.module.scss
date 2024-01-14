@@ -46,7 +46,6 @@ $step-button-line-height-phone: 1rem;
     padding: 0.1rem 0.5rem;
     border: $step-button-border-width solid colors.$bronto-light;
     background-color: colors.$bronto-light;
-    color: colors.$bronto;
     border-radius: 2rem;
     height: 44px;
     font-size: 0.95rem;
@@ -144,16 +143,15 @@ $step-button-line-height-phone: 1rem;
 .floatingStepArrow {
   width: 60px;
   height: 60px;
-  background-color: colors.$bronto;
   border-radius: 30px;
   border-width: 1px;
+  color: transparent;
+  opacity: 60%;
   path {
-    fill: colors.$bronto-300;
+    fill: colors.$bronto;
   }
   &:hover {
-    path {
-      fill: colors.$bronto-300;
-    }
+    opacity: 80%;
   }
 }
 .buttonNavigationLeftBigScreen {
@@ -163,7 +161,6 @@ $step-button-line-height-phone: 1rem;
     position: fixed;
     top: 50%;
     left: 1rem;
-    opacity: 60%;
     background-color: transparent;
   }
 }
@@ -174,7 +171,6 @@ $step-button-line-height-phone: 1rem;
     position: fixed;
     top: 50%;
     right: 1rem;
-    opacity: 60%;
     background-color: transparent;
   }
 }
