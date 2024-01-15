@@ -580,3 +580,9 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             f'<a target="_blank" href="/profil/{obj.id}/" title="Zobrazit v BISu pro organizátory">📄</a><br>'
             f'<a target="_blank" href="/profil/{obj.id}/upravit" title="Upravit v BISu pro organizátory">📝</a><br>'
         )
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        if request.user.is_superuser or request.user.is_office_worker:
+            form.base_fields["birthday"].required = False
+        return form
