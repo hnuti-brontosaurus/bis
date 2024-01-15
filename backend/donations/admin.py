@@ -61,23 +61,28 @@ class VariableSymbolInline(PermissionMixin, NestedTabularInline):
     extra = 0
 
 
-@admin.action(description="Označ vybrané mužským oslovením")
-def mark_as_man(model_admin, request, queryset):
-    if not all([obj.has_edit_permission(request.user) for obj in queryset]):
-        return model_admin.message_user(
-            request, "Nemáš právo editovat vybrané objekty", ERROR
-        )
-    queryset.update(user__pronoun=PronounCategory.objects.get(slug="man"))
-
-
-@admin.action(description="Označ vybrané ženským oslovením")
-def mark_as_woman(model_admin, request, queryset):
+def mark_with_pronoun(model_admin, request, queryset, pronoun):
     perms = Permissions(request.user, Donor, "backend")
     if not all([perms.has_change_permission(obj) for obj in queryset]):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
-    queryset.update(user__pronoun=PronounCategory.objects.get(slug="woman"))
+    users = User.objects.filter(id__in=queryset.values_list("user_id"))
+    users.update(pronoun=pronoun)
+
+
+@admin.action(description="Označ vybrané mužským oslovením")
+def mark_as_man(model_admin, request, queryset):
+    mark_with_pronoun(
+        model_admin, request, queryset, PronounCategory.objects.get(slug="man")
+    )
+
+
+@admin.action(description="Označ vybrané ženským oslovením")
+def mark_as_woman(model_admin, request, queryset):
+    mark_with_pronoun(
+        model_admin, request, queryset, PronounCategory.objects.get(slug="woman")
+    )
 
 
 @admin.action(description="Zašli potvrzení o daru")
