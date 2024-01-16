@@ -1,8 +1,10 @@
 from administration_units.models import AdministrationUnit
 from bis.admin_filters import EventStatsDateFilter, UserStatsDateFilter
 from bis.helpers import AgeStats, MembershipStats
-from bis.models import User
+from bis.models import Membership, User
 from django import template
+from django.contrib.admin.templatetags.admin_list import date_hierarchy
+from django.contrib.admin.templatetags.base import InclusionAdminNode
 from django.utils.datetime_safe import date
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -16,11 +18,10 @@ register = template.Library()
 def user_stats(context, changelist):
     queryset = changelist.queryset
     stats = []
+    request = context["request"]
     to_date = date(now().year, 1, 1)
     if queryset.model is User:
-        selected_date = getattr(
-            context["request"], UserStatsDateFilter.cache_name, None
-        )
+        selected_date = getattr(request, UserStatsDateFilter.cache_name, None)
         if selected_date:
             to_date = selected_date["chairman_of__existed_since"].date()
 
@@ -28,9 +29,7 @@ def user_stats(context, changelist):
 
         year = date.today().year
         header = f"{queryset.count()} lidí"
-        membership_stats_query = getattr(
-            context["request"], "membership_stats_query", {}
-        )
+        membership_stats_query = getattr(request, "membership_stats_query", {})
         if not membership_stats_query:
             membership_stats_query = dict(year=year)
 
@@ -45,11 +44,15 @@ def user_stats(context, changelist):
         if administration_unit := membership_stats_query.get("administration_unit"):
             header += f" organizační jednotky {AdministrationUnit.objects.get(id=administration_unit).abbreviation}"
 
-        stats.append(MembershipStats(header, membership_stats_query))
+        stats.append(
+            MembershipStats(header, Membership.objects.filter(**membership_stats_query))
+        )
 
-    event_stats_date = getattr(
-        context["request"], EventStatsDateFilter.cache_name, None
-    )
+    if queryset.model is Membership:
+        year = request.GET.get("created_at__year") or date.today().year
+        stats.append(MembershipStats(f"za rok {year}", queryset.filter(year=year)))
+
+    event_stats_date = getattr(request, EventStatsDateFilter.cache_name, None)
     if queryset.model is Event and event_stats_date:
         to_date = event_stats_date["main_organizer__birthday"].date()
         user_queryset = User.objects.filter(participated_in_events__event__in=queryset)
@@ -74,3 +77,30 @@ def user_dashboard(context, user):
         result += f'<li>{item.date.day}. {item.date.month}. {item.date.year}: {item.name}<br><span class="mini quiet">{item.description}</span></li>'
 
     return mark_safe(f"<ul>{result}</ul>")
+
+
+def membership_date_hierarchy(cl):
+    queryset = cl.queryset
+    cl.queryset = Membership.objects.all()
+    result = date_hierarchy(cl)
+    if result["back"] is None:
+        result["title"] = "Zobrazit členství jen za rok:"
+    else:
+        year = cl.params.get("created_at__year")
+        result["choices"] = []
+        result["title"] = f"Zobrazuji členství za rok {year}"
+        result["back"]["title"] = "zobrazit všecha"
+
+    cl.queryset = queryset
+    return result
+
+
+@register.tag(name="membership_date_hierarchy")
+def membership_date_hierarchy_tag(parser, token):
+    return InclusionAdminNode(
+        parser,
+        token,
+        func=membership_date_hierarchy,
+        template_name="membership_date_hierarchy.html",
+        takes_context=False,
+    )

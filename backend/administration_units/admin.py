@@ -13,7 +13,7 @@ from bis.admin_filters import IsAdministrationUnitActiveFilter
 from bis.admin_helpers import LatLongWidget, get_admin_list_url
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats
-from bis.models import User
+from bis.models import Membership, User
 from common.history import show_history
 from dateutil.utils import today
 from django.contrib import admin
@@ -146,7 +146,7 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
         year = date.today().year
         return MembershipStats(
             f"organizační jednotky {obj.abbreviation} za rok {year}",
-            dict(administration_unit=obj, year=year),
+            Membership.objects.filter(administration_unit=obj, year=year),
         ).as_table()
 
 

@@ -35,6 +35,7 @@ class AdministrationUnitCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 @admin.register(MembershipCategory)
 class MembershipCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     list_display = "name", "price"
+    search_fields = ("name",)
 
 
 @admin.register(EventGroupCategory)

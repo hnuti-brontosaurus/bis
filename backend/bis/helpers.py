@@ -204,9 +204,9 @@ class AgeStats:
 
 
 class MembershipStats:
-    def __init__(self, header, query):
+    def __init__(self, header, queryset):
         self.header = header
-        self.query = query
+        self.queryset = queryset
 
     def get_header(self):
         return f"Sumarizace členských příspěvků {self.header}"
@@ -214,9 +214,7 @@ class MembershipStats:
     def get_data(self):
         data = {
             category.name: (
-                apps.get_model("bis", "Membership")
-                .objects.filter(category=category, **self.query)
-                .count(),
+                self.queryset.filter(category=category).count(),
                 category.price,
             )
             for category in MembershipCategory.objects.all()
@@ -262,9 +260,13 @@ def filter_queryset_with_multiple_or_queries(queryset, queries):
 
 
 def make_a(content, link):
-    return f'<a href="{link}">{content}</a>'
+    return mark_safe(f'<a href="{link}">{content}</a>')
 
 
 def make_ul(data):
     data = "".join(f"<li>{item}</li>" for item in data)
-    return f"<ul>{data}</ul>"
+    return mark_safe(f"<ul>{data}</ul>")
+
+
+def make_br(data):
+    return mark_safe("<br>".join(data))

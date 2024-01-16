@@ -23,14 +23,17 @@ from categories.models import (
 from common.abstract_models import BaseAddress, BaseContact
 from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
+from dateutil.utils import today
 from django.apps import apps
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.contrib.gis.db.models import *
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
@@ -378,7 +381,7 @@ class User(AbstractBaseUser):
             return relativedelta(now().date(), self.birthday).years
 
     class Meta:
-        ordering = ("last_name",)
+        ordering = "last_name", "first_name"
         unique_together = "first_name", "last_name", "birthday"
 
     def __str__(self):
@@ -721,6 +724,10 @@ class EYCACard(Model):
         return f"EYCA {self.number}"
 
 
+def this_year():
+    return datetime.date.today().year
+
+
 @translate_model
 class Membership(Model):
     user = ForeignKey(User, on_delete=PROTECT, related_name="memberships")
@@ -730,15 +737,106 @@ class Membership(Model):
     administration_unit = ForeignKey(
         AdministrationUnit, on_delete=PROTECT, related_name="memberships"
     )
-    year = PositiveIntegerField()
+    year = PositiveIntegerField(default=this_year)
 
+    created_at = DateField(auto_now_add=True)
     _import_id = CharField(max_length=15, default="")
 
     class Meta:
-        ordering = ("id",)
+        ordering = ("-year", "user__first_name", "user__last_name")
 
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"
+
+    @classmethod
+    def do_extend_for(cls, user, slug, administration_unit):
+        if slug == "extend":
+            previous = Membership.objects.filter(
+                user=user,
+                administration_unit=administration_unit,
+            ).first()
+            assert (
+                previous
+            ), f"Nelze prodloužit členství pro {user}, neb ještě nebyl členem {administration_unit}"
+
+            slug = previous.category.slug
+            if slug in ["kid", "student", "adult"]:
+                slug = "individual"
+
+        if slug == "individual":
+            slug = MembershipCategory.get_individual(user)
+
+            assert (
+                slug
+            ), f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk"
+
+        Membership.objects.update_or_create(
+            user=user,
+            administration_unit=administration_unit,
+            year=datetime.date.today().year,
+            defaults=dict(category=MembershipCategory.objects.get(slug=slug)),
+        )
+
+    @classmethod
+    def extend_for(cls, request, user, category_slug, administration_unit):
+        try:
+            cls.do_extend_for(user, category_slug, administration_unit)
+        except AssertionError as e:
+            messages.error(request, str(e))
+
+    def extend(self, request):
+        self.extend_for(
+            request, self.user, self.category.slug, self.administration_unit
+        )
+
+    @staticmethod
+    def get_membership_actions(obj, can_change, separator):
+        inline_actions = []
+        if obj.year < today().year:
+            inline_actions.append(
+                f'<input type="submit" name="_extend_membership_{obj.id}" value="Prodloužit">'
+            )
+        if can_change:
+            inline_actions.append(
+                f'<input type="submit" name="_change_membership_{obj.id}" value="Změnit">'
+            )
+        if can_change:
+            inline_actions.append(
+                f'<input type="submit" name="_cancel_membership_{obj.id}" value="Zrušit">'
+            )
+
+        return mark_safe(separator.join(inline_actions))
+
+    @classmethod
+    def process_action(cls, request):
+        for key in request.POST.keys():
+            if key.startswith("_extend_membership_"):
+                membership_id = int(key.split("_")[3])
+                membership = cls.objects.get(id=membership_id)
+                membership.extend(request)
+                return HttpResponseRedirect(request.get_full_path())
+
+            if key.startswith("_change_membership_"):
+                membership_id = int(key.split("_")[3])
+                return HttpResponseRedirect(
+                    reverse(
+                        "admin:bis_membership_change",
+                        kwargs={"object_id": membership_id},
+                    )
+                )
+            if key.startswith("_cancel_membership_"):
+                membership_id = int(key.split("_")[3])
+                membership = cls.objects.get(id=membership_id)
+                membership.delete()
+                return HttpResponseRedirect(request.get_full_path())
+
+    @classmethod
+    def filter_queryset(cls, queryset, perm):
+        return queryset.filter(administration_unit__board_members=perm.user)
+
+    @permission_cache
+    def has_edit_permission(self, user):
+        return self.user.has_edit_permission(user) and self.year == today().year
 
 
 @translate_model

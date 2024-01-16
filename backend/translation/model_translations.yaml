@@ -175,6 +175,9 @@ BrontosaurusMovement:
 Membership:
   name: Členství
   fields:
+    user:
+      - Uživatel
+      - Zde lze vyhledávat ve všech uživatelích BISu, ke kterým máte přístup
     administration_unit: Organizační jednotka
     year: Členství v roce
     category: Typ
