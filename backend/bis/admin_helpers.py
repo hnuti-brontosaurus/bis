@@ -288,7 +288,6 @@ class LatLongWidget(forms.TextInput):
 
 
 class LatestMembershipOnlyFilter(SimpleListFilter):
-    query = None
     title = "Jen poslední členství"
     parameter_name = "only_latest_members"
 
@@ -312,3 +311,34 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
         res = list(super().choices(changelist))
         res[0]["display"] = "Zobraz pouze poslední členství od každého člena"
         return res
+
+
+class ShowDuplicateMembershipsFilter(SimpleListFilter):
+    title = "Duplicitní členství"
+    parameter_name = "duplicate_memberships"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Zobrazit jen duplicitní členství (pro odstranění starých členst"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() != "yes":
+            return queryset
+
+        if "created_at__year" in request.GET:
+            queryset = queryset.filter(created_at__year=request.GET["created_at__year"])
+
+        duplicate_map = {}
+        for membership in queryset.model.objects.all():
+            duplicate_map.setdefault(
+                f"{membership.user_id}-{membership.administration_unit_id}-{membership.year}",
+                [],
+            ).append(membership)
+
+        ids = []
+        for key, memberships in duplicate_map.items():
+            if len(memberships) > 1:
+                ids += [m.id for m in memberships]
+
+        return queryset.filter(id__in=ids)

@@ -838,6 +838,21 @@ class Membership(Model):
     def has_edit_permission(self, user):
         return self.user.has_edit_permission(user) and self.year == today().year
 
+    def clean(self):
+        if Membership.objects.filter(
+            year=self.year,
+            administration_unit=self.administration_unit,
+            user=self.user,
+        ).exclude(id=self.id):
+            raise ValidationError(
+                f"{self.user} již má pod {self.administration_unit} v roce {self.year} jiné členství."
+            )
+
+    def save(self, *args, **kwargs):
+        if not cache.get("skip_validation"):
+            self.clean()
+        super().save(*args, **kwargs)
+
 
 @translate_model
 class Qualification(Model):

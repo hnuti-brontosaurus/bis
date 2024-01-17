@@ -20,6 +20,7 @@ from bis.admin_filters import (
 from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
+    ShowDuplicateMembershipsFilter,
     get_admin_edit_url,
     list_filter_extra_text,
     list_filter_extra_title,
@@ -699,6 +700,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         AutocompleteFilterFactory("Uživatel", "user"),
         ("category", MultiSelectRelatedDropdownFilter),
         ("year", RangeNumericFilter),
+        ShowDuplicateMembershipsFilter,
     ]
 
     list_display = [
