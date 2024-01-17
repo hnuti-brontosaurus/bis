@@ -151,9 +151,11 @@ class AgeStats:
         self.oldest = max(ages + [0])
         self.birthdays_stats = Counter(ages)
 
+    def age_count(self, low, high):
+        return sum(self.birthdays_stats.get(age, 0) for age in range(low, high + 1))
+
     def age_stats(self, low, high):
-        total = sum(self.birthdays_stats.get(age, 0) for age in range(low, high + 1))
-        return self.format_count(total)
+        return self.format_count(self.age_count(low, high))
 
     def format_count(self, count):
         if not count:

@@ -3,8 +3,19 @@ from django.contrib.messages import ERROR, INFO
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from event.models import *
-from nested_admin.nested import NestedModelAdmin
-from other.models import DashboardItem, DuplicateUser, Feedback
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
+from other.models import (
+    DashboardItem,
+    DonationPoints,
+    DonationPointsColumn,
+    DonationPointsSection,
+    DuplicateUser,
+    Feedback,
+)
 
 
 @admin.register(DuplicateUser)
@@ -106,3 +117,20 @@ class DashboardItemAdmin(PermissionMixin, NestedModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("for_roles")
+
+
+class DonationPointsColumnAdmin(PermissionMixin, NestedTabularInline):
+    model = DonationPointsColumn
+    extra = 4
+
+
+class DonationPointsSectionAdmin(PermissionMixin, NestedStackedInline):
+    model = DonationPointsSection
+    inlines = (DonationPointsColumnAdmin,)
+    extra = 2
+
+
+@admin.register(DonationPoints)
+class DonationPointsAdmin(PermissionMixin, NestedModelAdmin):
+    inlines = (DonationPointsSectionAdmin,)
+    readonly_fields = ("file",)

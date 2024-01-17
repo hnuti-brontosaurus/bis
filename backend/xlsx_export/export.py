@@ -453,3 +453,28 @@ def get_donation_confirmation(donor):
     )
     page.save(tmp_pdf.name)
     return open(tmp_pdf.name, "rb"), year
+
+
+def get_donation_points(donation_points):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+
+    ws.cell(1, 1).value = "Body dotací"
+    ws.cell(2, 1).value = "od"
+    ws.cell(2, 2).value = str(donation_points.since)
+    ws.cell(2, 3).value = "do"
+    ws.cell(2, 4).value = str(donation_points.till)
+
+    for r, row in enumerate(donation_points.get_rows()):
+        for c, cell in enumerate(row):
+            ws.cell(4 + r, 1 + c).value = str(cell)
+
+    tmp_file = NamedTemporaryFile(
+        mode="w",
+        suffix=".xlsx",
+        newline="",
+        encoding="utf8",
+        prefix="donation_points_",
+    )
+    wb.save(tmp_file.name)
+    return open(tmp_file.name, "rb")

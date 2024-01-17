@@ -578,6 +578,32 @@ DashboardItem:
     for_roles: Pro role
     repeats_every_year: Opakuje se každý rok?
 
+DonationPointsAggregation:
+  name: Agregace
+
+DonationPointsColumn:
+  name: Sloupec
+  name_plural: Sloupce
+  fields:
+    aggregation: Agregace
+    points_per_each: Body za jednotku
+    section: Sekce
+
+DonationPointsSection:
+  name: Sekce
+  fields:
+    donation_points: Body dotací
+
+DonationPoints:
+  name: Body dotací
+  fields:
+    since:
+      - Od
+      - Filtruji akce které začaly po daném datumu
+    till:
+      - Do
+      - Filtruji akce které začaly do daného datumu, filtruji členství za rok kterému patří tento den, určuji stáří členů k tomuto datu
+
 
 # --------------------------------------------------------------------------------
 Game:

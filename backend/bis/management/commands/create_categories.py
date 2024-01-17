@@ -33,6 +33,7 @@ from game_book_categories.models import (
     PreparationLengthCategory,
     Tag,
 )
+from other.models import DonationPointsAggregation
 from translation.translate import _
 
 
@@ -186,10 +187,10 @@ class Command(BaseCommand):
             slug="camp", defaults=dict(name="Tábor")
         )
         EventGroupCategory.objects.update_or_create(
-            slug="weekend_event", defaults=dict(name="Víkendovka")
+            slug="weekend_event", defaults=dict(name="Víkendovka (Brďo schůzka)")
         )
         EventGroupCategory.objects.update_or_create(
-            slug="other", defaults=dict(name="Ostatní")
+            slug="other", defaults=dict(name="Jednodenní (bez adresáře)")
         )
 
         EventProgramCategory.objects.update_or_create(
@@ -467,6 +468,50 @@ class Command(BaseCommand):
                     slug="good"
                 ),
             ),
+        )
+
+        DonationPointsAggregation.objects.update_or_create(
+            name="Kluby",
+            slug="clubs",
+            description="počet akcí, které mají program: vzdělávací - přednáška, klub - přednáška, klub - setkání",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Jednodenní bez klubů",
+            slug="other_without_clubs",
+            description="počet akcí druhu jednodenní bez klubů",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Víkendovky",
+            slug="weekend_events",
+            description="počet akcí druhu víkendovka",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Tábory", slug="camps", description="počet akcí druhu tábory"
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Odpracováno 50 člověkohodin",
+            slug="50_worked_hours",
+            description="bod za každých 50 odpracovaných člověkohodin",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Členi 0-15 let",
+            slug="members_0_15",
+            description="počet členů 0-15 let",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Členi 16-18 let",
+            slug="members_16_18",
+            description="počet členů 16-18 let",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Členi 19-26 let",
+            slug="members_19_26",
+            description="počet členů 19-26 let",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Členi 27+ let",
+            slug="members_27_and_more",
+            description="počet členů 27+ let",
         )
 
     def create_game_book_categories(self):
