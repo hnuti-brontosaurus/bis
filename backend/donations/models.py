@@ -56,6 +56,7 @@ class Donor(Model):
                 "basic_section_support",
                 "has_recurrent_donation",
                 "internal_note",
+                "formal_vokativ",
             ]:
                 if not getattr(self, field.name) and getattr(other, field.name):
                     setattr(self, field.name, getattr(other, field.name))

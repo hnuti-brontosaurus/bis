@@ -454,6 +454,8 @@ class User(AbstractBaseUser):
                     "pronoun",
                     "subscribed_to_newsletter",
                     "internal_note",
+                    "photo",
+                    "last_after_event_email",
                 ]:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))
