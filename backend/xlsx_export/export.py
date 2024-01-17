@@ -335,7 +335,7 @@ def get_attendance_list(event: Event):
 
     applications = EventApplication.objects.filter(
         state__in=["pending", "approved"], event_registration__event=event
-    )
+    ).order_by("state", "created_at")
     return {
         "xlsx": export_to_xlsx(_, _, applications),
         "pdf": FileResponse(open(tmp_pdf.name, "rb")),

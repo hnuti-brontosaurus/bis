@@ -389,6 +389,7 @@ class EventApplicationExportSerializer(ModelSerializer):
     close_person = EventApplicationClosePersonExportSerializer()
     address = StringRelatedField(label="Adresa")
     pronoun = StringRelatedField(label="Oslovení")
+    state = SerializerMethodField(label="Stav přihlášky")
 
     @staticmethod
     def get_related(queryset):
@@ -418,6 +419,9 @@ class EventApplicationExportSerializer(ModelSerializer):
             "close_person",
             "address",
         )
+
+    def get_state(self, instance):
+        return {k: v for k, v in instance.states}[instance.state]
 
     def to_representation(self, instance):
         result = super().to_representation(instance)

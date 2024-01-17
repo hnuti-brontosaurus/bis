@@ -18,14 +18,15 @@ class EventApplication(Model):
     user = ForeignKey(
         User, related_name="applications", on_delete=PROTECT, null=True, blank=True
     )
+    states = [
+        ("pending", "Čeká na schválení"),
+        ("cancelled", "Zrušena"),
+        ("rejected", "Zamítnuta"),
+        ("approved", "Potvrzena"),
+    ]
     state = CharField(
         max_length=15,
-        choices=[
-            ("pending", "Čeká na schválení"),
-            ("cancelled", "Zrušena"),
-            ("rejected", "Zamítnuta"),
-            ("approved", "Potvrzena"),
-        ],
+        choices=states,
     )
 
     is_child_application = BooleanField(default=False)
