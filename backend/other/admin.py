@@ -14,7 +14,6 @@ from other.models import (
     DonationPointsColumn,
     DonationPointsSection,
     DuplicateUser,
-    Feedback,
 )
 
 
@@ -78,33 +77,6 @@ def mark_as_resolved(model_admin, request, queryset):
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
     queryset.update(is_resolved=True)
-
-
-@admin.register(Feedback)
-class FeedbackAdmin(PermissionMixin, NestedModelAdmin):
-    list_display = "user", "is_resolved", "feedback", "created_at"
-    list_filter = ("is_resolved",)
-    actions = [mark_as_resolved]
-
-    def get_exclude(self, request, obj=None):
-        if obj is None:
-            return "user", "is_resolved", "created_at"
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return "feedback", "user", "created_at"
-        return []
-
-    def get_form(self, request, obj=None, change=False, **kwargs):
-        form = super(FeedbackAdmin, self).get_form(request, obj, change, **kwargs)
-
-        class F1(form):
-            def clean(_self):
-                super().clean()
-                _self.instance.user = request.user
-                return _self.cleaned_data
-
-        return F1
 
 
 @admin.register(DashboardItem)

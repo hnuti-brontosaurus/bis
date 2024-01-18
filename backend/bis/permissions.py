@@ -25,7 +25,7 @@ from bis.models import (
 from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
 from event.models import Event, EventDraft
 from opportunities.models import OfferedHelp, Opportunity
-from other.models import DashboardItem, DuplicateUser, Feedback
+from other.models import DashboardItem, DuplicateUser
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -113,7 +113,6 @@ class Permissions:
                 UserAddress,
                 UserContactAddress,
                 UserClosePerson,
-                Feedback,
                 DuplicateUser,
                 Event,
             ] or self.model._meta.app_label in ["event"]
@@ -144,7 +143,6 @@ class Permissions:
                 Qualification,
                 QualificationNote,
                 DuplicateUser,
-                Feedback,
             ]:
                 return True
 
@@ -160,7 +158,6 @@ class Permissions:
             EventApplicationAddress,
             Answer,
             EventDraft,
-            Feedback,
         ]:
             if not obj or obj.has_edit_permission(self.user):
                 return True
@@ -264,7 +261,7 @@ class Permissions:
         return False
 
     def has_delete_permission(self, obj=None):
-        if self.model in [BrontosaurusMovement, UploadBankRecords, Feedback]:
+        if self.model in [BrontosaurusMovement, UploadBankRecords]:
             return False
         if self.is_readonly():
             return False

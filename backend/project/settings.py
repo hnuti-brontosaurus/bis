@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "bis",
     "categories",
     "questionnaire",
+    "feedback",
     "event",
     "other",
     "donations",

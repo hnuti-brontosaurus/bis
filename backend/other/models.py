@@ -48,28 +48,6 @@ class DuplicateUser(Model):
 
 
 @translate_model
-class Feedback(Model):
-    user = ForeignKey(User, on_delete=CASCADE, related_name="feedbacks")
-    feedback = TextField()
-    created_at = DateTimeField(auto_now_add=True)
-    is_resolved = BooleanField(default=False)
-
-    @classmethod
-    def filter_queryset(cls, queryset, perm):
-        return queryset.filter(user=perm.user)
-
-    def __str__(self):
-        return "Zpětná vazba"
-
-    class Meta:
-        ordering = ("id",)
-
-    @permission_cache
-    def has_edit_permission(self, user):
-        return user.is_superuser or user.is_office_worker
-
-
-@translate_model
 class DashboardItem(Model):
     date = DateField()
     name = CharField(max_length=63)

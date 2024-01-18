@@ -568,13 +568,6 @@ OfferedHelp:
     additional_team_role: Jiné týmové role
     info: Popis pomoci
 
-Feedback:
-  name: Zpětná vazba
-  name_plural: Zpětné vazby
-  fields:
-    feedback: Zpětná vazba
-    is_resolved: Zpracována?
-
 DashboardItem:
   name: Termín
   name_plural: Termíny
