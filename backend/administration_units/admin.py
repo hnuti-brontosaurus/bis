@@ -12,7 +12,7 @@ from administration_units.models import (
 from bis.admin_filters import IsAdministrationUnitActiveFilter
 from bis.admin_helpers import LatLongWidget, get_admin_list_url
 from bis.admin_permissions import PermissionMixin
-from bis.helpers import MembershipStats
+from bis.helpers import MembershipStats, make_br
 from bis.models import Membership, User
 from common.history import show_history
 from dateutil.utils import today
@@ -66,6 +66,7 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
     actions = [export_to_xlsx]
     list_display = (
         "abbreviation",
+        "get_links",
         "is_active",
         "address",
         "phone",
@@ -97,6 +98,31 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
         GeneralMeetingAdmin,
         AdministrationSubUnitAdmin,
     )
+
+    @admin.display(description="")
+    def get_links(self, obj):
+        return make_br(
+            [
+                get_admin_list_url(
+                    User,
+                    "👪",
+                    {
+                        "memberships__administration_unit": obj.id,
+                        "memberships__year_from": today().year,
+                        "memberships__year_to": today().year,
+                    },
+                    title="Zobrazit aktuální členy",
+                ),
+                get_admin_list_url(
+                    Membership,
+                    "📄",
+                    {
+                        "administration_unit": obj.id,
+                    },
+                    title="Zobrazit čelnství",
+                ),
+            ]
+        )
 
     @admin.display(description="Historie")
     def history(self, obj):

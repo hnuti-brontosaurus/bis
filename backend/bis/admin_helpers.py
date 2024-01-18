@@ -20,11 +20,11 @@ def get_admin_edit_url(obj):
     return mark_safe(f'<a href="{url}">{obj}</a>')
 
 
-def get_admin_list_url(klass, text, params=None):
+def get_admin_list_url(klass, text, params=None, title=""):
     url = reverse(f"admin:{klass._meta.app_label}_{klass._meta.model_name}_changelist")
     if params:
         url += "?" + urlencode(params)
-    return mark_safe(f'<a href="{url}">{text}</a>')
+    return mark_safe(f'<a href="{url}" title="{title}">{text}</a>')
 
 
 class YesNoFilter(SimpleListFilter):

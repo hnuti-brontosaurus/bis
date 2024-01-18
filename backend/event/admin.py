@@ -252,7 +252,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "propagation",
     )
 
-    @admin.display(description="Odkazy")
+    @admin.display(description="")
     def get_links(self, obj):
         return mark_safe(
             f'<a target="_blank" href="/org/akce/{obj.id}" title="Zobrazit v BISu pro organizátory">📄</a><br>'
