@@ -5,6 +5,7 @@ from api.frontend.serializers import (
     DashboardItemSerializer,
     EventApplicationSerializer,
     EventDraftSerializer,
+    EventFeedbackSerializer,
     EventPhotoSerializer,
     EventPropagationImageSerializer,
     EventRouterKwargsSerializer,
@@ -14,6 +15,7 @@ from api.frontend.serializers import (
     GetUnknownUserRequestSerializer,
     GetUserByEmailRequestSerializer,
     GetUserByEmailResponseSerializer,
+    InquirySerializer,
     LocationSerializer,
     OpportunitySerializer,
     QuestionSerializer,
@@ -34,6 +36,7 @@ from event.models import (
     EventPhoto,
     EventPropagationImage,
 )
+from feedback.models import EventFeedback, Inquiry
 from login_code.models import ThrottleLog
 from opportunities.models import Opportunity
 from other.models import DashboardItem
@@ -157,6 +160,7 @@ class EventViewSet(PermissionViewSetBase):
         "registration",
         "registration__questionnaire",
         "record",
+        "record__feedback_form",
         "category",
         "program",
     ).prefetch_related(
@@ -294,6 +298,35 @@ class EventApplicationViewSet(PermissionViewSetBase):
             super()
             .get_queryset()
             .filter(event_registration__event=self.kwargs["event_id"])
+        )
+
+    def get_permissions(self):
+        if self.action == "create":
+            return []
+        return super().get_permissions()
+
+
+class InquiryViewSet(PermissionViewSetBase):
+    serializer_class = InquirySerializer
+    queryset = Inquiry.objects.all()
+    kwargs_serializer_class = EventRouterKwargsSerializer
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(feedback_form__event_record__event=self.kwargs["event_id"])
+        )
+
+
+class EventFeedbackViewSet(PermissionViewSetBase):
+    serializer_class = EventFeedbackSerializer
+    queryset = EventFeedback.objects.prefetch_related("replies", "replies__inquiry")
+    kwargs_serializer_class = EventRouterKwargsSerializer
+
+    def get_queryset(self):
+        return (
+            super().get_queryset().filter(event_record__event=self.kwargs["event_id"])
         )
 
     def get_permissions(self):

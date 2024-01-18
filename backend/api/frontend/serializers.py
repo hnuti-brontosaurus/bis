@@ -56,6 +56,7 @@ from event.models import (
     EventRegistration,
     VIPEventPropagation,
 )
+from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
 from other.models import DashboardItem
 from questionnaire.models import (
@@ -604,8 +605,18 @@ class EventContactSerializer(BaseContactSerializer):
         list_serializer_class = UpdatableListSerializer
 
 
+class FeedbackFormSerializer(ModelSerializer):
+    class Meta:
+        model = FeedbackForm
+        fields = (
+            "introduction",
+            "after_submit_text",
+        )
+
+
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
+    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     age_stats = SerializerMethodField()
 
@@ -620,6 +631,7 @@ class RecordSerializer(ModelSerializer):
             "note",
             "contacts",
             "age_stats",
+            "feedback_form",
         )
 
     def get_age_stats(self, instance) -> dict:
@@ -941,8 +953,70 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all([key in ["user", "state"] for key in validated_data]):
-            raise ValidationError("Only user and state are editable")
+        if not all([key in ["user", "state", "note"] for key in validated_data]):
+            raise ValidationError("Only user, state and note are editable")
+        return super().update(instance, validated_data)
+
+
+class InquirySerializer(ModelSerializer):
+    class Meta:
+        model = Inquiry
+        fields = (
+            "id",
+            "inquiry",
+            "data",
+            "is_required",
+            "order",
+        )
+
+    @catch_related_object_does_not_exist
+    def create(self, validated_data):
+        validated_data["feedback_form"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).record.feedback_form
+        return super().create(validated_data)
+
+
+class ReplySerializer(ModelSerializer):
+    inquiry = InquirySerializer()
+
+    class Meta:
+        model = Reply
+        fields = (
+            "inquiry",
+            "reply",
+            "data",
+        )
+
+
+class EventFeedbackSerializer(ModelSerializer):
+    replies = ReplySerializer(many=True)
+
+    class Meta:
+        model = EventFeedback
+        fields = (
+            "id",
+            "user",
+            "name",
+            "email",
+            "created_at",
+            "note",
+            "replies",
+        )
+
+    @catch_related_object_does_not_exist
+    def create(self, validated_data):
+        validated_data["event_record"] = Event.objects.get(
+            id=self.context["view"].kwargs["event_id"]
+        ).record
+        instance = super().create(validated_data)
+        emails.feedback_created(instance)
+        return instance
+
+    @catch_related_object_does_not_exist
+    def update(self, instance, validated_data):
+        if not all([key in ["user", "note"] for key in validated_data]):
+            raise ValidationError("Only user and note are editable")
         return super().update(instance, validated_data)
 
 

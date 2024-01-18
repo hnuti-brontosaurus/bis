@@ -42,3 +42,14 @@ class PermissionMixin:
             return super().get_extra(request, obj, **kwargs)
 
         return 0
+
+
+class ReadonlyMixin:
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

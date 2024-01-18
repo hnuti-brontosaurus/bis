@@ -9,6 +9,7 @@ from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
 from django.utils.datetime_safe import date
 from event.models import *
+from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
@@ -117,7 +118,13 @@ class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
 
 class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     model = EventRecord
-    inlines = EventPhotoAdmin, AttendanceListPageAdmin, EventContactAdmin
+    inlines = (
+        EventPhotoAdmin,
+        AttendanceListPageAdmin,
+        EventContactAdmin,
+        FeedbackFormAdmin,
+        EventFeedbackAdmin,
+    )
 
     readonly_fields = (
         "get_participants_age_stats_event_start",

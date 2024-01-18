@@ -4,10 +4,12 @@ from api.frontend.views import (
     DashboardItemViewSet,
     EventApplicationViewSet,
     EventDraftViewSet,
+    EventFeedbackViewSet,
     EventPhotoViewSet,
     EventPropagationImageViewSet,
     EventViewSet,
     FinanceReceiptViewSet,
+    InquiryViewSet,
     LocationViewSet,
     OpportunityViewSet,
     OrganizersViewSet,
@@ -46,6 +48,8 @@ events_router.register("record/photos", EventPhotoViewSet)
 events_router.register("record/attendance_list_pages", AttendanceListPageViewSet)
 events_router.register("registration/questionnaire/questions", QuestionViewSet)
 events_router.register("registration/applications", EventApplicationViewSet)
+events_router.register("record/feedback_form/inquiries", InquiryViewSet)
+events_router.register("record/feedbacks", EventFeedbackViewSet)
 
 events_router.register("record/participants", ParticipantsViewSet)
 events_router.register("registered", RegisteredViewSet)

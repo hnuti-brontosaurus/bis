@@ -24,6 +24,7 @@ from bis.models import (
 )
 from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
 from event.models import Event, EventDraft
+from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
 from other.models import DashboardItem, DuplicateUser
 from questionnaire.models import (
@@ -157,6 +158,8 @@ class Permissions:
             EventApplicationClosePerson,
             EventApplicationAddress,
             Answer,
+            EventFeedback,
+            Reply,
             EventDraft,
         ]:
             if not obj or obj.has_edit_permission(self.user):
@@ -174,6 +177,8 @@ class Permissions:
                 Opportunity,
                 Questionnaire,
                 Question,
+                FeedbackForm,
+                Inquiry,
             ] or self.model._meta.app_label in ["event"]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
@@ -240,6 +245,9 @@ class Permissions:
                 Questionnaire,
                 Question,
                 EventApplication,
+                FeedbackForm,
+                Inquiry,
+                EventFeedback,
             ] or self.model._meta.app_label in ["event"]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True
@@ -292,6 +300,8 @@ class Permissions:
                 Opportunity,
                 Questionnaire,
                 Question,
+                FeedbackForm,
+                Inquiry,
             ] or self.model._meta.app_label in ["event"]:
                 if not obj or obj.has_edit_permission(self.user):
                     return True

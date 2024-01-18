@@ -450,3 +450,7 @@ def send_opportunities_summary():
         ["lamanchy@gmail.com"],
         variables={"opportunities": opportunities},
     )
+
+
+def feedback_created(instance):
+    return None

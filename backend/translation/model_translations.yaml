@@ -324,6 +324,7 @@ EventRecord:
     attendance_list_pages: Prezenční listina
     participants: Účastníci
     note: Poznámka k průběhu akce
+    feedback_form: Formulář zpětné vazby
     number_of_participants:
       - Počet účastníků
       - Vyplň pouze pokud nejsou vyplnění konkrétní účastníci
@@ -382,7 +383,6 @@ Question:
   name_plural: Otázky dotazníku
   fields:
     question: Otázka
-    data: Data
     is_required: Povinná otázka?
     questionnaire: Dotazník
 
@@ -393,7 +393,37 @@ Answer:
     question: Otázka
     application: Přihláška na akci
     answer: Odpověď
-    data: Data
+
+
+# feedback
+EventFeedback:
+  name: Zpětná vazba k akci
+  name_plural: Zpětné vazby k akcím
+  fields:
+    event_record: Záznam z akce
+
+FeedbackForm:
+  name: Formulář zpětné vazby
+  fields:
+    event_record: Záznam z akce
+    introduction: Úvodní text zpětné vazby
+    after_submit_text: Text po zodpovězení zpětné vazby
+
+Inquiry:
+  name: Otázka zpětné vazby
+  name_plural: Otázky zpětné vazby
+  fields:
+    inquiry: Otázka
+    is_required: Povinná otázka?
+    feedback_form: Formulář zpětné vazby
+
+Reply:
+  name: Odpověď na otázku
+  name_plural: Odpovědi na otázky
+  fields:
+    inquiry: Otázka
+    feedback: Zpětná vazba k akci
+    reply: Odpověď
 
 
 # categories

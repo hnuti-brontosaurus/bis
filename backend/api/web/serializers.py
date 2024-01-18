@@ -17,8 +17,10 @@ from event.models import (
     Event,
     EventPropagation,
     EventPropagationImage,
+    EventRecord,
     EventRegistration,
 )
+from feedback.models import FeedbackForm, Inquiry
 from opportunities.models import Opportunity
 from phonenumber_field.serializerfields import PhoneNumberField
 from questionnaire.models import Question, Questionnaire
@@ -111,6 +113,28 @@ class EventRegistrationSerializer(ModelSerializer):
         )
 
 
+class InquirySerializer(ModelSerializer):
+    class Meta:
+        model = Inquiry
+        fields = "id", "inquiry", "data", "is_required", "order"
+
+
+class FeedbackFormSerializer(ModelSerializer):
+    inquiries = InquirySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FeedbackForm
+        fields = "introduction", "after_submit_text", "inquiries"
+
+
+class EventRecordSerializer(ModelSerializer):
+    feedback_form = FeedbackFormSerializer(read_only=True)
+
+    class Meta:
+        model = EventRecord
+        fields = ("feedback_form",)
+
+
 class LocationPhotoSerializer(ModelSerializer):
     class Meta:
         model = LocationPhoto
@@ -150,6 +174,7 @@ class LocationSerializer(ModelSerializer):
 class EventSerializer(ModelSerializer):
     propagation = EventPropagationSerializer(read_only=True)
     registration = EventRegistrationSerializer(read_only=True)
+    record = EventRecordSerializer(read_only=True)
 
     location = LocationSerializer()
     group = EventGroupCategorySerializer()
@@ -180,6 +205,7 @@ class EventSerializer(ModelSerializer):
             "administration_units",
             "propagation",
             "registration",
+            "record",
         )
 
 

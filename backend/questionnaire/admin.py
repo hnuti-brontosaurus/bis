@@ -1,45 +1,39 @@
-from bis.admin_permissions import PermissionMixin
+from bis.admin_permissions import PermissionMixin, ReadonlyMixin
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedStackedInline, NestedTabularInline
 from questionnaire.models import *
 
 
-class QuestionAdmin(PermissionMixin, SortableHiddenMixin, NestedTabularInline):
+class QuestionAdmin(ReadonlyMixin, NestedTabularInline):
     model = Question
-    sortable_field_name = "order"
-    extra = 0
 
 
-class AnswerAdmin(PermissionMixin, NestedTabularInline):
+class AnswerAdmin(ReadonlyMixin, NestedTabularInline):
     model = Answer
-    extra = 0
-
-    readonly_fields = "question", "answer"
 
 
-class EventApplicationClosePersonAdmin(PermissionMixin, NestedStackedInline):
+class EventApplicationClosePersonAdmin(ReadonlyMixin, NestedStackedInline):
     model = EventApplicationClosePerson
 
 
-class EventApplicationAddressAdmin(PermissionMixin, NestedStackedInline):
+class EventApplicationAddressAdmin(ReadonlyMixin, NestedStackedInline):
     model = EventApplicationAddress
 
 
-class EventApplicationAdmin(PermissionMixin, NestedStackedInline):
+class EventApplicationAdmin(ReadonlyMixin, NestedStackedInline):
     model = EventApplication
     inlines = (
         EventApplicationClosePersonAdmin,
         EventApplicationAddressAdmin,
         AnswerAdmin,
     )
-    extra = 0
+
     classes = ("collapse",)
 
-    autocomplete_fields = ("user",)
 
-
-class QuestionnaireAdmin(PermissionMixin, NestedStackedInline):
+class QuestionnaireAdmin(ReadonlyMixin, NestedStackedInline):
     model = Questionnaire
     inlines = (QuestionAdmin,)
 
     classes = ("collapse",)
+    readonly_fields = "introduction", "after_submit_text"
