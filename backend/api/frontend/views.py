@@ -75,14 +75,7 @@ class PermissionViewSetBase(ModelViewSet):
 
 
 class UserViewSet(PermissionViewSetBase):
-    search_fields = (
-        "all_emails__email",
-        "phone",
-        "first_name",
-        "last_name",
-        "nickname",
-        "birth_name",
-    )
+    search_fields = User.get_search_fields()
     serializer_class = UserSerializer
     filterset_class = UserFilter
     queryset = User.objects.select_related(
@@ -150,7 +143,7 @@ class OrganizersViewSet(UserViewSet):
 
 
 class EventViewSet(PermissionViewSetBase):
-    search_fields = ("name",)
+    search_fields = Event.get_search_fields()
     serializer_class = EventSerializer
     filterset_class = EventFilter
     queryset = Event.objects.select_related(
@@ -215,7 +208,7 @@ class DashboardItemViewSet(PermissionViewSetBase):
 
 
 class LocationViewSet(PermissionViewSetBase):
-    search_fields = "name", "description"
+    search_fields = Location.get_search_fields()
     serializer_class = LocationSerializer
     filterset_class = LocationFilter
     queryset = Location.objects.select_related(
@@ -229,7 +222,7 @@ class LocationViewSet(PermissionViewSetBase):
 
 
 class OpportunityViewSet(PermissionViewSetBase):
-    search_fields = "name", "introduction"
+    search_fields = Opportunity.get_search_fields()
     serializer_class = OpportunitySerializer
     queryset = Opportunity.objects.select_related("category")
     kwargs_serializer_class = UserRouterKwargsSerializer
@@ -310,14 +303,7 @@ class EventApplicationViewSet(PermissionViewSetBase):
 class UserSearchViewSet(ListModelMixin, GenericViewSet):
     lookup_field = "id"
     permission_classes = [IsAuthenticated]
-    search_fields = (
-        "all_emails__email",
-        "phone",
-        "first_name",
-        "last_name",
-        "nickname",
-        "birth_name",
-    )
+    search_fields = User.get_search_fields()
     serializer_class = UserSearchSerializer
     queryset = User.objects.select_related(
         "address",

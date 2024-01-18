@@ -308,7 +308,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         )
 
     date_hierarchy = "start"
-    search_fields = ("name",)
+    search_fields = Event.get_search_fields()
     readonly_fields = "duration", "created_by", "created_at", "closed_at"
 
     autocomplete_fields = (

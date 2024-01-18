@@ -115,7 +115,7 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
         LocationPatronAdmin,
         LocationPhotosAdmin,
     )
-    search_fields = "name", "description"
+    search_fields = Location.get_search_fields()
     exclude = ("_import_id",)
 
     list_filter = (
@@ -448,14 +448,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("chairman_of__existed_since", UserStatsDateFilter),
     ]
 
-    search_fields = (
-        "all_emails__email",
-        "phone",
-        "first_name",
-        "last_name",
-        "nickname",
-        "birth_name",
-    )
+    search_fields = User.get_search_fields()
     list_select_related = "address", "contact_address"
 
     def get_inlines(self, request, obj):
@@ -686,13 +679,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
     actions = [extend_memberships, export_membership_emails]
     autocomplete_fields = "user", "administration_unit"
 
-    search_fields = (
-        "user__first_name",
-        "user__last_name",
-        "user__nickname",
-        "user__phone",
-        "user__email",
-    )
+    search_fields = User.get_search_fields(prefix="user__")
 
     list_filter = [
         LatestMembershipOnlyFilter,

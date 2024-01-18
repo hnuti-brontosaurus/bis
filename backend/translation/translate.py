@@ -22,6 +22,7 @@ ignored_attr_names = [
     "_str",
     "_history",
     "_search",
+    "_search_field",
 ]
 
 

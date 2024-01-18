@@ -28,4 +28,4 @@ class OpportunityAdmin(PermissionMixin, NestedModelAdmin):
         ("on_web_end", DateRangeFilter),
     )
 
-    search_fields = "name", "introduction"
+    search_fields = Opportunity.get_search_fields()

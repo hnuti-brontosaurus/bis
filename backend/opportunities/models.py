@@ -1,3 +1,4 @@
+from bis.helpers import SearchMixin
 from bis.models import Location, User
 from categories.models import (
     EventProgramCategory,
@@ -16,7 +17,7 @@ from translation.translate import translate_model
 
 
 @translate_model
-class Opportunity(Model):
+class Opportunity(SearchMixin, Model):
     category = ForeignKey(
         OpportunityCategory, on_delete=PROTECT, related_name="opportunities"
     )
@@ -39,6 +40,9 @@ class Opportunity(Model):
     contact_email = EmailField(blank=True)
     image = ThumbnailImageField(upload_to="opportunity_images")
     created_at = DateField(auto_now_add=True)
+
+    _search_field = CharField(max_length=1024, blank=True)
+    search_fields = ["name", "introduction"]
 
     def clean(self):
         if not (self.category.slug == "collaboration" or self.location_benefits):

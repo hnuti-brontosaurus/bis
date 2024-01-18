@@ -5,10 +5,31 @@ from time import time
 
 from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
-from django.apps import apps
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
+from unidecode import unidecode
+
+
+class SearchMixin:
+    search_fields = []
+
+    @classmethod
+    def get_search_fields(cls, prefix=""):
+        return [prefix + f for f in cls.search_fields + ["_search_field"]]
+
+    @classmethod
+    def get_nested_attr(cls, obj, fields):
+        if len(fields) == 0:
+            return obj
+        obj = getattr(obj, fields[0], None) or ""
+        return cls.get_nested_attr(obj, fields[1:])
+
+    def get_search_field_value(self):
+        return " ".join(
+            unidecode(str(self.get_nested_attr(self, field.split("__"))))
+            for field in self.search_fields
+        )[:1000]
 
 
 def print_progress(name, i, total):

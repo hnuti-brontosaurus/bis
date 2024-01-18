@@ -2,6 +2,7 @@ from os.path import basename
 
 from administration_units.models import AdministrationUnit
 from bis.helpers import (
+    SearchMixin,
     filter_queryset_with_multiple_or_queries,
     permission_cache,
     update_roles,
@@ -43,7 +44,7 @@ class EventDraft(Model):
 
 
 @translate_model
-class Event(Model):
+class Event(SearchMixin, Model):
     # general
     name = CharField(max_length=63)
     is_canceled = BooleanField(default=False)
@@ -84,6 +85,8 @@ class Event(Model):
     internal_note = TextField(blank=True)
 
     _import_id = CharField(max_length=15, default="")
+    _search_field = CharField(max_length=128, blank=True)
+    search_fields = ["name"]
     duration = PositiveIntegerField()
 
     class Meta:

@@ -42,14 +42,7 @@ class DonationAdmin(PermissionMixin, NestedModelAdmin):
     exclude = "_import_id", "_variable_symbol"
 
     list_select_related = "donor__user", "donation_source"
-    search_fields = (
-        "donor__user__all_emails__email",
-        "donor__user__phone",
-        "donor__user__first_name",
-        "donor__user__last_name",
-        "donor__user__nickname",
-        "donor__user__birth_name",
-    )
+    search_fields = User.get_search_fields(prefix="donor__user__")
 
 
 class DonationAdminInline(PermissionMixin, NestedTabularInline):
@@ -132,14 +125,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         VariableSymbolInline,
         DonationAdminInline,
     )
-    search_fields = (
-        "user__all_emails__email",
-        "user__phone",
-        "user__first_name",
-        "user__last_name",
-        "user__nickname",
-        "user__birth_name",
-    )
+    search_fields = User.get_search_fields(prefix="user__")
     list_filter = (
         "user__pronoun",
         ("user__roles", MultiSelectRelatedDropdownFilter),

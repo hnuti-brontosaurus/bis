@@ -74,15 +74,7 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
         "chairman",
         "category",
     )
-    search_fields = (
-        "abbreviation",
-        "name",
-        "address__city",
-        "address__street",
-        "address__zip_code",
-        "phone",
-        "email",
-    )
+    search_fields = AdministrationUnit.get_search_fields()
     list_filter = (
         IsAdministrationUnitActiveFilter,
         "category",

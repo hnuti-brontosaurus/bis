@@ -1,4 +1,4 @@
-from bis.helpers import permission_cache, update_roles
+from bis.helpers import SearchMixin, permission_cache, update_roles
 from categories.models import AdministrationUnitCategory
 from common.abstract_models import BaseAddress
 from common.history import record_history
@@ -13,7 +13,7 @@ from translation.translate import _, translate_model
 
 
 @translate_model
-class AdministrationUnit(Model):
+class AdministrationUnit(SearchMixin, Model):
     name = CharField(max_length=255, unique=True)
     abbreviation = CharField(max_length=63, unique=True)
     description = TextField(blank=True, max_length=400)
@@ -59,6 +59,16 @@ class AdministrationUnit(Model):
 
     _import_id = CharField(max_length=15, default="")
     _history = JSONField(default=dict)
+    _search_field = CharField(max_length=1024, blank=True)
+    search_fields = [
+        "abbreviation",
+        "name",
+        "address__city",
+        "address__street",
+        "address__zip_code",
+        "phone",
+        "email",
+    ]
 
     def clean(self):
         if self.existed_till is not None:

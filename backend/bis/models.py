@@ -7,6 +7,7 @@ from uuid import uuid4
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
 from bis.helpers import (
+    SearchMixin,
     filter_queryset_with_multiple_or_queries,
     paused_validation,
     permission_cache,
@@ -43,7 +44,7 @@ from translation.translate import translate_model
 
 
 @translate_model
-class Location(Model):
+class Location(SearchMixin, Model):
     name = CharField(max_length=63)
     description = TextField(blank=True)
     address = CharField(max_length=255, blank=True)
@@ -88,6 +89,8 @@ class Location(Model):
     )
 
     _import_id = CharField(max_length=15, default="")
+    _search_field = CharField(max_length=1024, blank=True)
+    search_fields = ["name", "description"]
 
     class Meta:
         ordering = ("name",)
@@ -228,7 +231,7 @@ class LocationPatron(BaseContact):
 
 
 @translate_model
-class User(AbstractBaseUser):
+class User(SearchMixin, AbstractBaseUser):
     USERNAME_FIELD = "email"
 
     id = UUIDField(
@@ -239,6 +242,15 @@ class User(AbstractBaseUser):
         editable=False,
     )
     _search_id = UUIDField(default=uuid4, auto_created=True, editable=False)
+    _search_field = CharField(max_length=1024, blank=True)
+    search_fields = [
+        "all_emails__email",
+        "phone",
+        "first_name",
+        "last_name",
+        "nickname",
+        "birth_name",
+    ]
 
     first_name = CharField(max_length=63)
     last_name = CharField(max_length=63)
