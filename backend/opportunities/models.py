@@ -3,6 +3,7 @@ from bis.models import Location, User
 from categories.models import (
     EventProgramCategory,
     OpportunityCategory,
+    OpportunityPriority,
     OrganizerRoleCategory,
     TeamRoleCategory,
 )
@@ -20,6 +21,9 @@ from translation.translate import translate_model
 class Opportunity(SearchMixin, Model):
     category = ForeignKey(
         OpportunityCategory, on_delete=PROTECT, related_name="opportunities"
+    )
+    priority = ForeignKey(
+        OpportunityPriority, on_delete=PROTECT, related_name="opportunities"
     )
     name = CharField(max_length=63)
     start = DateField()

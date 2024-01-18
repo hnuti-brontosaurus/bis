@@ -13,6 +13,7 @@ from categories.models import (
     LocationProgramCategory,
     MembershipCategory,
     OpportunityCategory,
+    OpportunityPriority,
     OrganizerRoleCategory,
     PronounCategory,
     QualificationCategory,
@@ -103,6 +104,12 @@ class TeamRoleCategorySerializer(ModelSerializer):
 class OpportunityCategorySerializer(ModelSerializer):
     class Meta:
         model = OpportunityCategory
+        exclude = ()
+
+
+class OpportunityPrioritySerializer(ModelSerializer):
+    class Meta:
+        model = OpportunityPriority
         exclude = ()
 
 

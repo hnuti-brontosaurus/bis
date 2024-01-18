@@ -70,7 +70,7 @@ class EventViewSet(ReadOnlyModelViewSet):
 
 
 class OpportunityViewSet(ReadOnlyModelViewSet):
-    queryset = Opportunity.objects.order_by("start").select_related(
+    queryset = Opportunity.objects.order_by("priority", "start").select_related(
         "category",
         "location",
         "contact_person",

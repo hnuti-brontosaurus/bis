@@ -15,6 +15,7 @@ from bis.models import (
     UserClosePerson,
     UserContactAddress,
 )
+from categories.models import OpportunityPriority
 from categories.serializers import (
     DietCategorySerializer,
     DonationSourceCategorySerializer,
@@ -29,6 +30,7 @@ from categories.serializers import (
     LocationProgramCategorySerializer,
     MembershipCategorySerializer,
     OpportunityCategorySerializer,
+    OpportunityPrioritySerializer,
     OrganizerRoleCategorySerializer,
     PronounCategorySerializer,
     QualificationCategorySerializer,
@@ -756,12 +758,14 @@ class LocationSerializer(ModelSerializer):
 
 class OpportunitySerializer(ModelSerializer):
     category = OpportunityCategorySerializer()
+    priority = OpportunityPrioritySerializer()
 
     class Meta:
         model = Opportunity
         fields = (
             "id",
             "category",
+            "priority",
             "name",
             "start",
             "end",
@@ -778,12 +782,14 @@ class OpportunitySerializer(ModelSerializer):
             "contact_email",
             "image",
         )
+        read_only_fields = ("priority",)
 
     def create(self, validated_data):
         validated_data["contact_person"] = User.objects.get(
             id=self.context["view"].kwargs["user_id"]
         )
         assert validated_data["contact_person"] == self.context["request"].user
+        validated_data["priority"] = OpportunityPriority.objects.get(slug="normal")
         instance = super().create(validated_data)
         emails.opportunity_created(instance)
         return instance

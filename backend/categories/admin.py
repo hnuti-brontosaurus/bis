@@ -77,6 +77,11 @@ class OpportunityCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass
 
 
+@admin.register(OpportunityPriority)
+class OpportunityPriorityAdmin(PermissionMixin, admin.ModelAdmin):
+    pass
+
+
 @admin.register(LocationProgramCategory)
 class LocationProgramCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass

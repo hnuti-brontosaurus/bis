@@ -72,6 +72,11 @@ class OpportunityCategoryViewSet(ReadOnlyModelViewSet):
     queryset = OpportunityCategory.objects.all()
 
 
+class OpportunityPriorityViewSet(ReadOnlyModelViewSet):
+    serializer_class = OpportunityPrioritySerializer
+    queryset = OpportunityPriority.objects.all()
+
+
 class LocationProgramCategoryViewSet(ReadOnlyModelViewSet):
     serializer_class = LocationProgramCategorySerializer
     queryset = LocationProgramCategory.objects.all()

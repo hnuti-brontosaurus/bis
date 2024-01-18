@@ -219,6 +219,18 @@ class OpportunityCategory(Model):
 
 
 @translate_model
+class OpportunityPriority(Model):
+    name = CharField(max_length=63)
+    slug = SlugField(unique=True)
+
+    class Meta:
+        ordering = ("id",)
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
 class LocationProgramCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)

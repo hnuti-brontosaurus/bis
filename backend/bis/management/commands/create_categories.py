@@ -14,6 +14,7 @@ from categories.models import (
     LocationProgramCategory,
     MembershipCategory,
     OpportunityCategory,
+    OpportunityPriority,
     OrganizerRoleCategory,
     PronounCategory,
     QualificationCategory,
@@ -359,6 +360,11 @@ class Command(BaseCommand):
                 description="Příležitosti k pomoci dané lokalitě, která to aktuálně potřebuje.",
             ),
         )
+        OpportunityPriority.objects.update_or_create(slug="highest", name="Nejvyšší")
+        OpportunityPriority.objects.update_or_create(slug="high", name="Vysoká")
+        OpportunityPriority.objects.update_or_create(slug="normal", name="Normální")
+        OpportunityPriority.objects.update_or_create(slug="low", name="Nízká")
+        OpportunityPriority.objects.update_or_create(slug="lowest", name="Nejnižší")
 
         LocationProgramCategory.objects.update_or_create(
             slug="nature", defaults=dict(name="AP - Akce příroda")

@@ -452,6 +452,9 @@ TeamRoleCategory:
 OpportunityCategory:
   name: Kagegorie příležitosti
   name_plural: Kagegorie příležitostí
+OpportunityPriority:
+  name: Priorita příležitosti
+  name_plural: Priority příležitostí
 LocationProgramCategory:
   name: Program lokality
   name_plural: Programy lokalit
@@ -522,6 +525,7 @@ Opportunity:
   name_plural: Příležitosti
   fields:
     category: Kategorie
+    priority: Priorita
     start: Začátek příležitosti
     end: Konec příležitosti
     on_web_start: Zobrazit na webu od

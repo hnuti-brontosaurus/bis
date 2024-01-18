@@ -11,6 +11,7 @@ from categories.serializers import (
     LocationAccessibilityCategorySerializer,
     LocationProgramCategorySerializer,
     OpportunityCategorySerializer,
+    OpportunityPrioritySerializer,
 )
 from event.models import (
     Event,
@@ -184,6 +185,7 @@ class EventSerializer(ModelSerializer):
 
 class OpportunitySerializer(ModelSerializer):
     category = OpportunityCategorySerializer()
+    priority = OpportunityPrioritySerializer()
     location = LocationSerializer()
     contact_name = SerializerMethodField()
     contact_phone = SerializerMethodField()
@@ -195,6 +197,7 @@ class OpportunitySerializer(ModelSerializer):
         fields = (
             "id",
             "category",
+            "priority",
             "name",
             "start",
             "end",
