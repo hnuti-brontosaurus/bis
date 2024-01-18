@@ -27,6 +27,8 @@ class DuplicateUserAdmin(PermissionMixin, NestedModelAdmin):
 
     list_select_related = "user__address", "other__address"
 
+    search_fields = User.get_search_fields("user__") + User.get_search_fields("other__")
+
     def get_queryset(self, request):
         return (
             super()
