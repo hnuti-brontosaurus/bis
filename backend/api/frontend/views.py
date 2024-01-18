@@ -12,6 +12,8 @@ from api.frontend.serializers import (
     FinanceReceiptSerializer,
     GetAttendanceListRequestSerializer,
     GetUnknownUserRequestSerializer,
+    GetUserByEmailRequestSerializer,
+    GetUserByEmailResponseSerializer,
     LocationSerializer,
     OpportunitySerializer,
     QuestionSerializer,
@@ -373,3 +375,30 @@ def get_participants_list(request, event_id):
         or event.other_organizers.all()
     )
     return export.export_to_xlsx(..., ..., participants)
+
+
+@extend_schema(
+    parameters=[GetUserByEmailRequestSerializer],
+    responses={
+        HTTP_200_OK: GetUserByEmailResponseSerializer,
+        HTTP_404_NOT_FOUND: OpenApiResponse(description="Not found"),
+    },
+)
+@api_view(["get"])
+@permission_classes([IsAuthenticated])
+@parse_request_data(GetUserByEmailRequestSerializer, "query_params")
+def get_unknown_user_by_email(request, data):
+    users = User.objects.filter(all_emails__email__startswith=data["email"])
+    data = {"count": users.count()}
+    if data["count"] == 0:
+        data["message"] = "Žádný uživatel nenalezen"
+    if data["count"] == 1:
+        data["message"] = "Uživatel nalezen"
+        user = users.first()
+        data["first_name"] = user.first_name
+        data["last_name"] = user.last_name
+        data["phone"] = str(user.phone)
+    if data["count"] > 1:
+        data["message"] = f"Nalezeno {data['count']} uživatelů, zpřesni zadaný e-mail"
+
+    return Response(data)

@@ -987,6 +987,18 @@ class GetUnknownUserRequestSerializer(Serializer):
     birthday = DateField()
 
 
+class GetUserByEmailRequestSerializer(Serializer):
+    email = CharField(min_length=3)
+
+
+class GetUserByEmailResponseSerializer(Serializer):
+    first_name = CharField(required=False)
+    last_name = CharField(required=False)
+    phone = CharField(required=False)
+    message = CharField()
+    count = IntegerField()
+
+
 class GetAttendanceListRequestSerializer(Serializer):
     formatting = ChoiceField(["pdf", "xlsx"], default="pdf")
 
