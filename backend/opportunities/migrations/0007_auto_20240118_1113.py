@@ -20,6 +20,7 @@ def migrate(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("opportunities", "0006_opportunity_priority"),
+        ("other", "0005_donationpointsaggregation_donationpointscolumn_and_more"),
     ]
 
     operations = [migrations.RunPython(migrate, migrations.RunPython.noop)]
