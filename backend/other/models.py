@@ -200,7 +200,7 @@ class DonationPoints(Model):
         return header
 
     def get_row(self, administration_unit):
-        row = [administration_unit.abbreviation, administration_unit.category, ""]
+        row = [administration_unit.abbreviation, administration_unit.category.name, ""]
         total = 0
         for section in self.sections.all():
             values, row_total = section.get_row(administration_unit)

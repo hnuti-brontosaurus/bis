@@ -111,12 +111,13 @@ class XLSXWriter:
                 value = "ano"
             if value is None:
                 value = "-"
-            value = str(value)
+            if not isinstance(value, (str, int, float)):
+                value = str(value)
             self.widths.setdefault(key, 0)
             self.widths[key] = max(
-                self.widths[key], max(len(row) for row in value.split("\n"))
+                self.widths[key], max(len(row) for row in str(value).split("\n"))
             )
-            height = max(height, value.count("\n"))
+            height = max(height, str(value).count("\n"))
             row_format = self.row and self.format.text_wrap or self.format.bold
             self.worksheet.write(self.row, i, value, row_format)
 
@@ -467,7 +468,7 @@ def get_donation_points(donation_points):
 
     for r, row in enumerate(donation_points.get_rows()):
         for c, cell in enumerate(row):
-            ws.cell(4 + r, 1 + c).value = str(cell)
+            ws.cell(4 + r, 1 + c).value = cell
 
     tmp_file = NamedTemporaryFile(
         mode="w",
