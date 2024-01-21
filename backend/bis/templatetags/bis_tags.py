@@ -89,7 +89,7 @@ def membership_date_hierarchy(cl):
         year = cl.params.get("created_at__year")
         result["choices"] = []
         result["title"] = f"Zobrazuji členství za rok {year}"
-        result["back"]["title"] = "zobrazit všecha"
+        result["back"]["title"] = "zobrazit všechna"
 
     cl.queryset = queryset
     return result
