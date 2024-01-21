@@ -414,7 +414,7 @@ def donation_confirmation(donor, confirmation, year):
         emails["adoption"],
         "Poděkování a potvrzení o daru HB",
         "167",
-        ["adopce@brontosaurus.cz"],
+        [donor.user.email],
         variables={
             "formal_vokativ": donor.formal_vokativ,
             **PronounCategory.get_variables(donor.user),
