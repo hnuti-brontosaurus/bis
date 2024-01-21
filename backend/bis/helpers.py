@@ -293,3 +293,22 @@ def make_ul(data):
 
 def make_br(data):
     return mark_safe("<br>".join(data))
+
+
+def make_td(cell):
+    return f"<td>{cell}</td>"
+
+
+def make_th(cell):
+    return f"<th>{cell}</th>"
+
+
+def make_tr(row):
+    row = "".join(make_td(cell) for cell in row)
+    return f"<tr>{row}</tr>"
+
+
+def make_table(data, header=""):
+    header = "".join(make_th(cell) for cell in header)
+    rows = "".join(make_tr(row) for row in data)
+    return mark_safe(f"<table>{header}{rows}</table>")

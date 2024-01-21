@@ -805,7 +805,7 @@ class Membership(Model):
         )
 
     @staticmethod
-    def get_membership_actions(obj, can_change, separator):
+    def get_membership_actions(obj, can_change, separator=", "):
         inline_actions = []
         if obj.year < today().year:
             inline_actions.append(

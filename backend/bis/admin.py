@@ -25,7 +25,7 @@ from bis.admin_helpers import (
     list_filter_extra_title,
 )
 from bis.admin_permissions import PermissionMixin
-from bis.helpers import make_a
+from bis.helpers import make_a, make_table
 from bis.models import (
     EYCACard,
     Location,
@@ -139,33 +139,6 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
             del actions["merge_selected_first"]
             del actions["merge_selected_last"]
         return actions
-
-
-class AllMembershipAdmin(PermissionMixin, NestedTabularInline):
-    verbose_name_plural = "Všechna členství"
-    model = Membership
-    extra = 0
-    autocomplete_fields = ("administration_unit",)
-    exclude = ("_import_id",)
-    readonly_fields = ("get_membership_actions",)
-
-    @admin.display(description="Akce")
-    def get_membership_actions(self, obj):
-        if not obj.id:
-            return ""
-        can_change = Permissions(
-            self.request.user, Membership, "backned"
-        ).has_change_permission(obj)
-        return Membership.get_membership_actions(obj, can_change, "<br>")
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 class QualificationAdmin(PermissionMixin, NestedTabularInline):
@@ -314,6 +287,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         "get_board_member_of",
         "get_token",
         "last_after_event_email",
+        "get_membership_actions",
+        "create_membership",
     )
     exclude = "groups", "user_permissions", "password", "is_superuser", "_str"
 
@@ -352,6 +327,15 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                 "fields": (
                     "get_events_where_was_organizer",
                     "get_participated_in_events",
+                )
+            },
+        ),
+        (
+            _("models.Membership.name"),
+            {
+                "fields": (
+                    "get_membership_actions",
+                    "create_membership",
                 )
             },
         ),
@@ -457,7 +441,6 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             ClosePersonAdmin,
             QualificationAdmin,
             QualificationNoteAdmin,
-            AllMembershipAdmin,
             UserOfferedHelpAdmin,
             EYCACardAdmin,
             DuplicateUserAdminInline,
@@ -523,6 +506,31 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         if response := Membership.process_action(request):
             return response
         return super().changeform_view(request, object_id, form_url, extra_context)
+
+    @admin.display(description="Všechna členství")
+    def get_membership_actions(self, obj):
+        perms = Permissions(self.request.user, Membership, "backend")
+        memberships = perms.filter_queryset(obj.memberships.all())
+        memberships = [
+            (
+                membership.category,
+                membership.year,
+                membership.administration_unit,
+                membership.get_membership_actions(
+                    membership, perms.has_change_permission(membership)
+                ),
+            )
+            for membership in memberships
+        ]
+        return make_table(
+            memberships, ["Kategorie", "Rok", "Organizační jednotka", "Akce"]
+        )
+
+    @admin.display(description="Přidej nové členství")
+    def create_membership(self, obj):
+        url = reverse("admin:bis_membership_add")
+        url += f"?user={obj.id}"
+        return make_a("zde", url)
 
 
 @admin.action(description="Prodluž členství")
@@ -710,7 +718,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         can_change = Permissions(
             self.request.user, Membership, "backned"
         ).has_change_permission(obj)
-        return Membership.get_membership_actions(obj, can_change, ", ")
+        return Membership.get_membership_actions(obj, can_change)
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
