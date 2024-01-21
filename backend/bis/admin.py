@@ -645,6 +645,7 @@ class MembershipAdminAddForm(forms.ModelForm):
                             "zadaným. Oprav datum narození nebo kontaktuj kancl (bis@brontosaurus.cz)"
                         )
 
+        cleaned_data["year"] = cleaned_data["year"] or today().year
         if cleaned_data["year"] != today().year:
             if not self.request.user.is_superuser:
                 raise ValidationError("Můžeš přidávat členství jen za tento rok")

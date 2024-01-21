@@ -856,8 +856,8 @@ class Membership(Model):
     def clean(self):
         if Membership.objects.filter(
             year=self.year,
-            administration_unit=self.administration_unit,
-            user=self.user,
+            administration_unit=self.administration_unit_id,
+            user=self.user_id,
         ).exclude(id=self.id):
             raise ValidationError(
                 f"{self.user} již má pod {self.administration_unit} v roce {self.year} jiné členství."
