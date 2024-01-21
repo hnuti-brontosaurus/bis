@@ -443,6 +443,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "roles",
                     "email",
                     "_search_id",
+                    "_search_field",
                     "vokativ",
                 ]:
                     continue
