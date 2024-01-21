@@ -677,6 +677,9 @@ class MembershipAdminAddForm(forms.ModelForm):
         self.fields["user"].required = False
         self.fields["year"].required = False
 
+        if au := self.request.user.administration_units.first():
+            self.fields["administration_unit"].initial = au
+
 
 @admin.register(Membership)
 class MembershipAdmin(PermissionMixin, NestedModelAdmin):
@@ -690,13 +693,21 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = User.get_search_fields(prefix="user__")
     list_select_related = "administration_unit", "category", "user"
 
-    list_filter = [
-        LatestMembershipOnlyFilter,
-        AutocompleteFilterFactory("Organizační jednotka", "administration_unit"),
-        AutocompleteFilterFactory("Uživatel", "user"),
-        ("category", MultiSelectRelatedDropdownFilter),
-        ("year", RangeNumericFilter),
-    ]
+    def get_list_filter(self, request):
+        result = [LatestMembershipOnlyFilter]
+        if (
+            request.user.is_superuser
+            or request.user.is_office_worker
+            or request.user.administration_units.count() > 1
+        ):
+            result += [
+                AutocompleteFilterFactory("Organizační jednotka", "administration_unit")
+            ]
+        result += [
+            ("category", MultiSelectRelatedDropdownFilter),
+            ("year", RangeNumericFilter),
+        ]
+        return result
 
     list_display = [
         "get_user_link",
