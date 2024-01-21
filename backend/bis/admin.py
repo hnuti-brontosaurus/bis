@@ -726,22 +726,13 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
 
     search_fields = User.get_search_fields(prefix="user__")
     list_select_related = "administration_unit", "category", "user"
-
-    def get_list_filter(self, request):
-        result = [LatestMembershipOnlyFilter]
-        if (
-            request.user.is_superuser
-            or request.user.is_office_worker
-            or request.user.administration_units.count() > 1
-        ):
-            result += [
-                AutocompleteFilterFactory("Organizační jednotka", "administration_unit")
-            ]
-        result += [
-            ("category", MultiSelectRelatedDropdownFilter),
-            ("year", RangeNumericFilter),
-        ]
-        return result
+    hide_filters = True
+    list_filter = [
+        LatestMembershipOnlyFilter,
+        AutocompleteFilterFactory("Organizační jednotka", "administration_unit"),
+        ("category", MultiSelectRelatedDropdownFilter),
+        ("year", RangeNumericFilter),
+    ]
 
     list_display = [
         "get_user_link",

@@ -24,6 +24,10 @@
                 django.jQuery('#changelist-filter').toggle()
                 django.jQuery('#show-changelist-filter').toggle()
             })
+            {% if cl.model_admin.hide_filters %}
+                django.jQuery('#changelist-filter').toggle()
+                django.jQuery('#show-changelist-filter').toggle()
+            {% endif %}
         </script>
     {% endif %}
 {% endblock %}
