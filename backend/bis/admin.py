@@ -568,6 +568,7 @@ class MembershipAdminAddForm(forms.ModelForm):
     birthday = forms.DateField(
         required=False, label="Datum narození", help_text=help_text
     )
+    category = forms.CharField(required=False)
     slug = forms.ChoiceField(
         choices=(
             ("individual", "Individuální"),
@@ -579,16 +580,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
     class Meta:
         model = Membership
-        fields = (
-            "user",
-            "email",
-            "first_name",
-            "last_name",
-            "birthday",
-            "year",
-            "administration_unit",
-            "slug",
-        )
+        fields = ()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -683,7 +675,6 @@ class MembershipAdminAddForm(forms.ModelForm):
             slug=cleaned_data["slug"]
         )
 
-        print(cleaned_data)
         cleaned_data["year"] = cleaned_data["year"] or today().year
         if cleaned_data["year"] != today().year:
             if not self.request.user.is_superuser:
@@ -710,6 +701,8 @@ class MembershipAdminAddForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["user"].required = False
         self.fields["year"].required = False
+        self.fields["category"].widget = self.fields["category"].hidden_widget()
+        self.fields["category"].initial = MembershipCategory.objects.first()
 
         if au := self.request.user.administration_units.first():
             self.fields["administration_unit"].initial = au
@@ -796,6 +789,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
                             "slug",
                             "administration_unit",
                             "year",
+                            "category",
                         ),
                     },
                 ],
