@@ -42,7 +42,7 @@ from bis.models import (
     UserEmail,
 )
 from bis.permissions import Permissions
-from categories.models import PronounCategory
+from categories.models import MembershipCategory, PronounCategory
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
@@ -568,6 +568,14 @@ class MembershipAdminAddForm(forms.ModelForm):
     birthday = forms.DateField(
         required=False, label="Datum narození", help_text=help_text
     )
+    slug = forms.ChoiceField(
+        choices=(
+            ("individual", "Individuální"),
+            ("family", "první rodinný člen"),
+            ("family_member", "další rodinný člen"),
+        ),
+        label="Typ",
+    )
 
     class Meta:
         model = Membership
@@ -579,7 +587,7 @@ class MembershipAdminAddForm(forms.ModelForm):
             "birthday",
             "year",
             "administration_unit",
-            "category",
+            "slug",
         )
 
     def clean(self):
@@ -637,8 +645,10 @@ class MembershipAdminAddForm(forms.ModelForm):
                 if cleaned_data["user"].birthday:
                     if not cleaned_data["birthday"]:
                         raise ValidationError(
-                            "Uživatel v BISu existuje, ale nemáš k němu přístup. Prosím vyplň datum "
-                            "narození pro ověření, že k němu přístup mít máš :)"
+                            {
+                                "birthday": "Uživatel v BISu existuje, ale nemáš k němu přístup. Prosím vyplň datum "
+                                "narození pro ověření, že k němu přístup mít máš :)"
+                            }
                         )
 
                     try:
@@ -649,14 +659,37 @@ class MembershipAdminAddForm(forms.ModelForm):
 
                     if cleaned_data["birthday"] != cleaned_data["user"].birthday:
                         raise ValidationError(
-                            "Uživatel v BISu existuje, ale jeho datum narození se neshoduje se "
-                            "zadaným. Oprav datum narození nebo kontaktuj kancl (bis@brontosaurus.cz)"
+                            {
+                                "birthday": "Uživatel v BISu existuje, ale jeho datum narození se neshoduje se "
+                                "zadaným. Oprav datum narození nebo kontaktuj kancl (bis@brontosaurus.cz)"
+                            }
                         )
 
+        if cleaned_data["slug"] == "individual":
+            if not cleaned_data["user"].birthday:
+                if not cleaned_data["birthday"]:
+                    raise ValidationError(
+                        {
+                            "birthday": "Nelze nastavit individuální členství, protože neznám datum narození. "
+                            "Prosím vyplňte datum narození."
+                        }
+                    )
+                cleaned_data["user"].birthday = cleaned_data["birthday"]
+                User.objects.bulk_update([cleaned_data["user"]], "birthday")
+            cleaned_data["slug"] = MembershipCategory.get_individual(
+                cleaned_data["user"].birthday
+            )
+        cleaned_data["category"] = MembershipCategory.objects.get(
+            slug=cleaned_data["slug"]
+        )
+
+        print(cleaned_data)
         cleaned_data["year"] = cleaned_data["year"] or today().year
         if cleaned_data["year"] != today().year:
             if not self.request.user.is_superuser:
-                raise ValidationError("Můžeš přidávat členství jen za tento rok")
+                raise ValidationError(
+                    {"year": "Můžeš přidávat členství jen za tento rok"}
+                )
 
         if (
             cleaned_data["administration_unit"]
@@ -666,7 +699,9 @@ class MembershipAdminAddForm(forms.ModelForm):
                 self.request.user.is_superuser or self.request.user.is_office_worker
             ):
                 raise ValidationError(
-                    "Můžeš přidávat členství jen pod své organizační jednotky"
+                    {
+                        "administration_unit": "Můžeš přidávat členství jen pod své organizační jednotky"
+                    }
                 )
 
         return cleaned_data
@@ -751,3 +786,27 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         form = super().get_form(request, obj, change, **kwargs)
         form.request = request
         return form
+
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return [
+                ["Vyhledání uživatele", {"fields": ("user",)}],
+                [
+                    "Pokud nelze najít uživatele",
+                    {
+                        "fields": ("email", "first_name", "last_name", "birthday"),
+                        "classes": ("collapse",),
+                    },
+                ],
+                [
+                    "Členství",
+                    {
+                        "fields": (
+                            "slug",
+                            "administration_unit",
+                            "year",
+                        ),
+                    },
+                ],
+            ]
+        return super().get_fieldsets(request, obj)

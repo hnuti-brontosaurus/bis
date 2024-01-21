@@ -90,11 +90,11 @@ class MembershipCategory(Model):
         return self.name
 
     @classmethod
-    def get_individual(cls, user):
-        if not user.birthday:
+    def get_individual(cls, birthday):
+        if not birthday:
             return
 
-        years = relativedelta(date(today().year, 1, 1), user.birthday).years
+        years = relativedelta(date(today().year, 1, 1), birthday).years
         if years < 15:
             return "kid"
         elif years <= 26:

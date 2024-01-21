@@ -779,7 +779,7 @@ class Membership(Model):
                 slug = "individual"
 
         if slug == "individual":
-            slug = MembershipCategory.get_individual(user)
+            slug = MembershipCategory.get_individual(user.birthday)
 
             assert (
                 slug
