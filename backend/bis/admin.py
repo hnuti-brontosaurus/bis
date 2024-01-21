@@ -662,9 +662,8 @@ class MembershipAdminAddForm(forms.ModelForm):
             cleaned_data["administration_unit"]
             not in self.request.user.administration_units.all()
         ):
-            if (
-                not self.request.user.is_superuser
-                or not self.request.user.is_office_worker
+            if not (
+                self.request.user.is_superuser or self.request.user.is_office_worker
             ):
                 raise ValidationError(
                     "Můžeš přidávat členství jen pod své organizační jednotky"
