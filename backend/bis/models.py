@@ -758,7 +758,7 @@ class Membership(Model):
     _import_id = CharField(max_length=15, default="")
 
     class Meta:
-        ordering = ("-year", "user__first_name", "user__last_name")
+        ordering = ("-year", "user__last_name", "user__first_name")
 
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"
