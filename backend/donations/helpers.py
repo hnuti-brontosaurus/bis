@@ -28,9 +28,11 @@ def upload_bank_records(file):
         row = {header[i]: row[i] for i in range(len(row))}
         day, month, year = row["Datum"].split(".")
         variable_symbol = row["VS"] or None
-        donor = Donor.objects.filter(
-            variable_symbols__variable_symbol=variable_symbol
-        ).first()
+        donor = None
+        if variable_symbol:
+            donor = Donor.objects.filter(
+                variable_symbols__variable_symbol=variable_symbol
+            ).first()
         Donation.objects.get_or_create(
             donor=donor,
             donated_at=date(int(year), int(month), int(day)),
