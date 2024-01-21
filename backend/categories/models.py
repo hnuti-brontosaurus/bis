@@ -292,4 +292,4 @@ class PronounCategory(Model):
     @classmethod
     def get_variables(cls, user):
         slug = (user and user.pronoun and user.pronoun.slug) or "unknown"
-        return {"m": slug == "man", "f": slug == "female"}
+        return {"m": slug == "man", "f": slug == "woman"}
