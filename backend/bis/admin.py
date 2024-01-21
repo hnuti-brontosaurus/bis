@@ -679,6 +679,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
     autocomplete_fields = "user", "administration_unit"
 
     search_fields = User.get_search_fields(prefix="user__")
+    list_select_related = "administration_unit", "category", "user"
 
     list_filter = [
         LatestMembershipOnlyFilter,
