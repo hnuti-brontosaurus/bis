@@ -9,6 +9,7 @@ from bis.admin_filters import (
     MemberDuringYearsFilter,
     MemberOfAdministrationUnitFilter,
     NoBirthdayFilter,
+    NoLoginFilter,
     OrganizerOfEventOfAdministrationUnitFilter,
     OrganizerOfEventRangeFilter,
     ParticipatedInEventOfAdministrationUnitFilter,
@@ -429,6 +430,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("roles", MultiSelectRelatedDropdownFilter),
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
+        NoLoginFilter,
     ]
 
     search_fields = User.get_search_fields()

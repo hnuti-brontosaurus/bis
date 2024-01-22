@@ -73,6 +73,12 @@ class NoBirthdayFilter(YesNoFilter):
     query = {"birthday__isnull": False}
 
 
+class NoLoginFilter(YesNoFilter):
+    title = "Přihlásil se uživatel do BISu?"
+    parameter_name = "login_set"
+    query = {"last_login__isnull": False}
+
+
 class FirstDonorsDonationFilter(CustomDateRangeFilter):
     custom_title = "Dle prvního daru"
     custom_field_path = "first_donation"
