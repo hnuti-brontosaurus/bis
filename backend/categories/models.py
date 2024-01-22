@@ -133,9 +133,10 @@ class EventGroupCategory(Model):
 class EventCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)
+    order = PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ("id",)
+        ordering = ("order",)
 
     def __str__(self):
         return self.name

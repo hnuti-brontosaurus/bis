@@ -50,9 +50,9 @@ class Command(BaseCommand):
         for key, value in data.items():
             slug = prefix + key
             name = name_prefix + _(f"event_categories.{slug}")
-            if value is None:
+            if isinstance(value, int):
                 EventCategory.objects.update_or_create(
-                    slug=slug, defaults=dict(name=name)
+                    slug=slug, defaults=dict(name=name, order=value)
                 )
             else:
                 self.create_event_categories(value, slug, name)
@@ -230,28 +230,28 @@ class Command(BaseCommand):
 
         event_categories = {
             "internal": {
-                "general_meeting": None,
-                "volunteer_meeting": None,
-                "section_meeting": None,
+                "general_meeting": 14,
+                "volunteer_meeting": 13,
+                "section_meeting": 2,
             },
             "public": {
-                "volunteering": None,
-                "only_experiential": None,
+                "volunteering": 0,
+                "only_experiential": 1,
                 "educational": {
-                    "lecture": None,
-                    "course": None,
-                    "ohb": None,
-                    "educational": None,
-                    "educational_with_stay": None,
+                    "lecture": 5,
+                    "course": 6,
+                    "ohb": 7,
+                    "educational": 8,
+                    "educational_with_stay": 9,
                 },
                 "club": {
-                    "lecture": None,
-                    "meeting": None,
+                    "lecture": 4,
+                    "meeting": 3,
                 },
                 "other": {
-                    "for_public": None,
-                    "exhibition": None,
-                    "eco_tent": None,
+                    "for_public": 10,
+                    "exhibition": 12,
+                    "eco_tent": 11,
                 },
             },
         }
