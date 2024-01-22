@@ -714,7 +714,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
     change_list_template = "bis/membership_change_list.html"
     list_per_page = 1000
     exclude = ("_import_id",)
-    actions = [extend_memberships, export_membership_emails]
+    actions = [export_to_xlsx, extend_memberships, export_membership_emails]
     autocomplete_fields = "user", "administration_unit"
 
     search_fields = User.get_search_fields(prefix="user__")

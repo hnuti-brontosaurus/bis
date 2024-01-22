@@ -35,6 +35,7 @@ from xlsx_export.serializers import (
     DonorExportSerializer,
     EventApplicationExportSerializer,
     EventExportSerializer,
+    MembershipExportSerializer,
     UserExportSerializer,
 )
 
@@ -221,6 +222,7 @@ def export_to_xlsx(model_admin, request, queryset):
             DonationExportSerializer,
             AdministrationUnitExportSerializer,
             EventApplicationExportSerializer,
+            MembershipExportSerializer,
         ]
         if s.Meta.model is queryset.model
     ][0]

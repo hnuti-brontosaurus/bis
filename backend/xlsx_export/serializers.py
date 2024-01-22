@@ -1,5 +1,5 @@
 from administration_units.models import AdministrationUnit
-from bis.models import Location, User, UserClosePerson
+from bis.models import Location, Membership, User, UserClosePerson
 from donations.models import Donation, Donor
 from event.models import (
     Event,
@@ -141,6 +141,38 @@ class DonorExportSerializer(ModelSerializer):
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
+        )
+
+
+class MembershipExportSerializer(ModelSerializer):
+    user = UserExportSerializer()
+    category = StringRelatedField(label="Typ")
+    administration_unit = StringRelatedField(label="Organizační jednotka")
+
+    @staticmethod
+    def get_related(queryset):
+        return queryset.select_related(
+            "category",
+            "administration_unit",
+            "user__contact_address",
+            "user__offers",
+            "user__health_insurance_company",
+            "user__pronoun",
+        ).prefetch_related(
+            "user__roles",
+            "user__offers__programs",
+            "user__offers__organizer_roles",
+            "user__offers__team_roles",
+        )
+
+    class Meta:
+        model = Membership
+        fields = (
+            "category",
+            "year",
+            "administration_unit",
+            "created_at",
+            "user",
         )
 
 
