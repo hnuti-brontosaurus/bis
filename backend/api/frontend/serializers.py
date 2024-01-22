@@ -709,7 +709,8 @@ class EventSerializer(ModelSerializer):
         validated_data["created_by"] = self.context["request"].user
         instance = super().create(validated_data)
 
-        emails.event_created(instance)
+        if self.context["request"].user != instance.main_organizer:
+            emails.event_created(instance)
         return instance
 
     def update(self, instance, validated_data):
