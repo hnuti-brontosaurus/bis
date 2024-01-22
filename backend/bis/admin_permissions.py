@@ -3,6 +3,9 @@ from django.contrib.admin.options import InlineModelAdmin
 
 
 class PermissionMixin:
+    def get_action_choices(self, request):
+        return super().get_action_choices(request, [("", "Vyber hromadnou akci zde")])
+
     def get_queryset(self, request):
         self.request = request
         queryset = super().get_queryset(request)
