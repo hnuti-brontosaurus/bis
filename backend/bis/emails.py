@@ -179,37 +179,18 @@ def events_summary():
         )
 
 
-def event_ended_notify_organizers():
-    for event in Event.objects.filter(
-        is_canceled=False,
-        end=date.today() - timedelta(days=2),
-    ):
-        organizers = event.other_organizers.all()
-        ecomail.send_email(
-            emails["bis"],
-            "Organizátorům po akci",
-            "161",
-            [organizer.email for organizer in organizers if organizer.email],
-            variables={
-                "vokativs": ", ".join(organizer.vokativ for organizer in organizers),
-                "event_name": event.name,
-                "program_email": event.program.email,
-            },
-        )
-
-
 def event_not_closed_10_days():
     for event in get_unclosed_events().filter(
         end=date.today() - timedelta(days=10),
     ):
+        organizers = event.other_organizers.all()
         ecomail.send_email(
             emails["bis"],
             "Blížící se termín uzavření akce",
-            "162",
-            [event.main_organizer.email],
+            "209",
+            [organizer.email for organizer in organizers if organizer.email],
             variables={
-                **PronounCategory.get_variables(event.main_organizer),
-                "main_organizer_name": event.main_organizer.vokativ,
+                "vokativs": ", ".join(organizer.vokativ for organizer in organizers),
                 "event_name": event.name,
                 "program_email": event.program.email,
                 "bis_link": f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/uzavrit",
