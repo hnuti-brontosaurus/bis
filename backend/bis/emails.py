@@ -427,8 +427,7 @@ def send_opportunities_summary():
         emails["bis"],
         "Příležitosti",
         "201",
-        # ["organizatori@brontosaurus.cz"],
-        ["lamanchy@gmail.com"],
+        ["organizatori@brontosaurus.cz"],
         variables={"opportunities": opportunities},
     )
 
