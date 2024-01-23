@@ -519,6 +519,11 @@ class Command(BaseCommand):
             slug="members_27_and_more",
             description="počet členů 27+ let",
         )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Dary pro OJ",
+            slug="supporting_donations",
+            description="Celková suma dotací, jejiž procento má být přislíbeno dané organizační jednotce",
+        )
 
     def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/

@@ -1,12 +1,13 @@
 from datetime import timedelta
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import AgeStats, permission_cache
+from bis.helpers import AgeStats, filter_queryset_with_multiple_or_queries
 from bis.models import User
 from categories.models import RoleCategory
 from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from django.core.files import File
+from donations.models import Donation
 from translation.translate import translate_model
 from xlsx_export.export import get_donation_points
 
@@ -124,6 +125,19 @@ class DonationPointsAggregation(Model):
 
     @classmethod
     def do_get_count(cls, slug, since, till, administration_unit):
+        if slug == "supporting_donations":
+            donations = Donation.objects.filter(
+                donated_at__gte=since, donated_at__lte=till
+            )
+            donations = filter_queryset_with_multiple_or_queries(
+                donations,
+                [
+                    Q(donor__regional_center_support=administration_unit),
+                    Q(donor__basic_section_support=administration_unit),
+                ],
+            )
+            return sum(donations.values_list("amount", flat=True))
+
         events = administration_unit.events.filter(start__gte=since, start__lte=till)
         if slug == "clubs":
             return events.filter(
@@ -143,11 +157,8 @@ class DonationPointsAggregation(Model):
         if slug == "camps":
             return events.filter(group__slug="camp").count()
         if slug == "50_worked_hours":
-            hours_worked = [
-                w
-                for w in events.values_list("record__total_hours_worked", flat=True)
-                if w
-            ]
+            hours_worked = events.values_list("record__total_hours_worked", flat=True)
+            hours_worked = [hours for hours in hours_worked if hours]
             return int(sum(hours_worked) / 50)
 
         members = administration_unit.memberships.filter(year=till.year)
