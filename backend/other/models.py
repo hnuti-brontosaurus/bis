@@ -180,10 +180,9 @@ class DonationPoints(Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if self._state.adding:
-            super().save(force_insert, force_update, using, update_fields)
-        file = File(get_donation_points(self))
-        self.file.save(f"donation_points_{self.id}.xlsx", file, save=False)
+        if not self._state.adding:
+            file = File(get_donation_points(self))
+            self.file.save(f"donation_points_{self.id}.xlsx", file, save=False)
         super().save(force_insert, force_update, using, update_fields)
 
     def get_header(self):

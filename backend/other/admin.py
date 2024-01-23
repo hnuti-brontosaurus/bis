@@ -108,3 +108,7 @@ class DonationPointsSectionAdmin(PermissionMixin, NestedStackedInline):
 class DonationPointsAdmin(PermissionMixin, NestedModelAdmin):
     inlines = (DonationPointsSectionAdmin,)
     readonly_fields = ("file",)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.save()
