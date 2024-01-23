@@ -520,9 +520,14 @@ class Command(BaseCommand):
             description="počet členů 27+ let",
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Dary pro OJ",
+            name="Podpora ZČ",
             slug="supporting_donations",
-            description="Celková suma dotací, jejiž procento má být přislíbeno dané organizační jednotce",
+            description="Celková suma dotací, jejiž procento má být přislíbeno danému ZČ",
+        )
+        DonationPointsAggregation.objects.update_or_create(
+            name="Podpora RC",
+            slug="supporting_donations_rc",
+            description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
         )
 
     def create_game_book_categories(self):

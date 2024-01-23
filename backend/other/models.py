@@ -125,17 +125,16 @@ class DonationPointsAggregation(Model):
 
     @classmethod
     def do_get_count(cls, slug, since, till, administration_unit):
-        if slug == "supporting_donations":
-            donations = Donation.objects.filter(
-                donated_at__gte=since, donated_at__lte=till
-            )
-            donations = filter_queryset_with_multiple_or_queries(
-                donations,
-                [
-                    Q(donor__regional_center_support=administration_unit),
-                    Q(donor__basic_section_support=administration_unit),
-                ],
-            )
+        donations = Donation.objects.filter(donated_at__gte=since, donated_at__lte=till)
+        if slug.startswith("supporting_donations"):
+            if slug == "supporting_donations":
+                donations = donations.filter(
+                    donor__basic_section_support=administration_unit
+                )
+            if slug == "supporting_donations_rc":
+                donations = donations.filter(
+                    donor__regional_center_support=administration_unit
+                )
             return sum(donations.values_list("amount", flat=True))
 
         events = administration_unit.events.filter(start__gte=since, start__lte=till)
