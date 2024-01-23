@@ -477,57 +477,63 @@ class Command(BaseCommand):
         )
 
         DonationPointsAggregation.objects.update_or_create(
-            name="Kluby",
             slug="clubs",
-            description="počet akcí, které mají program: vzdělávací - přednáška, klub - přednáška, klub - setkání",
+            defaults=dict(
+                name="Kluby",
+                description="počet akcí, které mají program: vzdělávací - přednáška, klub - přednáška, klub - setkání",
+            ),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Jednodenní bez klubů",
             slug="other_without_clubs",
-            description="počet akcí druhu jednodenní bez klubů",
+            defaults=dict(
+                name="Jednodenní bez klubů",
+                description="počet akcí druhu jednodenní bez klubů",
+            ),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Víkendovky",
             slug="weekend_events",
-            description="počet akcí druhu víkendovka",
+            defaults=dict(name="Víkendovky", description="počet akcí druhu víkendovka"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Tábory", slug="camps", description="počet akcí druhu tábory"
+            slug="camps",
+            defaults=dict(name="Tábory", description="počet akcí druhu tábory"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Odpracováno 50 člověkohodin",
             slug="50_worked_hours",
-            description="bod za každých 50 odpracovaných člověkohodin",
+            defaults=dict(
+                name="Odpracováno 50 člověkohodin",
+                description="bod za každých 50 odpracovaných člověkohodin",
+            ),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Členi 0-15 let",
             slug="members_0_15",
-            description="počet členů 0-15 let",
+            defaults=dict(name="Členi 0-15 let", description="počet členů 0-15 let"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Členi 16-18 let",
             slug="members_16_18",
-            description="počet členů 16-18 let",
+            defaults=dict(name="Členi 16-18 let", description="počet členů 16-18 let"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Členi 19-26 let",
             slug="members_19_26",
-            description="počet členů 19-26 let",
+            defaults=dict(name="Členi 19-26 let", description="počet členů 19-26 let"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Členi 27+ let",
             slug="members_27_and_more",
-            description="počet členů 27+ let",
+            defaults=dict(name="Členi 27+ let", description="počet členů 27+ let"),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Podpora ZČ",
             slug="supporting_donations",
-            description="Celková suma dotací, jejiž procento má být přislíbeno danému ZČ",
+            defaults=dict(
+                name="Podpora ZČ",
+                description="Celková suma dotací, jejiž procento má být přislíbeno danému ZČ",
+            ),
         )
         DonationPointsAggregation.objects.update_or_create(
-            name="Podpora RC",
             slug="supporting_donations_rc",
-            description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
+            defaults=dict(
+                name="Podpora RC",
+                description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
+            ),
         )
 
     def create_game_book_categories(self):
