@@ -88,16 +88,22 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
     withOverwriteArray,
   )
 
-
   function registration() {
     if (event.registration?.is_registration_required) {
-      if (event.registration?.is_event_full && event.registration?.alternative_registration_link == '') {
-        return ('Akce je plná, dalo se přihlásit standardní přihláškou na brontowebu')
-      }
-      else if (event.registration?.is_event_full && event.registration?.alternative_registration_link != '') {
-        return ('Akce je plná, dalo se přihlásit pomocí jiné elektronické přihlášky')
-      }
-      else if (event.registration?.is_registration_required && event.registration?.alternative_registration_link == '') {
+      if (
+        event.registration?.is_event_full &&
+        event.registration?.alternative_registration_link == ''
+      ) {
+        return 'Akce je plná, dalo se přihlásit standardní přihláškou na brontowebu'
+      } else if (
+        event.registration?.is_event_full &&
+        event.registration?.alternative_registration_link != ''
+      ) {
+        return 'Akce je plná, dalo se přihlásit pomocí jiné elektronické přihlášky'
+      } else if (
+        event.registration?.is_registration_required &&
+        event.registration?.alternative_registration_link == ''
+      ) {
         return (
           <>
             Standardní přihláška na brontoweb
@@ -111,59 +117,67 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
             </p>
           </>
         )
-      } else if (event.registration?.is_registration_required && event.registration?.alternative_registration_link != '') {
-
-        return ('Jiná elektronická přihláška: ' + event.registration?.alternative_registration_link)
+      } else if (
+        event.registration?.is_registration_required &&
+        event.registration?.alternative_registration_link != ''
+      ) {
+        return (
+          'Jiná elektronická přihláška: ' +
+          event.registration?.alternative_registration_link
+        )
       }
-    }
-
-    else {
-      return ('Registrace není potřeba')
+    } else {
+      return 'Registrace není potřeba'
     }
   }
 
   function vip() {
-    return (
-      event?.vip_propagation ?
-        <>
-          <header>VIP propagace</header>
-          <section>
-            <p className={styles.invitationText}>
-              <span className={styles.inlineHeaderSmall}>Cíle akce a přínos pro prvoúčastníky: </span>
-              {event?.vip_propagation?.goals_of_event}
-            </p>
-            <p className={styles.invitationText}>
-              <span className={styles.inlineHeaderSmall}>Programové pojetí akce pro prvoúčastníky: </span>
-              {event?.vip_propagation?.program}
-            </p>
-            <p className={styles.invitationText}>
-              <span className={styles.inlineHeaderSmall}>Krátký zvací text do propagace: </span>
-              {event?.vip_propagation?.short_invitation_text}
-            </p>
-            <p className={styles.invitationText}>
-              <span className={styles.inlineHeaderSmall}>Propagovat akci v Roverském kmeni?: </span>
-              {event?.vip_propagation?.rover_propagation ? 'ano' : 'ne'}
-            </p>
-          </section>
-        </>
-        :
-        null
-    )
+    return event?.vip_propagation ? (
+      <>
+        <header>VIP propagace</header>
+        <section>
+          <p className={styles.invitationText}>
+            <span className={styles.inlineHeaderSmall}>
+              Cíle akce a přínos pro prvoúčastníky:{' '}
+            </span>
+            {event?.vip_propagation?.goals_of_event}
+          </p>
+          <p className={styles.invitationText}>
+            <span className={styles.inlineHeaderSmall}>
+              Programové pojetí akce pro prvoúčastníky:{' '}
+            </span>
+            {event?.vip_propagation?.program}
+          </p>
+          <p className={styles.invitationText}>
+            <span className={styles.inlineHeaderSmall}>
+              Krátký zvací text do propagace:{' '}
+            </span>
+            {event?.vip_propagation?.short_invitation_text}
+          </p>
+          <p className={styles.invitationText}>
+            <span className={styles.inlineHeaderSmall}>
+              Propagovat akci v Roverském kmeni?:{' '}
+            </span>
+            {event?.vip_propagation?.rover_propagation ? 'ano' : 'ne'}
+          </p>
+        </section>
+      </>
+    ) : null
   }
 
   function work() {
-    return(
-      event.propagation?.working_hours ?
+    return event.propagation?.working_hours ? (
       <tr>
         <th>Práce</th>
         <td>
-          Odpracovaných hodin (denně): {event.propagation?.working_hours}<br></br>
-          {event.propagation?.working_days ? 'Počet pracovních dní: ' + event.propagation?.working_days : ''}
+          Odpracovaných hodin (denně): {event.propagation?.working_hours}
+          <br></br>
+          {event.propagation?.working_days
+            ? 'Počet pracovních dní: ' + event.propagation?.working_days
+            : ''}
         </td>
       </tr>
-      :
-      null
-    )
+    ) : null
   }
 
   return (
@@ -188,7 +202,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <FaPencilAlt /> upravit
                 </ButtonLink>
                 <ButtonLink secondary to={`/org/akce/${eventId}/uzavrit`}>
-                  <FaRegCheckCircle /> po akci
+                  <FaRegCheckCircle /> účastníci + evidence akce
                 </ButtonLink>
               </>
             ) : null}
@@ -271,37 +285,37 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <th>Místo</th>
                 <td>{event.location?.name}</td>
               </tr>
-              { event?.propagation ?
-              <tr>
-                <th>Věk</th>
-                <td>
-                  {event.propagation?.minimum_age ?? '?'} -{' '}
-                  {event.propagation?.maximum_age ?? '?'} let
-                </td>
-              </tr>
-              : null}
+              {event?.propagation ? (
+                <tr>
+                  <th>Věk</th>
+                  <td>
+                    {event.propagation?.minimum_age ?? '?'} -{' '}
+                    {event.propagation?.maximum_age ?? '?'} let
+                  </td>
+                </tr>
+              ) : null}
               <tr>
                 <th>Začátek akce</th>
                 <td>
                   {formatDateTime(event.start, event.start_time ?? undefined)}
                 </td>
               </tr>
-              { event?.propagation ?
-              <>
-                <tr>
-                  <th>Cena</th>
-                  <td>{event.propagation?.cost} Kč</td>
-                </tr>
-                <tr>
-                  <th>Kontaktní osoba</th>
-                  <td>
-                    <div>{event.propagation?.contact_name}</div>
-                    <div>{event.propagation?.contact_phone}</div>
-                    <div>{event.propagation?.contact_email}</div>
-                  </td>
-                </tr>
-              </>
-              : null}
+              {event?.propagation ? (
+                <>
+                  <tr>
+                    <th>Cena</th>
+                    <td>{event.propagation?.cost} Kč</td>
+                  </tr>
+                  <tr>
+                    <th>Kontaktní osoba</th>
+                    <td>
+                      <div>{event.propagation?.contact_name}</div>
+                      <div>{event.propagation?.contact_phone}</div>
+                      <div>{event.propagation?.contact_email}</div>
+                    </td>
+                  </tr>
+                </>
+              ) : null}
             </tbody>
           </table>
         </div>
@@ -346,7 +360,9 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <th>Místo konání</th>
                   <td>
                     {event.location?.name}
-                    {event.location?.gps_location?.coordinates ? `, GPS: ${event.location?.gps_location?.coordinates}` : ''}
+                    {event.location?.gps_location?.coordinates
+                      ? `, GPS: ${event.location?.gps_location?.coordinates}`
+                      : ''}
                     {event.online_link}
                   </td>
                 </tr>
@@ -354,90 +370,110 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <th>Počet akcí v uvedeném období</th>
                   <td>{event?.number_of_sub_events}</td>
                 </tr>
-                {event?.propagation ?
-                <>
+                {event?.propagation ? (
+                  <>
+                    <tr>
+                      <th>Věk</th>
+                      <td>
+                        {event.propagation?.minimum_age ?? '?'} -{' '}
+                        {event.propagation?.maximum_age ?? '?'} let
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Ubytování</th>
+                      <td>
+                        {' '}
+                        {!event.propagation ||
+                        event.propagation?.accommodation == ''
+                          ? '-'
+                          : event.propagation?.accommodation}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Strava</th>
+                      <td>
+                        {event.propagation?.diets &&
+                        event.propagation?.diets.length > 0
+                          ? event.propagation?.diets
+                              .map(diet => diet.name)
+                              .join(', ')
+                          : '-'}
+                      </td>
+                    </tr>
+                  </>
+                ) : null}
+                {work()}
+                {event?.propagation ? (
                   <tr>
-                    <th>Věk</th>
-                    <td>{event.propagation?.minimum_age ?? '?'} -{' '}
-                      {event.propagation?.maximum_age ?? '?'} let</td>
-                  </tr>
-                  <tr>
-                    <th>Ubytování</th>
-                    <td> {!event.propagation || event.propagation?.accommodation == '' ? '-' : event.propagation?.accommodation}</td>
-                  </tr>
-                  <tr>
-                    <th>Strava</th>
-                    <td>{event.propagation?.diets && event.propagation?.diets.length > 0 ? event.propagation?.diets.map(diet =>
-                      diet.name).join(', ') : '-'}
+                    <th>Web o akci</th>
+                    <td>
+                      {!event.propagation || event.propagation?.web_url == ''
+                        ? '-'
+                        : event.propagation?.web_url}
                     </td>
                   </tr>
-                </>
-                : null}
-                {work()}
-                {event?.propagation ?
-                <tr>
-                  <th>Web o akci</th>
-                  <td>{!event.propagation || event.propagation?.web_url == '' ? '-' : event.propagation?.web_url}</td>
-                </tr>
-                : null}
+                ) : null}
                 <tr>
                   <th>Poznámka</th>
-                  <td>{event.internal_note == '' ? '-' : event.internal_note}</td>
+                  <td>
+                    {event.internal_note == '' ? '-' : event.internal_note}
+                  </td>
                 </tr>
               </tbody>
             </table>
-           { event?.propagation ?
-            <div className={styles.invitationTexts}>
-              {vip()}
-              <header>Co na nás čeká</header>
-              <section
-                dangerouslySetInnerHTML={{
-                  __html: sanitize(
-                    event.propagation?.invitation_text_introduction ?? '',
-                  ),
-                }}
-              />
-              <header>Co, kde a jak</header>
-              <section
-                dangerouslySetInnerHTML={{
-                  __html: sanitize(
-                    event.propagation?.invitation_text_practical_information ?? '',
-                  ),
-                }}
-              />
-              <header>Dobrovolnická pomoc</header>
-              <section
-                dangerouslySetInnerHTML={{
-                  __html: sanitize(
-                    event.propagation?.invitation_text_work_description ?? '',
-                  ),
-                }}
-              />
-              <header>Malá ochutnávka</header>
-              <section
-                dangerouslySetInnerHTML={{
-                  __html: sanitize(
-                    event.propagation?.invitation_text_about_us ?? '',
-                  ),
-                }}
-              />
+            {event?.propagation ? (
+              <div className={styles.invitationTexts}>
+                {vip()}
+                <header>Co na nás čeká</header>
+                <section
+                  dangerouslySetInnerHTML={{
+                    __html: sanitize(
+                      event.propagation?.invitation_text_introduction ?? '',
+                    ),
+                  }}
+                />
+                <header>Co, kde a jak</header>
+                <section
+                  dangerouslySetInnerHTML={{
+                    __html: sanitize(
+                      event.propagation
+                        ?.invitation_text_practical_information ?? '',
+                    ),
+                  }}
+                />
+                <header>Dobrovolnická pomoc</header>
+                <section
+                  dangerouslySetInnerHTML={{
+                    __html: sanitize(
+                      event.propagation?.invitation_text_work_description ?? '',
+                    ),
+                  }}
+                />
+                <header>Malá ochutnávka</header>
+                <section
+                  dangerouslySetInnerHTML={{
+                    __html: sanitize(
+                      event.propagation?.invitation_text_about_us ?? '',
+                    ),
+                  }}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          {event?.propagation ? (
+            <div className={styles.imageList}>
+              {otherImages.map(img => (
+                <img
+                  className={styles.image}
+                  key={img.id}
+                  src={img.image.medium}
+                  alt=""
+                />
+              ))}
             </div>
-            : null }
-          </div>
-          
-          { event?.propagation ?
-          <div className={styles.imageList}>
-            {otherImages.map(img => (
-              <img
-                className={styles.image}
-                key={img.id}
-                src={img.image.medium}
-                alt=""
-              />
-            ))}
-          </div>
-          :null}
-         
+          ) : null}
+
           <div className={styles.eventInfoNarrow}>
             <table className={styles.table}>
               <tbody>
@@ -447,28 +483,31 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 </tr>
                 <tr>
                   <th>Organizační tým</th>
-                  <td>{event.other_organizers.map(organizer => (
-                    organizer.display_name)).join(', ')}
+                  <td>
+                    {event.other_organizers
+                      .map(organizer => organizer.display_name)
+                      .join(', ')}
                   </td>
                 </tr>
-                { event?.propagation ?
-                <tr>
-                  <th>Těší se na tebe</th>
-                  <td>{event.propagation ? event.propagation?.organizers : '-'}</td>
-                </tr>
-                : null}
+                {event?.propagation ? (
+                  <tr>
+                    <th>Těší se na tebe</th>
+                    <td>
+                      {event.propagation ? event.propagation?.organizers : '-'}
+                    </td>
+                  </tr>
+                ) : null}
                 <tr>
                   <th>Způsob přihlášení</th>
                   <td>{registration()}</td>
                 </tr>
               </tbody>
             </table>
-
           </div>
         </div>
 
-       {/*  <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
-       {/*  <h2 className={styles.dataHeader}>Data</h2>
+        {/*  <pre className={styles.data}>{JSON.stringify(event, null, 2)}</pre> */}
+        {/*  <h2 className={styles.dataHeader}>Data</h2>
         <DataView
           data={formattedEvent}
           translations={combinedTranslations.event}
