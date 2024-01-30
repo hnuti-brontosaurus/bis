@@ -8,7 +8,8 @@ import { ApplicationStates } from '../ParticipantsStep'
 export const ParticipantsStats: FC<{
   otherOrganizers: original.User[] | undefined
   event: Event
-}> = ({ otherOrganizers, event }) => {
+  showApplicationsStats: boolean
+}> = ({ otherOrganizers, event, showApplicationsStats }) => {
   const { data: applicationsData, isLoading: isReadApplicationsLoading } =
     api.endpoints.readEventApplications.useQuery({
       eventId: event.id,
@@ -37,7 +38,14 @@ export const ParticipantsStats: FC<{
     app => app.state === ApplicationStates.rejected,
   )
 
-  let allUsers = [...participants, ...organizers]
+  const currentType = showApplicationsStats ? 'přihlášených' : 'účastníků'
+  const currentLength = showApplicationsStats
+    ? applications.length
+    : participants.length + organizers.length
+  const currentAllUsers = showApplicationsStats
+    ? applications
+    : [...participants, ...organizers]
+
   let zeroToSix = 0
   let sevenToFifteen = 0
   let sixteenToEighteen = 0
@@ -45,7 +53,7 @@ export const ParticipantsStats: FC<{
   let twentySevenToInfinity = 0
   let unknownAge = 0
 
-  allUsers.forEach(user => {
+  currentAllUsers.forEach(user => {
     const age = user.birthday
       ? ageDifference(new Date(user.birthday), new Date(event.start))
       : undefined
@@ -68,11 +76,22 @@ export const ParticipantsStats: FC<{
     <>
       {!isReadApplicationsLoading && !isReadParticipantsLoading ? (
         <div className={styles.StatsContainer}>
-          Počet účastníků: <b>{participants.length + organizers.length}</b>, z
-          toho: organizátoři=<b>{organizers.length}</b>, účastníci=
-          <b>{participants.length}</b>
+          Počet {currentType} <b>{currentLength}</b>, z toho:{' '}
+          {showApplicationsStats ? (
+            <>
+              přijatí=
+              <b>{applicationsAccepted.length}</b>, zamítnutí=
+              <b>{applicationsRejected.length}</b>, čekající=
+              <b>{applicationsPending.length}</b>
+            </>
+          ) : (
+            <>
+              organizátoři=<b>{organizers.length}</b>, účastníci=
+              <b>{participants.length}</b>
+            </>
+          )}
           <br />
-          Statistika ůčastníků: 0-6 let=<b>{zeroToSix}</b>, 7-15 let:=
+          Statistika {currentType}: 0-6 let=<b>{zeroToSix}</b>, 7-15 let:=
           <b>{sevenToFifteen}</b>, 16-18 let=<b>{sixteenToEighteen}</b>, 19-26
           let=<b>{nineteenToTwentySix}</b>, 27+let=
           <b>{twentySevenToInfinity}</b>, celkem do 26 let=
@@ -89,12 +108,6 @@ export const ParticipantsStats: FC<{
           ) : (
             ''
           )}
-          <br />
-          Počet přihlášených: <b>{applications.length}</b>, z toho: přijatí=
-          <b>{applicationsAccepted.length}</b>, zamítnutí=
-          <b>{applicationsRejected.length}</b>, čekající=
-          <b>{applicationsPending.length}</b>
-          <br />
         </div>
       ) : (
         ''
