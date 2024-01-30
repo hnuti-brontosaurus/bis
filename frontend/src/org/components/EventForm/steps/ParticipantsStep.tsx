@@ -173,6 +173,7 @@ export const ParticipantsStep: FC<{
       <ParticipantsStats
         event={event}
         otherOrganizers={event.other_organizers}
+        showApplicationsStats={true}
       ></ParticipantsStats>
       <Applications
         // @ts-ignore
@@ -192,34 +193,47 @@ export const ParticipantsStep: FC<{
         }}
       />
       {!onlyApplications && (
-        <Participants
-          eventId={event.id}
-          highlightedParticipant={highlightedParticipant}
-          chooseHighlightedParticipant={id => {
-            if (id && participantsMap)
-              setHighlightedApplication(participantsMap[id])
-            else {
-              setHighlightedApplication(undefined)
-            }
-          }}
-          eventName={event.name}
-          participantsMap={participantsMap}
-          onClickAddNewParticipant={() => {
-            setCurrentApplication(undefined)
-            setUserModalData(undefined)
-            setUserModalOpen(true)
-          }}
-          onEditUser={handleClickEditParticipant}
-          lastAddedId={lastAddedId}
-          timeOfLastAddition={timeOfLastAddition}
-          onAddNewParticipant={({ id, time }: { id: string; time: number }) => {
-            setLastAddedId(id)
-            setTimeOfLastAddition(time)
-          }}
-          createUser={createUser}
-          updateUser={updateUser}
-          otherOrganizers={event.other_organizers}
-        />
+        <>
+          <ParticipantsStats
+            event={event}
+            otherOrganizers={event.other_organizers}
+            showApplicationsStats={false}
+          ></ParticipantsStats>
+          <Participants
+            eventId={event.id}
+            highlightedParticipant={highlightedParticipant}
+            chooseHighlightedParticipant={id => {
+              if (id && participantsMap)
+                setHighlightedApplication(participantsMap[id])
+              else {
+                setHighlightedApplication(undefined)
+              }
+            }}
+            eventName={event.name}
+            participantsMap={participantsMap}
+            onClickAddNewParticipant={() => {
+              setCurrentApplication(undefined)
+              setUserModalData(undefined)
+              setUserModalOpen(true)
+            }}
+            onEditUser={handleClickEditParticipant}
+            lastAddedId={lastAddedId}
+            timeOfLastAddition={timeOfLastAddition}
+            onAddNewParticipant={({
+              id,
+              time,
+            }: {
+              id: string
+              time: number
+            }) => {
+              setLastAddedId(id)
+              setTimeOfLastAddition(time)
+            }}
+            createUser={createUser}
+            updateUser={updateUser}
+            otherOrganizers={event.other_organizers}
+          />
+        </>
       )}
     </div>
   )
