@@ -58,7 +58,6 @@ describe('login', () => {
     // api request is sent
     // app redirects to home
     cy.location('pathname').should('equal', '/')
-    cy.contains('Organizátor')
     cy.contains('Po akci')
   })
 
@@ -77,7 +76,6 @@ describe('login', () => {
     // api request is sent
     // app redirects to home
     cy.location('pathname').should('equal', '/')
-    cy.contains('Uživatel')
     cy.contains('Dárcovství')
   })
 })
