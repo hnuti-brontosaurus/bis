@@ -91,7 +91,7 @@ export const ParticipantsStats: FC<{
             </>
           )}
           <br />
-          Statistika {currentType}: 0-6 let=<b>{zeroToSix}</b>, 7-15 let:=
+          Statistika {currentType}: 0-6 let=<b>{zeroToSix}</b>, 7-15 let=
           <b>{sevenToFifteen}</b>, 16-18 let=<b>{sixteenToEighteen}</b>, 19-26
           let=<b>{nineteenToTwentySix}</b>, 27+let=
           <b>{twentySevenToInfinity}</b>, celkem do 26 let=
