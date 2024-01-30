@@ -76,7 +76,7 @@ export const ParticipantsStats: FC<{
     <>
       {!isReadApplicationsLoading && !isReadParticipantsLoading ? (
         <div className={styles.StatsContainer}>
-          Počet {currentType} <b>{currentLength}</b>, z toho:{' '}
+          Počet {currentType}: <b>{currentLength}</b>, z toho:{' '}
           {showApplicationsStats ? (
             <>
               přijatí=
