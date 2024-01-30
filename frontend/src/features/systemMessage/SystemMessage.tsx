@@ -14,7 +14,7 @@ export const SystemMessage = ({
   type,
   message,
   detail,
-  timeout = 5000,
+  timeout = 10_000,
 }: Optional<SystemMessageType, 'time'>) => {
   const dispatch = useAppDispatch()
 
