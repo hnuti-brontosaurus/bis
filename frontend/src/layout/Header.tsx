@@ -3,26 +3,25 @@ import { RoleCategory } from 'app/services/bisTypes'
 import logoMini from 'assets/logo-mini.png'
 import logo from 'assets/logo.png'
 import classNames from 'classnames'
-import { LoadingIcon } from 'components'
+import { ButtonLink } from 'components'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { useCurrentAccess } from 'hooks/useCurrentAccess'
 import { useLogout } from 'hooks/useLogout'
 import { useMemo } from 'react'
 import { AiOutlineMenu } from 'react-icons/ai'
-import { FaRegUser } from 'react-icons/fa'
-import { Link, useNavigate } from 'react-router-dom'
-import { AccessConfig, getUserAccesses } from 'utils/roles'
+import { FaExternalLinkAlt, FaRegUser } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { getUserAccesses } from 'utils/roles'
 import styles from './Header.module.scss'
 
 export const Header = () => {
   const { data: user, isAuthenticated } = useCurrentUser()
   const logout = useLogout()
   const [canAddEvent] = useAllowedToCreateEvent()
-  const navigate = useNavigate()
 
   // what's the current access
-  const [access, setAccess] = useCurrentAccess()
+  const [access] = useCurrentAccess()
 
   // get configurations for all user's accesses
   const userAccesses = useMemo(
@@ -32,16 +31,8 @@ export const Header = () => {
 
   // get configuration for current access
   const currentAccessConfig = useMemo(() => {
-    return userAccesses.find(config => config.slug === access)
-  }, [access, userAccesses])
-
-  // switching access
-  const handleSwitchAccess = (accessConfig: AccessConfig) => {
-    // if we stay within the app, remember the new current access
-    if (!accessConfig.external) setAccess(accessConfig.slug)
-    // go to the main page of the new access
-    navigate(accessConfig.url)
-  }
+    return userAccesses.find(config => config.slug === 'admin')
+  }, [userAccesses])
 
   return (
     <div className={styles.container}>
@@ -56,39 +47,19 @@ export const Header = () => {
         </Link>
       </nav>
       <div className={styles.spacer}></div>
-      {user && access ? (
+      {user && access && currentAccessConfig ? (
         <nav>
-          <Menu
-            menuButton={({ open }) => (
-              <MenuButton
-                className={classNames(
-                  open && styles.menuButtonOpen,
-                  styles.menuButton,
-                )}
-                title={
-                  currentAccessConfig?.roles &&
-                  getAccessTitle(currentAccessConfig.roles)
-                }
-              >
-                {currentAccessConfig?.name ?? <LoadingIcon />}
-              </MenuButton>
-            )}
-            // align={'center'}
+          <ButtonLink
+            className={classNames(styles.menuButtonOpen, styles.menuButton)}
+            title={
+              currentAccessConfig?.roles &&
+              getAccessTitle(currentAccessConfig.roles)
+            }
+            to={currentAccessConfig.url}
           >
-            {userAccesses.map(accessConfig => (
-              <MenuItem
-                key={accessConfig.slug}
-                className={styles.menuItemCustom}
-                title={
-                  accessConfig?.roles && getAccessTitle(accessConfig.roles)
-                }
-              >
-                <button onClick={() => handleSwitchAccess(accessConfig)}>
-                  {accessConfig.name}
-                </button>
-              </MenuItem>
-            ))}
-          </Menu>
+            <FaExternalLinkAlt />
+            {'Administrace OJ'}
+          </ButtonLink>
         </nav>
       ) : null}
       {isAuthenticated ? (
