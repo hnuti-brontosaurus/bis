@@ -41,6 +41,6 @@ case "$1" in
 
         # Gunicorn
         echo "Running Supervisorded Gunicorn..."
-        gunicorn --env DJANGO_SETTINGS_MODULE=project.settings project.wsgi -b ${APP_HOST}:${APP_PORT} -t 1800
+        gunicorn --threads 8 --env DJANGO_SETTINGS_MODULE=project.settings project.wsgi -b ${APP_HOST}:${APP_PORT} -t 1800
     ;;
 esac
