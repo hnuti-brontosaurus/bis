@@ -26,7 +26,7 @@ from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
 from event.models import Event, EventDraft
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
-from other.models import DashboardItem, DuplicateUser
+from other.models import DashboardItem, DonationPoints, DuplicateUser
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -93,7 +93,10 @@ class Permissions:
         if self.is_game_book():
             return False
 
-        if self.model in [BrontosaurusMovement] or self.model._meta.app_label in [
+        if self.model in [
+            BrontosaurusMovement,
+            DonationPoints,
+        ] or self.model._meta.app_label in [
             "categories",
             "regions",
         ]:
