@@ -586,6 +586,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        cleaned_data["category"] = None
         if self.errors:
             return cleaned_data
         # find user
