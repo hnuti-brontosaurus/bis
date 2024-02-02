@@ -2,7 +2,7 @@ from base64 import b64encode
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import make_a, make_ul
+from bis.helpers import make_a, make_br, make_ul
 from bis.models import Qualification
 from categories.models import EventProgramCategory, PronounCategory
 from dateutil.utils import today
@@ -415,7 +415,7 @@ def send_opportunities_summary():
         on_web_start__lte=today(),
         on_web_end__gte=today(),
     )
-    opportunities = make_ul(
+    opportunities = make_br(
         make_a(
             opportunity.name,
             f"https://brontosaurus.cz/zapoj-se/prilezitost/{opportunity.id}/",
