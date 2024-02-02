@@ -15,6 +15,8 @@ import pdfkit
 import xlsxwriter
 from bis.helpers import print_progress
 from bis.models import User
+from common.thumbnails import get_thumbnail_path
+from django.conf import settings
 from django.contrib import admin
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
@@ -350,6 +352,14 @@ def export_files(event: Event):
         path.mkdir()
         return path
 
+    def copy_image(image_file, dir_path):
+        copy2(image_file.path, dir_path)
+        for size_name, size in settings.THUMBNAIL_SIZES.items():
+            thumbnail_path = join(
+                settings.MEDIA_ROOT, get_thumbnail_path(image_file.name, size_name)
+            )
+            copy2(thumbnail_path, dir_path)
+
     file_name = f"Soubory {event.name}"
     with TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
@@ -372,7 +382,7 @@ def export_files(event: Event):
                 propagation_path / _("models.EventPropagationImage.name_plural")
             )
             for image in event.propagation.images.all():
-                copy2(image.image.path, images_path)
+                copy_image(image.image, images_path)
 
         if hasattr(event, "record"):
             record_path = mkdir(tmp_dir / _("models.EventRecord.name"))
@@ -385,7 +395,7 @@ def export_files(event: Event):
 
             photos_path = mkdir(record_path / _("models.EventPhoto.name_plural"))
             for photo in event.record.photos.all():
-                copy2(photo.photo.path, photos_path)
+                copy_image(photo.photo, photos_path)
 
         file = NamedTemporaryFile(
             mode="w", suffix=".zip", newline="", encoding="utf8", prefix=file_name + " "
