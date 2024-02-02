@@ -88,7 +88,7 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
 
     autocomplete_fields = "chairman", "vice_chairman", "manager", "board_members"
 
-    exclude = "_import_id", "_history"
+    exclude = "_import_id", "_history", "_search_field"
     list_select_related = "address", "chairman", "category"
     readonly_fields = "history", "get_members", "get_organizers", "get_membership_stats"
 

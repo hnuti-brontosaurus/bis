@@ -325,7 +325,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "administration_units",
     )
 
-    exclude = ("_import_id",)
+    exclude = "_import_id", "_search_field"
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super(EventAdmin, self).get_form(request, obj, change, **kwargs)

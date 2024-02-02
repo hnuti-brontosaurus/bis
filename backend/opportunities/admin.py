@@ -29,3 +29,4 @@ class OpportunityAdmin(PermissionMixin, NestedModelAdmin):
     )
 
     search_fields = Opportunity.get_search_fields()
+    exclude = ("_search_field",)

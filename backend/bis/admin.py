@@ -116,7 +116,7 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
         LocationPhotosAdmin,
     )
     search_fields = Location.get_search_fields()
-    exclude = ("_import_id",)
+    exclude = "_import_id", "_search_field"
 
     list_filter = (
         "program",
