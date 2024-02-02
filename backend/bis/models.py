@@ -479,7 +479,7 @@ class User(SearchMixin, AbstractBaseUser):
                     )
 
             for relation in self._meta.related_objects:
-                if relation.name in ["auth_token"]:
+                if relation.name in ["auth_token", "duplicates", "other_duplicates"]:
                     continue
 
                 elif relation.name in ["address", "contact_address"]:
