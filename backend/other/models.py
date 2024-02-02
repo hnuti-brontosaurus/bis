@@ -180,19 +180,20 @@ class DonationPointsAggregation(Model):
 
 @translate_model
 class DonationPoints(Model):
+    name = CharField(max_length=255)
     since = DateField()
     till = DateField()
     file = FileField(upload_to="donation_points", blank=True)
 
     def __str__(self):
-        return f"Body dotací {self.since}-{self.till}"
+        return self.name
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         if not self._state.adding:
             file = File(get_donation_points(self))
-            self.file.save(f"donation_points_{self.id}.xlsx", file, save=False)
+            self.file.save(f"{self.name}.xlsx", file, save=False)
         super().save(force_insert, force_update, using, update_fields)
 
     def get_header(self):
