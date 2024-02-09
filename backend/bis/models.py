@@ -118,7 +118,7 @@ class Location(SearchMixin, Model):
                 first, rest = queryset[0], queryset[1:]
             for other in rest:
                 for field in first._meta.fields:
-                    if field.name in ["id", "_import_id"]:
+                    if field.name in ["id", "_import_id", "_search_field"]:
                         continue
 
                     elif field.name in [
