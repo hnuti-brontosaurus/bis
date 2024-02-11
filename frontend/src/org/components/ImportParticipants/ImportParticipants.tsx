@@ -105,7 +105,7 @@ export const ImportParticipants = ({
       Just being too lazy to make a separate stylesheet
       feel free to make one if you need to style more stuff :) */}
       <div style={{ textAlign: 'center' }}>
-        <ImportExcelButton<UserImport>
+        {/* <ImportExcelButton<UserImport>
           keyMap={{
             first_name: 0,
             last_name: 1,
@@ -129,7 +129,7 @@ export const ImportParticipants = ({
           onUpload={handleImportParticipants}
         >
           Importovat z excelu
-        </ImportExcelButton>{' '}
+        </ImportExcelButton>{' '} */}
         <ExternalButtonLink tertiary small href={spreadsheetTemplate}>
           (vzor .xlsx)
         </ExternalButtonLink>
