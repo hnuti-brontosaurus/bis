@@ -41,11 +41,11 @@ def print_progress(name, i, total):
 
     obj = cache.get(key)
     if not obj:
-        print(name)
+        print(name, flush=True)
         cache.set(key, time())
 
     elif time() - obj >= 1:
-        print(f"{name}, progress {100 * i / total:.2f}%")
+        print(f"{name}, progress {100 * i / total:.2f}%", flush=True)
         cache.set(key, time())
 
 
