@@ -84,7 +84,7 @@ class XLSXWriter:
 
         queryset = serializer_class.get_related(queryset)
 
-        for page in Paginator(queryset, 10):
+        for page in Paginator(queryset, 100):
             print_progress("exporting xlsx", page.number, page.paginator.num_pages)
             serializer = serializer_class(page.object_list, many=True)
             for item in serializer.data:

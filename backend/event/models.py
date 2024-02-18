@@ -91,6 +91,7 @@ class Event(SearchMixin, Model):
 
     class Meta:
         ordering = ("-start",)
+        indexes = [Index(fields=["start"])]
         app_label = "bis"
 
     def __str__(self):
