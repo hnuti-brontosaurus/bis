@@ -1,5 +1,5 @@
 import datetime
-from datetime import timedelta
+from datetime import date, timedelta
 from functools import cached_property
 from os.path import basename
 from uuid import uuid4
@@ -754,7 +754,7 @@ class Membership(Model):
     )
     year = PositiveIntegerField(default=this_year)
 
-    created_at = DateField(auto_now_add=True)
+    _year = DateField()
     _import_id = CharField(max_length=15, default="")
 
     class Meta:
@@ -866,6 +866,7 @@ class Membership(Model):
     def save(self, *args, **kwargs):
         if not cache.get("skip_validation"):
             self.clean()
+        self._year = date(self.year, 1, 1)
         super().save(*args, **kwargs)
 
 

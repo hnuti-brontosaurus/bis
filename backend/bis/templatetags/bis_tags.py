@@ -49,7 +49,7 @@ def user_stats(context, changelist):
         )
 
     if queryset.model is Membership:
-        year = request.GET.get("created_at__year") or date.today().year
+        year = request.GET.get("_year__year") or date.today().year
         stats.append(MembershipStats(f"za rok {year}", queryset.filter(year=year)))
 
     event_stats_date = getattr(request, EventStatsDateFilter.cache_name, None)
@@ -86,7 +86,7 @@ def membership_date_hierarchy(cl):
     if result["back"] is None:
         result["title"] = "Zobrazit členství jen za rok:"
     else:
-        year = cl.params.get("created_at__year")
+        year = cl.params.get("_year__year")
         result["choices"] = []
         result["title"] = f"Zobrazuji členství za rok {year}"
         result["back"]["title"] = "zobrazit všechna"

@@ -713,7 +713,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
 @admin.register(Membership)
 class MembershipAdmin(PermissionMixin, NestedModelAdmin):
-    date_hierarchy = "created_at"
+    date_hierarchy = "_year"
     change_list_template = "bis/membership_change_list.html"
     list_per_page = 1000
     exclude = ("_import_id",)

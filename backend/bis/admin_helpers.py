@@ -298,8 +298,8 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
         if self.value() == "no":
             return queryset
 
-        if "created_at__year" in request.GET:
-            queryset = queryset.filter(created_at__year=request.GET["created_at__year"])
+        if "_year__year" in request.GET:
+            queryset = queryset.filter(_year__year=request.GET["_year__year"])
 
         id_map = {}
         for membership_id, user_id in reversed(queryset.values_list("id", "user_id")):
