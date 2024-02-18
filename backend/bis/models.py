@@ -394,6 +394,7 @@ class User(SearchMixin, AbstractBaseUser):
 
     class Meta:
         ordering = "last_name", "first_name"
+        indexes = [Index(fields=["last_name", "first_name"])]
         unique_together = "first_name", "last_name", "birthday"
 
     def __str__(self):
