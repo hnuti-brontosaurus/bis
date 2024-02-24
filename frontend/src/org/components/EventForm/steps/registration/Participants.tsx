@@ -15,7 +15,7 @@ import {
   useShowApiErrorMessage,
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
-import { ImportParticipants } from 'org/components/ImportParticipants/ImportParticipants'
+//import { ImportParticipants } from 'org/components/ImportParticipants/ImportParticipants'
 import { ConfirmedUser } from 'org/components/ImportParticipants/ImportParticipantsList/ImportParticipantsList'
 import { FC, useState } from 'react'
 import { FaTrash as Bin, FaUserEdit as EditUser } from 'react-icons/fa'
@@ -285,9 +285,9 @@ export const Participants: FC<{
           Exportovat do excelu
         </Button>
         {/* TODO It would be awesome if import and export use excel in the same format */}
-        <div className={styles.excelButtons}>
+        {/* <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
-        </div>
+        </div> */}
         <Button
           secondary
           small
