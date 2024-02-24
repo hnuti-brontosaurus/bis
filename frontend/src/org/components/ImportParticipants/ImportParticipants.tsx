@@ -87,7 +87,6 @@ export const ImportParticipants = ({
     )
     setImportParticipantsModalOpen(true)
   }
-
   return (
     <>
       <StyledModal
