@@ -21,6 +21,7 @@ from bis.admin_filters import (
 from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
+    MembershipYearFilter,
     get_admin_edit_url,
     list_filter_extra_text,
     list_filter_extra_title,
@@ -713,10 +714,10 @@ class MembershipAdminAddForm(forms.ModelForm):
 
 @admin.register(Membership)
 class MembershipAdmin(PermissionMixin, NestedModelAdmin):
-    date_hierarchy = "created_at"
+    date_hierarchy = "_year"
     change_list_template = "bis/membership_change_list.html"
     list_per_page = 1000
-    exclude = ("_import_id",)
+    exclude = ("_import_id", "_year")
     actions = [export_to_xlsx, extend_memberships, export_membership_emails]
     autocomplete_fields = "user", "administration_unit"
 
@@ -727,7 +728,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         LatestMembershipOnlyFilter,
         AutocompleteFilterFactory("Organizační jednotka", "administration_unit"),
         ("category", MultiSelectRelatedDropdownFilter),
-        ("year", RangeNumericFilter),
+        ("year", MembershipYearFilter),
     ]
 
     list_display = [

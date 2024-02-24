@@ -1,5 +1,5 @@
 import datetime
-from datetime import timedelta
+from datetime import date, timedelta
 from functools import cached_property
 from os.path import basename
 from uuid import uuid4
@@ -118,7 +118,7 @@ class Location(SearchMixin, Model):
                 first, rest = queryset[0], queryset[1:]
             for other in rest:
                 for field in first._meta.fields:
-                    if field.name in ["id", "_import_id"]:
+                    if field.name in ["id", "_import_id", "_search_field"]:
                         continue
 
                     elif field.name in [
@@ -394,6 +394,7 @@ class User(SearchMixin, AbstractBaseUser):
 
     class Meta:
         ordering = "last_name", "first_name"
+        indexes = [Index(fields=["last_name", "first_name"])]
         unique_together = "first_name", "last_name", "birthday"
 
     def __str__(self):
@@ -754,7 +755,7 @@ class Membership(Model):
     )
     year = PositiveIntegerField(default=this_year)
 
-    created_at = DateField(auto_now_add=True)
+    _year = DateField()
     _import_id = CharField(max_length=15, default="")
 
     class Meta:
@@ -866,6 +867,7 @@ class Membership(Model):
     def save(self, *args, **kwargs):
         if not cache.get("skip_validation"):
             self.clean()
+        self._year = date(self.year, 1, 1)
         super().save(*args, **kwargs)
 
 

@@ -295,19 +295,27 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
         return (("no", "Zobrazit všechna členství"),)
 
     def queryset(self, request, queryset):
-        if self.value() == "no":
+        setattr(request, "only_latest_members_filter", self.value())
+        return queryset
+
+    def choices(self, changelist):
+        res = list(super().choices(changelist))
+        res[0]["display"] = "Zobraz pouze poslední členství od každého člena"
+        return res
+
+
+class MembershipYearFilter(RangeNumericFilter):
+    def queryset(self, request, queryset):
+        queryset = super().queryset(request, queryset)
+
+        if getattr(request, "only_latest_members_filter", "no") == "no":
             return queryset
 
-        if "created_at__year" in request.GET:
-            queryset = queryset.filter(created_at__year=request.GET["created_at__year"])
+        if "_year__year" in request.GET:
+            queryset = queryset.filter(_year__year=request.GET["_year__year"])
 
         id_map = {}
         for membership_id, user_id in reversed(queryset.values_list("id", "user_id")):
             id_map[user_id] = membership_id
 
         return queryset.filter(id__in=id_map.values())
-
-    def choices(self, changelist):
-        res = list(super().choices(changelist))
-        res[0]["display"] = "Zobraz pouze poslední členství od každého člena"
-        return res

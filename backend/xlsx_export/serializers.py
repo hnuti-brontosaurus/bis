@@ -171,7 +171,6 @@ class MembershipExportSerializer(ModelSerializer):
             "category",
             "year",
             "administration_unit",
-            "created_at",
             "user",
         )
 
