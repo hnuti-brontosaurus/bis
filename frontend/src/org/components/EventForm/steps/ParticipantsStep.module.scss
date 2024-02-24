@@ -125,9 +125,11 @@ h2 {
       }
 
       .excelButtons {
-        //display: flex;
+        display: flex;
         gap: 12px;
-        display: none
+        visibility: hidden;
+        height: 0;
+        width: 0;
       }
     }
 
