@@ -133,6 +133,10 @@ h2 {
     .existingParticipantContainer {
       margin-top: 12px;
       overflow-x: auto;
+      [class$=-control]{
+        border-width: 2px;
+        border-color: black;
+      }
     }
 
     .lightUp {
