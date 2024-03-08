@@ -93,7 +93,7 @@ frontend:
 		-f docker-compose/dev_$$OS.yaml up)
 
 node_modules/cypress/bin/cypress:
-	yarn add cypress@12.1.0 wait-on --dev
+	yarn add cypress@12.1.0 wait-on
 
 prepare_test_env:
 	rm -Rf ./*data_test
