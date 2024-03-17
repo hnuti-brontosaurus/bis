@@ -818,9 +818,9 @@ const fillForm = () => {
   next()
 
   cy.get('input[name=name]').should('be.visible').type('Event Name III')
-  cy.get('input[name=start]').should('be.visible').type('2023-01-15')
+  cy.get('input[name=start]').should('be.visible').type('2123-01-15')
   cy.get('input[name=start_time]').should('be.visible').type('15:31')
-  cy.get('input[name=end]').should('be.visible').type('2023-01-17')
+  cy.get('input[name=end]').should('be.visible').type('2123-01-17')
   cy.get('[name=category]').should('be.visible').select(2)
   cy.get('[name=program]').should('be.visible').select('Akce příroda')
   cy.get('#react-select-3-input')
