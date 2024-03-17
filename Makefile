@@ -127,23 +127,23 @@ test_backend:
 
 test_frontend: node_modules/cypress/bin/cypress
 	make startup_testing_frontend
-	yarn run wait-on http-get://localhost:3000
+	yarn --cwd frontend run wait-on http-get://localhost:3000
 	$(call with_trap, yarn --cwd frontend run cypress run)
 
 
 test_e2e: node_modules/cypress/bin/cypress
 	make prepare_test_env
 	make startup_testing
-	yarn run wait-on http-get://localhost/api/
-	yarn run wait-on http-get://localhost:3000
-	$(call with_trap, yarn run cypress run)
+	yarn --cwd frontend run wait-on http-get://localhost/api/
+	yarn --cwd frontend run wait-on http-get://localhost:3000
+	$(call with_trap, yarn --cwd frontend run cypress run)
 
 test: test_backend test_frontend
 
 open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 	make startup_testing
-	yarn run wait-on http-get://localhost/api/
-	$(call with_trap, yarn run cypress open)
+	yarn --cwd frontend run wait-on http-get://localhost/api/
+	$(call with_trap, yarn --cwd frontend run cypress open)
 
 clean:
 	docker-compose down -t 0 --remove-orphans
