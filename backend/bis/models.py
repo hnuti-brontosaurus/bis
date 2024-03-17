@@ -764,6 +764,31 @@ class Membership(Model):
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"
 
+    @property
+    @admin.display(description="Cena")
+    def price(self):
+        if self.year >= 2024:
+            return {
+                "family": 450,
+                "family_member": 50,
+                "kid": 250,
+                "student": 200,
+                "adult": 450,
+                "member_elsewhere": 0,
+            }[self.category.slug]
+
+        if self.year >= 2014:
+            return {
+                "family": 350,
+                "family_member": 25,
+                "kid": 150,
+                "student": 100,
+                "adult": 350,
+                "member_elsewhere": 0,
+            }[self.category.slug]
+
+        return 0
+
     @classmethod
     def do_extend_for(cls, user, slug, administration_unit):
         if slug == "extend":

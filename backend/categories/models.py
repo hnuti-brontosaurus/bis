@@ -81,7 +81,6 @@ class AdministrationUnitCategory(Model):
 class MembershipCategory(Model):
     name = CharField(max_length=63)
     slug = SlugField(unique=True)
-    price = PositiveSmallIntegerField()
 
     class Meta:
         ordering = ("id",)

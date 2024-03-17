@@ -735,6 +735,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         "get_user_link",
         "year",
         "category",
+        "price",
         "administration_unit",
         "get_membership_actions",
     ]

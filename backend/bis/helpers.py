@@ -236,15 +236,16 @@ class MembershipStats:
 
     def get_data(self):
         data = {
-            category.name: (
-                self.queryset.filter(category=category).count(),
-                category.price,
-            )
+            category.name: [
+                item.price for item in self.queryset.filter(category=category)
+            ]
             for category in MembershipCategory.objects.all()
         }
-        total = sum(v[0] * v[1] for v in data.values())
+        total = sum(price for items in data.values() for price in items)
         data = {
-            key: f"{v[0] * v[1]} Kč ({v[0]}x{v[1]})" for key, v in data.items() if v[0]
+            key: f"{sum(items)} Kč ({len(items)}x)"
+            for key, items in data.items()
+            if items
         }
         data["Celkem"] = f"{total} Kč"
         return data

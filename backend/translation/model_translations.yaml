@@ -452,8 +452,6 @@ AdministrationUnitCategory:
 MembershipCategory:
   name: Členství
   name_plural: Členství
-  fields:
-    price: Aktuální výše příspěvku
 EventGroupCategory:
   name: Druh akce
   name_plural: Druhy akcí
