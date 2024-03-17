@@ -93,9 +93,7 @@ frontend:
 		-f docker-compose/dev_$$OS.yaml up)
 
 node_modules/cypress/bin/cypress:
-    cd frontend
-	yarn install --frozen-lockfile
-	cd ..
+	yarn --cwd frontend install --frozen-lockfile
 
 prepare_test_env:
 	rm -Rf ./*data_test
