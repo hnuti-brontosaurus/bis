@@ -656,7 +656,6 @@ class EventSerializer(ModelSerializer):
 
     group = EventGroupCategorySerializer()
     category = EventCategorySerializer()
-    tags = EventTagSerializer(many=True)
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
 
