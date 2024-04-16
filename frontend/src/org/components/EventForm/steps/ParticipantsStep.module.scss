@@ -137,6 +137,16 @@ h2 {
         border-width: 2px;
         border-color: black;
       }
+      thead th, 
+      tbody td {
+        &:nth-child(1)
+        {
+          position: sticky;
+          left: 0;
+          border-right: .5px solid #d9d9d9;
+          z-index: 2;
+        }
+      }
     }
 
     .lightUp {
