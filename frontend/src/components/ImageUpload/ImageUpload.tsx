@@ -84,14 +84,17 @@ export const ImageUpload = ({
 }
 
 export const ImageAdd = ({
+  name,
   onAdd,
   colorTheme,
 }: {
+  name: string
   onAdd: (files: FileList) => void
   colorTheme?: string
 }) => (
   <label tabIndex={0}>
     <input
+      name={`${name}.add`}
       style={{ display: 'none' }}
       type="file"
       accept="image/*"
@@ -157,7 +160,7 @@ export const ImagesUpload = ({
         )
       })}
       <li key="add" className={styles.imageItem}>
-        <ImageAdd onAdd={addImages} />
+        <ImageAdd name={name} onAdd={addImages} />
       </li>
     </ul>
   )
