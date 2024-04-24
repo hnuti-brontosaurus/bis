@@ -1,6 +1,6 @@
 import classNames from 'classnames'
-import get from 'lodash/get'
-import { ChangeEvent, forwardRef, useEffect, useState } from 'react'
+import forEach from 'lodash/forEach'
+import { ChangeEvent, forwardRef, useState } from 'react'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
@@ -83,8 +83,33 @@ export const ImageUpload = ({
   )
 }
 
-// TODO it would be great to have multi image upload
-// i.e. users could select multiple images at once
+export const ImageAdd = ({
+  onAdd,
+  colorTheme,
+}: {
+  onAdd: (files: FileList) => void
+  colorTheme?: string
+}) => (
+  <label tabIndex={0}>
+    <input
+      style={{ display: 'none' }}
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={event => event.target.files && onAdd(event.target.files)}
+    />
+    <div
+      className={classNames(
+        styles.addButton,
+        colorTheme === 'opportunities' && styles.opportunitiesTheme,
+      )}
+    >
+      <MdPhotoCamera size={60} />
+      Přidej fotky
+    </div>
+  </label>
+)
+
 export const ImagesUpload = ({
   name,
   image = 'image',
@@ -94,41 +119,18 @@ export const ImagesUpload = ({
   image?: string
   colorTheme?: string
 }) => {
-  const { control, watch, getValues } = useFormContext()
+  const { control, watch } = useFormContext()
   const imageFields = useFieldArray({
     control,
     name,
   })
 
-  useEffect(() => {
-    // when there is no empty image, add empty image (add button)
-    // somehow, watch doesn't always trigger at the beginning, therefore we add it also here
-    const values = getValues(name)
-    if (
-      !values ||
-      values.length === 0 ||
-      values.length ===
-        (values as { [image: string]: string }[]).filter(obj =>
-          Boolean(obj[image]),
-        ).length
-    )
-      imageFields.append({ [image]: '' })
-    // when images change, check that there is always one empty
-    const subscription = watch((data /*, { name, type }*/) => {
-      const values = get(data, name)
-      if (
-        !values ||
-        values.length === 0 ||
-        values.length ===
-          (values as { [image: string]: string }[]).filter(obj =>
-            Boolean(obj[image]),
-          ).length
-      )
-        imageFields.append({ [image]: '' })
+  const addImages = (files: FileList) => {
+    forEach(files, async file => {
+      const value = await file2base64(file)
+      imageFields.append({ [image]: value })
     })
-
-    return () => subscription.unsubscribe()
-  }, [watch, imageFields, getValues, name, image])
+  }
 
   return (
     <ul className={styles.imageList}>
@@ -154,6 +156,9 @@ export const ImagesUpload = ({
           </li>
         )
       })}
+      <li key="add" className={styles.imageItem}>
+        <ImageAdd onAdd={addImages} />
+      </li>
     </ul>
   )
 }
