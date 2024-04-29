@@ -169,7 +169,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 9
+  const ALL_COLUMNS = 9 + event.questions.length
 
   const ApplicationRow = ({
     application,
@@ -209,6 +209,15 @@ export const Applications: FC<{
         </td>
         <td onClick={showDetails}>{application.phone}</td>
         <td onClick={showDetails}>{application.email}</td>
+        {event.questions.map(question => (
+          <td onClick={showDetails}>
+            {
+              application.answers.find(
+                answer => answer.question.id === question.id,
+              )?.answer
+            }
+          </td>
+        ))}
         <td onClick={showDetails}>{application.note}</td>
         {withParticipants && (
           <TableCellIconButton
@@ -314,6 +323,9 @@ export const Applications: FC<{
                   <th>datum narození</th>
                   <th>telefon</th>
                   <th>e-mail</th>
+                  {event.questions.map(question => (
+                    <th>{question.question}</th>
+                  ))}
                   <th>poznámka</th>
                   {withParticipants && (
                     <th>
