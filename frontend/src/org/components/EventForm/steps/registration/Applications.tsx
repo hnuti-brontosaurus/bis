@@ -177,89 +177,86 @@ export const Applications: FC<{
   }: {
     application: EventApplication
     className?: string
-  }) => (
-    <tr
-      key={application.id}
-      className={classNames(
-        highlightedApplications?.includes(application.id.toString()) &&
-          styles.highlightedRow,
-        application.state === ApplicationStates.rejected &&
-          styles.applicationWithParticipant,
-        className,
-        highLightedRow === application.id ? styles.highlightedRow : '',
-        application.state === ApplicationStates.approved && styles.approvedRow,
-      )}
-      onMouseEnter={() => {
-        setHighlightedRow(application.id)
-        chooseHighlightedApplication(application.id.toString())
-      }}
-      onMouseLeave={() => {
-        setHighlightedRow(undefined)
-        chooseHighlightedApplication(undefined)
-      }}
-    >
-      <td onClick={() => handleShowApplication(application.id)}>
-        {formatDateTime(application.created_at)}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.first_name}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.last_name}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.birthday && formatDateTime(application.birthday)}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.phone}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.email}
-      </td>
-      <td>{application.note}</td>
-      {withParticipants && (
-        <TableCellIconButton
-          icon={AddUser}
-          action={() => {
-            setCurrentApplicationId(application.id)
-            setShowAddParticipantModal(true)
-          }}
-          disabled={application.state === ApplicationStates.rejected}
-          tooltipContent={'Přidat účastníka'}
-          color={colors.bronto}
-        />
-      )}
-
-      <TableCellIconButton
-        icon={
-          application.state === ApplicationStates.rejected
-            ? FaTrashRestoreAlt
-            : Bin
-        }
-        action={async () => {
-          if (application.state === ApplicationStates.rejected) {
-            restoreApplication(application, { id: event.id, name: event.name })
-          } else {
-            rejectApplication({
-              application,
-              event: { id: event.id, name: event.name },
-            })
-          }
+  }) => {
+    const showDetails = () => handleShowApplication(application.id)
+    return (
+      <tr
+        key={application.id}
+        className={classNames(
+          highlightedApplications?.includes(application.id.toString()) &&
+            styles.highlightedRow,
+          application.state === ApplicationStates.rejected &&
+            styles.applicationWithParticipant,
+          className,
+          highLightedRow === application.id ? styles.highlightedRow : '',
+          application.state === ApplicationStates.approved &&
+            styles.approvedRow,
+        )}
+        onMouseEnter={() => {
+          setHighlightedRow(application.id)
+          chooseHighlightedApplication(application.id.toString())
         }}
-        disabled={application.state === 'approved'}
-        tooltipContent={
-          application.state === 'rejected'
-            ? 'Obnovit přihlášku'
-            : 'Odmítnout přihlášku'
-        }
-        color={
-          application.state === ApplicationStates.rejected
-            ? colors.bronto
-            : colors['error']
-        }
-      />
-    </tr>
-  )
+        onMouseLeave={() => {
+          setHighlightedRow(undefined)
+          chooseHighlightedApplication(undefined)
+        }}
+      >
+        <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
+        <td onClick={showDetails}>{application.first_name}</td>
+        <td onClick={showDetails}>{application.last_name}</td>
+        <td onClick={showDetails}>
+          {application.birthday && formatDateTime(application.birthday)}
+        </td>
+        <td onClick={showDetails}>{application.phone}</td>
+        <td onClick={showDetails}>{application.email}</td>
+        <td onClick={showDetails}>{application.note}</td>
+        {withParticipants && (
+          <TableCellIconButton
+            icon={AddUser}
+            action={() => {
+              setCurrentApplicationId(application.id)
+              setShowAddParticipantModal(true)
+            }}
+            disabled={application.state === ApplicationStates.rejected}
+            tooltipContent={'Přidat účastníka'}
+            color={colors.bronto}
+          />
+        )}
+
+        <TableCellIconButton
+          icon={
+            application.state === ApplicationStates.rejected
+              ? FaTrashRestoreAlt
+              : Bin
+          }
+          action={async () => {
+            if (application.state === ApplicationStates.rejected) {
+              restoreApplication(application, {
+                id: event.id,
+                name: event.name,
+              })
+            } else {
+              rejectApplication({
+                application,
+                event: { id: event.id, name: event.name },
+              })
+            }
+          }}
+          disabled={application.state === 'approved'}
+          tooltipContent={
+            application.state === 'rejected'
+              ? 'Obnovit přihlášku'
+              : 'Odmítnout přihlášku'
+          }
+          color={
+            application.state === ApplicationStates.rejected
+              ? colors.bronto
+              : colors['error']
+          }
+        />
+      </tr>
+    )
+  }
 
   return (
     <>
