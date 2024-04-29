@@ -649,7 +649,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
                     try:
                         key = f"{cleaned_data['user'].id}_{self.request.user.id}"
-                        ThrottleLog.check_throttled("guess_birthday", key, 3, 24)
+                        ThrottleLog.check_throttled("guess_birthday", key, 5, 24)
                     except Throttled as e:
                         raise ValidationError(str(e))
 

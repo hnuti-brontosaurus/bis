@@ -361,7 +361,7 @@ class UserSearchViewSet(ListModelMixin, GenericViewSet):
 @parse_request_data(GetUnknownUserRequestSerializer, "query_params")
 def get_unknown_user(request, data):
     key = f"{data['first_name']}_{data['last_name']}_{request.user.id}"
-    ThrottleLog.check_throttled("get_unknown_user", key, 3, 24)
+    ThrottleLog.check_throttled("get_unknown_user", key, 5, 24)
     user = User.objects.filter(**data).first()
 
     if not user:
