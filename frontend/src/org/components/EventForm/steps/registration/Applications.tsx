@@ -169,7 +169,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 8
+  const ALL_COLUMNS = 9
 
   const ApplicationRow = ({
     application,
@@ -216,6 +216,7 @@ export const Applications: FC<{
       <td onClick={() => handleShowApplication(application.id)}>
         {application.email}
       </td>
+      <td>{application.note}</td>
       {withParticipants && (
         <TableCellIconButton
           icon={AddUser}
@@ -316,6 +317,7 @@ export const Applications: FC<{
                   <th>datum narození</th>
                   <th>telefon</th>
                   <th>e-mail</th>
+                  <th>poznámka</th>
                   {withParticipants && (
                     <th>
                       <AddUser className={classNames(styles.iconHead)} />
