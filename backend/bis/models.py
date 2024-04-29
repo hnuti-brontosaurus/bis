@@ -278,6 +278,7 @@ class User(SearchMixin, AbstractBaseUser):
     is_active = BooleanField(default=True)
     date_joined = DateField(default=datetime.date.today)
     last_after_event_email = DateField(blank=True, null=True)
+    is_contact_information_verified = BooleanField(default=False)
     internal_note = TextField(blank=True)
 
     _import_id = CharField(max_length=255, default="")
@@ -470,6 +471,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "internal_note",
                     "photo",
                     "last_after_event_email",
+                    "is_contact_information_verified",
                 ]:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))

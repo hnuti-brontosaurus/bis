@@ -452,6 +452,7 @@ class UserSerializer(ModelSerializer):
             "health_issues",
             "pronoun",
             "is_active",
+            "is_contact_information_verified",
             "date_joined",
             "roles",
             "donor",

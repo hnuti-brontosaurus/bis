@@ -53,6 +53,7 @@ User:
     internal_note: Poznámka ústředí
     subscribed_to_newsletter: Odebírá novinky?
     last_after_event_email: Poslední e-mail po akci
+    is_contact_information_verified: Ověřil své kontaktní údaje?
 
 
 UserClosePerson:
