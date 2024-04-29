@@ -68,4 +68,5 @@ urlpatterns = [
         "events/<int:event_id>/get_participants_list/",
         frontend.views.get_participants_list,
     ),
+    path("events/<int:event_id>/export_files/", frontend.views.export_files),
 ]
