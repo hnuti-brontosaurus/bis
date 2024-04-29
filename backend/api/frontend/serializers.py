@@ -939,6 +939,8 @@ class EventApplicationSerializer(ModelSerializer):
             "address",
             "answers",
             "note",
+            "internal_note",
+            "paid_for",
             "is_child_application",
         )
 
@@ -953,8 +955,15 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all([key in ["user", "state", "note"] for key in validated_data]):
-            raise ValidationError("Only user, state and note are editable")
+        if not all(
+            [
+                key in ["user", "state", "internal_note", "paid_for"]
+                for key in validated_data
+            ]
+        ):
+            raise ValidationError(
+                "Only user, state, paid_for and internal_note are editable"
+            )
         return super().update(instance, validated_data)
 
 
@@ -1012,12 +1021,6 @@ class EventFeedbackSerializer(ModelSerializer):
         instance = super().create(validated_data)
         emails.feedback_created(instance)
         return instance
-
-    @catch_related_object_does_not_exist
-    def update(self, instance, validated_data):
-        if not all([key in ["user", "note"] for key in validated_data]):
-            raise ValidationError("Only user and note are editable")
-        return super().update(instance, validated_data)
 
 
 class UserSearchSerializer(ModelSerializer):

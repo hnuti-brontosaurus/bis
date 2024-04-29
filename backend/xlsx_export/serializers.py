@@ -447,6 +447,8 @@ class EventApplicationExportSerializer(ModelSerializer):
             "pronoun",
             "created_at",
             "note",
+            "internal_note",
+            "paid_for",
             "close_person",
             "address",
         )

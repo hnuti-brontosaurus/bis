@@ -26,6 +26,7 @@ generic:
   date: Datum
   place: Místo
   note: Poznámka
+  internal_note: Interní poznámka
   game: Program
   file: Soubor
   comment: Komentář

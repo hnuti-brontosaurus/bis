@@ -245,7 +245,7 @@ def get_attendance_list_data(event, for_admin=False):
     applications = [
         application
         for application in applications
-        if application.state not in ["cancelled", "rejected"]
+        if application.state in ["pending", "approved"]
     ]
     for item in organizers + applications:
         address = getattr(item, "address", "")
