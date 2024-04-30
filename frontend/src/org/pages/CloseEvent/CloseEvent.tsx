@@ -1,11 +1,10 @@
 import { api } from 'app/services/bis'
-import type { Event, EventPayload } from 'app/services/bisTypes'
+import type { FullEvent, EventPayload } from 'app/services/bisTypes'
 import { Breadcrumbs, GuideOwl, Loading } from 'components'
 import {
   useShowApiErrorMessage,
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
-import { FullEvent } from 'hooks/readFullEvent'
 import { useTitle } from 'hooks/title'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
@@ -209,14 +208,14 @@ export const CloseEvent = () => {
       ...deletedReceiptPromises,
     ])
 
-    showMessage({ 
+    showMessage({
       type: evidence.is_closed ? 'success' : 'warning',
       message:
         'Evidence akce byla úspěšně uložena' +
         (evidence.is_closed
           ? ' a uzavřena'
           : '. Nezapomeň akci ještě uzavřít! Akci uzavřeš kliknutím na tlačítko "uložit a uzavřít" do 20 dnů od skončení akce.'),
-      timeout: evidence.is_closed ? 5000 : 10_000
+      timeout: evidence.is_closed ? 5000 : 10_000,
     })
 
     navigate(`/org/akce/${eventId}`)
@@ -232,15 +231,15 @@ export const CloseEvent = () => {
 
       <CloseEventForm
         id={String(eventId)}
-        // we have FullEvent but need just Event
-        // let's not bother. we don't need the additional data
-        event={event as unknown as Event}
+        event={event}
         initialData={defaultValues}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
       <GuideOwl id="po-akce-guide-owl">
-        Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po akci) do 20 dnů od skončení.<br/>
+        Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po
+        akci) do 20 dnů od skončení.
+        <br />
         Akci uzavřeš tak, že klikneš na tlačítko "uložit a uzavřít"
       </GuideOwl>
     </>

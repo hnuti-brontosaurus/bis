@@ -5,14 +5,11 @@ import {
   Breadcrumbs,
   Button,
   ButtonLink,
-  DataView,
   ExternalButtonLink,
   Loading,
 } from 'components'
-import * as combinedTranslations from 'config/static/combinedTranslations'
 import { sanitize } from 'dompurify'
-import type { FullEvent } from 'hooks/readFullEvent'
-// import { useRemoveEvent } from 'hooks/removeEvent'
+import type { FullEvent } from 'app/services/bisTypes'
 import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { useCancelEvent, useRestoreCanceledEvent } from 'hooks/useCancelEvent'

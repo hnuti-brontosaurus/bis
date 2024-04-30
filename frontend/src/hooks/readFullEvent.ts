@@ -1,29 +1,8 @@
 import { SerializedError } from '@reduxjs/toolkit'
 import { FetchBaseQueryError, skipToken } from '@reduxjs/toolkit/query'
 import { ALL_USERS, api } from 'app/services/bis'
-import type { Location } from 'app/services/bisTypes'
-import {
-  Event,
-  EventPropagationImage,
-  Question,
-  User,
-} from 'app/services/bisTypes'
-import { Assign, Overwrite } from 'utility-types'
-
-export type FullEvent = Assign<
-  Overwrite<
-    Event,
-    {
-      main_organizer: User // in older events, main_organizer may be missing
-      other_organizers: User[]
-      location: Location | undefined
-    }
-  >,
-  {
-    images: EventPropagationImage[]
-    questions: Question[]
-  }
->
+import type { FullEvent } from 'app/services/bisTypes'
+import { User } from 'app/services/bisTypes'
 
 export const useReadFullEvent = (
   eventId: number,
@@ -53,7 +32,9 @@ export const useReadFullEvent = (
   )
   const otherOrganizersQuery = api.endpoints.readUsers.useQuery(
     // @ts-ignore
-    event?.other_organizers ? { id: event.other_organizers, pageSize: ALL_USERS } : skipToken,
+    event?.other_organizers
+      ? { id: event.other_organizers, pageSize: ALL_USERS }
+      : skipToken,
   )
   const locationQuery = api.endpoints.readLocation.useQuery(
     event?.location ? { id: event.location } : skipToken,

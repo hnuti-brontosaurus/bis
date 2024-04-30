@@ -1,5 +1,5 @@
 import { api } from 'app/services/bis'
-import type { Event } from 'app/services/bisTypes'
+import type { FullEvent } from 'app/services/bisTypes'
 import { FC } from 'react'
 import styles from '../ParticipantsStep.module.scss'
 import type * as original from 'app/services/testApi'
@@ -7,7 +7,7 @@ import { ApplicationStates } from '../ParticipantsStep'
 
 export const ParticipantsStats: FC<{
   otherOrganizers: original.User[] | undefined
-  event: Event
+  event: FullEvent
   showApplicationsStats: boolean
 }> = ({ otherOrganizers, event, showApplicationsStats }) => {
   const { data: applicationsData, isLoading: isReadApplicationsLoading } =

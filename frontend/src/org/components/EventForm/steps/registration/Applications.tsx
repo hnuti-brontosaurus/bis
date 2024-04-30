@@ -1,6 +1,6 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { api } from 'app/services/bis'
-import type { AdministrationUnit, Event } from 'app/services/bisTypes'
+import type { AdministrationUnit, FullEvent } from 'app/services/bisTypes'
 import { EventApplication } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import {
@@ -21,13 +21,13 @@ import { formatDateTime } from 'utils/helpers'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
+import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
 import { ShowApplicationModal } from './ShowApplicationModal'
-import { EmailListModal } from './EmailListModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
 
 export const Applications: FC<{
-  event: Event
+  event: FullEvent
   chooseHighlightedApplication: (id: string | undefined) => void
   highlightedApplications?: string[]
   withParticipants?: boolean
@@ -118,7 +118,7 @@ export const Applications: FC<{
       ? administrationUnitsData.results
       : []
 
-  const getEventAdministrationUnits = (event: Event) => {
+  const getEventAdministrationUnits = (event: FullEvent) => {
     const names: string[] = []
     for (const id of event.administration_units) {
       const administrationUnit = administrationUnits.find(

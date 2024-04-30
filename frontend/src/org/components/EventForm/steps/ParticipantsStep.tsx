@@ -1,7 +1,7 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { api } from 'app/services/bis'
 import type {
-  Event,
+  FullEvent,
   EventApplication,
   User,
   UserPayload,
@@ -26,7 +26,7 @@ export enum ApplicationStates {
 }
 
 export const ParticipantsStep: FC<{
-  event: Event
+  event: FullEvent
   onlyApplications?: boolean
 }> = ({ event, onlyApplications }) => {
   const [highlightedApplication, setHighlightedApplication] =

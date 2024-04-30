@@ -1,4 +1,4 @@
-import { Event } from 'app/services/bisTypes'
+import { FullEvent } from 'app/services/bisTypes'
 import { ReactComponent as Counted } from 'assets/counting.svg'
 import { ReactComponent as EmailList } from 'assets/email-list.svg'
 import { ReactComponent as FullList } from 'assets/full-list.svg'
@@ -61,7 +61,7 @@ export const ParticipantsStep = ({
   areParticipantsRequired,
   methods,
 }: {
-  event: Event
+  event: FullEvent
   areParticipantsRequired: boolean
   methods: UseFormReturn<ParticipantsStepFormInnerShape>
 }) => {
