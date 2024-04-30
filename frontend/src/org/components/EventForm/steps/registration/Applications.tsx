@@ -313,7 +313,7 @@ export const Applications: FC<{
         </div>
 
         {!isReadApplicationsLoading ? (
-          <div>
+          <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>
                 <tr>
