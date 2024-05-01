@@ -9,6 +9,11 @@ h2 {
 
 .tableContainer {
   overflow-x: auto;
+  transform: rotateX(.5turn);
+
+  table {
+    transform: rotateX(.5turn);
+  }
 
   th:first-child,
   td:first-child {
