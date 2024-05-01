@@ -169,7 +169,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 9 + event.questions.length
+  const ALL_COLUMNS = 8 + event.questions.length
 
   const ApplicationRow = ({
     application,
@@ -201,14 +201,15 @@ export const Applications: FC<{
           chooseHighlightedApplication(undefined)
         }}
       >
-        <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
-        <td onClick={showDetails}>{application.first_name}</td>
-        <td onClick={showDetails}>{application.last_name}</td>
+        <td onClick={showDetails}>
+          {application.first_name} {application.last_name}
+        </td>
         <td onClick={showDetails}>
           {application.birthday && formatDateTime(application.birthday)}
         </td>
         <td onClick={showDetails}>{application.phone}</td>
         <td onClick={showDetails}>{application.email}</td>
+        <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
         {event.questions.map(question => (
           <td onClick={showDetails}>
             {
@@ -317,12 +318,11 @@ export const Applications: FC<{
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>datum podání</th>
-                  <th>jméno</th>
-                  <th>příjmení</th>
+                  <th>jméno a příjmení</th>
                   <th>datum narození</th>
                   <th>telefon</th>
                   <th>e-mail</th>
+                  <th>datum podání</th>
                   {event.questions.map(question => (
                     <th>{question.question}</th>
                   ))}
