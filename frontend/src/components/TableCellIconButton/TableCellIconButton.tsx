@@ -16,7 +16,7 @@ interface CustomTableColumnProps {
 }
 
 export const TableCellIconButton: FC<
-  CustomTableColumnProps & React.HTMLAttributes<HTMLTableDataCellElement>
+  CustomTableColumnProps & React.HTMLAttributes<HTMLDivElement>
 > = props => {
   const {
     icon: Icon,
@@ -40,7 +40,7 @@ export const TableCellIconButton: FC<
   }
 
   return (
-    <td
+    <div
       className={classNames(className, disabled && styles.disabledCell)}
       {...rest}
     >
@@ -65,6 +65,6 @@ export const TableCellIconButton: FC<
         </button>
         {children}
       </Tooltip>
-    </td>
+    </div>
   )
 }

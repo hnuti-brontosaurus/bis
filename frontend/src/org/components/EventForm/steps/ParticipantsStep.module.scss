@@ -9,6 +9,18 @@ h2 {
 
 .tableContainer {
   overflow-x: auto;
+
+  th:first-child,
+  td:first-child {
+    position: sticky;
+    left: 0;
+  }
+
+  th:last-child,
+  td:last-child {
+    position: sticky;
+    right: 0;
+  }
 }
 
 .table {
@@ -77,11 +89,12 @@ h2 {
       text-align: center;
     }
   }
+}
 
-  td:first-child, th:first-child {
-    position: sticky;
-    left: 0;
-  }
+.actionCell {
+  display: flex;
+  gap: 7px;
+  margin: 0 5px;
 }
 
 .applicationWithParticipant {
@@ -212,7 +225,7 @@ h2 {
 }
 
 .iconHead {
-  width: 18px;
+  width: 16px;
   path {
     fill: black;
   }

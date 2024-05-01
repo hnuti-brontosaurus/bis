@@ -169,7 +169,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 8 + event.questions.length
+  const ALL_COLUMNS = 7 + event.questions.length
 
   const ApplicationRow = ({
     application,
@@ -220,50 +220,53 @@ export const Applications: FC<{
           </td>
         ))}
         <td onClick={showDetails}>{application.note}</td>
-        {withParticipants && (
-          <TableCellIconButton
-            icon={AddUser}
-            action={() => {
-              setCurrentApplicationId(application.id)
-              setShowAddParticipantModal(true)
-            }}
-            disabled={application.state === ApplicationStates.rejected}
-            tooltipContent={'Přidat účastníka'}
-            color={colors.bronto}
-          />
-        )}
-
-        <TableCellIconButton
-          icon={
-            application.state === ApplicationStates.rejected
-              ? FaTrashRestoreAlt
-              : Bin
-          }
-          action={async () => {
-            if (application.state === ApplicationStates.rejected) {
-              restoreApplication(application, {
-                id: event.id,
-                name: event.name,
-              })
-            } else {
-              rejectApplication({
-                application,
-                event: { id: event.id, name: event.name },
-              })
-            }
-          }}
-          disabled={application.state === 'approved'}
-          tooltipContent={
-            application.state === 'rejected'
-              ? 'Obnovit přihlášku'
-              : 'Odmítnout přihlášku'
-          }
-          color={
-            application.state === ApplicationStates.rejected
-              ? colors.bronto
-              : colors['error']
-          }
-        />
+        <td>
+          <div className={styles.actionCell}>
+            {withParticipants && (
+              <TableCellIconButton
+                icon={AddUser}
+                action={() => {
+                  setCurrentApplicationId(application.id)
+                  setShowAddParticipantModal(true)
+                }}
+                disabled={application.state === ApplicationStates.rejected}
+                tooltipContent={'Přidat účastníka'}
+                color={colors.bronto}
+              />
+            )}
+            <TableCellIconButton
+              icon={
+                application.state === ApplicationStates.rejected
+                  ? FaTrashRestoreAlt
+                  : Bin
+              }
+              action={async () => {
+                if (application.state === ApplicationStates.rejected) {
+                  restoreApplication(application, {
+                    id: event.id,
+                    name: event.name,
+                  })
+                } else {
+                  rejectApplication({
+                    application,
+                    event: { id: event.id, name: event.name },
+                  })
+                }
+              }}
+              disabled={application.state === 'approved'}
+              tooltipContent={
+                application.state === 'rejected'
+                  ? 'Obnovit přihlášku'
+                  : 'Odmítnout přihlášku'
+              }
+              color={
+                application.state === ApplicationStates.rejected
+                  ? colors.bronto
+                  : colors['error']
+              }
+            />
+          </div>
+        </td>
       </tr>
     )
   }
@@ -327,13 +330,13 @@ export const Applications: FC<{
                     <th>{question.question}</th>
                   ))}
                   <th>poznámka</th>
-                  {withParticipants && (
-                    <th>
-                      <AddUser className={classNames(styles.iconHead)} />
-                    </th>
-                  )}
                   <th>
-                    <Bin className={classNames(styles.iconHead)}></Bin>
+                    <div className={styles.actionCell}>
+                      {withParticipants && (
+                        <AddUser className={classNames(styles.iconHead)} />
+                      )}
+                      <Bin className={classNames(styles.iconHead)}></Bin>
+                    </div>
                   </th>
                 </tr>
               </thead>
