@@ -361,7 +361,7 @@ class UserSearchViewSet(ListModelMixin, GenericViewSet):
 @parse_request_data(GetUnknownUserRequestSerializer, "query_params")
 def get_unknown_user(request, data):
     key = f"{data['first_name']}_{data['last_name']}_{request.user.id}"
-    ThrottleLog.check_throttled("get_unknown_user", key, 3, 24)
+    ThrottleLog.check_throttled("get_unknown_user", key, 5, 24)
     user = User.objects.filter(**data).first()
 
     if not user:
@@ -408,6 +408,23 @@ def get_participants_list(request, event_id):
         or event.other_organizers.all()
     )
     return export.export_to_xlsx(..., ..., participants)
+
+
+@extend_schema(
+    responses={
+        HTTP_200_OK: None,
+        HTTP_404_NOT_FOUND: OpenApiResponse(description="Not found"),
+        HTTP_403_FORBIDDEN: OpenApiResponse(description="Forbidden"),
+    }
+)
+@api_view(["get"])
+@permission_classes([IsAuthenticated])
+def export_files(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+        return HttpResponseForbidden()
+
+    return export.export_files(event)
 
 
 @extend_schema(

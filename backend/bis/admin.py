@@ -289,6 +289,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         "get_board_member_of",
         "get_token",
         "last_after_event_email",
+        "is_contact_information_verified",
         "get_membership_actions",
         "create_membership",
     )
@@ -350,6 +351,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                     "last_login",
                     "date_joined",
                     "last_after_event_email",
+                    "is_contact_information_verified",
                     "get_board_member_of",
                     "vokativ",
                 ],
@@ -649,7 +651,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
                     try:
                         key = f"{cleaned_data['user'].id}_{self.request.user.id}"
-                        ThrottleLog.check_throttled("guess_birthday", key, 3, 24)
+                        ThrottleLog.check_throttled("guess_birthday", key, 5, 24)
                     except Throttled as e:
                         raise ValidationError(str(e))
 

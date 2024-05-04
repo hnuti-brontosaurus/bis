@@ -53,6 +53,7 @@ User:
     internal_note: Poznámka ústředí
     subscribed_to_newsletter: Odebírá novinky?
     last_after_event_email: Poslední e-mail po akci
+    is_contact_information_verified: Ověřil své kontaktní údaje?
 
 
 UserClosePerson:
@@ -201,7 +202,6 @@ Event:
     group: Druh
     category: Typ
     tags: Štítky
-    internal_note: Privátní poznámka
     program: Program
     intended_for: Pro koho?
     location:
@@ -364,6 +364,7 @@ EventApplication:
     event_registration: Přihlášení na akci
     state: Stav
     is_child_application: Přihláška dítěte dospělým
+    paid_for: Zaplacena?
 EventApplicationClosePerson:
   name: Rodič / blízká osoba
   name_plural: Rodič / blízká osoba
@@ -514,7 +515,6 @@ Donor:
     regional_center_support: podpora RC
     basic_section_support: podpora ZČ
     has_recurrent_donation: Pravidelný dárce
-    internal_note: Interní poznámka
 
 Donation:
   name: Dar
