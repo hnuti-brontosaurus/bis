@@ -12,6 +12,7 @@ import {
 import { useRejectApplication } from 'hooks/rejectApplication'
 import { FC, useState } from 'react'
 import {
+  FaInfoCircle as Detail,
   FaTrash as Bin,
   FaTrashRestoreAlt,
   FaUserPlus as AddUser,
@@ -222,6 +223,12 @@ export const Applications: FC<{
         <td onClick={showDetails}>{application.note}</td>
         <td>
           <div className={styles.actionCell}>
+            <TableCellIconButton
+              icon={Detail}
+              action={showDetails}
+              tooltipContent={'Zobrazit podrobnosti'}
+              color={colors.gray400}
+            />
             {withParticipants && (
               <TableCellIconButton
                 icon={AddUser}
@@ -332,6 +339,7 @@ export const Applications: FC<{
                   <th>poznámka</th>
                   <th>
                     <div className={styles.actionCell}>
+                      <Detail className={styles.iconHead} />
                       {withParticipants && (
                         <AddUser className={classNames(styles.iconHead)} />
                       )}
