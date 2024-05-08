@@ -19,6 +19,7 @@ from django_filters import (
 )
 from event.models import Event
 from opportunities.models import Opportunity
+from regions.models import Region
 
 
 class ChoiceInFilter(BaseInFilter, ChoiceFilter):
@@ -57,6 +58,10 @@ class EventFilter(FilterSet):
         field_name="administration_units__id",
         choices=get_choices(AdministrationUnit, lambda x: (x.id, x.abbreviation)),
     )
+    region = ChoiceInFilter(
+        field_name="location__region__id",
+        choices=get_choices(Region, lambda x: (x.id, x.name)),
+    )
     duration = NumberFilter(field_name="duration")
     duration__lte = NumberFilter(field_name="duration", lookup_expr="gte")
     duration__gte = NumberFilter(field_name="duration", lookup_expr="lte")
@@ -71,8 +76,6 @@ class EventFilter(FilterSet):
     class Meta:
         model = Event
         fields = []
-
-    # todo set choices at __init__, so addming au does not require restart
 
 
 class OpportunityFilter(FilterSet):
