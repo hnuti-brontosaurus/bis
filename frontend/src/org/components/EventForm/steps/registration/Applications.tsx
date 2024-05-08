@@ -10,7 +10,7 @@ import {
   TableCellIconButton,
 } from 'components'
 import { useRejectApplication } from 'hooks/rejectApplication'
-import React, { FC, useState } from 'react'
+import React, { FC, ReactNode, useState } from 'react'
 import {
   FaInfoCircle as Detail,
   FaTrash as Bin,
@@ -40,6 +40,16 @@ export const BoundedCell: FC<
   >
     {text}
   </td>
+)
+
+export const OneCellRow: FC<{ colSpan: number; children: ReactNode }> = ({
+  colSpan,
+  children,
+}) => (
+  <tr className={styles.oneCellRow}>
+    <td>{children}</td>
+    <td colSpan={colSpan - 1} />
+  </tr>
 )
 
 export const Applications: FC<{
@@ -377,11 +387,9 @@ export const Applications: FC<{
                       <tr>
                         <td colSpan={ALL_COLUMNS}></td>
                       </tr>
-                      <tr>
-                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
-                          Přidaní do účastníků
-                        </td>
-                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>
+                        Přidání do účastníků
+                      </OneCellRow>
                     </>
                   )}
                   {applicationsAccepted.map((application: EventApplication) => (
@@ -395,11 +403,9 @@ export const Applications: FC<{
                       <tr>
                         <td colSpan={ALL_COLUMNS}></td>
                       </tr>
-                      <tr>
-                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
-                          Odmítnuté přihlášky
-                        </td>
-                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>
+                        Odmítnuté přihlášky
+                      </OneCellRow>
                     </>
                   )}
 

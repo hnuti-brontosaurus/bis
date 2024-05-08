@@ -218,14 +218,21 @@ h2 {
 }
 
 .oneCellRow {
-  border-left: 0px !important;
-  border-right: 0px;
-  text-align: center !important;
-  background-color: colors.$gray-200;
-  font-weight: 600;
+  z-index: 0; // create stacking context
 
   td {
-    text-align: center !important;
+    border-left: 0px !important;
+    border-right: 0px;
+    background-color: colors.$gray-200 !important;
+    font-weight: 600;
+  }
+
+  td:first-child {
+    z-index: 1;
+  }
+
+  td:not(:first-child) {
+    position: relative !important;
   }
 }
 
