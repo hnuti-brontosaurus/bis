@@ -81,6 +81,8 @@ class Command(BaseCommand):
             if basic_section_support:
                 if basic_section_support == "Draci":
                     basic_section_support = "Brďo Draci"
+                if basic_section_support == "BRĎO Gingo":
+                    basic_section_support = "1.BRĎO Tišnov GINGO"
 
                 basic_section_support = AdministrationUnit.objects.get(
                     abbreviation=basic_section_support
