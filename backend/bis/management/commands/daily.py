@@ -15,8 +15,10 @@ def try_to_run(fn, *args, **kwargs):
             e,
             extra={
                 "fn": str(fn),
-                "args": args,
-                "kwargs": kwargs,
+                "data": {
+                    "args": args,
+                    "kwargs": kwargs,
+                },
             },
         )
 
