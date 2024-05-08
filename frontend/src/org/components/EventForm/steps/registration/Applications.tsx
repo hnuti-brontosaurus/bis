@@ -10,7 +10,7 @@ import {
   TableCellIconButton,
 } from 'components'
 import { useRejectApplication } from 'hooks/rejectApplication'
-import { FC, useState } from 'react'
+import React, { FC, useState } from 'react'
 import {
   FaInfoCircle as Detail,
   FaTrash as Bin,
@@ -26,6 +26,21 @@ import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
+
+export const BoundedCell: FC<
+  {
+    text?: string
+    classNames?: string
+  } & React.HTMLAttributes<HTMLTableCellElement>
+> = ({ text, className, ...rest }) => (
+  <td
+    title={text}
+    className={classNames(className, styles.boundedCell)}
+    {...rest}
+  >
+    {text}
+  </td>
+)
 
 export const Applications: FC<{
   event: FullEvent
@@ -212,13 +227,14 @@ export const Applications: FC<{
         <td onClick={showDetails}>{application.email}</td>
         <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
         {event.questions.map(question => (
-          <td onClick={showDetails}>
-            {
+          <BoundedCell
+            onClick={showDetails}
+            text={
               application.answers.find(
                 answer => answer.question.id === question.id,
               )?.answer
             }
-          </td>
+          />
         ))}
         <td onClick={showDetails}>{application.note}</td>
         <td>

@@ -260,3 +260,10 @@ h2 {
   color: white;
   padding: 0 4px;
 }
+
+.boundedCell {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
