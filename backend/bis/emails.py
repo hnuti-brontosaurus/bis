@@ -424,7 +424,7 @@ def send_opportunities_summary():
         for opportunity in opportunities
     )
     ecomail.send_email(
-        emails["bis"],
+        emails["education"],
         "Příležitosti",
         "201",
         ["organizatori@brontosaurus.cz"],
