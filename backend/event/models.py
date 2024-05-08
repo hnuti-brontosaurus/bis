@@ -335,7 +335,10 @@ class EventRecord(Model):
         return self.event.has_edit_permission(user)
 
     def get_participants_count(self):
-        return self.number_of_participants or len(self.get_all_participants())
+        return (
+            self.number_of_participants
+            or len(self.get_all_participants()) * self.event.number_of_sub_events
+        )
 
     def get_young_participants_count(self):
         under_26 = len(
@@ -346,7 +349,10 @@ class EventRecord(Model):
                 and relativedelta(self.event.start, p.birthday).years <= 26
             ]
         )
-        return self.number_of_participants_under_26 or under_26
+        return (
+            self.number_of_participants_under_26
+            or under_26 * self.event.number_of_sub_events
+        )
 
     def get_young_percentage(self):
         participants_count = self.get_participants_count()
