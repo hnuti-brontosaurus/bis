@@ -5,6 +5,7 @@ from time import time
 
 from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
+from dateutil.utils import today
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
@@ -281,6 +282,14 @@ def filter_queryset_with_multiple_or_queries(queryset, queries):
     for query in queries:
         ids = ids.union(queryset.filter(query).order_by().values_list("id", flat=True))
     return queryset.filter(id__in=ids)
+
+
+def get_locked_year():
+    locked_year = today().year - 1
+    if today().month < 3:
+        locked_year -= 1
+
+    return locked_year
 
 
 def make_a(content, link):

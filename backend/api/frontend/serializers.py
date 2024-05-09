@@ -1,7 +1,7 @@
 from datetime import date
 
 from api.helpers import catch_related_object_does_not_exist
-from bis.helpers import AgeStats
+from bis.helpers import AgeStats, get_locked_year
 from bis.models import (
     EYCACard,
     Location,
@@ -700,10 +700,7 @@ class EventSerializer(ModelSerializer):
         return []
 
     def create(self, validated_data):
-        locked_year = today().year - 1
-        if today().month < 3:
-            locked_year -= 1
-        if validated_data["start"].year <= locked_year:
+        if validated_data["end"].year <= get_locked_year():
             raise DjangoValidationError("Cannot create events in the past")
 
         validated_data["created_by"] = self.context["request"].user
@@ -714,9 +711,14 @@ class EventSerializer(ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        if validated_data.get("end") and instance.end != validated_data["end"]:
+            if validated_data["end"].year <= get_locked_year():
+                raise DjangoValidationError("Cannot update events in the past")
+
         is_closing = not instance.is_closed and validated_data.get("is_closed")
         if is_closing:
             validated_data["closed_at"] = date.today()
+
         instance = super().update(instance, validated_data)
         if is_closing:
             emails.event_end_participants_notification(instance)
