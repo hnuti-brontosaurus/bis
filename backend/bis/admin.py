@@ -26,6 +26,7 @@ from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
     MembershipYearFilter,
+    UserExportFilter,
     get_admin_edit_url,
     list_filter_extra_text,
     list_filter_extra_title,
@@ -447,6 +448,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
         NoLoginFilter,
+        UserExportFilter,
     ]
 
     search_fields = User.get_search_fields()

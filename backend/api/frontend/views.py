@@ -26,7 +26,9 @@ from api.frontend.serializers import (
 from api.helpers import parse_request_data
 from bis.models import Location, User
 from bis.permissions import Permissions
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from event.models import (
     Event,
@@ -55,6 +57,7 @@ from rest_framework.status import (
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from xlsx_export import export
+from xlsx_export.export import export_to_xlsx
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 
@@ -425,6 +428,18 @@ def export_files(request, event_id):
         return HttpResponseForbidden()
 
     return export.export_files(event)
+
+
+@login_required
+@csrf_exempt
+def export_users(request):
+    emails = request.POST["data"].split()
+    emails = [item.strip() for email in emails for item in email.split(",")]
+    emails = [email for email in dict.fromkeys(emails) if email]
+    queryset = User.objects.filter(all_emails__email__in=emails)
+    perms = Permissions(request.user, User, "backend")
+    queryset = perms.filter_queryset(queryset)
+    return export_to_xlsx(None, None, queryset)
 
 
 @extend_schema(

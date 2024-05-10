@@ -238,6 +238,11 @@ def list_filter_extra_text(custom_title):
     return Filter
 
 
+class UserExportFilter(TextOnlyFilter):
+    template = "admin/user_export_filter.html"
+    title = "Export dle e-mailů"
+
+
 class CacheRangeNumericFilter(RangeNumericFilter):
     cache_name = None
     custom_title = None
