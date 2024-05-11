@@ -24,9 +24,11 @@ from api.frontend.serializers import (
     UserSerializer,
 )
 from api.helpers import parse_request_data
+from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import Location, User
 from bis.permissions import Permissions
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -435,8 +437,12 @@ def export_files(request, event_id):
 def export_users(request):
     emails = request.POST["data"].split()
     emails = [item.strip() for email in emails for item in email.split(",")]
-    emails = [email for email in dict.fromkeys(emails) if email]
-    queryset = User.objects.filter(all_emails__email__in=emails)
+    emails = [email.lower() for email in dict.fromkeys(emails) if email]
+    ids = [email for email in emails if "@" not in email]
+    emails = [email for email in emails if "@" in email]
+    queryset = filter_queryset_with_multiple_or_queries(
+        User.objects.all(), [Q(all_emails__email__in=emails), Q(id__in=ids)]
+    )
     perms = Permissions(request.user, User, "backend")
     queryset = perms.filter_queryset(queryset)
     return export_to_xlsx(None, None, queryset)
