@@ -238,7 +238,10 @@ class MembershipStats:
     def get_data(self):
         data = {
             category.name: [
-                item.price for item in self.queryset.filter(category=category)
+                item.price
+                for item in self.queryset.filter(category=category).select_related(
+                    "category"
+                )
             ]
             for category in MembershipCategory.objects.all()
         }

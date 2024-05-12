@@ -11,7 +11,7 @@ def migrate(apps, schema_editor):
             event.created_at = event.start
             events.append(event)
 
-    Event.objects.bulk_update(events, ["created_at"])
+    Event.objects.bulk_update(events, ["created_at"], batch_size=100)
 
 
 class Migration(migrations.Migration):

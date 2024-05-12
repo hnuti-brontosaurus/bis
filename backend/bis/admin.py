@@ -493,6 +493,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                 "qualifications__category",
                 "events_where_was_organizer",
                 "participated_in_events__event",
+                "memberships",
                 "memberships__category",
             )
         )

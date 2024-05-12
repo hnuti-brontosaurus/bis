@@ -13,7 +13,6 @@ from bis.models import (
     LocationPhoto,
     User,
 )
-from bis.signals import with_paused_user_str_signal
 from categories.models import LocationAccessibilityCategory, LocationProgramCategory
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -151,7 +150,6 @@ class Command(BaseCommand):
 
         return res
 
-    @with_paused_user_str_signal
     def handle(self, *args, **options):
         dir_path = join(settings.BASE_DIR, "media", "location_photos")
         makedirs(dir_path, exist_ok=True)

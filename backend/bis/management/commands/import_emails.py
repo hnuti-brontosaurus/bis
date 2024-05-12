@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 from bis.models import User
-from bis.signals import with_paused_user_str_signal
 from django.core.management.base import BaseCommand
 from ecomail.helpers import send
 from xlsx_export.export import XLSXWriter
@@ -34,7 +33,6 @@ class Command(BaseCommand):
 
         return data
 
-    @with_paused_user_str_signal
     def handle(self, *args, **options):
         path = Path("data.json")
 

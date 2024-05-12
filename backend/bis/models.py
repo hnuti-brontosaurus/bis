@@ -691,9 +691,10 @@ class User(SearchMixin, AbstractBaseUser):
         if self.get_qualifications():
             roles += ["qualified_organizer", "organizer"]
 
-        roles = [RoleCategory.objects.get(slug=role) for role in set(roles)]
-
-        self.roles.set(roles)
+        roles = set(roles)
+        if roles != set(self.roles.values_list("slug", flat=True)):
+            roles = RoleCategory.objects.filter(slug__in=roles)
+            self.roles.set(roles)
 
 
 @translate_model

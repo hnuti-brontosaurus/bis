@@ -30,6 +30,8 @@ class Command(BaseCommand):
         try_to_run(call_command, "record_history")
         try_to_run(call_command, "import_locations")
         try_to_run(call_command, "import_donations")
+        try_to_run(call_command, "set_unique_user_str")
+        try_to_run(call_command, "set_date_joined")
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.qualification_about_to_end)
