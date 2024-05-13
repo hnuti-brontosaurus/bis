@@ -20,7 +20,13 @@ from nested_admin.nested import (
 from questionnaire.admin import EventApplicationAdmin, QuestionnaireAdmin
 from rangefilter.filters import DateRangeFilter
 from translation.translate import _
-from xlsx_export.export import export_files, export_to_xlsx, get_attendance_list
+from xlsx_export.export import (
+    do_export_to_xlsx,
+    export_files,
+    export_to_xlsx,
+    export_to_xlsx_response,
+    get_attendance_list,
+)
 
 
 class EventPropagationImageAdmin(
@@ -378,7 +384,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                     and obj.record.get_all_participants()
                     or obj.other_organizers.all()
                 )
-                return export_to_xlsx(self, request, participants)
+                return export_to_xlsx_response(participants)
             if "_attendance_list_emails_export" in request.POST:
                 participants = (
                     has_record and obj.record.participants.all() or User.objects.none()

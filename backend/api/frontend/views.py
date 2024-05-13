@@ -412,7 +412,7 @@ def get_participants_list(request, event_id):
         and event.record.get_all_participants()
         or event.other_organizers.all()
     )
-    return export.export_to_xlsx(..., ..., participants)
+    return export.export_to_xlsx_response(participants)
 
 
 @extend_schema(
@@ -444,7 +444,7 @@ def export_users(request):
     queryset = filter_queryset_with_multiple_or_queries(User.objects.all(), queries)
     perms = Permissions(request.user, User, "backend")
     queryset = perms.filter_queryset(queryset)
-    return export_to_xlsx(None, None, queryset)
+    return export.export_to_xlsx_response(queryset)
 
 
 @extend_schema(
