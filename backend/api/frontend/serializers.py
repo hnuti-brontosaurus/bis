@@ -701,7 +701,7 @@ class EventSerializer(ModelSerializer):
 
     def create(self, validated_data):
         if validated_data["end"].year <= get_locked_year():
-            raise DjangoValidationError("Cannot create events in the past")
+            raise DjangoValidationError("Nemůžeš vytvářet události v minulosti")
 
         validated_data["created_by"] = self.context["request"].user
         instance = super().create(validated_data)
@@ -713,7 +713,9 @@ class EventSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         if validated_data.get("end") and instance.end != validated_data["end"]:
             if validated_data["end"].year <= get_locked_year():
-                raise DjangoValidationError("Cannot update events in the past")
+                raise DjangoValidationError(
+                    "Nemůžeš změnit datum události do minulosti"
+                )
 
         is_closing = not instance.is_closed and validated_data.get("is_closed")
         if is_closing:
