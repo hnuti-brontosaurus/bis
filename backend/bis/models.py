@@ -94,6 +94,7 @@ class Location(SearchMixin, Model):
 
     class Meta:
         ordering = ("name",)
+        indexes = [Index(fields=["name"])]
 
     def __str__(self):
         return self.name
@@ -763,6 +764,7 @@ class Membership(Model):
 
     class Meta:
         ordering = ("-year", "user__last_name", "user__first_name")
+        indexes = [Index(fields=["year"]), Index(fields=["_year"])]
 
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"

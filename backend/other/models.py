@@ -62,6 +62,7 @@ class DashboardItem(Model):
 
     class Meta:
         ordering = ("-date",)
+        Index(fields=["date"])
 
     @classmethod
     def get_items_for_user(cls, user):
