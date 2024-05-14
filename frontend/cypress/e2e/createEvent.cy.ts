@@ -741,6 +741,32 @@ describe('create event', () => {
         .should('contain', 'Nemůžeš vytvářet události v minulosti')
     })
 
+    it.only('after 03/01 allow saving event which continues into this year', () => {
+      cy.setClock('2023-03-01')
+      cy.visit('/org/akce/vytvorit?klonovat=1000')
+      next()
+
+      cy.get('[name=start]').type('2022-09-01')
+      cy.get('[name=end]').type('2023-06-30')
+
+      cy.intercept(
+        { method: 'POST', pathname: '/api/frontend/events' },
+        { id: 1000 },
+      ).as('createEvent')
+
+      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
+      cy.intercept(
+        'POST',
+        '/api/frontend/events/1000/questionnaire/questions/',
+        {},
+      )
+
+      submit()
+
+      cy.wait('@createEvent')
+      cy.get('@createEvent.all').should('have.length', 1)
+    })
+
     context('admin or office_worker', () => {
       ;['admin', 'office_worker'].forEach(role => {
         it(`[${role}] should be allowed to save event in deeper past`, () => {
