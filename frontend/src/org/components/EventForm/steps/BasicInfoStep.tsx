@@ -15,8 +15,6 @@ import { useCurrentUser } from 'hooks/currentUser'
 import { useEffect } from 'react'
 import { Controller, FormProvider } from 'react-hook-form'
 import Select from 'react-select'
-import { getEventCannotBeOlderThan } from 'utils/helpers'
-import { canUserSaveOldEvent } from 'utils/roles'
 import * as validationMessages from 'utils/validationMessages'
 import { required } from 'utils/validationMessages'
 import { MethodsShapes } from '..'
@@ -53,8 +51,6 @@ export const BasicInfoStep = ({
   if (!(administrationUnits && categories && programs && currentUser))
     return <Loading>Připravujeme formulář</Loading>
 
-  const isAllowedToSaveOldEvents = canUserSaveOldEvent(currentUser)
-
   return (
     <FormProvider {...methods}>
       <form>
@@ -80,23 +76,12 @@ export const BasicInfoStep = ({
                     type="date"
                     id="start"
                     max={watch('end')}
-                    min={
-                      isAllowedToSaveOldEvents
-                        ? undefined
-                        : getEventCannotBeOlderThan()
-                    }
                     {...register('start', {
                       required,
                       max: {
                         value: watch('end'),
                         message: validationMessages.startBeforeEnd,
                       },
-                      min: isAllowedToSaveOldEvents
-                        ? undefined
-                        : {
-                            value: getEventCannotBeOlderThan(),
-                            message: validationMessages.oldEvent,
-                          },
                     })}
                   />
                 </FormInputError>
