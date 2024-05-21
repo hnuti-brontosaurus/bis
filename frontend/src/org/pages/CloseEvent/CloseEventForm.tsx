@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
-  Event,
+  FullEvent,
   EventPhotoPayload,
   AttendanceListPagePayload,
   Finance,
@@ -121,7 +121,7 @@ const formData2payload = ({
 
 const initialData2form = (
   data: Partial<CloseEventFormData>,
-  event: Event,
+  event: FullEvent,
 ): Partial<CloseEventFormShape> => {
   let participantInputType: ParticipantInputType | undefined = undefined
 
@@ -197,7 +197,7 @@ export const CloseEventForm = ({
   onCancel,
   id,
 }: {
-  event: Event
+  event: FullEvent
   initialData: Partial<CloseEventFormData>
   onSubmit: (data: CloseEventPayload) => void
   onCancel: () => void

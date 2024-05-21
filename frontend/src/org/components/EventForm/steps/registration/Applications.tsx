@@ -1,6 +1,6 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { api } from 'app/services/bis'
-import type { AdministrationUnit, Event } from 'app/services/bisTypes'
+import type { AdministrationUnit, FullEvent } from 'app/services/bisTypes'
 import { EventApplication } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import {
@@ -10,8 +10,9 @@ import {
   TableCellIconButton,
 } from 'components'
 import { useRejectApplication } from 'hooks/rejectApplication'
-import { FC, useState } from 'react'
+import React, { FC, ReactNode, useState } from 'react'
 import {
+  FaInfoCircle as Detail,
   FaTrash as Bin,
   FaTrashRestoreAlt,
   FaUserPlus as AddUser,
@@ -21,13 +22,38 @@ import { formatDateTime } from 'utils/helpers'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
+import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
 import { ShowApplicationModal } from './ShowApplicationModal'
-import { EmailListModal } from './EmailListModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
 
+export const BoundedCell: FC<
+  {
+    text?: string
+    classNames?: string
+  } & React.HTMLAttributes<HTMLTableCellElement>
+> = ({ text, className, ...rest }) => (
+  <td
+    title={text}
+    className={classNames(className, styles.boundedCell)}
+    {...rest}
+  >
+    {text}
+  </td>
+)
+
+export const OneCellRow: FC<{ colSpan: number; children: ReactNode }> = ({
+  colSpan,
+  children,
+}) => (
+  <tr className={styles.oneCellRow}>
+    <td>{children}</td>
+    <td colSpan={colSpan - 1} />
+  </tr>
+)
+
 export const Applications: FC<{
-  event: Event
+  event: FullEvent
   chooseHighlightedApplication: (id: string | undefined) => void
   highlightedApplications?: string[]
   withParticipants?: boolean
@@ -118,7 +144,7 @@ export const Applications: FC<{
       ? administrationUnitsData.results
       : []
 
-  const getEventAdministrationUnits = (event: Event) => {
+  const getEventAdministrationUnits = (event: FullEvent) => {
     const names: string[] = []
     for (const id of event.administration_units) {
       const administrationUnit = administrationUnits.find(
@@ -169,7 +195,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 8
+  const ALL_COLUMNS = 7 + event.questions.length
 
   const ApplicationRow = ({
     application,
@@ -177,88 +203,106 @@ export const Applications: FC<{
   }: {
     application: EventApplication
     className?: string
-  }) => (
-    <tr
-      key={application.id}
-      className={classNames(
-        highlightedApplications?.includes(application.id.toString()) &&
-          styles.highlightedRow,
-        application.state === ApplicationStates.rejected &&
-          styles.applicationWithParticipant,
-        className,
-        highLightedRow === application.id ? styles.highlightedRow : '',
-        application.state === ApplicationStates.approved && styles.approvedRow,
-      )}
-      onMouseEnter={() => {
-        setHighlightedRow(application.id)
-        chooseHighlightedApplication(application.id.toString())
-      }}
-      onMouseLeave={() => {
-        setHighlightedRow(undefined)
-        chooseHighlightedApplication(undefined)
-      }}
-    >
-      <td onClick={() => handleShowApplication(application.id)}>
-        {formatDateTime(application.created_at)}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.first_name}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.last_name}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.birthday && formatDateTime(application.birthday)}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.phone}
-      </td>
-      <td onClick={() => handleShowApplication(application.id)}>
-        {application.email}
-      </td>
-      {withParticipants && (
-        <TableCellIconButton
-          icon={AddUser}
-          action={() => {
-            setCurrentApplicationId(application.id)
-            setShowAddParticipantModal(true)
-          }}
-          disabled={application.state === ApplicationStates.rejected}
-          tooltipContent={'Přidat účastníka'}
-          color={colors.bronto}
-        />
-      )}
-
-      <TableCellIconButton
-        icon={
-          application.state === ApplicationStates.rejected
-            ? FaTrashRestoreAlt
-            : Bin
-        }
-        action={async () => {
-          if (application.state === ApplicationStates.rejected) {
-            restoreApplication(application, { id: event.id, name: event.name })
-          } else {
-            rejectApplication({
-              application,
-              event: { id: event.id, name: event.name },
-            })
-          }
+  }) => {
+    const showDetails = () => handleShowApplication(application.id)
+    return (
+      <tr
+        key={application.id}
+        className={classNames(
+          highlightedApplications?.includes(application.id.toString()) &&
+            styles.highlightedRow,
+          application.state === ApplicationStates.rejected &&
+            styles.applicationWithParticipant,
+          className,
+          highLightedRow === application.id ? styles.highlightedRow : '',
+          application.state === ApplicationStates.approved &&
+            styles.approvedRow,
+        )}
+        onMouseEnter={() => {
+          setHighlightedRow(application.id)
+          chooseHighlightedApplication(application.id.toString())
         }}
-        disabled={application.state === 'approved'}
-        tooltipContent={
-          application.state === 'rejected'
-            ? 'Obnovit přihlášku'
-            : 'Odmítnout přihlášku'
-        }
-        color={
-          application.state === ApplicationStates.rejected
-            ? colors.bronto
-            : colors['error']
-        }
-      />
-    </tr>
-  )
+        onMouseLeave={() => {
+          setHighlightedRow(undefined)
+          chooseHighlightedApplication(undefined)
+        }}
+      >
+        <td onClick={showDetails}>
+          {application.first_name} {application.last_name}
+        </td>
+        <td onClick={showDetails}>
+          {application.birthday && formatDateTime(application.birthday)}
+        </td>
+        <td onClick={showDetails}>{application.phone}</td>
+        <td onClick={showDetails}>{application.email}</td>
+        <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
+        {event.questions.map(question => (
+          <BoundedCell
+            onClick={showDetails}
+            text={
+              application.answers.find(
+                answer => answer.question.id === question.id,
+              )?.answer
+            }
+          />
+        ))}
+        <td onClick={showDetails}>{application.note}</td>
+        <td>
+          <div className={styles.actionCell}>
+            <TableCellIconButton
+              icon={Detail}
+              action={showDetails}
+              tooltipContent={'Zobrazit podrobnosti'}
+              color={colors.gray400}
+            />
+            {withParticipants && (
+              <TableCellIconButton
+                icon={AddUser}
+                action={() => {
+                  setCurrentApplicationId(application.id)
+                  setShowAddParticipantModal(true)
+                }}
+                disabled={application.state === ApplicationStates.rejected}
+                tooltipContent={'Přidat účastníka'}
+                color={colors.bronto}
+              />
+            )}
+            <TableCellIconButton
+              icon={
+                application.state === ApplicationStates.rejected
+                  ? FaTrashRestoreAlt
+                  : Bin
+              }
+              action={async () => {
+                if (application.state === ApplicationStates.rejected) {
+                  restoreApplication(application, {
+                    id: event.id,
+                    name: event.name,
+                  })
+                } else {
+                  rejectApplication({
+                    application,
+                    event: { id: event.id, name: event.name },
+                  })
+                }
+              }}
+              disabled={application.state === 'approved'}
+              tooltipContent={
+                application.state === 'rejected'
+                  ? 'Obnovit přihlášku'
+                  : 'Odmítnout přihlášku'
+              }
+              color={
+                application.state === ApplicationStates.rejected
+                  ? colors.bronto
+                  : colors['error']
+              }
+            />
+          </div>
+        </td>
+      </tr>
+    )
+  }
 
   return (
     <>
@@ -306,23 +350,27 @@ export const Applications: FC<{
         </div>
 
         {!isReadApplicationsLoading ? (
-          <div>
+          <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>datum podání</th>
-                  <th>jméno</th>
-                  <th>příjmení</th>
+                  <th>jméno a příjmení</th>
                   <th>datum narození</th>
                   <th>telefon</th>
                   <th>e-mail</th>
-                  {withParticipants && (
-                    <th>
-                      <AddUser className={classNames(styles.iconHead)} />
-                    </th>
-                  )}
+                  <th>datum podání</th>
+                  {event.questions.map(question => (
+                    <th>{question.question}</th>
+                  ))}
+                  <th>poznámka</th>
                   <th>
-                    <Bin className={classNames(styles.iconHead)}></Bin>
+                    <div className={styles.actionCell}>
+                      <Detail className={styles.iconHead} />
+                      {withParticipants && (
+                        <AddUser className={classNames(styles.iconHead)} />
+                      )}
+                      <Bin className={classNames(styles.iconHead)}></Bin>
+                    </div>
                   </th>
                 </tr>
               </thead>
@@ -339,11 +387,9 @@ export const Applications: FC<{
                       <tr>
                         <td colSpan={ALL_COLUMNS}></td>
                       </tr>
-                      <tr>
-                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
-                          Přidaní do účastníků
-                        </td>
-                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>
+                        Přidání do účastníků
+                      </OneCellRow>
                     </>
                   )}
                   {applicationsAccepted.map((application: EventApplication) => (
@@ -357,11 +403,9 @@ export const Applications: FC<{
                       <tr>
                         <td colSpan={ALL_COLUMNS}></td>
                       </tr>
-                      <tr>
-                        <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
-                          Odmítnuté přihlášky
-                        </td>
-                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>
+                        Odmítnuté přihlášky
+                      </OneCellRow>
                     </>
                   )}
 
