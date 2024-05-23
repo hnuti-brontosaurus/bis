@@ -17,7 +17,6 @@ import { mergeWith } from 'lodash'
 import { getRegistrationMethodBeforeFull } from 'org/components/EventForm/EventForm'
 import { AiOutlineStop } from 'react-icons/ai'
 import {
-  FaDownload,
   FaExternalLinkAlt,
   FaPencilAlt,
   FaRedo,
@@ -25,7 +24,6 @@ import {
   FaRegCheckCircle,
   FaRegCopy,
   FaRegEye,
-  // FaTrashAlt,
   FaUsers,
 } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
@@ -37,7 +35,7 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
-import { useExportFiles } from '../../../hooks/useExportFiles'
+import { ExportFilesButton } from 'org/components'
 import styles from './ViewEvent.module.scss'
 
 export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
@@ -63,8 +61,6 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
   const [cancelEvent, { isLoading: isEventCanceling }] = useCancelEvent()
   const [restoreCanceledEvent, { isLoading: isEventRestoring }] =
     useRestoreCanceledEvent()
-
-  const [exportFiles, { isLoading: isExportingFiles }] = useExportFiles()
 
   // possibility to delete event was removed
   // if (isEventRemoving) return <Loading>Mažeme akci</Loading>
@@ -215,13 +211,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <FaRegCopy /> klonovat
               </ButtonLink>
             )}
-            <Button
-              onClick={() => exportFiles({ eventId })}
-              secondary
-              isLoading={isExportingFiles}
-            >
-              <FaDownload /> fotky
-            </Button>
+            <ExportFilesButton eventId={eventId} />
             {!isEventClosed(event) ? (
               <>
                 {getRegistrationMethodBeforeFull(event) === 'standard' && (

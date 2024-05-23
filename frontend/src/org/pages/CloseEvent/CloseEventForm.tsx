@@ -348,6 +348,7 @@ export const CloseEventForm = ({
       </Step>
       <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
         <EvidenceStep
+          eventId={event.id}
           isVolunteering={isVolunteering}
           methods={evidenceFormMethods}
           firstIndex={countEvidenceFirstStep()}
