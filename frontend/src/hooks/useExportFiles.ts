@@ -1,4 +1,4 @@
-import { useExport } from 'org/components/EventForm/steps/registration/useExport'
+import { useExport } from './useExport'
 
 interface Props {
   eventId: number
