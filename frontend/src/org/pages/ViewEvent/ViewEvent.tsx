@@ -24,7 +24,6 @@ import {
   FaRegCheckCircle,
   FaRegCopy,
   FaRegEye,
-  // FaTrashAlt,
   FaUsers,
 } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
@@ -36,6 +35,7 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
+import { ExportFilesButton } from 'org/components'
 import styles from './ViewEvent.module.scss'
 
 export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
@@ -211,6 +211,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <FaRegCopy /> klonovat
               </ButtonLink>
             )}
+            <ExportFilesButton eventId={eventId} />
             {!isEventClosed(event) ? (
               <>
                 {getRegistrationMethodBeforeFull(event) === 'standard' && (

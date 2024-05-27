@@ -12,14 +12,17 @@ import { form as formTexts } from 'config/static/closeEvent'
 import { FormProvider, UseFormReturn } from 'react-hook-form'
 import { HiExternalLink } from 'react-icons/hi'
 import { required } from 'utils/validationMessages'
+import { ExportFilesButton } from '../../components'
 import { EvidenceStepFormShape } from './CloseEventForm'
 import styles from './EvidenceStep.module.scss'
 
 export const EvidenceStep = ({
+  eventId,
   isVolunteering,
   methods,
   firstIndex = 2,
 }: {
+  eventId: number
   isVolunteering: boolean
   methods: UseFormReturn<EvidenceStepFormShape, any>
   firstIndex?: number
@@ -60,7 +63,14 @@ export const EvidenceStep = ({
               </FormInputError>
             </FormSubsection>
           </FormSection>
-          <FormSection header="Evidence akce">
+          <FormSection
+            header={
+              <>
+                Evidence akce&emsp;
+                <ExportFilesButton eventId={eventId} />
+              </>
+            }
+          >
             <FormSubsection header="Fotky z akce" help={formTexts.photos.help}>
               <ImagesUpload name="photos" image="photo" />
             </FormSubsection>
@@ -134,7 +144,11 @@ export const EvidenceStep = ({
           </FormSection>
           <FormSection header="Follow up e-mail pro účastníky">
             <InfoBox>
-              Kontakt s účastníky po akci dokresluje celkový dojem z akce a je základem toho, aby se účastníci rádi vraceli na další akce HB. Stáhni si šablonu pro follow up e-mail, který je nejlepší poslat všem účastníkům týden až dva po akci. Účastníkům tak ukážeš, že na ně ani po akci nezapomínáš.
+              Kontakt s účastníky po akci dokresluje celkový dojem z akce a je
+              základem toho, aby se účastníci rádi vraceli na další akce HB.
+              Stáhni si šablonu pro follow up e-mail, který je nejlepší poslat
+              všem účastníkům týden až dva po akci. Účastníkům tak ukážeš, že na
+              ně ani po akci nezapomínáš.
             </InfoBox>
             <div>
               <ExternalButtonLink
