@@ -8,6 +8,7 @@ from categories.models import (
     EventTag,
     OpportunityCategory,
 )
+from django.core.validators import EMPTY_VALUES
 from django.db.utils import ProgrammingError
 from django_filters import (
     BaseInFilter,
@@ -24,6 +25,15 @@ from regions.models import Region
 
 class ChoiceInFilter(BaseInFilter, ChoiceFilter):
     pass
+
+
+class BISOrderingFilter(OrderingFilter):
+    def filter(self, qs, value):
+        if value in EMPTY_VALUES:
+            return qs
+
+        ordering = [self.get_ordering_value(param) for param in value] + ["id"]
+        return qs.order_by(*ordering)
 
 
 def get_choices(model, fn):
@@ -71,7 +81,7 @@ class EventFilter(FilterSet):
     end__lte = DateFilter(field_name="end", lookup_expr="lte")
     end__gte = DateFilter(field_name="end", lookup_expr="gte")
 
-    ordering = OrderingFilter(fields=["start", "end"])
+    ordering = BISOrderingFilter(fields=["start", "end"])
 
     class Meta:
         model = Event

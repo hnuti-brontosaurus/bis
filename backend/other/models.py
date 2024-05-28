@@ -226,7 +226,7 @@ class DonationPoints(Model):
 
         administration_units = AdministrationUnit.objects.filter(
             existed_till__isnull=True,
-        ).order_by("category", "abbreviation")
+        ).order_by("category", "abbreviation", "id")
         for administration_unit in administration_units:
             yield self.get_row(administration_unit)
 
