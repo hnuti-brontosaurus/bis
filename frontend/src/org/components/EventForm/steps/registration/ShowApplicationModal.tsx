@@ -169,6 +169,12 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
                   <div>{answer.answer}</div>
                 </div>
               ))}
+            <div>
+              <div>
+                <h4>Poznámka</h4>
+              </div>
+              <div>{currentApplication.note}</div>
+            </div>
           </div>
         )}
       {userId && user && (
