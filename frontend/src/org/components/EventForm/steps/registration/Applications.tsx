@@ -420,7 +420,9 @@ export const Applications: FC<{
             </table>
 
             {!thereAreApplications && (
-              <EmptyListPlaceholder label="Ještě se nikdo nepřihlásil" />
+              <div className={styles.emptyList}>
+                <EmptyListPlaceholder label="Ještě se nikdo nepřihlásil" />
+              </div>
             )}
           </div>
         ) : (
