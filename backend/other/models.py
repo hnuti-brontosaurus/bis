@@ -124,6 +124,10 @@ class DonationPointsAggregation(Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def do_count_events(events):
+        return sum(events.values_list("number_of_sub_events", flat=True))
+
     @classmethod
     def do_get_count(cls, slug, since, till, administration_unit):
         donations = Donation.objects.filter(donated_at__gte=since, donated_at__lte=till)
@@ -140,22 +144,24 @@ class DonationPointsAggregation(Model):
 
         events = administration_unit.events.filter(start__gte=since, start__lte=till)
         if slug == "clubs":
-            return events.filter(
-                group__slug="other",
-                category__slug__in=[
-                    "public__educational__lecture",
-                    "public__club__lecture",
-                    "public__club__meeting",
-                ],
-            ).count()
-        if slug == "other_without_clubs":
-            return events.filter(group__slug="other").count() - cls.do_get_count(
-                "clubs", since, till, administration_unit
+            return cls.do_count_events(
+                events.filter(
+                    group__slug="other",
+                    category__slug__in=[
+                        "public__educational__lecture",
+                        "public__club__lecture",
+                        "public__club__meeting",
+                    ],
+                )
             )
+        if slug == "other_without_clubs":
+            other = cls.do_count_events(events.filter(group__slug="other"))
+            return other - cls.do_get_count("clubs", since, till, administration_unit)
         if slug == "weekend_events":
-            return events.filter(group__slug="weekend_event").count()
+            return cls.do_count_events(events.filter(group__slug="weekend_event"))
         if slug == "camps":
-            return events.filter(group__slug="camp").count()
+            return cls.do_count_events(events.filter(group__slug="camp"))
+
         if slug == "50_worked_hours":
             hours_worked = events.values_list("record__total_hours_worked", flat=True)
             hours_worked = [hours for hours in hours_worked if hours]
@@ -169,7 +175,7 @@ class DonationPointsAggregation(Model):
         if slug == "members_16_18":
             return age_stats.age_count(16, 18)
         if slug == "members_19_26":
-            return age_stats.age_count(19, 16)
+            return age_stats.age_count(19, 26)
         if slug == "members_27_and_more":
             return age_stats.age_count(27, age_stats.oldest)
 
