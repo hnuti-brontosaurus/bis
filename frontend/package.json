@@ -22,6 +22,7 @@
     "dompurify": "^2.4.1",
     "geolib": "^3.3.3",
     "gh-pages": "^5.0.0",
+    "heic2any": "^0.0.4",
     "jspdf": "^2.5.1",
     "leaflet": "^1.9.2",
     "lodash": "^4.17.21",

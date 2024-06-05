@@ -13,6 +13,7 @@ import {
 } from 'react-hook-form'
 import { Schema } from 'type-fest'
 import { required } from './validationMessages'
+import heic2any from 'heic2any'
 
 export function getIdBySlug<T, O extends { id: number; slug: T }>(
   objects: O[],
@@ -33,15 +34,24 @@ export const requireBoolean = {
   },
 }
 
-export const file2base64 = async (file: File): Promise<string> =>
+const convertHeic = async (file: File): Promise<Blob> => {
+  const result = await heic2any({ blob: file })
+  return Array.isArray(result) ? result[0] : result
+}
+
+const readFileAsDataUrl = async (file: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.readAsDataURL(file)
-    reader.onload = () => {
-      resolve(addFilename(reader.result as string, file.name))
-    }
+    reader.onload = () => resolve(reader.result as string)
     reader.onerror = e => reject(e)
   })
+
+export const file2base64 = async (file: File): Promise<string> => {
+  const image = file.type === 'image/heif' ? await convertHeic(file) : file
+  const result = await readFileAsDataUrl(image)
+  return addFilename(result, file.name)
+}
 
 const addFilename = (url: string, filename: string) => {
   const [data, ...rest] = url.split(';')
