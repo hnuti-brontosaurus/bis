@@ -285,9 +285,9 @@ export const Participants: FC<{
           Exportovat do excelu
         </Button>
         {/* TODO It would be awesome if import and export use excel in the same format */}
-        <div className={styles.excelButtons}>
+        {/* <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
-        </div>
+        </div> */}
         <Button
           secondary
           small

@@ -394,7 +394,7 @@ describe('Close event - evidence and participants', () => {
       })
     })
 
-    describe('Import full participants from excel', () => {
+    describe.skip('Import full participants from excel', () => {
       beforeEach(() => {
         cy.visit('/org/akce/1000/uzavrit')
 
