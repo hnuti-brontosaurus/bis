@@ -314,7 +314,7 @@ export const Participants: FC<{
         </Button>
       </div>
       {!isReadParticipantsLoading ? (
-        <div className={styles.existingParticipantContainer}>
+        <div className={styles.existingParticipantContainerWrapper}>
           <div>Přidat účastníka z BISu:</div>
           <SelectUnknownUser
             value={selectedUser ?? undefined}
@@ -333,30 +333,96 @@ export const Participants: FC<{
               })
             }}
           />
-          {participants && participants.results && (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Jméno</th>
-                  <th>příjmení</th>
-                  <th>datum narození</th>
-                  <th>adresa</th>
-                  <th>telefon</th>
-                  <th>e-mail</th>
-                  <th>
-                    <div className={styles.orgTitle}>ORG</div>
-                  </th>
-                  <th>
-                    <EditUser className={classNames(styles.iconHead)} />
-                  </th>
-                  <th>
-                    <Bin className={classNames(styles.iconHead)}></Bin>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...(otherOrganizers ?? [])].map(
-                  (participant: original.User) => (
+          <div className={styles.existingParticipantContainer}>
+            {participants && participants.results && (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Jméno a příjmení</th>
+                    <th>datum narození</th>
+                    <th>adresa</th>
+                    <th>telefon</th>
+                    <th>e-mail</th>
+                    <th>
+                      <div className={styles.orgTitle}>ORG</div>
+                    </th>
+                    <th>
+                      <div className={styles.actionCell}>
+                        <EditUser className={classNames(styles.iconHead)} />
+                        <Bin className={classNames(styles.iconHead)}></Bin>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...(otherOrganizers ?? [])].map(
+                    (participant: original.User) => (
+                      <tr
+                        key={participant.id}
+                        className={classNames(
+                          highlightedParticipant === participant.id
+                            ? styles.highlightedRow
+                            : '',
+                          lastAddedId === participant.id &&
+                            timeOfLastAddition > Date.now() - 30000 &&
+                            styles.lightUp,
+                          highLightedRow === participant.id
+                            ? styles.highlightedRow
+                            : '',
+                        )}
+                        onMouseEnter={() => {
+                          setHighlightedRow(participant.id)
+                          chooseHighlightedParticipant(participant.id)
+                        }}
+                        onMouseLeave={() => {
+                          setHighlightedRow(undefined)
+                          chooseHighlightedParticipant(undefined)
+                        }}
+                        onClick={() => {
+                          setShowShowApplicationModal(true)
+                          setCurrentParticipantId(participant.id)
+                        }}
+                      >
+                        <td>
+                          {`${participant.first_name}${
+                            participant.nickname && `(${participant.nickname})`
+                          }`}{' '}
+                          {participant.last_name}
+                        </td>
+                        <td>{formatDateTime(participant.birthday)}</td>
+                        <td>
+                          {participant.address &&
+                            formatAddress(participant.address)}
+                        </td>
+                        <td>{participant.phone}</td>
+                        <td>{participant.email}</td>
+                        <td>
+                          <div className={styles.org}>ORG</div>
+                        </td>
+                        <td>
+                          <div className={styles.actionCell}>
+                            <TableCellIconButton
+                              disabled={true}
+                              icon={EditUser}
+                              action={() => {}}
+                              tooltipContent="Upravit účastníka"
+                              color={colors.yellow}
+                              ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                            />
+                            <TableCellIconButton
+                              disabled={true}
+                              icon={Bin}
+                              action={() => {}}
+                              tooltipContent="Smazat účastníka"
+                              color={colors.error}
+                              ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ),
+                  )}
+                  {participants.results.map((participant: User) => (
                     <tr
                       key={participant.id}
                       className={classNames(
@@ -386,9 +452,9 @@ export const Participants: FC<{
                       <td>
                         {`${participant.first_name}${
                           participant.nickname && `(${participant.nickname})`
-                        }`}
+                        }`}{' '}
+                        {participant.last_name}
                       </td>
-                      <td>{participant.last_name}</td>
                       <td>{formatDateTime(participant.birthday)}</td>
                       <td>
                         {participant.address &&
@@ -396,99 +462,37 @@ export const Participants: FC<{
                       </td>
                       <td>{participant.phone}</td>
                       <td>{participant.email}</td>
+                      <td></td>
                       <td>
-                        <div className={styles.org}>ORG</div>
-                      </td>
-                      <td>
-                        <TableCellIconButton
-                          disabled={true}
-                          icon={EditUser}
-                          action={() => {}}
-                          tooltipContent="Upravit účastníka"
-                          color={colors.yellow}
-                          ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
-                        />
-                      </td>
-                      <td>
-                        <TableCellIconButton
-                          disabled={true}
-                          icon={Bin}
-                          action={() => {}}
-                          tooltipContent="Smazat účastníka"
-                          color={colors.error}
-                          ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
-                        />
+                        <div className={styles.actionCell}>
+                          {' '}
+                          <TableCellIconButton
+                            icon={EditUser}
+                            action={() => onEditUser(participant)}
+                            tooltipContent="Upravit účastníka"
+                            color={colors.yellow}
+                            ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                          />
+                          <TableCellIconButton
+                            icon={Bin}
+                            action={() =>
+                              handleClickRemoveParticipant(participant)
+                            }
+                            tooltipContent="Smazat účastníka"
+                            color={colors.error}
+                            ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                          />
+                        </div>
                       </td>
                     </tr>
-                  ),
-                )}
-                {participants.results.map((participant: User) => (
-                  <tr
-                    key={participant.id}
-                    className={classNames(
-                      highlightedParticipant === participant.id
-                        ? styles.highlightedRow
-                        : '',
-                      lastAddedId === participant.id &&
-                        timeOfLastAddition > Date.now() - 30000 &&
-                        styles.lightUp,
-                      highLightedRow === participant.id
-                        ? styles.highlightedRow
-                        : '',
-                    )}
-                    onMouseEnter={() => {
-                      setHighlightedRow(participant.id)
-                      chooseHighlightedParticipant(participant.id)
-                    }}
-                    onMouseLeave={() => {
-                      setHighlightedRow(undefined)
-                      chooseHighlightedParticipant(undefined)
-                    }}
-                    onClick={() => {
-                      setShowShowApplicationModal(true)
-                      setCurrentParticipantId(participant.id)
-                    }}
-                  >
-                    <td>
-                      {`${participant.first_name}${
-                        participant.nickname && `(${participant.nickname})`
-                      }`}
-                    </td>
-                    <td>{participant.last_name}</td>
-                    <td>{formatDateTime(participant.birthday)}</td>
-                    <td>
-                      {participant.address &&
-                        formatAddress(participant.address)}
-                    </td>
-                    <td>{participant.phone}</td>
-                    <td>{participant.email}</td>
-                    <td></td>
-                    <td>
-                      <TableCellIconButton
-                        icon={EditUser}
-                        action={() => onEditUser(participant)}
-                        tooltipContent="Upravit účastníka"
-                        color={colors.yellow}
-                        ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
-                      />
-                    </td>
-                    <td>
-                      <TableCellIconButton
-                        icon={Bin}
-                        action={() => handleClickRemoveParticipant(participant)}
-                        tooltipContent="Smazat účastníka"
-                        color={colors.error}
-                        ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {participants?.results?.length === 0 && (
-            <EmptyListPlaceholder label="Zatím nebyli přidáni žádní účastníci." />
-          )}
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {participants?.results?.length === 0 && (
+              <EmptyListPlaceholder label="Zatím nebyli přidáni žádní účastníci." />
+            )}
+          </div>
         </div>
       ) : (
         <Loading>Stahujeme účastníky</Loading>
