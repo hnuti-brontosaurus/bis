@@ -88,6 +88,7 @@ class AdministrationUnit(SearchMixin, Model):
 
     class Meta:
         ordering = ("abbreviation",)
+        indexes = [Index(fields=["abbreviation"])]
 
     def __str__(self):
         return self.abbreviation
@@ -170,6 +171,7 @@ class AdministrationSubUnit(Model):
 
     class Meta:
         ordering = ("name",)
+        indexes = [Index(fields=["name"])]
 
     def __str__(self):
         return self.name

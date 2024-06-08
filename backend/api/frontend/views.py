@@ -24,9 +24,13 @@ from api.frontend.serializers import (
     UserSerializer,
 )
 from api.helpers import parse_request_data
+from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import Location, User
 from bis.permissions import Permissions
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from event.models import (
     Event,
@@ -55,6 +59,7 @@ from rest_framework.status import (
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from xlsx_export import export
+from xlsx_export.export import export_to_xlsx
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 
@@ -407,7 +412,7 @@ def get_participants_list(request, event_id):
         and event.record.get_all_participants()
         or event.other_organizers.all()
     )
-    return export.export_to_xlsx(..., ..., participants)
+    return export.export_to_xlsx_response(participants)
 
 
 @extend_schema(
@@ -425,6 +430,21 @@ def export_files(request, event_id):
         return HttpResponseForbidden()
 
     return export.export_files(event)
+
+
+@login_required
+@csrf_exempt
+def export_users(request):
+    emails = request.POST["data"].split()
+    emails = [item.strip() for email in emails for item in email.split(",")]
+    emails = [email.lower() for email in dict.fromkeys(emails) if email]
+    ids = [email for email in emails if "@" not in email]
+    emails = [email for email in emails if "@" in email]
+    queries = [Q(all_emails__email__in=emails), Q(id__in=ids)]
+    queryset = filter_queryset_with_multiple_or_queries(User.objects.all(), queries)
+    perms = Permissions(request.user, User, "backend")
+    queryset = perms.filter_queryset(queryset)
+    return export.export_to_xlsx_response(queryset)
 
 
 @extend_schema(

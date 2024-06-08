@@ -2,7 +2,6 @@ import requests
 from administration_units.models import AdministrationUnit
 from bis.helpers import print_progress
 from bis.models import User, UserAddress
-from bis.signals import with_paused_user_str_signal
 from categories.models import DonationSourceCategory
 from dateutil.parser import isoparse
 from django.conf import settings
@@ -24,7 +23,6 @@ class Command(BaseCommand):
 
         return requests.get(url).json()
 
-    @with_paused_user_str_signal
     def handle(self, *args, **options):
         url = f"{self.base_url}/organization/206/pledges-by-filter?{self.api_secrets}"
 
@@ -81,6 +79,8 @@ class Command(BaseCommand):
             if basic_section_support:
                 if basic_section_support == "Draci":
                     basic_section_support = "Brďo Draci"
+                if basic_section_support == "BRĎO Gingo":
+                    basic_section_support = "1.BRĎO Tišnov GINGO"
 
                 basic_section_support = AdministrationUnit.objects.get(
                     abbreviation=basic_section_support

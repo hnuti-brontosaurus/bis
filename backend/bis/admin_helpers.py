@@ -8,6 +8,7 @@ from django import forms
 from django.contrib.admin import ListFilter, SimpleListFilter
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.gis.geos import Point
+from django.db.models import Count, Q
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from rangefilter.filters import DateRangeFilter
@@ -166,33 +167,43 @@ class CustomDateRangeFilter(DateRangeFilter):
         return super(CustomDateRangeFilter, self)._get_form_fields()
 
 
-def event_of_administration_unit_filter_factory(title, parameter_name, cache_name):
+def event_of_administration_unit_filter_factory(
+    title, parameter_name, date_cache_name, count_cache_name
+):
     class Filter(AutocompleteFilterFactory(title, parameter_name)):
         def queryset(self, request, queryset):
-            datetime_query = getattr(request, cache_name, {})
+            datetime_query = getattr(request, date_cache_name, {})
             prefix = parameter_name.rsplit("__", 1)[0]
 
-            for key, value in list(datetime_query.items()):
-                datetime_query[key.replace(prefix + "__", "")] = value
-                del datetime_query[key]
+            annotate_name = f"{prefix}_count"
+            count_query = getattr(request, count_cache_name, {})
+            for key, value in list(count_query.items()):
+                count_query[annotate_name + "__" + key.split("__")[-1]] = value
+                del count_query[key]
 
-            if self.value() or datetime_query:
-                items = self.rel_model.objects.all()
+            if self.value() or datetime_query or count_query:
                 if self.value():
                     if prefix == "memberships":
-                        datetime_query["administration_unit"] = self.value()
+                        datetime_query[f"{prefix}__administration_unit"] = self.value()
                     else:
-                        datetime_query["administration_units"] = self.value()
+                        datetime_query[f"{prefix}__administration_units"] = self.value()
 
-                items = items.filter(**datetime_query)
+                annotation = {annotate_name: Count(prefix, filter=Q(**datetime_query))}
+                queryset = queryset.annotate(**annotation)
 
+                if not count_query:
+                    count_query = {annotate_name + "__gte": 1}
+
+                for key, value in list(datetime_query.items()):
+                    datetime_query[key.replace(prefix + "__", "")] = value
+                    del datetime_query[key]
                 if parameter_name == "memberships__administration_unit":
                     setattr(request, "membership_stats_query", datetime_query)
 
-                queryset = queryset.filter(**{prefix + "__in": items}).distinct()
+                queryset = queryset.filter(**count_query)
                 return queryset.model.objects.filter(id__in=queryset.values_list("id"))
-            else:
-                return queryset
+
+            return queryset
 
     return Filter
 
@@ -227,8 +238,19 @@ def list_filter_extra_text(custom_title):
     return Filter
 
 
+class UserExportFilter(TextOnlyFilter):
+    template = "admin/user_export_filter.html"
+    title = "Export dle e-mailů"
+
+
 class CacheRangeNumericFilter(RangeNumericFilter):
     cache_name = None
+    custom_title = None
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
+        if self.custom_title:
+            self.title = self.custom_title
 
     def queryset(self, request, queryset):
         filters = {}

@@ -1,13 +1,11 @@
 from bis.helpers import print_progress
 from bis.models import User
-from bis.signals import with_paused_user_str_signal
 from django.core.exceptions import ValidationError
 from django.core.management import BaseCommand
 from other.models import DuplicateUser
 
 
 class Command(BaseCommand):
-    @with_paused_user_str_signal
     def handle(self, *args, **options):
         users = User.objects.all()
         for i, user in enumerate(users):

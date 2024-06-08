@@ -44,6 +44,7 @@ class Donor(Model):
 
     class Meta:
         ordering = ("-date_joined",)
+        Index(fields=["date_joined"])
 
     def merge_with(self, other):
         assert other != self
@@ -139,6 +140,7 @@ class Donation(Model):
 
     class Meta:
         ordering = ("-donated_at",)
+        Index(fields=["donated_at"])
 
     @classmethod
     def filter_queryset(cls, queryset, perm):

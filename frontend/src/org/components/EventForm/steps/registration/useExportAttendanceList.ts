@@ -1,4 +1,4 @@
-import { useExport } from './useExport'
+import { useExport } from 'hooks/useExport'
 
 /**
  * Generate URL of export api endpoint

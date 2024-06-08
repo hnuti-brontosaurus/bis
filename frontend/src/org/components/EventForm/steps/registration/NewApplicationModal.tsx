@@ -2,7 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { api } from 'app/services/bis'
 import {
-  Event,
+  FullEvent,
   EventApplication,
   EventApplicationPayload,
 } from 'app/services/bisTypes'
@@ -17,7 +17,7 @@ import styles from './NewApplicationModal.module.scss'
 interface INewApplicationModalProps {
   open: boolean
   onClose: () => void
-  event: Event
+  event: FullEvent
 }
 
 export const NewApplicationModal: FC<INewApplicationModalProps> = ({

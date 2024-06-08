@@ -1,3 +1,4 @@
+import { FullEvent } from 'app/services/bisTypes'
 import { api } from 'app/services/bis'
 import {
   Breadcrumbs,
@@ -9,7 +10,6 @@ import {
   useShowApiErrorMessage,
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
-import { FullEvent } from 'hooks/readFullEvent'
 import { useTitle } from 'hooks/title'
 import { cloneDeep, isEqual, mergeWith } from 'lodash'
 import merge from 'lodash/merge'

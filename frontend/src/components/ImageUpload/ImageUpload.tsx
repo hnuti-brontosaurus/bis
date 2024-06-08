@@ -1,12 +1,26 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { ChangeEvent, forwardRef, useState } from 'react'
+import { ChangeEvent, FC, forwardRef, useState } from 'react'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
-import { FaPencilAlt, FaTimes } from 'react-icons/fa'
+import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
 import styles from './ImageUpload.module.scss'
+
+export const DownloadLink: FC<{ url: string }> = ({ url }) => {
+  const fileName =
+    url.match(/filename=(.*?);/)?.[1] ?? url.match(/[^/]*$/)?.[0] ?? ''
+  return (
+    <a
+      href={url}
+      download={fileName}
+      className={classNames(styles.button, styles.downloadButton)}
+    >
+      <FaDownload />
+    </a>
+  )
+}
 
 export const UncontrolledImageUpload = forwardRef<
   HTMLInputElement,
@@ -148,13 +162,16 @@ export const ImagesUpload = ({
               )}
             />
             {watch(`${name}.${index}.${image}`) && (
-              <button
-                className={styles.removeButton}
-                type="button"
-                onClick={() => imageFields.remove(index)}
-              >
-                <FaTimes />
-              </button>
+              <div className={styles.toolbar}>
+                <DownloadLink url={watch(`${name}.${index}.${image}`)} />
+                <button
+                  className={classNames(styles.button, styles.removeButton)}
+                  type="button"
+                  onClick={() => imageFields.remove(index)}
+                >
+                  <FaTimes />
+                </button>
+              </div>
             )}
           </li>
         )

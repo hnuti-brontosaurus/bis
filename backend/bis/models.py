@@ -94,6 +94,7 @@ class Location(SearchMixin, Model):
 
     class Meta:
         ordering = ("name",)
+        indexes = [Index(fields=["name"])]
 
     def __str__(self):
         return self.name
@@ -691,9 +692,10 @@ class User(SearchMixin, AbstractBaseUser):
         if self.get_qualifications():
             roles += ["qualified_organizer", "organizer"]
 
-        roles = [RoleCategory.objects.get(slug=role) for role in set(roles)]
-
-        self.roles.set(roles)
+        roles = set(roles)
+        if roles != set(self.roles.values_list("slug", flat=True)):
+            roles = RoleCategory.objects.filter(slug__in=roles)
+            self.roles.set(roles)
 
 
 @translate_model
@@ -762,6 +764,7 @@ class Membership(Model):
 
     class Meta:
         ordering = ("-year", "user__last_name", "user__first_name")
+        indexes = [Index(fields=["year"]), Index(fields=["_year"])]
 
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"

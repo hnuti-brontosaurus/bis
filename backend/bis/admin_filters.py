@@ -142,14 +142,29 @@ class MainOrganizerOfEventRangeFilter(CustomDateRangeFilter):
     cache_name = "main_organizer_of_event_range_query_cache"
 
 
+class EventsWhereWasAsMainOrganizerCountFilter(CacheRangeNumericFilter):
+    cache_name = "main_organizer_of_event_count_query_cache"
+    custom_title = "Dle: Hlavní organizátor počtu akcí"
+
+
 class OrganizerOfEventRangeFilter(CustomDateRangeFilter):
     custom_title = "Dle: Organizátor v období"
     cache_name = "organizer_of_event_range_query_cache"
 
 
+class EventsWhereWasOrganizerCountFilter(CacheRangeNumericFilter):
+    cache_name = "organizer_of_event_count_query_cache"
+    custom_title = "Dle: Organizátor počtu akcí"
+
+
 class ParticipatedInEventRangeFilter(CustomDateRangeFilter):
     custom_title = "Dle: Účast na akci v období"
     cache_name = "participated_in_event_range_query_cache"
+
+
+class ParticipatedInEventsCountFilter(CacheRangeNumericFilter):
+    cache_name = "participated_in_event_count_query_cache"
+    custom_title = "Dle: Účastník počtu akcí"
 
 
 class FirstParticipatedInEventRangeFilter(CustomDateRangeFilter):
@@ -163,6 +178,7 @@ MainOrganizerOfEventOfAdministrationUnitFilter = (
         "Hlavní organizátor vybrané OJ",
         "events_where_was_as_main_organizer__administration_units",
         MainOrganizerOfEventRangeFilter.cache_name,
+        EventsWhereWasAsMainOrganizerCountFilter.cache_name,
     )
 )
 OrganizerOfEventOfAdministrationUnitFilter = (
@@ -170,6 +186,7 @@ OrganizerOfEventOfAdministrationUnitFilter = (
         "Organizátor vybrané OJ",
         "events_where_was_organizer__administration_units",
         OrganizerOfEventRangeFilter.cache_name,
+        EventsWhereWasOrganizerCountFilter.cache_name,
     )
 )
 ParticipatedInEventOfAdministrationUnitFilter = (
@@ -177,6 +194,7 @@ ParticipatedInEventOfAdministrationUnitFilter = (
         "Účast na akci vybrané OJ",
         "participated_in_events__event__administration_units",
         ParticipatedInEventRangeFilter.cache_name,
+        ParticipatedInEventsCountFilter.cache_name,
     )
 )
 
@@ -185,10 +203,16 @@ class MemberDuringYearsFilter(CacheRangeNumericFilter):
     cache_name = "memberships_years_query_cache"
 
 
+class MembershipCountFilter(CacheRangeNumericFilter):
+    cache_name = "memberships_count_query_cache"
+    custom_title = "Počet členství"
+
+
 MemberOfAdministrationUnitFilter = event_of_administration_unit_filter_factory(
     "Členství ve organizační jednotce",
     "memberships__administration_unit",
     MemberDuringYearsFilter.cache_name,
+    MembershipCountFilter.cache_name,
 )
 
 

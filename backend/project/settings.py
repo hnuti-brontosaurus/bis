@@ -79,7 +79,7 @@ INSTALLED_APPS = [
     "other",
     "donations",
     "administration_units",
-    "debug_toolbar",
+    # "debug_toolbar",
     "login_code",
     "ecomail",
     "solo",
@@ -97,7 +97,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -107,6 +106,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE.insert(0, "bis.middleware.sql_middleware")
+    # MIDDLEWARE.insert(
+    #     0,
+    #     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    # )
 
 ROOT_URLCONF = "project.urls"
 

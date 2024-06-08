@@ -1,12 +1,10 @@
 from bis.helpers import print_progress
 from bis.models import User
-from bis.signals import with_paused_user_str_signal
 from django.core.management.base import BaseCommand
 from django.utils.datetime_safe import date
 
 
 class Command(BaseCommand):
-    @with_paused_user_str_signal
     def handle(self, *args, **options):
         users = User.objects.all().prefetch_related(
             "memberships",
@@ -14,6 +12,7 @@ class Command(BaseCommand):
             "events_where_was_organizer",
             "participated_in_events__event",
         )
+        to_update = []
         for i, user in enumerate(users):
             print_progress("setting date joined", i, len(users))
             dates = [user.date_joined]
@@ -30,7 +29,8 @@ class Command(BaseCommand):
             for event in user.participated_in_events.all():
                 dates.append(event.event.start)
 
-            dates.sort()
-            if user.date_joined != dates[0]:
-                user.date_joined = dates[0]
-                user.save()
+            if user.date_joined != min(dates):
+                user.date_joined = min(dates)
+                to_update.append(user)
+
+        User.objects.bulk_update(users, ["date_joined"], batch_size=100)

@@ -1,5 +1,8 @@
+import logging
 import os
+from base64 import b64encode
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from datetime import date
 from itertools import zip_longest
@@ -7,6 +10,8 @@ from os.path import join
 from pathlib import Path
 from shutil import copy2, make_archive
 from tempfile import TemporaryDirectory
+from threading import Lock
+from time import sleep
 from typing import OrderedDict
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -17,7 +22,7 @@ from bis.helpers import print_progress
 from bis.models import User
 from common.thumbnails import get_thumbnail_path
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -40,6 +45,10 @@ from xlsx_export.serializers import (
     MembershipExportSerializer,
     UserExportSerializer,
 )
+
+from bis import emails
+
+lock = Lock()
 
 
 class XLSXWriter:
@@ -213,8 +222,50 @@ class XLSXWriter:
         self.from_queryset(main_organizers, UserExportSerializer, "Hlavní organizátoři")
 
 
+executor = ThreadPoolExecutor(max_workers=1)
+
+
+def send_later(request, result):
+    try:
+        file = result.result()
+        emails.text(
+            request.user.email,
+            "Vygenerovaný export",
+            "tumáš!",
+            attachments=[
+                {
+                    "content_type": "xlsx",
+                    "name": Path(file.name).name,
+                    "data": b64encode(open(file.name, "rb").read()).decode(),
+                }
+            ],
+        )
+    except Exception as e:
+        logging.exception(f"Error sending xlsx export to email: {e}")
+
+
 @admin.action(description="Exportuj data")
 def export_to_xlsx(model_admin, request, queryset):
+    result = executor.submit(do_export_to_xlsx, queryset)
+    for _ in range(40):
+        sleep(1)
+        if result.done():
+            file = result.result()
+            return FileResponse(open(file.name, "rb"))
+
+    executor.submit(send_later, request, result)
+    messages.warning(
+        request,
+        f"Buď tvůj export trvá dlouho, nebo se čeká na dokončení exportů ostatních, až bude hotov, pošlu ti ho na e-mail {request.user.email}",
+    )
+
+
+def export_to_xlsx_response(queryset):
+    file = do_export_to_xlsx(queryset)
+    return FileResponse(open(file.name, "rb"))
+
+
+def do_export_to_xlsx(queryset):
     serializer_class = [
         s
         for s in [
@@ -232,9 +283,9 @@ def export_to_xlsx(model_admin, request, queryset):
     writer.from_queryset(queryset, serializer_class)
     if queryset.model is Event:
         writer.events_stats(queryset)
-    file = writer.get_file()
 
-    return FileResponse(open(file.name, "rb"))
+    file = writer.get_file()
+    return file
 
 
 def get_attendance_list_data(event, for_admin=False):
@@ -342,7 +393,7 @@ def get_attendance_list(event: Event):
         state__in=["pending", "approved"], event_registration__event=event
     ).order_by("state", "created_at")
     return {
-        "xlsx": export_to_xlsx(_, _, applications),
+        "xlsx": export_to_xlsx_response(applications),
         "pdf": FileResponse(open(tmp_pdf.name, "rb")),
     }
 
@@ -351,14 +402,6 @@ def export_files(event: Event):
     def mkdir(path):
         path.mkdir()
         return path
-
-    def copy_image(image_file, dir_path):
-        copy2(image_file.path, dir_path)
-        for size_name, size in settings.THUMBNAIL_SIZES.items():
-            thumbnail_path = join(
-                settings.MEDIA_ROOT, get_thumbnail_path(image_file.name, size_name)
-            )
-            copy2(thumbnail_path, dir_path)
 
     file_name = f"Soubory {event.name}"
     with TemporaryDirectory() as tmp_dir:
@@ -382,7 +425,7 @@ def export_files(event: Event):
                 propagation_path / _("models.EventPropagationImage.name_plural")
             )
             for image in event.propagation.images.all():
-                copy_image(image.image, images_path)
+                copy2(image.image.path, images_path)
 
         if hasattr(event, "record"):
             record_path = mkdir(tmp_dir / _("models.EventRecord.name"))
@@ -395,7 +438,7 @@ def export_files(event: Event):
 
             photos_path = mkdir(record_path / _("models.EventPhoto.name_plural"))
             for photo in event.record.photos.all():
-                copy_image(photo.photo, photos_path)
+                copy2(photo.photo.path, photos_path)
 
         file = NamedTemporaryFile(
             mode="w", suffix=".zip", newline="", encoding="utf8", prefix=file_name + " "

@@ -399,22 +399,26 @@ export const Participants: FC<{
                       <td>
                         <div className={styles.org}>ORG</div>
                       </td>
-                      <TableCellIconButton
-                        disabled={true}
-                        icon={EditUser}
-                        action={() => {}}
-                        tooltipContent="Upravit účastníka"
-                        color={colors.yellow}
-                        ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
-                      />
-                      <TableCellIconButton
-                        disabled={true}
-                        icon={Bin}
-                        action={() => {}}
-                        tooltipContent="Smazat účastníka"
-                        color={colors.error}
-                        ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
-                      />
+                      <td>
+                        <TableCellIconButton
+                          disabled={true}
+                          icon={EditUser}
+                          action={() => {}}
+                          tooltipContent="Upravit účastníka"
+                          color={colors.yellow}
+                          ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                        />
+                      </td>
+                      <td>
+                        <TableCellIconButton
+                          disabled={true}
+                          icon={Bin}
+                          action={() => {}}
+                          tooltipContent="Smazat účastníka"
+                          color={colors.error}
+                          ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                        />
+                      </td>
                     </tr>
                   ),
                 )}
@@ -459,20 +463,24 @@ export const Participants: FC<{
                     <td>{participant.phone}</td>
                     <td>{participant.email}</td>
                     <td></td>
-                    <TableCellIconButton
-                      icon={EditUser}
-                      action={() => onEditUser(participant)}
-                      tooltipContent="Upravit účastníka"
-                      color={colors.yellow}
-                      ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
-                    />
-                    <TableCellIconButton
-                      icon={Bin}
-                      action={() => handleClickRemoveParticipant(participant)}
-                      tooltipContent="Smazat účastníka"
-                      color={colors.error}
-                      ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
-                    />
+                    <td>
+                      <TableCellIconButton
+                        icon={EditUser}
+                        action={() => onEditUser(participant)}
+                        tooltipContent="Upravit účastníka"
+                        color={colors.yellow}
+                        ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
+                      />
+                    </td>
+                    <td>
+                      <TableCellIconButton
+                        icon={Bin}
+                        action={() => handleClickRemoveParticipant(participant)}
+                        tooltipContent="Smazat účastníka"
+                        color={colors.error}
+                        ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
