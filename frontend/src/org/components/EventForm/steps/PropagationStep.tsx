@@ -249,9 +249,15 @@ export const PropagationStep = ({
                 type="url"
                 id="propagation.web_url"
                 {...register('propagation.web_url', {
-                  pattern: {
-                    value: /^(https?):\/\/[^\s/$.?#].[^\s]*$/,
-                    message: validationMessages.url,
+                  validate: {
+                    url: value => {
+                      try {
+                        new URL(value as string)
+                        return true
+                      } catch (e) {
+                        return validationMessages.url
+                      }
+                    },
                   },
                 })}
               />
