@@ -174,13 +174,12 @@ h2 {
         @include media.for-tablet-portrait-up {
           thead th, 
           tbody td {
-            &:nth-child(1)
+            &:first-child
             {
               position: sticky;
               left: 0;
               background-image: linear-gradient(to right, #ffffff 0%, #ffffff  99.7%, #d9d9d9 100%);
             }
-            &:last-child,
             &:last-child {
               position: sticky;
               right: 0;
