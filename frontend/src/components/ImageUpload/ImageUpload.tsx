@@ -6,7 +6,7 @@ import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
-import { useShowMessage } from '../../features/systemMessage/useSystemMessage'
+import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import styles from './ImageUpload.module.scss'
 
 export const DownloadLink: FC<{ url: string }> = ({ url }) => {
