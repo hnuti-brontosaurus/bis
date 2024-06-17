@@ -271,6 +271,7 @@ export const CloseEventForm = ({
         errors => {
           isValid = false
           evidenceErrors = errors
+          evidence = evidenceFormMethods.getValues()
         },
       )(),
       participantsFormMethods.handleSubmit(
@@ -280,6 +281,7 @@ export const CloseEventForm = ({
         errors => {
           isValid = false
           participantsErrors = errors
+          participants = participantsFormMethods.getValues()
         },
       )(),
     ])
