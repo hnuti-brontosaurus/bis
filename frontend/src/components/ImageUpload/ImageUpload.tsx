@@ -48,7 +48,7 @@ export const UncontrolledImageUpload = forwardRef<
         ref={ref}
         style={{ display: 'none' }}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf"
         onChange={handleChange}
         {...rest}
       />
@@ -111,7 +111,7 @@ export const ImageAdd = ({
       name={`${name}.add`}
       style={{ display: 'none' }}
       type="file"
-      accept="image/*"
+      accept="image/*,application/pdf"
       multiple
       onChange={event => event.target.files && onAdd(event.target.files)}
     />
