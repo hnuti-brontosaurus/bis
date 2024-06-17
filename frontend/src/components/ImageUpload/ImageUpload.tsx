@@ -54,7 +54,7 @@ export const UncontrolledImageUpload = forwardRef<
       />
       {actualValue ? (
         <div className={styles.imageWrapper}>
-          <img src={actualValue} alt="" className={styles.image} />
+          <object data={actualValue} className={styles.image} />
           <div className={styles.editOverlay}>
             <FaPencilAlt size={26} />
           </div>
