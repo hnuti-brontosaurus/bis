@@ -58,12 +58,15 @@ export const getRequiredQualifications = (
 }
 
 export const canBeMainOrganizer = (
-  event: Partial<
-    Pick<Event, 'intended_for' | 'group' | 'category' | 'start' | 'end'>
-  >,
+  event: Partial<Pick<Event, 'intended_for' | 'group' | 'category' | 'start'>>,
   user: User,
   allQualifications: QualificationCategory[],
 ): boolean => {
+  if (!event.start) {
+    throw new Error(
+      'Událost nemá zadaný začátek, není jasné k jakému datu kvalifikace hlavního organizátora kontrolovat.',
+    )
+  }
   if (!user.birthday) throw new Error('Není znám věk hlavního organizátora')
   const age = getAge(user.birthday, event.start)
   if (age < 18) throw new Error('Hlavní organizátor musí mít aspoň 18 let')
@@ -83,7 +86,14 @@ export const canBeMainOrganizer = (
   const required_one_of = getRequiredQualifications(event)
 
   if (required_one_of.length > 0) {
-    if (!hasRequiredQualification(user, required_one_of, allQualifications)) {
+    if (
+      !hasRequiredQualification(
+        user,
+        required_one_of,
+        allQualifications,
+        new Date(event.start),
+      )
+    ) {
       const categories = required_one_of
         .map(slug => allQualifications.find(q => q.slug === slug))
         .filter(q => q) as QualificationCategory[]
@@ -116,17 +126,18 @@ export const canBeMainOrganizer2: typeof canBeMainOrganizer = (
 const getQualificationDict = (qs: QualificationCategory[]) =>
   Object.fromEntries(qs.map(q => [q.id, q]))
 
-const getValidQualifications = (user: User): Qualification[] =>
+const getValidQualifications = (user: User, date: Date): Qualification[] =>
   user.qualifications.filter(
     qualification =>
-      new Date(qualification.valid_since) <= new Date() &&
-      new Date() <= new Date(qualification.valid_till),
+      new Date(qualification.valid_since) <= date &&
+      date <= new Date(qualification.valid_till),
   )
 
 export const hasRequiredQualification = (
   user: User,
   required_one_of: string[],
   allQualifications: QualificationCategory[],
+  date: Date,
 ) => {
   const allQualificationsDict = getQualificationDict(allQualifications)
 
@@ -155,7 +166,7 @@ export const hasRequiredQualification = (
     return false
   }
 
-  const qualifications = getValidQualifications(user)
+  const qualifications = getValidQualifications(user, date)
   for (const qualification of qualifications) {
     let category: QualificationCategory | undefined = qualification.category
     if (requiredCategoryIsPresent(category, requiredOneOf)) return true
