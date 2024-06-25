@@ -58,12 +58,14 @@ export const getRequiredQualifications = (
 }
 
 export const canBeMainOrganizer = (
-  event: Partial<Pick<Event, 'intended_for' | 'group' | 'category' | 'start'>>,
+  event: Partial<
+    Pick<Event, 'intended_for' | 'group' | 'category' | 'start' | 'end'>
+  >,
   user: User,
   allQualifications: QualificationCategory[],
 ): boolean => {
   if (!user.birthday) throw new Error('Není znám věk hlavního organizátora')
-  const age = getAge(user.birthday)
+  const age = getAge(user.birthday, event.start)
   if (age < 18) throw new Error('Hlavní organizátor musí mít aspoň 18 let')
 
   //// turn this on if you want to make sure that organizer is member when organizing...
@@ -162,9 +164,9 @@ export const hasRequiredQualification = (
 }
 
 // https://stackoverflow.com/a/7091965
-function getAge(dateString: string): number {
-  var today = new Date()
-  var birthDate = new Date(dateString)
+function getAge(userDateString: string, targetDateString?: string): number {
+  var today = targetDateString ? new Date(targetDateString) : new Date()
+  var birthDate = new Date(userDateString)
   var age = today.getFullYear() - birthDate.getFullYear()
   var m = today.getMonth() - birthDate.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
