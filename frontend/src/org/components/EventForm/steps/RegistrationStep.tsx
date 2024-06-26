@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { QuestionType } from 'app/services/bisTypes'
-import classNames from 'classnames'
 import {
-  Button,
   FormInputError,
   FormSection,
   FormSectionGroup,
@@ -13,20 +10,15 @@ import {
   Label,
 } from 'components'
 import { form as formTexts } from 'config/static/event'
-import { Controller, FormProvider, useFieldArray } from 'react-hook-form'
-import { FaPlus, FaTrashAlt, FaAngleUp, FaAngleDown } from 'react-icons/fa'
+import { Controller, FormProvider } from 'react-hook-form'
+import { FaAngleUp, FaAngleDown } from 'react-icons/fa'
 import { requireBoolean } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
 import { MethodsShapes } from '..'
 import applicationImage from 'assets/prihlaska.png'
 import applicationImageChild from 'assets/prihlaska_dite.png'
+import { QuestionsFormSection } from 'org/components'
 import styles from './RegistrationStep.module.scss'
-
-const questionTypes: { type: QuestionType; name: string }[] = [
-  { type: 'text', name: 'Odstavec' },
-  { type: 'radio', name: 'Výběr z možností' },
-  { type: 'checkbox', name: 'Zaškrtávací políčka' },
-]
 
 export const RegistrationStep = ({
   methods,
@@ -34,17 +26,13 @@ export const RegistrationStep = ({
   methods: MethodsShapes['registration']
 }) => {
   const { control, register, watch } = methods
-  const questionFields = useFieldArray({
-    control,
-    name: 'questions',
-  })
 
   const isNotOnWeb = watch('propagation.is_shown_on_web') === false
 
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(false)
   const handleClickShowInfo = () => {
-    setShowInfo(!showInfo);
-  };
+    setShowInfo(!showInfo)
+  }
 
   return (
     <FormProvider {...methods}>
@@ -139,8 +127,11 @@ export const RegistrationStep = ({
               {watch('registrationMethod') === 'other' && (
                 <InlineSection>
                   <InfoBox>
-                    Opravdu nechcete použít Standardní přihlášku?<br/>
-                    Standardní přihláška vám ulehčí práci, zjednoduší přihlašování účastníkům a poskytuje stejné funkce jako google formulář.
+                    Opravdu nechcete použít Standardní přihlášku?
+                    <br />
+                    Standardní přihláška vám ulehčí práci, zjednoduší
+                    přihlašování účastníkům a poskytuje stejné funkce jako
+                    google formulář.
                   </InfoBox>
                   <Label required>Odkaz na přihlášku</Label>{' '}
                   <FormInputError>
@@ -174,35 +165,65 @@ export const RegistrationStep = ({
                   header="Přihláška"
                   help={formTexts.registration.questionnaire.help}
                 >
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleClickShowInfo}
                     className={styles.showInfoButton}
                   >
-                    {showInfo ? 
-                    <>
-                      Skrýt info
-                      <FaAngleUp />
-                    </>
-                     : 
-                     <>
-                      Zobraz si více informací a výhod standardní přihlášky 
-                      <FaAngleDown />
-                     </>
-                     }
+                    {showInfo ? (
+                      <>
+                        Skrýt info
+                        <FaAngleUp />
+                      </>
+                    ) : (
+                      <>
+                        Zobraz si více informací a výhod standardní přihlášky
+                        <FaAngleDown />
+                      </>
+                    )}
                   </button>
-                  {showInfo ?
+                  {showInfo ? (
                     <InfoBox>
-                      <strong>Standardní přihláška vám ulehčí práci, zjednoduší a sjednotí přihlašování účastníkům a poskytuje stejné funkce jako google formulář.</strong><br/><br/>
-                      U Standartní přihlášky na brontowebu se na webu HB vždy automaticky zobrazí standartní přihláška HB s dotazem na jméno, příjmení, datum narození, telefon, e-mail a prostorem pro poznámku. Pokud se přihlašuje dítě, je tam možné vyplnit i kontaktní údaje na rodiče.<br/><br/>
-                      Pokud si k přihlášce chcete přidat jakýkoliv vlastní vlastní text nebo otázky, můžete si vytvořit vlastní část dotazníku, která se k Standartní přihlášce připojí.<br/><br/>
-                      Vyplněné Standardní přihlášky vám automaticky budou chodit na kontaktní e-mail uvedený u akce. Zároveň se přihlášky automaticky propíšou do BIS. <strong>Jedním kliknutím si pak vytvoříš seznam účastníků nebo vygeneruješ prezenční listinu.</strong>
+                      <strong>
+                        Standardní přihláška vám ulehčí práci, zjednoduší a
+                        sjednotí přihlašování účastníkům a poskytuje stejné
+                        funkce jako google formulář.
+                      </strong>
+                      <br />
+                      <br />
+                      U Standartní přihlášky na brontowebu se na webu HB vždy
+                      automaticky zobrazí standartní přihláška HB s dotazem na
+                      jméno, příjmení, datum narození, telefon, e-mail a
+                      prostorem pro poznámku. Pokud se přihlašuje dítě, je tam
+                      možné vyplnit i kontaktní údaje na rodiče.
+                      <br />
+                      <br />
+                      Pokud si k přihlášce chcete přidat jakýkoliv vlastní
+                      vlastní text nebo otázky, můžete si vytvořit vlastní část
+                      dotazníku, která se k Standartní přihlášce připojí.
+                      <br />
+                      <br />
+                      Vyplněné Standardní přihlášky vám automaticky budou chodit
+                      na kontaktní e-mail uvedený u akce. Zároveň se přihlášky
+                      automaticky propíšou do BIS.{' '}
+                      <strong>
+                        Jedním kliknutím si pak vytvoříš seznam účastníků nebo
+                        vygeneruješ prezenční listinu.
+                      </strong>
                       <div className={styles.imageWrapper}>
-                        <img className={styles.applicationImage} src={applicationImage} alt="přihláška" />
-                        <img className={styles.applicationImage} src={applicationImageChild} alt="přihláška dítě" />
+                        <img
+                          className={styles.applicationImage}
+                          src={applicationImage}
+                          alt="přihláška"
+                        />
+                        <img
+                          className={styles.applicationImage}
+                          src={applicationImageChild}
+                          alt="přihláška dítě"
+                        />
                       </div>
                     </InfoBox>
-                  : null }
+                  ) : null}
                   <FormSubsection
                     header="Úvod k dotazníku"
                     help={
@@ -236,104 +257,7 @@ export const RegistrationStep = ({
                       </FormInputError>
                     </FullSizeElement>
                   </FormSubsection>
-                  <FormSubsection
-                    header="Otázky"
-                    help={
-                      'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností'
-                    }
-                  >
-                    <div className={styles.questionsBox}>
-                      <ul className={styles.questionList}>
-                        {questionFields.fields.map((item, index) => (
-                          <li key={item.id}>
-                            <div className={styles.question}>
-                              Otázka {index + 1}
-                              <div className={styles.questionInputGroup}>
-                                <FormInputError
-                                  className={styles.questionInput}
-                                >
-                                  <input
-                                    type="text"
-                                    {...register(
-                                      `questions.${index}.question` as const,
-                                      { required: messages.required },
-                                    )}
-                                  />
-                                </FormInputError>
-                                <FormInputError className={styles.typeInput}>
-                                  <select
-                                    {...register(
-                                      `questions.${index}.data.type`,
-                                      { required: messages.required },
-                                    )}
-                                  >
-                                    {questionTypes.map(({ type, name }) => (
-                                      <option key={type} value={type}>
-                                        {name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </FormInputError>
-                                <label
-                                  className={classNames(
-                                    'checkboxLabel',
-                                    styles.questionRequired,
-                                  )}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    {...register(
-                                      `questions.${index}.is_required` as const,
-                                    )}
-                                  />{' '}
-                                  povinné?
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => questionFields.remove(index)}
-                                  className={styles.delete}
-                                  aria-label="Smazat otázku"
-                                  title="Smazat otázku"
-                                >
-                                  <FaTrashAlt />
-                                </button>
-                              </div>
-                              {['radio', 'checkbox'].includes(
-                                watch(`questions.${index}.data.type`),
-                              ) && (
-                                <QuestionOptions
-                                  question={index}
-                                  methods={methods}
-                                  type={
-                                    watch(`questions.${index}.data.type`) as
-                                      | 'radio'
-                                      | 'checkbox'
-                                  }
-                                />
-                              )}
-                            </div>
-                          </li>
-                        ))}
-                        <li>
-                          <button
-                            className={styles.addQuestionButton}
-                            type="button"
-                            onClick={() =>
-                              questionFields.append({
-                                question: '',
-                                data: {
-                                  type: 'text',
-                                  options: [{ option: '' }],
-                                },
-                              })
-                            }
-                          >
-                            Přidat otázku <FaPlus />
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </FormSubsection>
+                  <QuestionsFormSection name="questions" methods={methods} />
                 </FormSubsection>
               )}
             </>
@@ -341,68 +265,5 @@ export const RegistrationStep = ({
         </FormSectionGroup>
       </form>
     </FormProvider>
-  )
-}
-
-const QuestionOptions = ({
-  question,
-  methods,
-  type,
-}: {
-  question: number
-  methods: MethodsShapes['registration']
-  type: 'radio' | 'checkbox'
-}) => {
-  const { control, register } = methods
-  const optionFields = useFieldArray({
-    control,
-    name: `questions.${question}.data.options`,
-  })
-
-  return (
-    <div>
-      <ul
-        className={classNames(
-          styles.options,
-          type === 'radio' ? styles.radio : styles.checkbox,
-        )}
-      >
-        {optionFields.fields.map((item, index) => (
-          <li key={item.id}>
-            <div className={styles.option}>
-              <FormInputError>
-                <input
-                  {...register(
-                    `questions.${question}.data.options.${index}.option`,
-                    { required: messages.required },
-                  )}
-                />
-              </FormInputError>
-              <button
-                type="button"
-                onClick={() => optionFields.remove(index)}
-                className={styles.delete}
-                aria-label="Smazat možnost"
-                title="Smazat možnost"
-              >
-                <FaTrashAlt />
-              </button>
-            </div>
-          </li>
-        ))}
-        <li>
-          <Button
-            tertiary
-            className={styles.addOptionButton}
-            type="button"
-            onClick={() => {
-              optionFields.append({ option: '' })
-            }}
-          >
-            Přidat možnost <FaPlus />
-          </Button>
-        </li>
-      </ul>
-    </div>
   )
 }
