@@ -26,6 +26,7 @@ import { hasFormError, withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
 import { EvidenceStep } from './EvidenceStep'
+import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
 
 export type CloseEventPayload = DeepPick<
@@ -354,6 +355,11 @@ export const CloseEventForm = ({
           isVolunteering={isVolunteering}
           methods={evidenceFormMethods}
           firstIndex={countEvidenceFirstStep()}
+        />
+      </Step>
+      <Step name="zpětná vazba">
+        <FeedbackStep
+          firstIndex={countEvidenceFirstStep() + 6} // TODO decrement if feedback section is removed from "práce a další"
         />
       </Step>
     </Steps>
