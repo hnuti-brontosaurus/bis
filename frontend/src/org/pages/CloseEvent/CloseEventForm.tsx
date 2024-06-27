@@ -7,6 +7,7 @@ import {
   FinanceReceipt,
   PatchedEvent,
   Record,
+  Question,
 } from 'app/services/bisTypes'
 import { Step, Steps } from 'components'
 import * as translations from 'config/static/combinedTranslations'
@@ -68,6 +69,10 @@ export type ParticipantsStepFormInnerShape = Assign<
     }
   }
 >
+
+export type FeedbackStepFormShape = {
+  inquiries: Optional<Question, 'id' | 'order'>[]
+}
 
 export type CloseEventFormData = EvidenceStepFormShape &
   ParticipantsStepFormShape
@@ -219,6 +224,9 @@ export const CloseEventForm = ({
     defaultValues: pickParticipantsData(initialAndSavedData),
     resolver: yupResolver(validationSchema),
   })
+  const feedbackFormMethods = useForm<FeedbackStepFormShape>({
+    defaultValues: { inquiries: [] },
+  })
   const { getValues: getValuesParticipants } = participantsFormMethods
 
   const countEvidenceFirstStep = () => {
@@ -359,6 +367,7 @@ export const CloseEventForm = ({
       </Step>
       <Step name="zpětná vazba">
         <FeedbackStep
+          methods={feedbackFormMethods}
           firstIndex={countEvidenceFirstStep() + 6} // TODO decrement if feedback section is removed from "práce a další"
         />
       </Step>
