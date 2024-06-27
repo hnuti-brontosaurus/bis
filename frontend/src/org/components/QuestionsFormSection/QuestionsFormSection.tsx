@@ -1,8 +1,14 @@
 import { QuestionType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import { Button, FormInputError, FormSubsection } from 'components'
-import { FC } from 'react'
-import { useFieldArray, UseFormReturn } from 'react-hook-form'
+import {
+  ArrayPath,
+  Path,
+  FieldValues,
+  useFieldArray,
+  UseFormReturn,
+  FieldArray,
+} from 'react-hook-form'
 import { FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
 import styles from './QuestionsFormSection.module.scss'
@@ -13,15 +19,20 @@ const questionTypes: { type: QuestionType; name: string }[] = [
   { type: 'checkbox', name: 'Zaškrtávací políčka' },
 ]
 
-const QuestionOptions: FC<{
-  name: string
+const QuestionOptions = <V extends FieldValues>({
+  name,
+  question,
+  methods,
+  type,
+}: {
+  name: ArrayPath<V>
   question: number
-  methods: UseFormReturn
+  methods: UseFormReturn<V>
   type: 'checkbox' | 'radio'
-}> = ({ name, question, methods, type }) => {
+}) => {
   const { register, control } = methods
   const fields = useFieldArray({
-    name: `${name}.${question}.data.options`,
+    name: `${name}.${question}.data.options` as ArrayPath<V>,
     control,
   })
   return (
@@ -38,7 +49,7 @@ const QuestionOptions: FC<{
               <FormInputError>
                 <input
                   {...register(
-                    `${name}.${question}.data.options.${index}.option`,
+                    `${name}.${question}.data.options.${index}.option` as Path<V>,
                     { required: messages.required },
                   )}
                 />
@@ -61,7 +72,7 @@ const QuestionOptions: FC<{
             className={styles.addOptionButton}
             type="button"
             onClick={() => {
-              fields.append({ option: '' })
+              fields.append({ option: '' } as FieldArray<V, ArrayPath<V>>)
             }}
           >
             Přidat možnost <FaPlus />
@@ -72,10 +83,13 @@ const QuestionOptions: FC<{
   )
 }
 
-export const QuestionsFormSection: FC<{
-  name: string
-  methods: UseFormReturn
-}> = ({ name, methods }) => {
+export const QuestionsFormSection = <V extends FieldValues>({
+  name,
+  methods,
+}: {
+  name: ArrayPath<V>
+  methods: UseFormReturn<V>
+}) => {
   const { control, register, watch } = methods
   const fields = useFieldArray({ name, control })
   return (
@@ -95,14 +109,14 @@ export const QuestionsFormSection: FC<{
                   <FormInputError className={styles.questionInput}>
                     <input
                       type="text"
-                      {...register(`${name}.${index}.question` as const, {
+                      {...register(`${name}.${index}.question` as Path<V>, {
                         required: messages.required,
                       })}
                     />
                   </FormInputError>
                   <FormInputError className={styles.typeInput}>
                     <select
-                      {...register(`${name}.${index}.data.type`, {
+                      {...register(`${name}.${index}.data.type` as Path<V>, {
                         required: messages.required,
                       })}
                     >
@@ -121,7 +135,7 @@ export const QuestionsFormSection: FC<{
                   >
                     <input
                       type="checkbox"
-                      {...register(`${name}.${index}.is_required` as const)}
+                      {...register(`${name}.${index}.is_required` as Path<V>)}
                     />{' '}
                     povinné?
                   </label>
@@ -136,14 +150,14 @@ export const QuestionsFormSection: FC<{
                   </button>
                 </div>
                 {['radio', 'checkbox'].includes(
-                  watch(`${name}.${index}.data.type`),
+                  watch(`${name}.${index}.data.type` as Path<V>),
                 ) && (
                   <QuestionOptions
                     name={name}
                     question={index}
                     methods={methods}
                     type={
-                      watch(`${name}.${index}.data.type`) as
+                      watch(`${name}.${index}.data.type` as Path<V>) as
                         | 'radio'
                         | 'checkbox'
                     }
@@ -163,7 +177,7 @@ export const QuestionsFormSection: FC<{
                     type: 'text',
                     options: [{ option: '' }],
                   },
-                })
+                } as FieldArray<V, ArrayPath<V>>)
               }
             >
               Přidat otázku <FaPlus />
