@@ -75,10 +75,12 @@ export type FeedbackStepFormShape = {
 }
 
 export type CloseEventFormData = EvidenceStepFormShape &
-  ParticipantsStepFormShape
+  ParticipantsStepFormShape &
+  FeedbackStepFormShape
 
 export type CloseEventFormShape = EvidenceStepFormShape &
-  ParticipantsStepFormInnerShape
+  ParticipantsStepFormInnerShape &
+  FeedbackStepFormShape
 
 const pickEvidenceData = (data: Partial<CloseEventFormShape>) =>
   pick(
@@ -100,6 +102,9 @@ const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
     'record.participantInputType',
     'record.contacts',
   )
+
+const pickFeedbackData = (data: Partial<CloseEventFormShape>) =>
+  pick(data, 'inquiries')
 
 const formData2payload = ({
   is_closed,
@@ -225,7 +230,7 @@ export const CloseEventForm = ({
     resolver: yupResolver(validationSchema),
   })
   const feedbackFormMethods = useForm<FeedbackStepFormShape>({
-    defaultValues: { inquiries: [] },
+    defaultValues: pickFeedbackData(initialAndSavedData),
   })
   const { getValues: getValuesParticipants } = participantsFormMethods
 
@@ -250,6 +255,7 @@ export const CloseEventForm = ({
     id,
     evidenceFormMethods.watch,
     participantsFormMethods.watch,
+    feedbackFormMethods.watch,
   )
 
   const isVolunteering = event.category.slug === 'public__volunteering'
@@ -269,9 +275,11 @@ export const CloseEventForm = ({
     let evidence: EvidenceStepFormShape = {} as EvidenceStepFormShape
     let participants: ParticipantsStepFormInnerShape =
       {} as ParticipantsStepFormInnerShape
+    let feedback = {} as FeedbackStepFormShape
     let isValid = true
     let evidenceErrors: FieldErrorsImpl<EvidenceStepFormShape> = {}
     let participantsErrors: FieldErrorsImpl<ParticipantsStepFormInnerShape> = {}
+    let feedbackErrors: FieldErrorsImpl<FeedbackStepFormShape> = {}
     await Promise.all([
       evidenceFormMethods.handleSubmit(
         data => {
@@ -293,6 +301,16 @@ export const CloseEventForm = ({
           participants = participantsFormMethods.getValues()
         },
       )(),
+      feedbackFormMethods.handleSubmit(
+        data => {
+          feedback = data
+        },
+        errors => {
+          isValid = false
+          feedbackErrors = errors
+          feedback = feedbackFormMethods.getValues()
+        },
+      )(),
     ])
 
     if (is_closed && !isValid) {
@@ -311,6 +329,7 @@ export const CloseEventForm = ({
         {},
         evidence,
         participants,
+        feedback,
         { is_closed },
         {
           photos: evidence?.photos?.filter(photo => photo.photo) || [],
