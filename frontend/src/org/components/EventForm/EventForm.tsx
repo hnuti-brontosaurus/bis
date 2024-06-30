@@ -555,6 +555,9 @@ export const EventForm: FC<{
         <InvitationStep
           isVolunteering={isVolunteering}
           methods={methods.invitation}
+          isWeekendEvent={isWeekendEvent}
+          isCamp={isCamp}
+          isInternalSectionMeeting={isInternalSectionMeeting}
         />
       </Step>
       <Step
@@ -565,6 +568,9 @@ export const EventForm: FC<{
           methods={methods.organizers}
           mainOrganizerDependencies={mainOrganizerDependencies}
           isNotOnWeb={isNotOnWeb}
+          isWeekendEvent={isWeekendEvent}
+          isCamp={isCamp}
+          isInternalSectionMeeting={isInternalSectionMeeting}
         />
       </Step>
       <Step name="přihlášky" hidden={!initialData?.id}>
