@@ -17,6 +17,7 @@ export const useAllowedToCreateEvent = () => {
       currentUser,
       allQualifications.results.map(q => q.slug),
       allQualifications.results,
+      new Date(),
     )
   /* The line below is commented out because at the moment,
       we want to allow every organizer to create actions
