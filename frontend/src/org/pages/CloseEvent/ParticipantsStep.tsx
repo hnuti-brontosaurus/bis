@@ -149,7 +149,7 @@ export const ParticipantsStep = ({
                 <FormSection required header="Počet účastníků">
                   {event.number_of_sub_events &&
                     event.number_of_sub_events > 1 && (
-                      <div>
+                      <div className={styles.note}>
                         Tato akce je zadaná jako opakovaná. Zadejte tedy celkový
                         počet všech účastníků, kteří se opakovaných akcí
                         účastnili. Např. pokud se akce opakuje 3x s průměrnou
