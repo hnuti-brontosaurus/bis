@@ -13,7 +13,11 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
     <form>
       <FormSectionGroup startIndex={firstIndex}>
         <FormSection header="zpětná vazba">
-          <QuestionsFormSection name="inquiries" methods={methods} />
+          <QuestionsFormSection
+            name="inquiries"
+            questionName="inquiry"
+            methods={methods}
+          />
         </FormSection>
       </FormSectionGroup>
     </form>

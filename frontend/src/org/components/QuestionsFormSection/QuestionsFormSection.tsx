@@ -86,8 +86,10 @@ const QuestionOptions = <V extends FieldValues>({
 export const QuestionsFormSection = <V extends FieldValues>({
   name,
   methods,
+  questionName,
 }: {
   name: ArrayPath<V>
+  questionName: string
   methods: UseFormReturn<V>
 }) => {
   const { control, register, watch } = methods
@@ -109,9 +111,12 @@ export const QuestionsFormSection = <V extends FieldValues>({
                   <FormInputError className={styles.questionInput}>
                     <input
                       type="text"
-                      {...register(`${name}.${index}.question` as Path<V>, {
-                        required: messages.required,
-                      })}
+                      {...register(
+                        `${name}.${index}.${questionName}` as Path<V>,
+                        {
+                          required: messages.required,
+                        },
+                      )}
                     />
                   </FormInputError>
                   <FormInputError className={styles.typeInput}>

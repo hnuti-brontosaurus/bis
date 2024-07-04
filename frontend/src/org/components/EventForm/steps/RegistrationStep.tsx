@@ -257,7 +257,11 @@ export const RegistrationStep = ({
                       </FormInputError>
                     </FullSizeElement>
                   </FormSubsection>
-                  <QuestionsFormSection name="questions" methods={methods} />
+                  <QuestionsFormSection
+                    name="questions"
+                    questionName="question"
+                    methods={methods}
+                  />
                 </FormSubsection>
               )}
             </>
