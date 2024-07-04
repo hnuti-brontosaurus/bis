@@ -26,6 +26,7 @@ import { Assign, Optional } from 'utility-types'
 import { hasFormError, withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
+import { Inquiry, InquiryRead } from '../../../app/services/testApi'
 import { EvidenceStep } from './EvidenceStep'
 import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
@@ -37,6 +38,7 @@ export type CloseEventPayload = DeepPick<
   photos: EventPhotoPayload[]
   pages: AttendanceListPagePayload[]
   receipts: Optional<FinanceReceipt, 'id'>[]
+  inquiries: Optional<InquiryRead, 'id'>[]
 }
 
 // Forms setup
@@ -71,7 +73,7 @@ export type ParticipantsStepFormInnerShape = Assign<
 >
 
 export type FeedbackStepFormShape = {
-  inquiries: Optional<Question, 'id' | 'order'>[]
+  inquiries: Optional<InquiryRead, 'id' | 'order'>[]
 }
 
 export type CloseEventFormData = EvidenceStepFormShape &
