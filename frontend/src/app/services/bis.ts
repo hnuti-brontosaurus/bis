@@ -19,6 +19,7 @@
  * TODO maybe we'll split this file into multiple
  */
 
+import { BaseQueryArg } from '@reduxjs/toolkit/dist/query/baseQueryTypes'
 // Need to use the React-specific entry point to import createApi
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { RootState } from 'app/store'
@@ -64,6 +65,7 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
+import { Inquiry, InquiryRead } from './testApi'
 
 export const ALL_USERS = 2000
 
@@ -92,6 +94,7 @@ export const api = createApi({
     'EventImage',
     'EventPhoto',
     'EventQuestion',
+    'EventFeedbackInquiry',
     'FinanceReceipt',
     'Location',
     'Opportunity',
@@ -694,6 +697,85 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { id, eventId }) => [
         { type: 'EventQuestion', id: `${eventId}_${id}` },
         { type: 'EventQuestion', id: `${eventId}_QUESTION_LIST` },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
+    createEventFeedbackInquiry: build.mutation<
+      Inquiry,
+      { eventId: number; inquiry: Inquiry }
+    >({
+      query: ({ eventId, inquiry }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/`,
+        method: 'POST',
+        body: inquiry,
+      }),
+      invalidatesTags: (_result, _error, { eventId }) => [
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
+    readEventFeedbackInquiries: build.query<
+      PaginatedList<InquiryRead>,
+      { eventId: number } & ListArguments
+    >({
+      query: queryArg => ({
+        url: `/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+      providesTags: (results, error, { eventId }) =>
+        results?.results
+          ? results.results
+              .map(inquiry => ({
+                type: 'EventFeedbackInquiry' as const,
+                id: `${eventId}_${inquiry.id}`,
+              }))
+              .concat([
+                {
+                  type: 'EventFeedbackInquiry' as const,
+                  id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+                },
+              ])
+          : [],
+    }),
+    updateEventFeedbackInquiry: build.mutation<
+      Inquiry,
+      { eventId: number; id: number; inquiry: Partial<Inquiry> }
+    >({
+      query: ({ eventId, id, inquiry }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        method: 'PATCH',
+        body: inquiry,
+      }),
+      invalidatesTags: (_result, _error, { id, eventId }) => [
+        { type: 'EventFeedbackInquiry', id: `${eventId}_${id}` },
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
+    deleteEventFeedbackInquiry: build.mutation<
+      void,
+      { eventId: number; id: number }
+    >({
+      query: ({ eventId, id }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { id, eventId }) => [
+        { type: 'EventFeedbackInquiry', id: `${eventId}_${id}` },
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
         { type: 'WebEvent', id: eventId },
       ],
     }),
