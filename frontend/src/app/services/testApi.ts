@@ -766,6 +766,126 @@ const injectedRtkApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+    frontendEventsRecordFeedbackFormInquiriesList: build.query<
+      FrontendEventsRecordFeedbackFormInquiriesListApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesListApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+    }),
+    frontendEventsRecordFeedbackFormInquiriesCreate: build.mutation<
+      FrontendEventsRecordFeedbackFormInquiriesCreateApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesCreateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        method: 'POST',
+        body: queryArg.inquiry,
+      }),
+    }),
+    frontendEventsRecordFeedbackFormInquiriesRetrieve: build.query<
+      FrontendEventsRecordFeedbackFormInquiriesRetrieveApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesRetrieveApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+      }),
+    }),
+    frontendEventsRecordFeedbackFormInquiriesUpdate: build.mutation<
+      FrontendEventsRecordFeedbackFormInquiriesUpdateApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesUpdateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        method: 'PUT',
+        body: queryArg.inquiry,
+      }),
+    }),
+    frontendEventsRecordFeedbackFormInquiriesPartialUpdate: build.mutation<
+      FrontendEventsRecordFeedbackFormInquiriesPartialUpdateApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesPartialUpdateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        method: 'PATCH',
+        body: queryArg.patchedInquiry,
+      }),
+    }),
+    frontendEventsRecordFeedbackFormInquiriesDestroy: build.mutation<
+      FrontendEventsRecordFeedbackFormInquiriesDestroyApiResponse,
+      FrontendEventsRecordFeedbackFormInquiriesDestroyApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        method: 'DELETE',
+      }),
+    }),
+    frontendEventsRecordFeedbacksList: build.query<
+      FrontendEventsRecordFeedbacksListApiResponse,
+      FrontendEventsRecordFeedbacksListApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+    }),
+    frontendEventsRecordFeedbacksCreate: build.mutation<
+      FrontendEventsRecordFeedbacksCreateApiResponse,
+      FrontendEventsRecordFeedbacksCreateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        method: 'POST',
+        body: queryArg.eventFeedback,
+      }),
+    }),
+    frontendEventsRecordFeedbacksRetrieve: build.query<
+      FrontendEventsRecordFeedbacksRetrieveApiResponse,
+      FrontendEventsRecordFeedbacksRetrieveApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+      }),
+    }),
+    frontendEventsRecordFeedbacksUpdate: build.mutation<
+      FrontendEventsRecordFeedbacksUpdateApiResponse,
+      FrontendEventsRecordFeedbacksUpdateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        method: 'PUT',
+        body: queryArg.eventFeedback,
+      }),
+    }),
+    frontendEventsRecordFeedbacksPartialUpdate: build.mutation<
+      FrontendEventsRecordFeedbacksPartialUpdateApiResponse,
+      FrontendEventsRecordFeedbacksPartialUpdateApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        method: 'PATCH',
+        body: queryArg.patchedEventFeedback,
+      }),
+    }),
+    frontendEventsRecordFeedbacksDestroy: build.mutation<
+      FrontendEventsRecordFeedbacksDestroyApiResponse,
+      FrontendEventsRecordFeedbacksDestroyApiArg
+    >({
+      query: queryArg => ({
+        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        method: 'DELETE',
+      }),
+    }),
     frontendEventsRecordParticipantsList: build.query<
       FrontendEventsRecordParticipantsListApiResponse,
       FrontendEventsRecordParticipantsListApiArg
@@ -1934,6 +2054,99 @@ export type FrontendEventsRecordAttendanceListPagesDestroyApiArg = {
   /** A unique integer value identifying this Prezenční listina. */
   id: number
 }
+export type FrontendEventsRecordFeedbackFormInquiriesListApiResponse =
+  /** status 200  */ PaginatedInquiryListRead
+export type FrontendEventsRecordFeedbackFormInquiriesListApiArg = {
+  eventId: string
+  /** A page number within the paginated result set. */
+  page?: number
+  /** Number of results to return per page. */
+  pageSize?: number
+  /** A search term. */
+  search?: string
+}
+export type FrontendEventsRecordFeedbackFormInquiriesCreateApiResponse =
+  /** status 201  */ InquiryRead
+export type FrontendEventsRecordFeedbackFormInquiriesCreateApiArg = {
+  eventId: string
+  inquiry: Inquiry
+}
+export type FrontendEventsRecordFeedbackFormInquiriesRetrieveApiResponse =
+  /** status 200  */ InquiryRead
+export type FrontendEventsRecordFeedbackFormInquiriesRetrieveApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Otázka zpětné vazby. */
+  id: number
+}
+export type FrontendEventsRecordFeedbackFormInquiriesUpdateApiResponse =
+  /** status 200  */ InquiryRead
+export type FrontendEventsRecordFeedbackFormInquiriesUpdateApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Otázka zpětné vazby. */
+  id: number
+  inquiry: Inquiry
+}
+export type FrontendEventsRecordFeedbackFormInquiriesPartialUpdateApiResponse =
+  /** status 200  */ InquiryRead
+export type FrontendEventsRecordFeedbackFormInquiriesPartialUpdateApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Otázka zpětné vazby. */
+  id: number
+  patchedInquiry: PatchedInquiry
+}
+export type FrontendEventsRecordFeedbackFormInquiriesDestroyApiResponse =
+  unknown
+export type FrontendEventsRecordFeedbackFormInquiriesDestroyApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Otázka zpětné vazby. */
+  id: number
+}
+export type FrontendEventsRecordFeedbacksListApiResponse =
+  /** status 200  */ PaginatedEventFeedbackListRead
+export type FrontendEventsRecordFeedbacksListApiArg = {
+  eventId: string
+  /** A page number within the paginated result set. */
+  page?: number
+  /** Number of results to return per page. */
+  pageSize?: number
+  /** A search term. */
+  search?: string
+}
+export type FrontendEventsRecordFeedbacksCreateApiResponse =
+  /** status 201  */ EventFeedbackRead
+export type FrontendEventsRecordFeedbacksCreateApiArg = {
+  eventId: string
+  eventFeedback: EventFeedback
+}
+export type FrontendEventsRecordFeedbacksRetrieveApiResponse =
+  /** status 200  */ EventFeedbackRead
+export type FrontendEventsRecordFeedbacksRetrieveApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Zpětná vazba k akci. */
+  id: number
+}
+export type FrontendEventsRecordFeedbacksUpdateApiResponse =
+  /** status 200  */ EventFeedbackRead
+export type FrontendEventsRecordFeedbacksUpdateApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Zpětná vazba k akci. */
+  id: number
+  eventFeedback: EventFeedback
+}
+export type FrontendEventsRecordFeedbacksPartialUpdateApiResponse =
+  /** status 200  */ EventFeedbackRead
+export type FrontendEventsRecordFeedbacksPartialUpdateApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Zpětná vazba k akci. */
+  id: number
+  patchedEventFeedback: PatchedEventFeedback
+}
+export type FrontendEventsRecordFeedbacksDestroyApiResponse = unknown
+export type FrontendEventsRecordFeedbacksDestroyApiArg = {
+  eventId: string
+  /** A unique integer value identifying this Zpětná vazba k akci. */
+  id: number
+}
 export type FrontendEventsRecordParticipantsListApiResponse =
   /** status 200  */ PaginatedUserList
 export type FrontendEventsRecordParticipantsListApiArg = {
@@ -2367,8 +2580,10 @@ export type WebEventsListApiResponse = /** status 200  */ PaginatedEventList
 export type WebEventsListApiArg = {
   /** Více hodnot lze oddělit čárkami.
     
-    * `1` - Brontík */
-  administrationUnit?: 1[]
+    * `1` - Brontík
+    * `2` - Dobrovolně
+    * `3` - pokus */
+  administrationUnit?: (1 | 2 | 3)[]
   /** Více hodnot lze oddělit čárkami.
     
     * `internal__general_meeting` - Interní - Valná hromada
@@ -2411,8 +2626,8 @@ export type WebEventsListApiArg = {
   /** Více hodnot lze oddělit čárkami.
     
     * `camp` - Tábor
-    * `weekend_event` - Víkendovka
-    * `other` - Ostatní */
+    * `weekend_event` - Víkendovka (Brďo schůzka)
+    * `other` - Jednodenní (bez adresáře) */
   group?: ('camp' | 'other' | 'weekend_event')[]
   /** Více hodnot lze oddělit čárkami.
     
@@ -2653,6 +2868,10 @@ export type PaginatedOpportunityCategoryList = {
   results?: OpportunityCategory[]
 }
 export type OrganizerRoleCategory = {
+  name: string
+  slug: string
+}
+export type OrganizerRoleCategoryRead = {
   id: number
   name: string
   slug: string
@@ -2749,6 +2968,7 @@ export type PatchedEventDraft = {
   }
 }
 export type Finance = {
+  /** Pro zaslání dotací */
   bank_account_number?: string
   grant_category: GrantCategory
   grant_amount?: number | null
@@ -2759,26 +2979,39 @@ export type Propagation = {
   is_shown_on_web: boolean
   minimum_age?: number | null
   maximum_age?: number | null
+  /** Max. 12 znaků, "Kč" je doplněno automaticky, nechte prázdné pokud je akce bez poplatku */
   cost: string
   accommodation?: string
+  /** Pouze pro dobrovolnické akce */
   working_hours?: number | null
+  /** Pouze pro vícedenní dobrovolnické akce */
   working_days?: number | null
   diets: DietCategory[]
   organizers: string
   web_url?: string
   _contact_url?: string
   invitation_text_introduction: string
+  /** Stručný popis programu akce – jakého typu budou aktivity na akci, kde se bude spát, co se bude jíst a další praktické záležitosti. Nezapomeň zdůraznit, zda bude program aktivní a plný zážitkového programu nebo bude spíše poklidnější nebo zaměřený na vzdělávání. Také napiš zda bude program fyzicky popř. psychicky náročný, aby účastníci věděli co mají čekat. */
   invitation_text_practical_information: string
+  /** Stručně popiš dobrovolnickou činnost a její smysl pro přírodu, památky nebo lidi (např. „sázíme vrbky, aby měli místní ptáci kde hnízdit“). Zasaď dobrovolnickou pomoc do kontextu místa a jeho příběhu (např. “kosením pomůžeme udržet pestrost nejvzácnější louky unikátní krajiny Bílých Karpat, jež …” ). Napiš, co se při práci účastníci naučí a v čem je to může rozvinout. Přidej i další zajímavosti, které se vážou k dané dobrovolnické činnosti a lokalitě. Uveď kolik prostoru na akci se bude věnovat dobrovolnické činnosti a jak bude náročná. */
   invitation_text_work_description?: string
+  /** Malá ochutnávka uvádí fotky, které k akci přiložíte. Popište fotky, které přikládáte nebo přibližte jak vypadaly akce na stejném místě v minulosti. U nových akcí můžete více ukázat místo a důvody proč vás oslovilo a představit organizátory. */
   invitation_text_about_us?: string
+  /** Nechte prázdné pokud chcete použít jméno kontaktní osoby */
   contact_name: string
+  /** Nechte prázdné pokud chcete použít telefon kontaktní osoby */
   contact_phone?: string
+  /** Nechte prázdné pokud chcete použít e-mail kontaktní osoby */
   contact_email?: string
 }
 export type VipPropagation = {
-  goals_of_event: string
-  program: string
-  short_invitation_text: string
+  /** Jaké je hlavní téma vaší akce? Jaké jsou hlavní cíle akce? Co nejvýstižněji popište, co akce přináší účastníkům, co zajímavého si zkusí, co se dozví, naučí, v čem se rozvinou... */
+  goals_of_event?: string
+  /** V základu uveďte, jak bude vaše akce programově a dramaturgicky koncipována (motivační příběh, zaměření programu – hry, diskuse, řemesla,...). Uveďte, jak náplň a program akce reflektují potřeby vaší cílové skupiny prvoúčastníků. */
+  program?: string
+  /** Ve 2-4 větách nalákejte na vaši akci a zdůrazněte osobní přínos pro účastníky (max. 200 znaků). */
+  short_invitation_text?: string
+  /** Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 100 Kč. */
   rover_propagation?: boolean
 }
 export type Questionnaire = {
@@ -2801,7 +3034,9 @@ export type Record = {
   total_hours_worked?: number | null
   comment_on_work_done?: string
   participants?: string[]
+  /** Vyplň pouze pokud nejsou vyplnění konkrétní účastníci */
   number_of_participants?: number | null
+  /** Vyplň pouze pokud nejsou vyplnění konkrétní účastníci */
   number_of_participants_under_26?: number | null
   note?: string
   contacts?: EventContact[]
@@ -2809,8 +3044,11 @@ export type Record = {
 export type Event = {
   id: number
   name: string
+  /** Akce se nebude konat / nekonala */
   is_canceled?: boolean
+  /** Příznak, zda-li jsou všechny povinné údaje po akci vyplněny */
   is_closed?: boolean
+  /** Zarchivovaná akce nelze editovat */
   is_archived?: boolean
   start: string
   start_time?: string | null
@@ -2818,6 +3056,7 @@ export type Event = {
   number_of_sub_events?: number
   tags?: number[] | EventTag[]
   location: number
+  /** Vyplňte, pokud se akce koná online */
   online_link?: string
   group: EventGroupCategory
   category: EventCategory
@@ -2868,6 +3107,7 @@ export type Donation = {
 }
 export type Donor = {
   subscribed_to_newsletter?: boolean
+  /** na webu a v závěrečné zprávě */
   is_public?: boolean
   date_joined: string
   regional_center_support?: number | null
@@ -2990,6 +3230,110 @@ export type PatchedAttendanceListPage = {
   id?: number
   page?: string | null
 }
+export type Inquiry = {
+  inquiry: string
+  data?: {
+    [key: string]: any
+  }
+  is_required?: boolean
+  order?: number
+}
+export type InquiryRead = {
+  id: number
+  inquiry: string
+  data?: {
+    [key: string]: any
+  }
+  is_required?: boolean
+  order?: number
+}
+export type PaginatedInquiryList = {
+  count?: number
+  next?: string | null
+  previous?: string | null
+  results?: Inquiry[]
+}
+export type PaginatedInquiryListRead = {
+  count?: number
+  next?: string | null
+  previous?: string | null
+  results?: InquiryRead[]
+}
+export type PatchedInquiry = {
+  inquiry?: string
+  data?: {
+    [key: string]: any
+  }
+  is_required?: boolean
+  order?: number
+}
+export type PatchedInquiryRead = {
+  id?: number
+  inquiry?: string
+  data?: {
+    [key: string]: any
+  }
+  is_required?: boolean
+  order?: number
+}
+export type Reply = {
+  inquiry: Inquiry
+  reply: string
+  data?: {
+    [key: string]: any
+  }
+}
+export type ReplyRead = {
+  inquiry: InquiryRead
+  reply: string
+  data?: {
+    [key: string]: any
+  }
+}
+export type EventFeedback = {
+  user?: string | null
+  name?: string
+  email?: string | null
+  note?: string
+  replies: Reply[]
+}
+export type EventFeedbackRead = {
+  id: number
+  user?: string | null
+  name?: string
+  email?: string | null
+  created_at: string
+  note?: string
+  replies: ReplyRead[]
+}
+export type PaginatedEventFeedbackList = {
+  count?: number
+  next?: string | null
+  previous?: string | null
+  results?: EventFeedback[]
+}
+export type PaginatedEventFeedbackListRead = {
+  count?: number
+  next?: string | null
+  previous?: string | null
+  results?: EventFeedbackRead[]
+}
+export type PatchedEventFeedback = {
+  user?: string | null
+  name?: string
+  email?: string | null
+  note?: string
+  replies?: Reply[]
+}
+export type PatchedEventFeedbackRead = {
+  id?: number
+  user?: string | null
+  name?: string
+  email?: string | null
+  created_at?: string
+  note?: string
+  replies?: ReplyRead[]
+}
 export type EventPhoto = {
   id: number
   photo: string
@@ -3004,7 +3348,12 @@ export type PatchedEventPhoto = {
   id?: number
   photo?: string
 }
-export type StateEnum = 'pending' | 'cancelled' | 'rejected' | 'approved'
+export type StateEnum =
+  | 'pending'
+  | 'queued'
+  | 'cancelled'
+  | 'rejected'
+  | 'approved'
 export type EventApplicationClosePerson = {
   first_name: string
   last_name: string
@@ -3095,17 +3444,23 @@ export type PatchedQuestion = {
 export type PatchedEvent = {
   id?: number
   name?: string
+  /** Akce se nebude konat / nekonala */
   is_canceled?: boolean
+  /** Příznak, zda-li jsou všechny povinné údaje po akci vyplněny */
   is_closed?: boolean
+  /** Zarchivovaná akce nelze editovat */
   is_archived?: boolean
   start?: string
   start_time?: string | null
   end?: string
   number_of_sub_events?: number
+  /** Zobrazí se na webu jako místo konání akce */
   location?: number
+  /** Vyplňte, pokud se akce koná online */
   online_link?: string
   group?: number
   category?: number
+  tags?: number[]
   program?: number
   intended_for?: number
   administration_units?: number[]
@@ -3239,13 +3594,21 @@ export type Opportunity = {
   on_web_start: string
   on_web_end: string
   location: number
+  /** Krátce vysvětli význam činnosti a její přínos, aby přilákala zájemce */
   introduction: string
+  /** Přibliž konkrétní činnosti a aktivity, které budou součástí příležitosti */
   description: string
+  /** Popiš dopad a přínos činnosti pro dané místě (nezobrazí se u typu spolupráce) */
   location_benefits?: string
+  /** Uveď konkrétní osobní přínos do života z realizace této příležitosti */
   personal_benefits: string
+  /** Napiš dovednosti, zkušenosti či vybavení potřebné k zapojení do příležitosti */
   requirements?: string
+  /** Nechte prázdné pokud chcete použít jméno kontaktní osoby */
   contact_name?: string
+  /** Nechte prázdné pokud chcete použít telefon kontaktní osoby */
   contact_phone?: string
+  /** Nechte prázdné pokud chcete použít e-mail kontaktní osoby */
   contact_email?: string
   image: string
 }
@@ -3258,19 +3621,28 @@ export type PaginatedOpportunityList = {
 export type PatchedOpportunity = {
   id?: number
   category?: number
+  priority?: number
   name?: string
   start?: string
   end?: string
   on_web_start?: string
   on_web_end?: string
   location?: number
+  /** Krátce vysvětli význam činnosti a její přínos, aby přilákala zájemce */
   introduction?: string
+  /** Přibliž konkrétní činnosti a aktivity, které budou součástí příležitosti */
   description?: string
+  /** Popiš dopad a přínos činnosti pro dané místě (nezobrazí se u typu spolupráce) */
   location_benefits?: string
+  /** Uveď konkrétní osobní přínos do života z realizace této příležitosti */
   personal_benefits?: string
+  /** Napiš dovednosti, zkušenosti či vybavení potřebné k zapojení do příležitosti */
   requirements?: string
+  /** Nechte prázdné pokud chcete použít jméno kontaktní osoby */
   contact_name?: string
+  /** Nechte prázdné pokud chcete použít telefon kontaktní osoby */
   contact_phone?: string
+  /** Nechte prázdné pokud chcete použít e-mail kontaktní osoby */
   contact_email?: string
   image?: string
 }
@@ -3380,6 +3752,18 @@ export const {
   useFrontendEventsRecordAttendanceListPagesUpdateMutation,
   useFrontendEventsRecordAttendanceListPagesPartialUpdateMutation,
   useFrontendEventsRecordAttendanceListPagesDestroyMutation,
+  useFrontendEventsRecordFeedbackFormInquiriesListQuery,
+  useFrontendEventsRecordFeedbackFormInquiriesCreateMutation,
+  useFrontendEventsRecordFeedbackFormInquiriesRetrieveQuery,
+  useFrontendEventsRecordFeedbackFormInquiriesUpdateMutation,
+  useFrontendEventsRecordFeedbackFormInquiriesPartialUpdateMutation,
+  useFrontendEventsRecordFeedbackFormInquiriesDestroyMutation,
+  useFrontendEventsRecordFeedbacksListQuery,
+  useFrontendEventsRecordFeedbacksCreateMutation,
+  useFrontendEventsRecordFeedbacksRetrieveQuery,
+  useFrontendEventsRecordFeedbacksUpdateMutation,
+  useFrontendEventsRecordFeedbacksPartialUpdateMutation,
+  useFrontendEventsRecordFeedbacksDestroyMutation,
   useFrontendEventsRecordParticipantsListQuery,
   useFrontendEventsRecordParticipantsRetrieveQuery,
   useFrontendEventsRecordPhotosListQuery,
