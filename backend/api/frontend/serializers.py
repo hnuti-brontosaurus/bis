@@ -617,7 +617,7 @@ class FeedbackFormSerializer(ModelSerializer):
 
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
-    # feedback_form = FeedbackFormSerializer(allow_null=True)
+    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     age_stats = SerializerMethodField()
 
@@ -632,7 +632,7 @@ class RecordSerializer(ModelSerializer):
             "note",
             "contacts",
             "age_stats",
-            # "feedback_form",
+            "feedback_form",
         )
 
     def get_age_stats(self, instance) -> dict:
