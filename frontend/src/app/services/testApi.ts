@@ -3030,6 +3030,10 @@ export type EventContact = {
   email?: string
   phone?: string
 }
+export type FeedbackForm = {
+  introduction?: string
+  after_submit_text?: string
+}
 export type Record = {
   total_hours_worked?: number | null
   comment_on_work_done?: string
@@ -3040,6 +3044,7 @@ export type Record = {
   number_of_participants_under_26?: number | null
   note?: string
   contacts?: EventContact[]
+  feedback_form: FeedbackForm | null
 }
 export type Event = {
   id: number
