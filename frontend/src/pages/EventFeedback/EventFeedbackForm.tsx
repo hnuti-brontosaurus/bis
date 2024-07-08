@@ -1,13 +1,19 @@
 import { WebFeedbackForm } from 'app/services/bis'
 import { User } from 'app/services/bisTypes'
 import {
+  Actions,
+  Button,
   FormInputError,
   FormSection,
   FormSectionGroup,
   InlineSection,
   Label,
 } from 'components'
-import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
+import {
+  useClearPersistentForm,
+  usePersistentFormData,
+  usePersistForm,
+} from 'hooks/persistForm'
 import { mergeWith } from 'lodash'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -16,7 +22,8 @@ export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
   user?: User
   id: number
-}> = ({ feedbackForm, user, id }) => {
+  onCancel: () => void
+}> = ({ feedbackForm, user, id, onCancel }) => {
   const persistedData = usePersistentFormData('feedback', String(id))
   const methods = useForm({
     defaultValues: mergeWith(
@@ -31,12 +38,19 @@ export const EventFeedbackForm: FC<{
   const { register, watch } = methods
 
   usePersistForm('feedback', String(id), watch)
+  const clearPersistentData = useClearPersistentForm('feedback', String(id))
+
+  const handleCancel = () => {
+    // TODO prevent default?
+    clearPersistentData()
+    onCancel()
+  }
 
   return (
     <>
       {feedbackForm.introduction && <div>{feedbackForm.introduction}</div>}
       <FormProvider {...methods}>
-        <form>
+        <form onReset={handleCancel}>
           <FormSectionGroup>
             <FormSection header="Osobní údaje">
               <InlineSection>
@@ -54,6 +68,14 @@ export const EventFeedbackForm: FC<{
             </FormSection>
             <FormSection header="Dotazník">TODO</FormSection>
           </FormSectionGroup>
+          <Actions>
+            <Button secondary type="reset">
+              Zrušit
+            </Button>
+            <Button primary type="submit">
+              Odeslat zpětnou vazbu
+            </Button>
+          </Actions>
         </form>
       </FormProvider>
     </>

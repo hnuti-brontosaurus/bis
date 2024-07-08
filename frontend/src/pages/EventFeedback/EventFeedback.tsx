@@ -39,6 +39,11 @@ export const EventFeedback: FC = () => {
     return <Error message="Tato akce ještě nesbírá zpětnou vazbu." />
   }
 
+  const handleCancel = () => {
+    // TODO where to return ?
+    globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
+  }
+
   return (
     <div>
       <PageHeader>Zpětná vazba na akci {event.name}</PageHeader>
@@ -54,6 +59,7 @@ export const EventFeedback: FC = () => {
         id={eventId}
         feedbackForm={event.record.feedback_form}
         user={user}
+        onCancel={handleCancel}
       />
     </div>
   )
