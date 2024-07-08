@@ -51,6 +51,7 @@ export const EventFeedback: FC = () => {
         </div>
       </div>
       <EventFeedbackForm
+        id={eventId}
         feedbackForm={event.record.feedback_form}
         user={user}
       />

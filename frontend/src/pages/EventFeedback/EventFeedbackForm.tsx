@@ -7,20 +7,31 @@ import {
   InlineSection,
   Label,
 } from 'components'
+import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
+import { mergeWith } from 'lodash'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
   user?: User
-}> = ({ feedbackForm, user }) => {
+  id: number
+}> = ({ feedbackForm, user, id }) => {
+  const persistedData = usePersistentFormData('feedback', String(id))
   const methods = useForm({
-    defaultValues: {
-      name: user ? `${user.first_name} ${user.last_name}` : null,
-      email: user ? user.email : null,
-    },
+    defaultValues: mergeWith(
+      {},
+      {
+        name: user ? `${user.first_name} ${user.last_name}` : null,
+        email: user ? user.email : null,
+      },
+      persistedData,
+    ),
   })
-  const { register } = methods
+  const { register, watch } = methods
+
+  usePersistForm('feedback', String(id), watch)
+
   return (
     <>
       {feedbackForm.introduction && <div>{feedbackForm.introduction}</div>}
