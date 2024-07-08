@@ -1,5 +1,6 @@
 import { api } from 'app/services/bis'
 import { Error, Loading, PageHeader } from 'components'
+import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
 import { FC } from 'react'
 import { FaRegCalendarAlt } from 'react-icons/fa'
@@ -15,6 +16,8 @@ export const EventFeedback: FC = () => {
   const params = useParams()
   const eventId = Number(params.eventId)
 
+  const { data: user, isAuthenticated } = useCurrentUser()
+
   const {
     data: event,
     isError: isEventError,
@@ -23,6 +26,9 @@ export const EventFeedback: FC = () => {
 
   useTitle(`Zpětná vazba na akci ${event?.name ?? ''}`)
 
+  if (isAuthenticated && !user) {
+    return <Loading>Ověřujeme uživatele</Loading>
+  }
   if (isEventError) {
     return <Error error={eventError} />
   }
@@ -44,7 +50,10 @@ export const EventFeedback: FC = () => {
           <GrLocation /> {event.location?.name}
         </div>
       </div>
-      <EventFeedbackForm feedbackForm={event.record.feedback_form} />
+      <EventFeedbackForm
+        feedbackForm={event.record.feedback_form}
+        user={user}
+      />
     </div>
   )
 }
