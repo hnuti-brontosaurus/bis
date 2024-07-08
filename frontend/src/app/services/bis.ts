@@ -19,7 +19,6 @@
  * TODO maybe we'll split this file into multiple
  */
 
-import { BaseQueryArg } from '@reduxjs/toolkit/dist/query/baseQueryTypes'
 // Need to use the React-specific entry point to import createApi
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { RootState } from 'app/store'
@@ -58,6 +57,7 @@ import type {
   QualificationCategory,
   Question,
   Questionnaire,
+  Record,
   Region,
   Registration,
   TokenResponse,
@@ -65,7 +65,7 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
-import { Inquiry, InquiryRead } from './testApi'
+import { FeedbackForm, Inquiry, InquiryRead } from './testApi'
 
 export const ALL_USERS = 2000
 
@@ -1196,11 +1196,14 @@ type WebRegistration = Overwrite<
   Registration,
   { questionnaire: WebQuestionnaire | null }
 >
+export type WebFeedbackForm = Assign<FeedbackForm, { inquiries: InquiryRead[] }>
+type WebRecord = Overwrite<Record, { feedback_form?: WebFeedbackForm }>
 
 export type WebEvent = Overwrite<
   Event,
   {
     registration: WebRegistration | null
+    record?: WebRecord
     location?: Location
   }
 >

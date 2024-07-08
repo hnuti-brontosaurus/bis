@@ -7,6 +7,7 @@ import { GrLocation } from 'react-icons/gr'
 import { useParams } from 'react-router-dom'
 import { formatDateRange } from 'utils/helpers'
 import styles from './EventFeedback.module.scss'
+import { EventFeedbackForm } from './EventFeedbackForm'
 
 export const EventFeedback: FC = () => {
   // TODO next search param ?
@@ -28,6 +29,9 @@ export const EventFeedback: FC = () => {
   if (!event) {
     return <Loading>Připravujeme zpětnou vazbu</Loading>
   }
+  if (!event?.record?.feedback_form) {
+    return <Error message="Tato akce ještě nesbírá zpětnou vazbu." />
+  }
 
   return (
     <div>
@@ -40,6 +44,7 @@ export const EventFeedback: FC = () => {
           <GrLocation /> {event.location?.name}
         </div>
       </div>
+      <EventFeedbackForm feedbackForm={event.record.feedback_form} />
     </div>
   )
 }
