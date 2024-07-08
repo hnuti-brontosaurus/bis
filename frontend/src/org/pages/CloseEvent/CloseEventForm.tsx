@@ -1,14 +1,14 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
-  FullEvent,
-  EventPhotoPayload,
   AttendanceListPagePayload,
+  EventPhotoPayload,
   Finance,
   FinanceReceipt,
+  FullEvent,
   PatchedEvent,
   Record,
-  Question,
 } from 'app/services/bisTypes'
+import { InquiryRead } from 'app/services/testApi'
 import { Step, Steps } from 'components'
 import * as translations from 'config/static/combinedTranslations'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
@@ -26,7 +26,6 @@ import { Assign, Optional } from 'utility-types'
 import { hasFormError, withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
-import { Inquiry, InquiryRead } from '../../../app/services/testApi'
 import { EvidenceStep } from './EvidenceStep'
 import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
