@@ -1,0 +1,45 @@
+import { api } from 'app/services/bis'
+import { Error, Loading, PageHeader } from 'components'
+import { useTitle } from 'hooks/title'
+import { FC } from 'react'
+import { FaRegCalendarAlt } from 'react-icons/fa'
+import { GrLocation } from 'react-icons/gr'
+import { useParams } from 'react-router-dom'
+import { formatDateRange } from 'utils/helpers'
+import styles from './EventFeedback.module.scss'
+
+export const EventFeedback: FC = () => {
+  // TODO next search param ?
+
+  const params = useParams()
+  const eventId = Number(params.eventId)
+
+  const {
+    data: event,
+    isError: isEventError,
+    error: eventError,
+  } = api.endpoints.readWebEvent.useQuery({ id: eventId })
+
+  useTitle(`Zpětná vazba na akci ${event?.name ?? ''}`)
+
+  if (isEventError) {
+    return <Error error={eventError} />
+  }
+  if (!event) {
+    return <Loading>Připravujeme zpětnou vazbu</Loading>
+  }
+
+  return (
+    <div>
+      <PageHeader>Zpětná vazba na akci {event.name}</PageHeader>
+      <div className={styles.infoBox}>
+        <div>
+          <FaRegCalendarAlt /> {formatDateRange(event.start, event.end)}
+        </div>
+        <div>
+          <GrLocation /> {event.location?.name}
+        </div>
+      </div>
+    </div>
+  )
+}

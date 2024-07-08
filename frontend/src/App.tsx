@@ -40,6 +40,7 @@ import { ViewMyProfile } from 'user/pages/ViewMyProfile'
 import { ViewProfile } from 'user/pages/ViewProfile'
 import { ProfileOutlet } from 'user/ProfileOutlet'
 import { UserEventsLayout } from 'user/UserEventsLayout'
+import { EventFeedback } from './pages/EventFeedback'
 
 export const App = () => {
   return (
@@ -50,6 +51,7 @@ export const App = () => {
           path="/akce/:eventId/prihlasit"
           element={<EventRegistration />}
         />
+        <Route path="akce/:eventId/zpetna_vazba" element={<EventFeedback />} />
       </Route>
       <Route path="/logout" element={<Logout />} />
       {/* Routes for unauthenticated users */}
