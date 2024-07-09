@@ -10,11 +10,13 @@ import {
   InlineSection,
   Label,
 } from 'components'
+import * as translations from 'config/static/translations'
+import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
 import { mergeWith } from 'lodash'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { useShowMessage } from 'features/systemMessage/useSystemMessage'
+import { validationErrors2Message } from 'utils/validationErrors'
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
@@ -43,7 +45,14 @@ export const EventFeedbackForm: FC<{
 
   usePersistForm('feedback', String(id), watch)
 
-  const handleSubmit = methods.handleSubmit(onSubmit)
+  const showMessage = useShowMessage()
+  const handleSubmit = methods.handleSubmit(onSubmit, errors =>
+    showMessage({
+      type: 'error',
+      message: 'Opravte, prosím, chyby ve formuláři.',
+      detail: validationErrors2Message(errors, {}, translations.generic),
+    }),
+  )
 
   return (
     <>
