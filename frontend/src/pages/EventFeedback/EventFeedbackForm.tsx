@@ -17,6 +17,7 @@ import { mergeWith } from 'lodash'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
+import { Inquiry } from '../EventRegistration/Inquiry'
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
@@ -74,7 +75,11 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            <FormSection header="Dotazník">TODO</FormSection>
+            <FormSection header="Dotazník">
+              {feedbackForm.inquiries.map((inquiry, index) => (
+                <Inquiry key={index} inquiry={inquiry} index={index} />
+              ))}
+            </FormSection>
           </FormSectionGroup>
           <Actions>
             <Button secondary type="reset">
