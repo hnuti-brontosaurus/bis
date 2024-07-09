@@ -9,15 +9,22 @@ export const EventFeedback: FC = () => {
   const { data: feedbacks } = api.endpoints.readEventFeedbacks.useQuery({
     eventId: event.id,
   })
+  const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
+    { eventId: event.id },
+  )
+
   return (
     <>
       <Breadcrumbs eventName={event.name} />
-      {feedbacks && feedbacks.results ? (
+      {feedbacks && feedbacks.results && inquiries && inquiries.results ? (
         <table>
           <thead>
             <tr>
               <th>Jméno</th>
               <th>E-mail</th>
+              {inquiries.results.map(({ inquiry }) => (
+                <th>{inquiry}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -25,6 +32,15 @@ export const EventFeedback: FC = () => {
               <tr>
                 <td>{feedback.name}</td>
                 <td>{feedback.email}</td>
+                {inquiries.results.map(inquiry => (
+                  <td>
+                    {
+                      feedback.replies.find(
+                        reply => inquiry.id === reply.inquiry.id,
+                      )?.reply
+                    }
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>

@@ -66,7 +66,12 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
-import { EventFeedback, FeedbackForm, Inquiry } from './testApi'
+import {
+  EventFeedback,
+  EventFeedbackRead,
+  FeedbackForm,
+  Inquiry,
+} from './testApi'
 
 export const ALL_USERS = 2000
 
@@ -868,7 +873,7 @@ export const api = createApi({
       ],
     }),
     readEventFeedbacks: build.query<
-      PaginatedList<EventFeedback>,
+      PaginatedList<EventFeedbackRead>,
       { eventId: number } & ListArguments
     >({
       query: queryArg => ({
