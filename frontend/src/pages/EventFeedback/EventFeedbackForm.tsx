@@ -20,10 +20,12 @@ import { validationErrors2Message } from 'utils/validationErrors'
 import { Inquiry } from './Inquiry'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
-  replies: replies.map(({ reply, ...rest }) => ({
-    reply: Array.isArray(reply) ? reply.join(', ') : reply,
-    ...rest,
-  })),
+  replies: replies
+    .map(({ reply, ...rest }) => ({
+      reply: Array.isArray(reply) ? reply.join(', ') : reply,
+      ...rest,
+    }))
+    .filter(reply => !!reply.reply),
   ...data,
 })
 
