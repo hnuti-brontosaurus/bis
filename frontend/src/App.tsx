@@ -40,7 +40,8 @@ import { ViewMyProfile } from 'user/pages/ViewMyProfile'
 import { ViewProfile } from 'user/pages/ViewProfile'
 import { ProfileOutlet } from 'user/ProfileOutlet'
 import { UserEventsLayout } from 'user/UserEventsLayout'
-import { EventFeedback } from './pages/EventFeedback'
+import { EventFeedback as EventFeedbackForm } from 'pages/EventFeedback'
+import { EventFeedback as EventFeedbackSummary } from 'org/pages/EventFeedback'
 
 export const App = () => {
   return (
@@ -51,7 +52,10 @@ export const App = () => {
           path="/akce/:eventId/prihlasit"
           element={<EventRegistration />}
         />
-        <Route path="akce/:eventId/zpetna_vazba" element={<EventFeedback />} />
+        <Route
+          path="akce/:eventId/zpetna_vazba"
+          element={<EventFeedbackForm />}
+        />
       </Route>
       <Route path="/logout" element={<Logout />} />
       {/* Routes for unauthenticated users */}
@@ -101,6 +105,7 @@ export const App = () => {
             <Route path="prihlasky" element={<EventApplications />} />
             <Route path="upravit" element={<UpdateEvent />} />
             <Route path="uzavrit" element={<CloseEvent />} />
+            <Route path="zpetna_vazba" element={<EventFeedbackSummary />} />
           </Route>
           <Route path="akce" element={<EventsLayout />}>
             <Route index element={<Navigate to="vsechny" replace />} />
