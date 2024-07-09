@@ -43,6 +43,7 @@ export const EventFeedbackForm: FC<{
       {
         name: user && `${user.first_name} ${user.last_name}`,
         email: user?.email,
+        user: user?.id,
         replies: [] as Reply[],
       },
       persistedData,
