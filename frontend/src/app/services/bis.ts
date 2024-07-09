@@ -65,7 +65,7 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
-import { FeedbackForm, Inquiry, InquiryRead } from './testApi'
+import { EventFeedback, FeedbackForm, Inquiry, InquiryRead } from './testApi'
 
 export const ALL_USERS = 2000
 
@@ -99,6 +99,7 @@ export const api = createApi({
     'Location',
     'Opportunity',
     'Participant',
+    'Feedback',
   ],
   endpoints: build => ({
     /**
@@ -852,6 +853,17 @@ export const api = createApi({
         ],
       },
     ),
+    createEventFeedback: build.mutation<
+      EventFeedback,
+      { eventId: number; feedback: EventFeedback }
+    >({
+      query: ({ eventId, feedback }) => ({
+        url: `frontend/events/${eventId}/record/feedbacks/`,
+        method: 'POST',
+        body: feedback,
+      }),
+      invalidatesTags: () => [{ type: 'Feedback', id: 'FEEDBACK_LIST' }],
+    }),
     createEventApplication: build.mutation<
       EventApplication,
       { application: EventApplicationPayload; eventId: number }

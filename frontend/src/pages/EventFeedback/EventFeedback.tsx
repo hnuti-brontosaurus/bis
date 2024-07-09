@@ -1,5 +1,7 @@
 import { api } from 'app/services/bis'
-import { Error, Loading, PageHeader } from 'components'
+import { EventFeedback as EventFeedbackShape } from 'app/services/testApi'
+import { Actions, Button, Error, Loading, PageHeader } from 'components'
+import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
 import { FC } from 'react'
@@ -7,8 +9,17 @@ import { FaRegCalendarAlt } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
 import { useParams } from 'react-router-dom'
 import { formatDateRange } from 'utils/helpers'
+import {
+  useClearPersistentForm,
+  useDirectPersistForm,
+  usePersistentFormData,
+} from 'hooks/persistForm'
 import styles from './EventFeedback.module.scss'
 import { EventFeedbackForm } from './EventFeedbackForm'
+
+export type EventFeedbackWithStep = EventFeedbackShape & {
+  step: 'progress' | 'finished'
+}
 
 export const EventFeedback: FC = () => {
   // TODO next search param ?
@@ -26,6 +37,20 @@ export const EventFeedback: FC = () => {
 
   useTitle(`Zpětná vazba na akci ${event?.name ?? ''}`)
 
+  const formValues = usePersistentFormData(
+    'feedback',
+    String(eventId),
+  ) as EventFeedbackWithStep
+  const persistValue = useDirectPersistForm('feedback', String(eventId))
+  const clearForm = useClearPersistentForm('feedback', String(eventId))
+
+  const [createFeedback, { error: saveError }] =
+    api.endpoints.createEventFeedback.useMutation()
+  useShowApiErrorMessage(
+    saveError,
+    'Nepodařilo se nám uložit zpětnou vazbu. Zkuste to znovu.',
+  )
+
   if (isAuthenticated && !user) {
     return <Loading>Ověřujeme uživatele</Loading>
   }
@@ -39,9 +64,18 @@ export const EventFeedback: FC = () => {
     return <Error message="Tato akce ještě nesbírá zpětnou vazbu." />
   }
 
+  const handleSubmit = async (feedback: EventFeedbackShape) => {
+    await createFeedback({ feedback, eventId }).unwrap()
+    persistValue({ step: 'finished' })
+  }
   const handleCancel = () => {
+    clearForm()
     // TODO where to return ?
     globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
+  }
+
+  const handleFinished = () => {
+    globalThis.location.href = 'https://brontosaurus.cz'
   }
 
   return (
@@ -55,12 +89,27 @@ export const EventFeedback: FC = () => {
           <GrLocation /> {event.location?.name}
         </div>
       </div>
-      <EventFeedbackForm
-        id={eventId}
-        feedbackForm={event.record.feedback_form}
-        user={user}
-        onCancel={handleCancel}
-      />
+      {formValues?.step === 'finished' ? (
+        <div>
+          <div>{event.record.feedback_form.after_submit_text}</div>
+          <Actions>
+            <Button primary onClick={handleFinished}>
+              Hotovo
+            </Button>
+            <Button primary onClick={clearForm}>
+              Další zpětná vazba
+            </Button>
+          </Actions>
+        </div>
+      ) : (
+        <EventFeedbackForm
+          id={eventId}
+          feedbackForm={event.record.feedback_form}
+          user={user}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   )
 }

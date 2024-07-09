@@ -8,7 +8,7 @@ import { CloseEventFormShape } from 'org/pages/CloseEvent/CloseEventForm'
 import { RegistrationFormShapeWithStep } from 'pages/EventRegistration/EventRegistrationForm'
 import { DeepPartial, ValuesType } from 'utility-types'
 import { withOverwriteArray } from 'utils/helpers'
-import { EventFeedback } from 'app/services/testApi'
+import { EventFeedbackWithStep } from 'pages/EventFeedback/EventFeedback'
 
 export type FormState<K extends string = string> = {
   event: Record<K, EventFormShape>
@@ -16,7 +16,7 @@ export type FormState<K extends string = string> = {
   opportunity: Record<K, OpportunityFormShape>
   registration: Record<K, RegistrationFormShapeWithStep>
   user: Record<K, UserPayload>
-  feedback: Record<K, EventFeedback>
+  feedback: Record<K, EventFeedbackWithStep>
 }
 
 export type PersistentFormType =
