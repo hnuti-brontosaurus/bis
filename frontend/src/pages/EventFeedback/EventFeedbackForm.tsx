@@ -1,6 +1,6 @@
 import { WebFeedbackForm } from 'app/services/bis'
 import { User } from 'app/services/bisTypes'
-import { EventFeedback } from 'app/services/testApi'
+import { EventFeedback, Reply } from 'app/services/testApi'
 import {
   Actions,
   Button,
@@ -13,11 +13,19 @@ import {
 import * as translations from 'config/static/translations'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
-import { mergeWith } from 'lodash'
+import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
-import { Inquiry } from '../EventRegistration/Inquiry'
+import { Inquiry } from './Inquiry'
+
+const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
+  replies: replies.map(({ reply, ...rest }) => ({
+    reply: Array.isArray(reply) ? reply.join(', ') : reply,
+    ...rest,
+  })),
+  ...data,
+})
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
@@ -27,13 +35,13 @@ export const EventFeedbackForm: FC<{
   onSubmit: (data: EventFeedback) => void
 }> = ({ feedbackForm, user, id, onCancel, onSubmit }) => {
   const persistedData = usePersistentFormData('feedback', String(id))
-  const methods = useForm({
-    defaultValues: mergeWith(
+  const methods = useForm<EventFeedback>({
+    defaultValues: merge(
       {},
       {
-        name: user ? `${user.first_name} ${user.last_name}` : null,
-        email: user ? user.email : null,
-        replies: [],
+        name: user && `${user.first_name} ${user.last_name}`,
+        email: user?.email,
+        replies: [] as Reply[],
       },
       persistedData,
     ),
@@ -47,12 +55,14 @@ export const EventFeedbackForm: FC<{
   usePersistForm('feedback', String(id), watch)
 
   const showMessage = useShowMessage()
-  const handleSubmit = methods.handleSubmit(onSubmit, errors =>
-    showMessage({
-      type: 'error',
-      message: 'Opravte, prosím, chyby ve formuláři.',
-      detail: validationErrors2Message(errors, {}, translations.generic),
-    }),
+  const handleSubmit = methods.handleSubmit(
+    data => onSubmit(form2payload(data)),
+    errors =>
+      showMessage({
+        type: 'error',
+        message: 'Opravte, prosím, chyby ve formuláři.',
+        detail: validationErrors2Message(errors, {}, translations.generic),
+      }),
   )
 
   return (

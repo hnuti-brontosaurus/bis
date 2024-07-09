@@ -5,10 +5,10 @@ import {
   Finance,
   FinanceReceipt,
   FullEvent,
+  InquiryRead,
   PatchedEvent,
   Record,
 } from 'app/services/bisTypes'
-import { InquiryRead } from 'app/services/testApi'
 import { Step, Steps } from 'components'
 import * as translations from 'config/static/combinedTranslations'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'

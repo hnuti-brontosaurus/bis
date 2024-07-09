@@ -1,4 +1,4 @@
-import { InquiryRead } from 'app/services/testApi'
+import { InquiryRead } from 'app/services/bisTypes'
 import { FormInputError, FormSubsection } from 'components'
 import { createContext, FC, useContext, useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
@@ -32,15 +32,32 @@ const TextInquiry: FC = () => {
   return <textarea {...register} />
 }
 
+const OptionInquiry: FC = () => {
+  const { inquiry } = useInquiryContext()
+  const register = useRegister()
+  return (
+    <fieldset>
+      {inquiry.data?.options?.map(({ option }) => (
+        <label key={option}>
+          <input type={inquiry.data!.type} value={option} {...register} />
+          {option}
+        </label>
+      ))}
+    </fieldset>
+  )
+}
+
 const components: { [key: string]: FC } = {
   text: TextInquiry,
+  checkbox: OptionInquiry,
+  radio: OptionInquiry,
 }
 
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
   const { setValue } = useFormContext()
   useEffect(() => {
     setValue(`replies.${index}.inquiry`, inquiry.id)
-  }, [setValue, inquiry.id])
+  }, [setValue, index, inquiry.id])
   const context = useMemo(
     () => ({
       inquiry,

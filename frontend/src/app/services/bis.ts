@@ -45,6 +45,7 @@ import type {
   EventTag,
   FinanceReceipt,
   HealthInsuranceCompany,
+  InquiryRead,
   Location,
   LoginRequest,
   MembershipCategory,
@@ -65,7 +66,7 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
-import { EventFeedback, FeedbackForm, Inquiry, InquiryRead } from './testApi'
+import { EventFeedback, FeedbackForm, Inquiry } from './testApi'
 
 export const ALL_USERS = 2000
 
