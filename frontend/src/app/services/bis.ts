@@ -862,7 +862,26 @@ export const api = createApi({
         method: 'POST',
         body: feedback,
       }),
-      invalidatesTags: () => [{ type: 'Feedback', id: 'FEEDBACK_LIST' }],
+      invalidatesTags: (result, error, { eventId }) => [
+        { type: 'Feedback', id: `${eventId}_FEEDBACK_LIST` },
+      ],
+    }),
+    readEventFeedbacks: build.query<
+      PaginatedList<EventFeedback>,
+      { eventId: number } & ListArguments
+    >({
+      query: queryArg => ({
+        url: `frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        method: 'GET',
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+      providesTags: (results, error, { eventId }) => [
+        { type: 'Feedback', id: `${eventId}_FEEDBACK_LIST` },
+      ],
     }),
     createEventApplication: build.mutation<
       EventApplication,

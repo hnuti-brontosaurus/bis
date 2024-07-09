@@ -1,13 +1,37 @@
 import { FC } from 'react'
-import { Breadcrumbs } from 'components'
+import { Breadcrumbs, Loading } from 'components'
 import { useOutletContext } from 'react-router-dom'
 import { FullEvent } from 'app/services/bisTypes'
+import { api } from 'app/services/bis'
 
 export const EventFeedback: FC = () => {
   const { event } = useOutletContext<{ event: FullEvent }>()
+  const { data: feedbacks } = api.endpoints.readEventFeedbacks.useQuery({
+    eventId: event.id,
+  })
   return (
     <>
       <Breadcrumbs eventName={event.name} />
+      {feedbacks && feedbacks.results ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Jméno</th>
+              <th>E-mail</th>
+            </tr>
+          </thead>
+          <tbody>
+            {feedbacks.results.map(feedback => (
+              <tr>
+                <td>{feedback.name}</td>
+                <td>{feedback.email}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <Loading>Nahráváme zpětnou vazbu</Loading>
+      )}
     </>
   )
 }
