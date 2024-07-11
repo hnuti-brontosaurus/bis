@@ -17,6 +17,7 @@ import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
+import { sortOrder } from '../../utils/helpers'
 import { Inquiry } from './Inquiry'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
@@ -68,6 +69,8 @@ export const EventFeedbackForm: FC<{
       }),
   )
 
+  const orderedInquiries = feedbackForm.inquiries.slice().sort(sortOrder)
+
   return (
     <>
       {feedbackForm.introduction && <div>{feedbackForm.introduction}</div>}
@@ -89,7 +92,7 @@ export const EventFeedbackForm: FC<{
               </InlineSection>
             </FormSection>
             <FormSection header="Dotazník">
-              {feedbackForm.inquiries.map((inquiry, index) => (
+              {orderedInquiries.map((inquiry, index) => (
                 <Inquiry key={index} inquiry={inquiry} index={index} />
               ))}
             </FormSection>
