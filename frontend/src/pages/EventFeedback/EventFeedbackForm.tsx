@@ -19,6 +19,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from '../../utils/helpers'
 import { Inquiry } from './Inquiry'
+import { MessageBox } from './MessageBox'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
   replies: replies
@@ -73,7 +74,9 @@ export const EventFeedbackForm: FC<{
 
   return (
     <>
-      {feedbackForm.introduction && <div>{feedbackForm.introduction}</div>}
+      {feedbackForm.introduction && (
+        <MessageBox>{feedbackForm.introduction}</MessageBox>
+      )}
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit} onReset={onCancel}>
           <FormSectionGroup>

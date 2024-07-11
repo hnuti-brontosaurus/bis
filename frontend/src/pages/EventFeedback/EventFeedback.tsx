@@ -16,6 +16,7 @@ import {
 } from 'hooks/persistForm'
 import styles from './EventFeedback.module.scss'
 import { EventFeedbackForm } from './EventFeedbackForm'
+import { MessageBox } from './MessageBox'
 
 export type EventFeedbackWithStep = EventFeedbackShape & {
   step: 'progress' | 'finished'
@@ -91,7 +92,9 @@ export const EventFeedback: FC = () => {
       </div>
       {formValues?.step === 'finished' ? (
         <div>
-          <div>{event.record.feedback_form.after_submit_text}</div>
+          <MessageBox>
+            {event.record.feedback_form.after_submit_text}
+          </MessageBox>
           <Actions>
             <Button primary onClick={handleFinished}>
               Hotovo
