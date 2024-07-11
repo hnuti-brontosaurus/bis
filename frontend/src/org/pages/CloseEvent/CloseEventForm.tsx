@@ -354,6 +354,9 @@ export const CloseEventForm = ({
           isVolunteering={isVolunteering}
           methods={evidenceFormMethods}
           firstIndex={countEvidenceFirstStep()}
+          multipleSubevents={
+            !!event.number_of_sub_events && event.number_of_sub_events > 1
+          }
         />
       </Step>
     </Steps>

@@ -21,11 +21,13 @@ export const EvidenceStep = ({
   isVolunteering,
   methods,
   firstIndex = 2,
+  multipleSubevents,
 }: {
   eventId: number
   isVolunteering: boolean
   methods: UseFormReturn<EvidenceStepFormShape, any>
   firstIndex?: number
+  multipleSubevents: boolean
 }) => {
   const { register } = methods
 
@@ -39,6 +41,12 @@ export const EvidenceStep = ({
               header="Odpracováno člověkohodin"
               help={formTexts.record.total_hours_worked.help}
             >
+              {multipleSubevents && (
+                <InfoBox>
+                  Tato akce je zadaná jako opakovaná. Zadejte celkový počet
+                  odpracovaných hodin na všech opakovaných akcích.
+                </InfoBox>
+              )}
               <FormInputError>
                 <input
                   type="number"
