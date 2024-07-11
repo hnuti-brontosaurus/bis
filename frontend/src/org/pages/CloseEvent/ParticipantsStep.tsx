@@ -9,6 +9,7 @@ import {
   FormSectionGroup,
   IconSelect,
   IconSelectGroup,
+  InfoBox,
   Label,
   NumberInput,
 } from 'components'
@@ -149,12 +150,12 @@ export const ParticipantsStep = ({
                 <FormSection required header="Počet účastníků">
                   {event.number_of_sub_events &&
                     event.number_of_sub_events > 1 && (
-                      <div className={styles.note}>
+                      <InfoBox>
                         Tato akce je zadaná jako opakovaná. Zadejte tedy celkový
                         počet všech účastníků, kteří se opakovaných akcí
                         účastnili. Např. pokud se akce opakuje 3x s průměrnou
                         účastí 10 lidí, pak je počet účastníků 30.
-                      </div>
+                      </InfoBox>
                     )}
                   <InlineSection>
                     <Label required>

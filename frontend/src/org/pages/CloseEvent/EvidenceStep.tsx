@@ -42,10 +42,10 @@ export const EvidenceStep = ({
               help={formTexts.record.total_hours_worked.help}
             >
               {multipleSubevents && (
-                <div className={styles.note}>
+                <InfoBox>
                   Tato akce je zadaná jako opakovaná. Zadejte celkový počet
                   odpracovaných hodin na všech opakovaných akcích.
-                </div>
+                </InfoBox>
               )}
               <FormInputError>
                 <input
