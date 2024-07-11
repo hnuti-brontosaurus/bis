@@ -1,1 +1,1 @@
-export { EventFeedback } from './EventFeedback'
+export { EventFeedbackPage } from './EventFeedbackPage'

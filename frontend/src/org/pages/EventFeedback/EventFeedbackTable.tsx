@@ -1,0 +1,34 @@
+import { FC } from 'react'
+import { InquiryRead } from 'app/services/bisTypes'
+import { EventFeedbackRead } from 'app/services/testApi'
+import styles from './EventFeedbackTable.module.scss'
+
+export const EventFeedbackTable: FC<{
+  inquiries: InquiryRead[]
+  feedbacks: EventFeedbackRead[]
+}> = ({ inquiries, feedbacks }) => (
+  <table className={styles.table}>
+    <thead>
+      <tr>
+        <th>Jméno</th>
+        <th>E-mail</th>
+        {inquiries.map(({ inquiry, id }) => (
+          <th key={id}>{inquiry}</th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {feedbacks.map(feedback => (
+        <tr key={feedback.id}>
+          <td>{feedback.name}</td>
+          <td>{feedback.email}</td>
+          {inquiries.map(({ id }) => (
+            <td key={id}>
+              {feedback.replies.find(({ inquiry }) => inquiry.id === id)?.reply}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+)

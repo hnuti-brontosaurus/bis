@@ -41,7 +41,7 @@ import { ViewProfile } from 'user/pages/ViewProfile'
 import { ProfileOutlet } from 'user/ProfileOutlet'
 import { UserEventsLayout } from 'user/UserEventsLayout'
 import { EventFeedback as EventFeedbackForm } from 'pages/EventFeedback'
-import { EventFeedback as EventFeedbackSummary } from 'org/pages/EventFeedback'
+import { EventFeedbackPage as EventFeedbackSummary } from 'org/pages/EventFeedback'
 
 export const App = () => {
   return (
