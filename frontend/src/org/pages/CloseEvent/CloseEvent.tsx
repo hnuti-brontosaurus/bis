@@ -224,10 +224,14 @@ export const CloseEvent = () => {
     /**
      * Feedback inquiries
      */
-    const createdInquiryPromises = inquiries
+    const inquiriesWithOrder = inquiries.map((inquiry, order) => ({
+      ...inquiry,
+      order,
+    }))
+    const createdInquiryPromises = inquiriesWithOrder
       .filter(inquiry => !inquiry.id)
       .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())
-    const updateInquiryPromises = inquiries
+    const updateInquiryPromises = inquiriesWithOrder
       .filter(inquiry => {
         const oldInquiry = defaultValues.inquiries.find(
           oi => oi.id === inquiry.id,
