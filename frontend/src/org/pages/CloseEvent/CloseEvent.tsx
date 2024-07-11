@@ -8,6 +8,7 @@ import {
 import { useTitle } from 'hooks/title'
 import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 
 export const CloseEvent = () => {
@@ -68,7 +69,7 @@ export const CloseEvent = () => {
     pages: pages.results,
     finance: event.finance ?? undefined,
     receipts: receipts.results,
-    inquiries: inquiries.results,
+    inquiries: inquiries.results.slice().sort(sortOrder),
   }
 
   const handleSubmit = async ({
