@@ -1,0 +1,20 @@
+@use 'styles/media';
+
+// in case of overlong answers
+.wrap {
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.text {
+  width: 100%;
+  @include media.for-tablet-landscape-up {
+    width: 500px;
+  }
+}

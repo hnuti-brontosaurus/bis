@@ -1,8 +1,10 @@
 import { InquiryRead } from 'app/services/bisTypes'
+import classNames from 'classnames'
 import { FormInputError, FormSubsection } from 'components'
 import { createContext, FC, useContext, useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
+import styles from './Inquiry.module.scss'
 
 interface InquiryProps {
   inquiry: InquiryRead
@@ -29,16 +31,19 @@ const useRegister = () => {
 
 const TextInquiry: FC = () => {
   const register = useRegister()
-  return <textarea {...register} />
+  return <textarea className={styles.text} {...register} />
 }
 
 const OptionInquiry: FC = () => {
   const { inquiry } = useInquiryContext()
   const register = useRegister()
   return (
-    <fieldset>
+    <fieldset className={styles.wrap}>
       {inquiry.data?.options?.map(({ option }) => (
-        <label key={option}>
+        <label
+          key={option}
+          className={classNames(styles.wrap, `${inquiry.data!.type}Label`)}
+        >
           <input type={inquiry.data!.type} value={option} {...register} />
           {option}
         </label>
@@ -74,9 +79,15 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
 
   return (
     <InquiryContext.Provider value={context}>
-      <FormSubsection header={inquiry.inquiry} required={inquiry.is_required}>
-        <FormInputError name={`replies.${index}.reply`}>
-          <Component />
+      <FormSubsection
+        header={inquiry.inquiry}
+        required={inquiry.is_required}
+        headerClassName={styles.wrap}
+      >
+        <FormInputError name={`replies.${index}.reply`} isBlock>
+          <div className={styles.answer}>
+            <Component />
+          </div>
         </FormInputError>
       </FormSubsection>
     </InquiryContext.Provider>
