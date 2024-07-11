@@ -10,7 +10,7 @@ export const EventFeedbackPage: FC = () => {
   return (
     <>
       <Breadcrumbs eventName={event.name} />
-      <EventFeedback eventId={event.id} />
+      <EventFeedback event={event} />
     </>
   )
 }

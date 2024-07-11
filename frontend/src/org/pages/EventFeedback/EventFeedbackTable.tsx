@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useCallback } from 'react'
 import { InquiryRead } from 'app/services/bisTypes'
 import { EventFeedbackRead } from 'app/services/testApi'
 import styles from './EventFeedbackTable.module.scss'
@@ -6,7 +6,8 @@ import styles from './EventFeedbackTable.module.scss'
 export const EventFeedbackTable: FC<{
   inquiries: InquiryRead[]
   feedbacks: EventFeedbackRead[]
-}> = ({ inquiries, feedbacks }) => (
+  onRowClick: (id: number) => void
+}> = ({ inquiries, feedbacks, onRowClick }) => (
   <table className={styles.table}>
     <thead>
       <tr>
@@ -20,10 +21,10 @@ export const EventFeedbackTable: FC<{
     <tbody>
       {feedbacks.map(feedback => (
         <tr key={feedback.id}>
-          <td>{feedback.name}</td>
-          <td>{feedback.email}</td>
+          <td onClick={() => onRowClick(feedback.id)}>{feedback.name}</td>
+          <td onClick={() => onRowClick(feedback.id)}>{feedback.email}</td>
           {inquiries.map(({ id }) => (
-            <td key={id}>
+            <td key={id} onClick={() => onRowClick(feedback.id)}>
               {feedback.replies.find(({ inquiry }) => inquiry.id === id)?.reply}
             </td>
           ))}
