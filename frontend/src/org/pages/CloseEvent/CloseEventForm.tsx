@@ -1,10 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
-  FullEvent,
-  EventPhotoPayload,
   AttendanceListPagePayload,
+  EventPhotoPayload,
   Finance,
   FinanceReceipt,
+  FullEvent,
+  InquiryRead,
   PatchedEvent,
   Record,
 } from 'app/services/bisTypes'
@@ -26,6 +27,7 @@ import { hasFormError, withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
 import { EvidenceStep } from './EvidenceStep'
+import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
 
 export type CloseEventPayload = DeepPick<
@@ -35,6 +37,7 @@ export type CloseEventPayload = DeepPick<
   photos: EventPhotoPayload[]
   pages: AttendanceListPagePayload[]
   receipts: Optional<FinanceReceipt, 'id'>[]
+  inquiries: Optional<InquiryRead, 'id'>[]
 }
 
 // Forms setup
@@ -68,11 +71,18 @@ export type ParticipantsStepFormInnerShape = Assign<
   }
 >
 
+export type FeedbackStepFormShape = {
+  record: Pick<Record, 'feedback_form'>
+  inquiries: Optional<InquiryRead, 'id' | 'order'>[]
+}
+
 export type CloseEventFormData = EvidenceStepFormShape &
-  ParticipantsStepFormShape
+  ParticipantsStepFormShape &
+  FeedbackStepFormShape
 
 export type CloseEventFormShape = EvidenceStepFormShape &
-  ParticipantsStepFormInnerShape
+  ParticipantsStepFormInnerShape &
+  FeedbackStepFormShape
 
 const pickEvidenceData = (data: Partial<CloseEventFormShape>) =>
   pick(
@@ -94,6 +104,9 @@ const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
     'record.participantInputType',
     'record.contacts',
   )
+
+const pickFeedbackData = (data: Partial<CloseEventFormShape>) =>
+  pick(data, 'inquiries', 'record.feedback_form')
 
 const formData2payload = ({
   is_closed,
@@ -218,6 +231,9 @@ export const CloseEventForm = ({
     defaultValues: pickParticipantsData(initialAndSavedData),
     resolver: yupResolver(validationSchema),
   })
+  const feedbackFormMethods = useForm<FeedbackStepFormShape>({
+    defaultValues: pickFeedbackData(initialAndSavedData),
+  })
   const { getValues: getValuesParticipants } = participantsFormMethods
 
   const countEvidenceFirstStep = () => {
@@ -241,6 +257,7 @@ export const CloseEventForm = ({
     id,
     evidenceFormMethods.watch,
     participantsFormMethods.watch,
+    feedbackFormMethods.watch,
   )
 
   const isVolunteering = event.category.slug === 'public__volunteering'
@@ -260,9 +277,11 @@ export const CloseEventForm = ({
     let evidence: EvidenceStepFormShape = {} as EvidenceStepFormShape
     let participants: ParticipantsStepFormInnerShape =
       {} as ParticipantsStepFormInnerShape
+    let feedback = {} as FeedbackStepFormShape
     let isValid = true
     let evidenceErrors: FieldErrorsImpl<EvidenceStepFormShape> = {}
     let participantsErrors: FieldErrorsImpl<ParticipantsStepFormInnerShape> = {}
+    let feedbackErrors: FieldErrorsImpl<FeedbackStepFormShape> = {}
     await Promise.all([
       evidenceFormMethods.handleSubmit(
         data => {
@@ -284,6 +303,16 @@ export const CloseEventForm = ({
           participants = participantsFormMethods.getValues()
         },
       )(),
+      feedbackFormMethods.handleSubmit(
+        data => {
+          feedback = data
+        },
+        errors => {
+          isValid = false
+          feedbackErrors = errors
+          feedback = feedbackFormMethods.getValues()
+        },
+      )(),
     ])
 
     if (is_closed && !isValid) {
@@ -302,6 +331,7 @@ export const CloseEventForm = ({
         {},
         evidence,
         participants,
+        feedback,
         { is_closed },
         {
           photos: evidence?.photos?.filter(photo => photo.photo) || [],
@@ -357,6 +387,12 @@ export const CloseEventForm = ({
           multipleSubevents={
             !!event.number_of_sub_events && event.number_of_sub_events > 1
           }
+        />
+      </Step>
+      <Step name="zpětná vazba">
+        <FeedbackStep
+          methods={feedbackFormMethods}
+          firstIndex={countEvidenceFirstStep() + 6} // TODO decrement if feedback section is removed from "práce a další"
         />
       </Step>
     </Steps>

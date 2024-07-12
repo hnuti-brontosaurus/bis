@@ -92,6 +92,7 @@ export const ParticipantsStep: FC<{
           contacts: [],
           number_of_participants: null,
           number_of_participants_under_26: null,
+          feedback_form: {},
         },
       },
     }).unwrap()

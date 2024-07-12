@@ -201,6 +201,18 @@ export type Question = Overwrite<
   }
 >
 
+type InquiryType = 'text' | 'checkbox' | 'radio'
+
+type InquiryData = {
+  type: InquiryType
+  options?: { option: string }[]
+}
+
+export type InquiryRead = Overwrite<
+  original.InquiryRead,
+  { data?: InquiryData }
+>
+
 export type RoleSlug =
   | 'director'
   | 'admin'

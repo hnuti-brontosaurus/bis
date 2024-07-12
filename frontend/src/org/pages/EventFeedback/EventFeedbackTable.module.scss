@@ -1,0 +1,29 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.table {
+  table-layout: auto;
+  width: 100%;
+  @include media.for-phone-only {
+    max-width: inherit;
+    overflow: auto;
+  }
+
+  th, td {
+    padding: .5rem;
+  }
+
+  th {
+    border-bottom: 1px solid colors.$gray-400;
+    text-align: left;
+  }
+
+  td {
+    border-bottom: 1px solid colors.$gray-200;
+    cursor: pointer;
+  }
+
+  tbody tr:hover {
+    background-color: colors.$gray-100;
+  }
+}

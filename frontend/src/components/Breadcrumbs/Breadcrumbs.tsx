@@ -53,6 +53,10 @@ export const Breadcrumbs = ({
       name: 'Přihlášky',
     },
     {
+      path: '/org/akce/:eventId/zpetna_vazba',
+      name: 'Zpětná vazba',
+    },
+    {
       path: '/org/prilezitosti',
       name: 'Příležitosti',
     },

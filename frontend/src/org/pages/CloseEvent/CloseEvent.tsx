@@ -6,7 +6,9 @@ import {
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
+import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 
 export const CloseEvent = () => {
@@ -24,6 +26,11 @@ export const CloseEvent = () => {
   const { data: receipts } = api.endpoints.readFinanceReceipts.useQuery({
     eventId,
   })
+  const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
+    {
+      eventId,
+    },
+  )
 
   const showMessage = useShowMessage()
 
@@ -44,9 +51,14 @@ export const CloseEvent = () => {
   const [updateReceipt] = api.endpoints.updateFinanceReceipt.useMutation()
   const [deleteReceipt] = api.endpoints.deleteFinanceReceipt.useMutation()
 
+  const [createInquiry] = api.endpoints.createEventFeedbackInquiry.useMutation()
+  const [updateInquiry] = api.endpoints.updateEventFeedbackInquiry.useMutation()
+  const [deleteInquiry] = api.endpoints.deleteEventFeedbackInquiry.useMutation()
+
   useShowApiErrorMessage(updateEventError)
 
-  if (!(photos && receipts && pages)) return <Loading>Stahujeme data</Loading>
+  if (!(photos && receipts && pages && inquiries))
+    return <Loading>Stahujeme data</Loading>
 
   const defaultValues = {
     record: event.record ?? undefined,
@@ -57,12 +69,14 @@ export const CloseEvent = () => {
     pages: pages.results,
     finance: event.finance ?? undefined,
     receipts: receipts.results,
+    inquiries: inquiries.results.slice().sort(sortOrder),
   }
 
   const handleSubmit = async ({
     photos,
     pages,
     receipts,
+    inquiries,
     ...evidence
   }: CloseEventPayload) => {
     await updateEvent({
@@ -206,6 +220,36 @@ export const CloseEvent = () => {
       ...createdReceiptPromises,
       ...updatedReceiptPromises,
       ...deletedReceiptPromises,
+    ])
+
+    /**
+     * Feedback inquiries
+     */
+    const inquiriesWithOrder = inquiries.map((inquiry, order) => ({
+      ...inquiry,
+      order,
+    }))
+    const createdInquiryPromises = inquiriesWithOrder
+      .filter(inquiry => !inquiry.id)
+      .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())
+    const updateInquiryPromises = inquiriesWithOrder
+      .filter(inquiry => {
+        const oldInquiry = defaultValues.inquiries.find(
+          oi => oi.id === inquiry.id,
+        )
+        return oldInquiry && !isEqual(oldInquiry, inquiry)
+      })
+      .map(({ id, ...inquiry }) =>
+        updateInquiry({ eventId, id: id as number, inquiry }).unwrap(),
+      )
+    const deletedInquiryPromises = defaultValues.inquiries
+      .filter(inquiry => !inquiries.find(other => other.id === inquiry.id))
+      .map(({ id }) => deleteInquiry({ eventId, id }).unwrap())
+
+    await Promise.all([
+      ...createdInquiryPromises,
+      ...updateInquiryPromises,
+      ...deletedInquiryPromises,
     ])
 
     showMessage({
