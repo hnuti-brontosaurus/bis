@@ -92,41 +92,41 @@ export const getRequiredFeedbackInquiries = (
         inquiry:
           'Komunikace před akcí byla jasná a měl/a jsem dostatek informací ',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 7, // FIXME
         inquiry:
           'Věděl/a jsem, že akce je součástí neziskové organizace Hnutí Brontosaurus a byly mi poskytnuty informace o tom, jaké akce Hnutí Brontosaurus pořádá.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 8, // FIXME
         inquiry:
           'Na akci jsem se cítil/a bezpečně a měl/a jsem se na koho v případě potřeby obrátit.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 9, // FIXME
         inquiry:
           'Zázemí (ubytování, jídlo…) odpovídalo tomu, co bylo na akci inzerováno.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 10, // FIXME
         inquiry: 'Náplň akce mi přišla pestrá, zajímavá a dobře připravená',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 11, // FIXME
         inquiry:
           'Přístup organizátorů k účastníkům byl milý, nápomocný a upřímný.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
     ],
   },
@@ -139,28 +139,28 @@ export const getRequiredFeedbackInquiries = (
         inquiry:
           'Měl/a jsem dostatek informací o účelu a smysluplnosti dobrovolnické činnosti.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 13, // FIXME
         inquiry:
           'Já osobně jsem považoval/a dobrovolnickou činnost za smysluplnou a cítil/a jsem, že pomáhám přírodě, památkám nebo lidem.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 14, // FIXME
         inquiry:
           'Dobrovolnická činnost byla přiměřeně náročná s dostatkem času na odpočinek.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 15, // FIXME
         inquiry:
           'Dobrovolnickou činnost jsem si užil/a a bavila mě - pomůže nám, když nám napíšeš, co konkrétně tě na práci nejvíce bavilo a proč ti přišla užitečná.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
     ],
   },
@@ -172,21 +172,21 @@ export const getRequiredFeedbackInquiries = (
         inquiry:
           'Díky účasti na akci jsem si rozšířil/a obzory nebo získal/a nový pohled na to jak vnímám své okolí a okolní přírodu',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 17, // FIXME
         inquiry:
           'Na akci jsem se seznámil/a s lidmi, s kterými bych rád/a dál udržovala kontakt i po akci',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
       {
         id: start + 18, // FIXME
         inquiry:
           'Jak hodnotíš celkovou atmosféru na akci? Co konkrétně se ti na akci líbilo a co bys rád/a vylepšil/a? Tvoje zpětná vazba nám umožní se stále zlepšovat.',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
     ],
   },
@@ -223,7 +223,7 @@ export const getRequiredFeedbackInquiries = (
         inquiry:
           'Poskytuje Hnutí Brontosaurus dostatek příležitostí, jak se zapojit? Jakým způsobem ti HB může pomoci, aby jsi udržel/a vzniklá přátelství a více se zapojil/a do činnosti HB (organizace táborů a další akce)',
         is_required: true,
-        data: { type: 'scale' },
+        data: { type: 'scale', comment: true },
       },
     ],
   },

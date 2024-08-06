@@ -93,9 +93,11 @@ const ScaleInquiry: FC = () => {
             ))}
           </fieldset>
         </div>
-        <Button type="button" tertiary onClick={() => setShowComment(true)}>
-          přidat komentář
-        </Button>
+        {inquiry.data?.comment && (
+          <Button type="button" tertiary onClick={() => setShowComment(true)}>
+            přidat komentář
+          </Button>
+        )}
       </div>
       {showComment && (
         <textarea

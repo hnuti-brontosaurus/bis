@@ -206,6 +206,7 @@ export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale'
 type InquiryData = {
   type: InquiryType
   options?: { option: string }[]
+  comment?: boolean
 }
 
 export type InquiryRead = Overwrite<
