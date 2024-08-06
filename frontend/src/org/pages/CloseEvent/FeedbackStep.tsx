@@ -11,6 +11,7 @@ import { QuestionsFormSection } from 'org/components'
 import { FC } from 'react'
 import { FormProvider, UseFormReturn } from 'react-hook-form'
 import { FeedbackStepFormShape } from './CloseEventForm'
+import { FeedbackStepInfo } from './FeedbackStepInfo'
 
 interface Props {
   firstIndex?: number
@@ -21,6 +22,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
     <form>
       <FormSectionGroup startIndex={firstIndex}>
         <FormSection header="zpětná vazba">
+          <FeedbackStepInfo />
           <FormSubsection header="Úvod k dotazníku">
             <FullSizeElement>
               <FormInputError>
