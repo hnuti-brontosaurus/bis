@@ -75,10 +75,6 @@ export const EventFeedback: FC = () => {
     globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
   }
 
-  const handleFinished = () => {
-    globalThis.location.href = 'https://brontosaurus.cz'
-  }
-
   return (
     <div>
       <PageHeader>Zpětná vazba na akci {event.name}</PageHeader>
@@ -96,9 +92,6 @@ export const EventFeedback: FC = () => {
             {event.record.feedback_form.after_submit_text}
           </MessageBox>
           <Actions>
-            <Button primary onClick={handleFinished}>
-              Hotovo
-            </Button>
             <Button primary onClick={clearForm}>
               Další zpětná vazba
             </Button>
