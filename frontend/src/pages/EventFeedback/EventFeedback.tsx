@@ -69,11 +69,6 @@ export const EventFeedback: FC = () => {
     await createFeedback({ feedback, eventId }).unwrap()
     persistValue({ step: 'finished' })
   }
-  const handleCancel = () => {
-    clearForm()
-    // TODO where to return ?
-    globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
-  }
 
   return (
     <div>
@@ -103,7 +98,7 @@ export const EventFeedback: FC = () => {
           feedbackForm={event.record.feedback_form}
           user={user}
           onSubmit={handleSubmit}
-          onCancel={handleCancel}
+          onCancel={clearForm}
         />
       )}
     </div>
