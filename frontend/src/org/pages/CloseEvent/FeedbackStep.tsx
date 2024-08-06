@@ -1,13 +1,15 @@
-import { FC } from 'react'
 import {
   FormInputError,
   FormSection,
   FormSectionGroup,
   FormSubsection,
   FullSizeElement,
+  InfoBox,
 } from 'components'
+import { form as formTexts } from 'config/static/closeEvent'
+import { QuestionsFormSection } from 'org/components'
+import { FC } from 'react'
 import { FormProvider, UseFormReturn } from 'react-hook-form'
-import { QuestionsFormSection } from '../../components'
 import { FeedbackStepFormShape } from './CloseEventForm'
 
 interface Props {
@@ -29,6 +31,9 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
             </FullSizeElement>
           </FormSubsection>
           <FormSubsection header="Text po odeslání">
+            <InfoBox>
+              {formTexts.record.feedback_form.after_submit_text.help}
+            </InfoBox>
             <FullSizeElement>
               <FormInputError>
                 <textarea
