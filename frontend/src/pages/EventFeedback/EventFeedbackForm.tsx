@@ -17,7 +17,8 @@ import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
-import { sortOrder } from '../../utils/helpers'
+import { sortOrder } from 'utils/helpers'
+import { requiredFeedbackInquiries } from 'utils/requiredFeedbackInquiries'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
@@ -94,7 +95,14 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            <FormSection header="Dotazník">
+            {requiredFeedbackInquiries.map(({ heading, inquiries }) => (
+              <FormSection header={heading}>
+                {inquiries.map((inquiry, index) => (
+                  <Inquiry key={index} inquiry={inquiry} index={index} />
+                ))}
+              </FormSection>
+            ))}
+            <FormSection header="Další">
               {orderedInquiries.map((inquiry, index) => (
                 <Inquiry key={index} inquiry={inquiry} index={index} />
               ))}
