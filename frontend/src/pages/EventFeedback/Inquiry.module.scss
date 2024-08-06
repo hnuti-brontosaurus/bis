@@ -19,6 +19,11 @@
   }
 }
 
+.scale {
+  display: flex;
+  gap: 1em;
+}
+
 .scaleLabels {
   display: flex;
   justify-content: space-between;
@@ -35,4 +40,8 @@
   justify-items: center;
   margin: 0;
   gap: .3em;
+}
+
+.scaleText {
+  margin-top: .7em;
 }

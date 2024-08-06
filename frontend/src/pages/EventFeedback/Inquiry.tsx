@@ -1,8 +1,15 @@
 import { InquiryRead, InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { FormInputError, FormSubsection } from 'components'
+import { Button, FormInputError, FormSubsection } from 'components'
 import range from 'lodash/range'
-import { createContext, FC, useContext, useEffect, useMemo } from 'react'
+import {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useFormContext } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import styles from './Inquiry.module.scss'
@@ -54,25 +61,49 @@ const OptionInquiry: FC = () => {
 }
 
 const ScaleInquiry: FC = () => {
-  const register = useRegister()
+  const { inquiry, index } = useInquiryContext()
+  const { register, getValues } = useFormContext()
+  const [showComment, setShowComment] = useState(
+    !!getValues(`replies.${index}.data.comment`),
+  )
+
   return (
-    <div>
-      <div className={styles.scaleLabels}>
-        <div>zcela nesplňuje</div>
-        <div>zcela splňuje</div>
+    <>
+      <div className={styles.scale}>
+        <div>
+          <div className={styles.scaleLabels}>
+            <div>zcela nesplňuje</div>
+            <div>zcela splňuje</div>
+          </div>
+          <fieldset className={styles.scaleRange}>
+            {range(1, 11).map(rating => (
+              <label
+                key={rating}
+                className={classNames('radioLabel', styles.scaleOption)}
+              >
+                <input
+                  type="radio"
+                  value={rating}
+                  {...register(`replies.${index}.reply`, {
+                    required: inquiry.is_required && required,
+                  })}
+                />
+                {rating}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+        <Button type="button" tertiary onClick={() => setShowComment(true)}>
+          přidat komentář
+        </Button>
       </div>
-      <fieldset className={styles.scaleRange}>
-        {range(1, 11).map(value => (
-          <label
-            key={value}
-            className={classNames('radioLabel', styles.scaleOption)}
-          >
-            <input type="radio" value={value} {...register} />
-            {value}
-          </label>
-        ))}
-      </fieldset>
-    </div>
+      {showComment && (
+        <textarea
+          className={classNames(styles.text, styles.scaleText)}
+          {...register(`replies.${index}.data.comment`)}
+        />
+      )}
+    </>
   )
 }
 
