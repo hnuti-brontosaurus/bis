@@ -18,3 +18,21 @@
     width: 500px;
   }
 }
+
+.scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .2em;
+}
+
+.scaleRange {
+  display: flex;
+  gap: .7em;
+}
+
+.scaleOption {
+  grid-template-columns: auto;
+  justify-items: center;
+  margin: 0;
+  gap: .3em;
+}

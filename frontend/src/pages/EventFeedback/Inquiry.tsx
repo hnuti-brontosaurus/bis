@@ -1,6 +1,7 @@
-import { InquiryRead } from 'app/services/bisTypes'
+import { InquiryRead, InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import { FormInputError, FormSubsection } from 'components'
+import range from 'lodash/range'
 import { createContext, FC, useContext, useEffect, useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
@@ -52,10 +53,34 @@ const OptionInquiry: FC = () => {
   )
 }
 
-const components: { [key: string]: FC } = {
+const ScaleInquiry: FC = () => {
+  const register = useRegister()
+  return (
+    <div>
+      <div className={styles.scaleLabels}>
+        <div>zcela nesplňuje</div>
+        <div>zcela splňuje</div>
+      </div>
+      <fieldset className={styles.scaleRange}>
+        {range(1, 11).map(value => (
+          <label
+            key={value}
+            className={classNames('radioLabel', styles.scaleOption)}
+          >
+            <input type="radio" value={value} {...register} />
+            {value}
+          </label>
+        ))}
+      </fieldset>
+    </div>
+  )
+}
+
+const components: Record<InquiryType, FC> = {
   text: TextInquiry,
   checkbox: OptionInquiry,
   radio: OptionInquiry,
+  scale: ScaleInquiry,
 }
 
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
@@ -73,9 +98,6 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
 
   const type = inquiry.data!.type
   const Component = components[type]
-  if (!Component) {
-    throw new Error(`Unsupported inquiry type "${type}"!`)
-  }
 
   return (
     <InquiryContext.Provider value={context}>
