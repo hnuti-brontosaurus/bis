@@ -1,5 +1,5 @@
 import { WebFeedbackForm } from 'app/services/bis'
-import { User } from 'app/services/bisTypes'
+import { InquiryRead, User } from 'app/services/bisTypes'
 import { EventFeedback, Reply } from 'app/services/testApi'
 import {
   Actions,
@@ -31,6 +31,28 @@ const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
     .filter(reply => !!reply.reply),
   ...data,
 })
+
+interface InquirySection {
+  header: string
+  inquiries: InquiryRead[]
+}
+
+const groupInquiriesByHeaders = (
+  inquiries: InquiryRead[],
+): InquirySection[] => {
+  const sections: InquirySection[] = []
+  for (const inquiry of inquiries) {
+    if (inquiry.data?.type === 'header') {
+      sections.push({
+        header: inquiry.inquiry,
+        inquiries: [],
+      })
+    } else {
+      sections[sections.length - 1].inquiries.push(inquiry)
+    }
+  }
+  return sections
+}
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
@@ -96,9 +118,9 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            {getRequiredFeedbackInquiries(maxId).map(
-              ({ heading, inquiries }) => (
-                <FormSection header={heading}>
+            {groupInquiriesByHeaders(getRequiredFeedbackInquiries(maxId)).map(
+              ({ header, inquiries }) => (
+                <FormSection header={header}>
                   {inquiries.map((inquiry, index) => (
                     <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
                   ))}

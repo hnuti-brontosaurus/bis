@@ -114,6 +114,7 @@ const components: Record<InquiryType, FC> = {
   checkbox: OptionInquiry,
   radio: OptionInquiry,
   scale: ScaleInquiry,
+  header: () => null,
 }
 
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {

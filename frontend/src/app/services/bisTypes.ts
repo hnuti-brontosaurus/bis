@@ -201,7 +201,7 @@ export type Question = Overwrite<
   }
 >
 
-export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale'
+export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale' | 'header'
 
 type InquiryData = {
   type: InquiryType
