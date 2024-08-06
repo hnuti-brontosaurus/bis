@@ -10,6 +10,7 @@ import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
+import { form as formTexts } from 'config/static/closeEvent'
 
 export const CloseEvent = () => {
   const params = useParams()
@@ -61,7 +62,13 @@ export const CloseEvent = () => {
     return <Loading>Stahujeme data</Loading>
 
   const defaultValues = {
-    record: event.record ?? undefined,
+    record: event.record ?? {
+      feedback_form: {
+        introduction: formTexts.record.feedback_form.introduction.initial,
+        after_submit_text:
+          formTexts.record.feedback_form.after_submit_text.initial,
+      },
+    },
     photos: photos.results.map(({ photo, ...rest }) => ({
       photo: photo.original,
       ...rest,
