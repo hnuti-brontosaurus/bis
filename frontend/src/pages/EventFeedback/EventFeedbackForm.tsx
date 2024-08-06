@@ -18,7 +18,7 @@ import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
-import { requiredFeedbackInquiries } from 'utils/requiredFeedbackInquiries'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
@@ -72,6 +72,7 @@ export const EventFeedbackForm: FC<{
   )
 
   const orderedInquiries = feedbackForm.inquiries.slice().sort(sortOrder)
+  const maxId = Math.max(...feedbackForm.inquiries.map(({ id }) => id))
 
   return (
     <>
@@ -95,13 +96,15 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            {requiredFeedbackInquiries.map(({ heading, inquiries }) => (
-              <FormSection header={heading}>
-                {inquiries.map((inquiry, index) => (
-                  <Inquiry key={index} inquiry={inquiry} index={index} />
-                ))}
-              </FormSection>
-            ))}
+            {getRequiredFeedbackInquiries(maxId).map(
+              ({ heading, inquiries }) => (
+                <FormSection header={heading}>
+                  {inquiries.map((inquiry, index) => (
+                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
+                  ))}
+                </FormSection>
+              ),
+            )}
             <FormSection header="Další">
               {orderedInquiries.map((inquiry, index) => (
                 <Inquiry key={index} inquiry={inquiry} index={index} />
