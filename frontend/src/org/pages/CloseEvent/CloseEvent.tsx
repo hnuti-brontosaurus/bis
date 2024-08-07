@@ -241,6 +241,7 @@ export const CloseEvent = () => {
       ...inquiry,
       order,
     }))
+    console.log(inquiriesWithOrder)
     const createdInquiryPromises = inquiriesWithOrder
       .filter(inquiry => !inquiry.id)
       .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())

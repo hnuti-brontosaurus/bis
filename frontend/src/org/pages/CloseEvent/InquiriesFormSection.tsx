@@ -17,9 +17,10 @@ const questionTypes: { type: InquiryType; name: string }[] = [
 ]
 
 const InquiryOptions: FC<{
+  fixed: boolean
   question: number
   type: 'checkbox' | 'radio'
-}> = ({ question, type }) => {
+}> = ({ question, type, fixed }) => {
   const { register } = useFormContext<FeedbackStepFormShape>()
   const fields = useFieldArray({ name: `inquiries.${question}.data.options` })
   return (
@@ -39,6 +40,7 @@ const InquiryOptions: FC<{
                     `inquiries.${question}.data.options.${index}.option` as const,
                     { required: messages.required },
                   )}
+                  disabled={fixed}
                 />
               </FormInputError>
               <button
@@ -47,24 +49,27 @@ const InquiryOptions: FC<{
                 className={styles.delete}
                 aria-label="Smazat možnost"
                 title="Smazat možnost"
+                disabled={fixed}
               >
                 <FaTrashAlt />
               </button>
             </div>
           </li>
         ))}
-        <li>
-          <Button
-            tertiary
-            className={styles.addOptionButton}
-            type="button"
-            onClick={() => {
-              fields.append({ option: '' })
-            }}
-          >
-            Přidat možnost <FaPlus />
-          </Button>
-        </li>
+        {!fixed && (
+          <li>
+            <Button
+              tertiary
+              className={styles.addOptionButton}
+              type="button"
+              onClick={() => {
+                fields.append({ option: '' })
+              }}
+            >
+              Přidat možnost <FaPlus />
+            </Button>
+          </li>
+        )}
       </ul>
     </div>
   )
@@ -74,14 +79,17 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
   index,
   onRemove,
 }) => {
-  const { register, watch, setValue } = useFormContext<FeedbackStepFormShape>()
+  const { register, watch, setValue, getValues } =
+    useFormContext<FeedbackStepFormShape>()
+
   const inquiryType = useWatch({ name: `inquiries.${index}.data.type` })
   const isHeader = inquiryType === 'header'
-
   if (isHeader) {
     setValue(`inquiries.${index}.is_required`, false)
   }
   setValue(`inquiries.${index}.data.comment`, inquiryType === 'scale')
+
+  const fixed = !!getValues(`inquiries.${index}.data.fixed`)
 
   return (
     <li>
@@ -91,6 +99,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
           <FormInputError className={styles.questionInput}>
             <input
               type="text"
+              disabled={fixed}
               {...register(`inquiries.${index}.inquiry` as const, {
                 required: messages.required,
               })}
@@ -101,6 +110,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
               {...register(`inquiries.${index}.data.type` as const, {
                 required: messages.required,
               })}
+              disabled={fixed}
             >
               {questionTypes.map(({ type, name }) => (
                 <option key={type} value={type}>
@@ -115,7 +125,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
             <input
               type="checkbox"
               {...register(`inquiries.${index}.is_required` as const)}
-              disabled={isHeader}
+              disabled={isHeader || fixed}
             />{' '}
             povinné?
           </label>
@@ -125,6 +135,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
             className={styles.delete}
             aria-label="Smazat otázku"
             title="Smazat otázku"
+            disabled={fixed}
           >
             <FaTrashAlt />
           </button>
@@ -133,6 +144,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
           <InquiryOptions
             question={index}
             type={inquiryType as 'radio' | 'checkbox'}
+            fixed={fixed}
           />
         )}
       </div>
