@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC } from 'react'
 import { InquiryRead } from 'app/services/bisTypes'
 import { EventFeedbackRead } from 'app/services/testApi'
 import styles from './EventFeedbackTable.module.scss'
@@ -14,9 +14,11 @@ export const EventFeedbackTable: FC<{
         <tr>
           <th>Jméno</th>
           <th>E-mail</th>
-          {inquiries.map(({ inquiry, id }) => (
-            <th key={id}>{inquiry}</th>
-          ))}
+          {inquiries
+            .filter(inquiry => inquiry.data?.type !== 'header')
+            .map(({ inquiry, id }) => (
+              <th key={id}>{inquiry}</th>
+            ))}
         </tr>
       </thead>
       <tbody>
@@ -24,14 +26,16 @@ export const EventFeedbackTable: FC<{
           <tr key={feedback.id}>
             <td onClick={() => onRowClick(feedback.id)}>{feedback.name}</td>
             <td onClick={() => onRowClick(feedback.id)}>{feedback.email}</td>
-            {inquiries.map(({ id }) => (
-              <td key={id} onClick={() => onRowClick(feedback.id)}>
-                {
-                  feedback.replies.find(({ inquiry }) => inquiry.id === id)
-                    ?.reply
-                }
-              </td>
-            ))}
+            {inquiries
+              .filter(inquiry => inquiry.data?.type !== 'header')
+              .map(({ id }) => (
+                <td key={id} onClick={() => onRowClick(feedback.id)}>
+                  {
+                    feedback.replies.find(({ inquiry }) => inquiry.id === id)
+                      ?.reply
+                  }
+                </td>
+              ))}
           </tr>
         ))}
       </tbody>
