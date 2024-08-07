@@ -1,5 +1,5 @@
-@use '../../../styles/colors';
-@use '../../../styles/media';
+@use 'styles/colors';
+@use 'styles/media';
 
 .questionsBox {
   width: 100%;
@@ -56,6 +56,30 @@
     }
   }
 
+  .question.disabled {
+    color: colors.$gray-500;
+
+    .lock {
+      display: inline-block;
+      margin-right: 6px;
+      vertical-align: baseline;
+    }
+
+    input[type=text]:disabled,
+    select:disabled {
+      border-color: colors.$gray-200;
+      cursor: not-allowed;
+    }
+
+    input[type=checkbox]:disabled::before {
+      box-shadow: inset 1em 1em colors.$gray-300;
+    }
+
+    .questionRequired {
+      cursor: not-allowed;
+    }
+  }
+
   .addQuestionButton {
     display: flex;
     align-items: center;
@@ -74,6 +98,11 @@
   @include media.for-phone-only {
     // width: 100%;
   }
+}
+
+.delete:disabled {
+  cursor: not-allowed;
+  color: colors.$error-light;
 }
 
 .options {

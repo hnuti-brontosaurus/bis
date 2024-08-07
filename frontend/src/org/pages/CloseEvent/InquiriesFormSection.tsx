@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { Button, FormInputError, FormSubsection } from 'components'
 import { FC } from 'react'
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
-import { FaPlus, FaTrashAlt } from 'react-icons/fa'
+import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
 import styles from './InquiryFormSection.module.scss'
@@ -36,6 +36,7 @@ const InquiryOptions: FC<{
             <div className={styles.option}>
               <FormInputError>
                 <input
+                  type="text"
                   {...register(
                     `inquiries.${question}.data.options.${index}.option` as const,
                     { required: messages.required },
@@ -93,8 +94,10 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
 
   return (
     <li>
-      <div className={styles.question}>
-        Otázka {index + 1}
+      <div
+        className={classNames(styles.question, { [styles.disabled]: fixed })}
+      >
+        {fixed && <FaLock className={styles.lock} />}Otázka {index + 1}
         <div className={styles.questionInputGroup}>
           <FormInputError className={styles.questionInput}>
             <input
