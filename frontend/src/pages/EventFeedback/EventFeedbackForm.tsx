@@ -22,14 +22,28 @@ import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
-  replies: replies
-    .map(({ reply, ...rest }) => ({
-      reply: Array.isArray(reply) ? reply.join(', ') : reply,
-      ...rest,
-    }))
-    .filter(reply => !!reply.reply),
+  replies: replies.map(mapReply).filter(reply => !!reply.reply),
   ...data,
 })
+
+const mapReply = (reply: Reply): Reply => {
+  if (Array.isArray(reply.reply)) {
+    // checkboxes
+    return { ...reply, reply: reply.reply.join(', ') }
+  } else if (reply.data?.comment) {
+    // scales
+    return {
+      ...reply,
+      reply: `${reply.reply} ${reply.data.comment}`,
+      data: {
+        ...reply.data,
+        rating: reply.reply,
+      },
+    }
+  } else {
+    return reply
+  }
+}
 
 interface InquirySection {
   header: string
@@ -93,7 +107,6 @@ export const EventFeedbackForm: FC<{
   )
 
   const orderedInquiries = feedbackForm.inquiries.slice().sort(sortOrder)
-  const maxId = Math.max(...feedbackForm.inquiries.map(({ id }) => id))
 
   return (
     <>
