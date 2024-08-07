@@ -1,4 +1,5 @@
 import {
+  ButtonLink,
   FormInputError,
   FormSection,
   FormSectionGroup,
@@ -14,10 +15,11 @@ import { FeedbackStepInfo } from './FeedbackStepInfo'
 import { InquiriesFormSection } from './InquiriesFormSection'
 
 interface Props {
+  eventId: number
   firstIndex?: number
   methods: UseFormReturn<FeedbackStepFormShape, any>
 }
-export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
+export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
   <FormProvider {...methods}>
     <form>
       <FormSectionGroup startIndex={firstIndex}>
@@ -48,6 +50,13 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
           </FormSubsection>
           <InquiriesFormSection />
         </FormSection>
+        <InfoBox>
+          Formulář zpětné vazby najdeš po uložení tohoto formuláře na tomto
+          odkaze, který může poslat účastníkům:{' '}
+          <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+            {window.location.origin}/akce/{eventId}/zpetna_vazba
+          </ButtonLink>
+        </InfoBox>
       </FormSectionGroup>
     </form>
   </FormProvider>

@@ -1,6 +1,6 @@
 import { InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { Button, FormInputError, FormSubsection } from 'components'
+import { Button, FormInputError, FormSubsection, InfoBox } from 'components'
 import { FC } from 'react'
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
 import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
@@ -165,6 +165,10 @@ export const InquiriesFormSection: FC = () => {
         'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností, škála 1–10 = výběr na škále 1–10 (zcela splňuje – zcela nesplňuje) s volitelným komentářem, nadpis sekce = vytvoří v dotazníku číslovanou sekci'
       }
     >
+      <InfoBox>
+        SEM PŘIJDE NĚJAKÝ TEXT O TOM, ŽE TAM JSOU FIXNÍ OTÁZKY, PROČ TAM JSOU,
+        PROČ JSOU PRO HB DŮLEŽITÉ A ŽE NA KONCI JE MOŽNÉ PŘIDAT VLASTNÍ OTÁZKY.
+      </InfoBox>
       <div className={styles.questionsBox}>
         <ul className={styles.questionList}>
           {fields.fields.map((item, index) => (

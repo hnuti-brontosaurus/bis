@@ -395,6 +395,7 @@ export const CloseEventForm = ({
       </Step>
       <Step name="zpětná vazba">
         <FeedbackStep
+          eventId={event.id}
           methods={feedbackFormMethods}
           firstIndex={countEvidenceFirstStep() + 6} // TODO decrement if feedback section is removed from "práce a další"
         />
