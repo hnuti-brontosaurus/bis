@@ -1,17 +1,12 @@
 import { QuestionType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import { Button, FormInputError, FormSubsection } from 'components'
-import {
-  ArrayPath,
-  Path,
-  FieldValues,
-  useFieldArray,
-  UseFormReturn,
-  FieldArray,
-} from 'react-hook-form'
+import { FC } from 'react'
+import { useFieldArray, UseFormReturn } from 'react-hook-form'
 import { FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
-import styles from './QuestionsFormSection.module.scss'
+import { FeedbackStepFormShape } from './CloseEventForm'
+import styles from './InquiryFormSection.module.scss'
 
 const questionTypes: { type: QuestionType; name: string }[] = [
   { type: 'text', name: 'Odstavec' },
@@ -19,20 +14,14 @@ const questionTypes: { type: QuestionType; name: string }[] = [
   { type: 'checkbox', name: 'Zaškrtávací políčka' },
 ]
 
-const QuestionOptions = <V extends FieldValues>({
-  name,
-  question,
-  methods,
-  type,
-}: {
-  name: ArrayPath<V>
+const InquiryOptions: FC<{
   question: number
-  methods: UseFormReturn<V>
+  methods: UseFormReturn<FeedbackStepFormShape, any>
   type: 'checkbox' | 'radio'
-}) => {
+}> = ({ question, methods, type }) => {
   const { register, control } = methods
   const fields = useFieldArray({
-    name: `${name}.${question}.data.options` as ArrayPath<V>,
+    name: `inquiries.${question}.data.options`,
     control,
   })
   return (
@@ -49,7 +38,7 @@ const QuestionOptions = <V extends FieldValues>({
               <FormInputError>
                 <input
                   {...register(
-                    `${name}.${question}.data.options.${index}.option` as Path<V>,
+                    `inquiries.${question}.data.options.${index}.option` as const,
                     { required: messages.required },
                   )}
                 />
@@ -72,7 +61,7 @@ const QuestionOptions = <V extends FieldValues>({
             className={styles.addOptionButton}
             type="button"
             onClick={() => {
-              fields.append({ option: '' } as FieldArray<V, ArrayPath<V>>)
+              fields.append({ option: '' })
             }}
           >
             Přidat možnost <FaPlus />
@@ -83,17 +72,11 @@ const QuestionOptions = <V extends FieldValues>({
   )
 }
 
-export const QuestionsFormSection = <V extends FieldValues>({
-  name,
-  methods,
-  questionName,
-}: {
-  name: ArrayPath<V>
-  questionName: string
-  methods: UseFormReturn<V>
-}) => {
+export const InquiriesFormSection: FC<{
+  methods: UseFormReturn<FeedbackStepFormShape, any>
+}> = ({ methods }) => {
   const { control, register, watch } = methods
-  const fields = useFieldArray({ name, control })
+  const fields = useFieldArray({ name: 'inquiries', control })
   return (
     <FormSubsection
       header="Otázky"
@@ -111,17 +94,14 @@ export const QuestionsFormSection = <V extends FieldValues>({
                   <FormInputError className={styles.questionInput}>
                     <input
                       type="text"
-                      {...register(
-                        `${name}.${index}.${questionName}` as Path<V>,
-                        {
-                          required: messages.required,
-                        },
-                      )}
+                      {...register(`inquiries.${index}.inquiry` as const, {
+                        required: messages.required,
+                      })}
                     />
                   </FormInputError>
                   <FormInputError className={styles.typeInput}>
                     <select
-                      {...register(`${name}.${index}.data.type` as Path<V>, {
+                      {...register(`inquiries.${index}.data.type` as const, {
                         required: messages.required,
                       })}
                     >
@@ -140,7 +120,7 @@ export const QuestionsFormSection = <V extends FieldValues>({
                   >
                     <input
                       type="checkbox"
-                      {...register(`${name}.${index}.is_required` as Path<V>)}
+                      {...register(`inquiries.${index}.is_required` as const)}
                     />{' '}
                     povinné?
                   </label>
@@ -155,14 +135,13 @@ export const QuestionsFormSection = <V extends FieldValues>({
                   </button>
                 </div>
                 {['radio', 'checkbox'].includes(
-                  watch(`${name}.${index}.data.type` as Path<V>),
+                  watch(`inquiries.${index}.data.type` as const),
                 ) && (
-                  <QuestionOptions
-                    name={name}
+                  <InquiryOptions
                     question={index}
                     methods={methods}
                     type={
-                      watch(`${name}.${index}.data.type` as Path<V>) as
+                      watch(`inquiries.${index}.data.type`) as
                         | 'radio'
                         | 'checkbox'
                     }
@@ -177,12 +156,12 @@ export const QuestionsFormSection = <V extends FieldValues>({
               type="button"
               onClick={() =>
                 fields.append({
-                  question: '',
+                  inquiry: '',
                   data: {
                     type: 'text',
                     options: [{ option: '' }],
                   },
-                } as FieldArray<V, ArrayPath<V>>)
+                })
               }
             >
               Přidat otázku <FaPlus />

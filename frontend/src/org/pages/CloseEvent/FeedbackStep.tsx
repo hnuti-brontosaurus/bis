@@ -7,11 +7,11 @@ import {
   InfoBox,
 } from 'components'
 import { form as formTexts } from 'config/static/closeEvent'
-import { QuestionsFormSection } from 'org/components'
 import { FC } from 'react'
 import { FormProvider, UseFormReturn } from 'react-hook-form'
 import { FeedbackStepFormShape } from './CloseEventForm'
 import { FeedbackStepInfo } from './FeedbackStepInfo'
+import { InquiriesFormSection } from './InquiriesFormSection'
 
 interface Props {
   firstIndex?: number
@@ -46,11 +46,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
               </FormInputError>
             </FullSizeElement>
           </FormSubsection>
-          <QuestionsFormSection
-            name="inquiries"
-            questionName="inquiry"
-            methods={methods}
-          />
+          <InquiriesFormSection methods={methods} />
         </FormSection>
       </FormSectionGroup>
     </form>
