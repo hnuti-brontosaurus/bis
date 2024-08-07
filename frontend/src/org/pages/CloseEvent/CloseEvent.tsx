@@ -1,6 +1,7 @@
 import { api } from 'app/services/bis'
-import type { FullEvent, EventPayload } from 'app/services/bisTypes'
+import type { EventPayload, FullEvent } from 'app/services/bisTypes'
 import { Breadcrumbs, GuideOwl, Loading } from 'components'
+import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
   useShowMessage,
@@ -8,10 +9,9 @@ import {
 import { useTitle } from 'hooks/title'
 import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import { sortOrder } from 'utils/helpers'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
+import { sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
-import { form as formTexts } from 'config/static/closeEvent'
 
 export const CloseEvent = () => {
   const params = useParams()
@@ -80,7 +80,7 @@ export const CloseEvent = () => {
     inquiries:
       inquiries.results.length > 0
         ? inquiries.results.slice().sort(sortOrder)
-        : getRequiredFeedbackInquiries(),
+        : getRequiredFeedbackInquiries(event),
   }
 
   const handleSubmit = async ({

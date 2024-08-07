@@ -1,10 +1,10 @@
 import { Optional } from 'utility-types'
-import { InquiryRead } from 'app/services/bisTypes'
+import { FullEvent, InquiryRead } from 'app/services/bisTypes'
+import { isEventVolunteering } from './helpers'
 
-export const getRequiredFeedbackInquiries = (): Optional<
-  InquiryRead,
-  'id' | 'order'
->[] => [
+type QuestionnaireSection = Optional<InquiryRead, 'id' | 'order'>[]
+
+const checkInSection: QuestionnaireSection = [
   {
     inquiry: 'Anketka',
     data: { type: 'header', fixed: true },
@@ -82,6 +82,9 @@ export const getRequiredFeedbackInquiries = (): Optional<
       fixed: true,
     },
   },
+]
+
+const eventSection: QuestionnaireSection = [
   {
     inquiry: 'O akci',
     data: { type: 'header', fixed: true },
@@ -120,7 +123,9 @@ export const getRequiredFeedbackInquiries = (): Optional<
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
   },
-  // TODO only for volunteering events
+]
+
+const volunteeringSection: QuestionnaireSection = [
   {
     inquiry: 'Dobrovolnická činnost',
     data: { type: 'header', fixed: true },
@@ -150,7 +155,9 @@ export const getRequiredFeedbackInquiries = (): Optional<
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
   },
-  // TODO end of volunteering events only
+]
+
+const atmosphereSection: QuestionnaireSection = [
   {
     inquiry: 'Atmosféra',
     data: { type: 'header', fixed: true },
@@ -173,6 +180,9 @@ export const getRequiredFeedbackInquiries = (): Optional<
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
   },
+]
+
+const involvementSection: QuestionnaireSection = [
   {
     inquiry: 'Zapojení',
     data: { type: 'header', fixed: true },
@@ -209,3 +219,13 @@ export const getRequiredFeedbackInquiries = (): Optional<
     data: { type: 'scale', comment: true, fixed: true },
   },
 ]
+
+export const getRequiredFeedbackInquiries = (
+  event: FullEvent,
+): QuestionnaireSection =>
+  checkInSection.concat(
+    eventSection,
+    isEventVolunteering(event) ? volunteeringSection : [],
+    atmosphereSection,
+    involvementSection,
+  )
