@@ -31,6 +31,7 @@ export const CloseEvent = () => {
   const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
     {
       eventId,
+      pageSize: 1000, // TODO is there a better way to load all?
     },
   )
 

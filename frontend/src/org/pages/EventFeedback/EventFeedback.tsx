@@ -12,7 +12,7 @@ export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
     eventId: event.id,
   })
   const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
-    { eventId: event.id },
+    { eventId: event.id, pageSize: 1000 }, // TODO is there a better way to load all?
   )
   const [displayedFeedback, setDisplayedFeedback] = useState<
     EventFeedbackRead | undefined
