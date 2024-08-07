@@ -106,6 +106,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
               {...register(`inquiries.${index}.inquiry` as const, {
                 required: messages.required,
               })}
+              title={fixed ? getValues(`inquiries.${index}.inquiry`) : ''}
             />
           </FormInputError>
           <FormInputError className={styles.typeInput}>
