@@ -46,7 +46,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods }) => (
               </FormInputError>
             </FullSizeElement>
           </FormSubsection>
-          <InquiriesFormSection methods={methods} />
+          <InquiriesFormSection />
         </FormSection>
       </FormSectionGroup>
     </form>

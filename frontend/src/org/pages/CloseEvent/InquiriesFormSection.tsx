@@ -2,7 +2,7 @@ import { QuestionType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import { Button, FormInputError, FormSubsection } from 'components'
 import { FC } from 'react'
-import { useFieldArray, UseFormReturn } from 'react-hook-form'
+import { useFieldArray, useFormContext } from 'react-hook-form'
 import { FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
@@ -16,14 +16,10 @@ const questionTypes: { type: QuestionType; name: string }[] = [
 
 const InquiryOptions: FC<{
   question: number
-  methods: UseFormReturn<FeedbackStepFormShape, any>
   type: 'checkbox' | 'radio'
-}> = ({ question, methods, type }) => {
-  const { register, control } = methods
-  const fields = useFieldArray({
-    name: `inquiries.${question}.data.options`,
-    control,
-  })
+}> = ({ question, type }) => {
+  const { register } = useFormContext<FeedbackStepFormShape>()
+  const fields = useFieldArray({ name: `inquiries.${question}.data.options` })
   return (
     <div>
       <ul
@@ -72,11 +68,9 @@ const InquiryOptions: FC<{
   )
 }
 
-export const InquiriesFormSection: FC<{
-  methods: UseFormReturn<FeedbackStepFormShape, any>
-}> = ({ methods }) => {
-  const { control, register, watch } = methods
-  const fields = useFieldArray({ name: 'inquiries', control })
+export const InquiriesFormSection: FC = () => {
+  const { register, watch } = useFormContext<FeedbackStepFormShape>()
+  const fields = useFieldArray({ name: 'inquiries' })
   return (
     <FormSubsection
       header="Otázky"
@@ -139,7 +133,6 @@ export const InquiriesFormSection: FC<{
                 ) && (
                   <InquiryOptions
                     question={index}
-                    methods={methods}
                     type={
                       watch(`inquiries.${index}.data.type`) as
                         | 'radio'
