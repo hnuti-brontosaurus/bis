@@ -207,6 +207,7 @@ type InquiryData = {
   type: InquiryType
   options?: { option: string }[]
   comment?: boolean
+  fixed?: boolean
 }
 
 export type InquiryRead = Overwrite<

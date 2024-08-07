@@ -1,13 +1,15 @@
+import { Optional } from 'utility-types'
 import { InquiryRead } from 'app/services/bisTypes'
 
-export const getRequiredFeedbackInquiries = (start: number): InquiryRead[] => [
+export const getRequiredFeedbackInquiries = (): Optional<
+  InquiryRead,
+  'id' | 'order'
+>[] => [
   {
-    id: start + 1, // FIXME,
     inquiry: 'Anketka',
-    data: { type: 'header' },
+    data: { type: 'header', fixed: true },
   },
   {
-    id: start + 2, // FIXME
     inquiry:
       'Pokolikáté jsi na akci s Hnutí Brontosaurus? (myslíme tábor nebo víkendovou akci)',
     is_required: true,
@@ -18,20 +20,20 @@ export const getRequiredFeedbackInquiries = (start: number): InquiryRead[] => [
         { option: 'podruhé nebo potřetí' },
         { option: 'už jsem byl/a víckrát' },
       ],
+      fixed: true,
     },
   },
   {
-    id: start + 3, // FIXME
     inquiry:
       'Dozvěděl/a  ses nejdříve o této akci nebo o Hnutí Brontosaurus jako celku?',
     is_required: true,
     data: {
       type: 'radio',
       options: [{ option: 'O akci' }, { option: 'O Hnutí Brontosaurus' }],
+      fixed: true,
     },
   },
   {
-    id: start + 4, // FIXME
     inquiry: 'Jak ses dozvěděl/a o tomto táboře?',
     is_required: true,
     data: {
@@ -49,10 +51,10 @@ export const getRequiredFeedbackInquiries = (start: number): InquiryRead[] => [
         { option: 'Google' },
         { option: 'nepamatuji si' },
       ],
+      fixed: true,
     },
   },
   {
-    id: start + 5, // FIXME
     // TODO this one should have optional comment
     inquiry:
       'Podle čeho sis vybral/a tuto akci? Prosím vyber pro tebe nejdůležitější 3 důvody',
@@ -68,131 +70,114 @@ export const getRequiredFeedbackInquiries = (start: number): InquiryRead[] => [
         { option: 'Organizátoři' },
         { option: 'Pořádající základní článek/klub' },
       ],
+      fixed: true,
     },
   },
   {
-    id: start + 6, // FIXME
     // TODO remove when comment can be added to previous inquiry
     inquiry:
       'Chceš nám napsat něco více k tomu, proč sis vybral/a tuto akci? Budeme rádi za jakýkoli komentář',
     data: {
       type: 'text',
+      fixed: true,
     },
   },
   {
-    id: start + 7, // FIXME
     inquiry: 'O akci',
-    data: { type: 'header' },
+    data: { type: 'header', fixed: true },
   },
 
   {
-    id: start + 8, // FIXME
     inquiry: 'Komunikace před akcí byla jasná a měl/a jsem dostatek informací ',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 9, // FIXME
     inquiry:
       'Věděl/a jsem, že akce je součástí neziskové organizace Hnutí Brontosaurus a byly mi poskytnuty informace o tom, jaké akce Hnutí Brontosaurus pořádá.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 10, // FIXME
     inquiry:
       'Na akci jsem se cítil/a bezpečně a měl/a jsem se na koho v případě potřeby obrátit.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 11, // FIXME
     inquiry:
       'Zázemí (ubytování, jídlo…) odpovídalo tomu, co bylo na akci inzerováno.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 12, // FIXME
     inquiry: 'Náplň akce mi přišla pestrá, zajímavá a dobře připravená',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 13, // FIXME
     inquiry: 'Přístup organizátorů k účastníkům byl milý, nápomocný a upřímný.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   // TODO only for volunteering events
   {
-    id: start + 14,
     inquiry: 'Dobrovolnická činnost',
-    data: { type: 'header' },
+    data: { type: 'header', fixed: true },
   },
 
   {
-    id: start + 15, // FIXME
     inquiry:
       'Měl/a jsem dostatek informací o účelu a smysluplnosti dobrovolnické činnosti.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 16, // FIXME
     inquiry:
       'Já osobně jsem považoval/a dobrovolnickou činnost za smysluplnou a cítil/a jsem, že pomáhám přírodě, památkám nebo lidem.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 17, // FIXME
     inquiry:
       'Dobrovolnická činnost byla přiměřeně náročná s dostatkem času na odpočinek.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 18, // FIXME
     inquiry:
       'Dobrovolnickou činnost jsem si užil/a a bavila mě - pomůže nám, když nám napíšeš, co konkrétně tě na práci nejvíce bavilo a proč ti přišla užitečná.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   // TODO end of volunteering events only
   {
-    id: start + 19, // FIXME,
     inquiry: 'Atmosféra',
-    data: { type: 'header' },
+    data: { type: 'header', fixed: true },
   },
   {
-    id: start + 20, // FIXME
     inquiry:
       'Díky účasti na akci jsem si rozšířil/a obzory nebo získal/a nový pohled na to jak vnímám své okolí a okolní přírodu',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 21, // FIXME
     inquiry:
       'Na akci jsem se seznámil/a s lidmi, s kterými bych rád/a dál udržovala kontakt i po akci',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 22, // FIXME
     inquiry:
       'Jak hodnotíš celkovou atmosféru na akci? Co konkrétně se ti na akci líbilo a co bys rád/a vylepšil/a? Tvoje zpětná vazba nám umožní se stále zlepšovat.',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    id: start + 23, // FIXME
     inquiry: 'Zapojení',
-    data: { type: 'header' },
+    data: { type: 'header', fixed: true },
   },
   {
-    id: start + 24, // FIXME
     inquiry:
       'Chceš se více zapojit do činnosti Hnutí Brontosaurus? Rádi ti s tím pomůžeme a přivítáme tě mezi sebou :) Co tě nejvíc láká? Možnosti jak se zapojit najdeš i na webu Zapoj se', // TODO link [Zapoj se](https://brontosaurus.cz/zapoj-se/)
     is_required: true,
@@ -214,13 +199,13 @@ export const getRequiredFeedbackInquiries = (start: number): InquiryRead[] => [
         },
         { option: 'nechci se zapojit' },
       ],
+      fixed: true,
     },
   },
   {
-    id: start + 25, // FIXME,
     inquiry:
       'Poskytuje Hnutí Brontosaurus dostatek příležitostí, jak se zapojit? Jakým způsobem ti HB může pomoci, aby jsi udržel/a vzniklá přátelství a více se zapojil/a do činnosti HB (organizace táborů a další akce)',
     is_required: true,
-    data: { type: 'scale', comment: true },
+    data: { type: 'scale', comment: true, fixed: true },
   },
 ]

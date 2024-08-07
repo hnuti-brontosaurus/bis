@@ -18,7 +18,6 @@ import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
-import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
@@ -118,7 +117,7 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            {groupInquiriesByHeaders(getRequiredFeedbackInquiries(maxId)).map(
+            {groupInquiriesByHeaders(orderedInquiries).map(
               ({ header, inquiries }) => (
                 <FormSection header={header}>
                   {inquiries.map((inquiry, index) => (
@@ -127,11 +126,6 @@ export const EventFeedbackForm: FC<{
                 </FormSection>
               ),
             )}
-            <FormSection header="Další">
-              {orderedInquiries.map((inquiry, index) => (
-                <Inquiry key={index} inquiry={inquiry} index={index} />
-              ))}
-            </FormSection>
           </FormSectionGroup>
           <Actions>
             <Button secondary type="reset">

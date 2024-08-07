@@ -9,6 +9,7 @@ import { useTitle } from 'hooks/title'
 import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { sortOrder } from 'utils/helpers'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 import { form as formTexts } from 'config/static/closeEvent'
 
@@ -76,7 +77,10 @@ export const CloseEvent = () => {
     pages: pages.results,
     finance: event.finance ?? undefined,
     receipts: receipts.results,
-    inquiries: inquiries.results.slice().sort(sortOrder),
+    inquiries:
+      inquiries.results.length > 0
+        ? inquiries.results.slice().sort(sortOrder)
+        : getRequiredFeedbackInquiries(),
   }
 
   const handleSubmit = async ({
@@ -251,7 +255,7 @@ export const CloseEvent = () => {
       )
     const deletedInquiryPromises = defaultValues.inquiries
       .filter(inquiry => !inquiries.find(other => other.id === inquiry.id))
-      .map(({ id }) => deleteInquiry({ eventId, id }).unwrap())
+      .map(({ id }) => deleteInquiry({ eventId, id: id as number }).unwrap())
 
     await Promise.all([
       ...createdInquiryPromises,
