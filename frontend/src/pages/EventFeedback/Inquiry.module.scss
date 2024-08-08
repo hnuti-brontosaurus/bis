@@ -45,3 +45,13 @@
 .scaleText {
   margin-top: .7em;
 }
+
+.horizontalLayout {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+
+  @include media.for-phone-only {
+    flex-direction: column;
+  }
+}

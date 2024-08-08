@@ -208,6 +208,7 @@ type InquiryData = {
   options?: { option: string }[]
   comment?: boolean
   fixed?: boolean
+  layout?: 'horizontal' | 'vertical'
 }
 
 export type InquiryRead = Overwrite<

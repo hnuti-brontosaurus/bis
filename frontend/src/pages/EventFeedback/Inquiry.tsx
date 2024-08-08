@@ -46,7 +46,11 @@ const OptionInquiry: FC = () => {
   const { inquiry } = useInquiryContext()
   const register = useRegister()
   return (
-    <fieldset className={styles.wrap}>
+    <fieldset
+      className={classNames(styles.wrap, {
+        [styles.horizontalLayout]: inquiry.data?.layout === 'horizontal',
+      })}
+    >
       {inquiry.data?.options?.map(({ option }) => (
         <label
           key={option}

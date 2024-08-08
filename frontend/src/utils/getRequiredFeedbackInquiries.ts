@@ -20,6 +20,7 @@ const checkInSection: QuestionnaireSection = [
         { option: 'podruhé nebo potřetí' },
         { option: 'už jsem byl/a víckrát' },
       ],
+      layout: 'horizontal',
       fixed: true,
     },
   },
@@ -30,6 +31,7 @@ const checkInSection: QuestionnaireSection = [
     data: {
       type: 'radio',
       options: [{ option: 'O akci' }, { option: 'O Hnutí Brontosaurus' }],
+      layout: 'horizontal',
       fixed: true,
     },
   },
