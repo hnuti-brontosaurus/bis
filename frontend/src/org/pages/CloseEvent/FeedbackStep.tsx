@@ -56,7 +56,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
         </FormSection>
         <InfoBox>
           Formulář zpětné vazby najdeš po uložení tohoto formuláře na tomto
-          odkaze, který může poslat účastníkům:{' '}
+          odkazu, který může poslat účastníkům:{' '}
           <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
             {window.location.origin}/akce/{eventId}/zpetna_vazba
           </ButtonLink>
