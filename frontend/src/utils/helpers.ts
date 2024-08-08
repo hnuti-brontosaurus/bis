@@ -1,4 +1,4 @@
-import type { Address, Event } from 'app/services/bisTypes'
+import type { Address, Event, FullEvent } from 'app/services/bisTypes'
 import { cloneDeep, mapValues } from 'lodash'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
@@ -137,6 +137,9 @@ export const getEventCannotBeOlderThan = (): string => {
  */
 export const isEventClosed = (event: { end: string }): boolean =>
   shouldBeFinishedUntil(event) < Date.now()
+
+export const isEventVolunteering = (event: FullEvent): boolean =>
+  event.category.slug === 'public__volunteering'
 
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')

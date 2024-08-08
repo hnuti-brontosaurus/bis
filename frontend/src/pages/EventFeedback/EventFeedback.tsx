@@ -69,15 +69,6 @@ export const EventFeedback: FC = () => {
     await createFeedback({ feedback, eventId }).unwrap()
     persistValue({ step: 'finished' })
   }
-  const handleCancel = () => {
-    clearForm()
-    // TODO where to return ?
-    globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
-  }
-
-  const handleFinished = () => {
-    globalThis.location.href = 'https://brontosaurus.cz'
-  }
 
   return (
     <div>
@@ -96,9 +87,6 @@ export const EventFeedback: FC = () => {
             {event.record.feedback_form.after_submit_text}
           </MessageBox>
           <Actions>
-            <Button primary onClick={handleFinished}>
-              Hotovo
-            </Button>
             <Button primary onClick={clearForm}>
               Další zpětná vazba
             </Button>
@@ -110,7 +98,7 @@ export const EventFeedback: FC = () => {
           feedbackForm={event.record.feedback_form}
           user={user}
           onSubmit={handleSubmit}
-          onCancel={handleCancel}
+          onCancel={clearForm}
         />
       )}
     </div>

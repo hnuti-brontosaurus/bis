@@ -17,7 +17,7 @@ import * as messages from 'utils/validationMessages'
 import { MethodsShapes } from '..'
 import applicationImage from 'assets/prihlaska.png'
 import applicationImageChild from 'assets/prihlaska_dite.png'
-import { QuestionsFormSection } from 'org/components'
+import { QuestionsFormSection } from './QuestionsFormSection'
 import styles from './RegistrationStep.module.scss'
 
 export const RegistrationStep = ({
@@ -257,11 +257,7 @@ export const RegistrationStep = ({
                       </FormInputError>
                     </FullSizeElement>
                   </FormSubsection>
-                  <QuestionsFormSection
-                    name="questions"
-                    questionName="question"
-                    methods={methods}
-                  />
+                  <QuestionsFormSection methods={methods} />
                 </FormSubsection>
               )}
             </>

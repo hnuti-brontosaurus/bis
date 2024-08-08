@@ -1,6 +1,7 @@
 import { api } from 'app/services/bis'
-import type { FullEvent, EventPayload } from 'app/services/bisTypes'
+import type { EventPayload, FullEvent } from 'app/services/bisTypes'
 import { Breadcrumbs, GuideOwl, Loading } from 'components'
+import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
   useShowMessage,
@@ -8,6 +9,7 @@ import {
 import { useTitle } from 'hooks/title'
 import { isEqual } from 'lodash'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 
@@ -29,6 +31,7 @@ export const CloseEvent = () => {
   const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
     {
       eventId,
+      pageSize: 1000, // TODO is there a better way to load all?
     },
   )
 
@@ -61,7 +64,13 @@ export const CloseEvent = () => {
     return <Loading>Stahujeme data</Loading>
 
   const defaultValues = {
-    record: event.record ?? undefined,
+    record: event.record ?? {
+      feedback_form: {
+        introduction: formTexts.record.feedback_form.introduction.initial,
+        after_submit_text:
+          formTexts.record.feedback_form.after_submit_text.initial,
+      },
+    },
     photos: photos.results.map(({ photo, ...rest }) => ({
       photo: photo.original,
       ...rest,
@@ -69,7 +78,10 @@ export const CloseEvent = () => {
     pages: pages.results,
     finance: event.finance ?? undefined,
     receipts: receipts.results,
-    inquiries: inquiries.results.slice().sort(sortOrder),
+    inquiries:
+      inquiries.results.length > 0
+        ? inquiries.results.slice().sort(sortOrder)
+        : getRequiredFeedbackInquiries(event),
   }
 
   const handleSubmit = async ({
@@ -233,6 +245,7 @@ export const CloseEvent = () => {
       .filter(inquiry => !inquiry.id)
       .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())
     const updateInquiryPromises = inquiriesWithOrder
+      .filter(inquiry => inquiry.id)
       .filter(inquiry => {
         const oldInquiry = defaultValues.inquiries.find(
           oi => oi.id === inquiry.id,
@@ -243,8 +256,9 @@ export const CloseEvent = () => {
         updateInquiry({ eventId, id: id as number, inquiry }).unwrap(),
       )
     const deletedInquiryPromises = defaultValues.inquiries
+      .filter(inquiry => inquiry.id)
       .filter(inquiry => !inquiries.find(other => other.id === inquiry.id))
-      .map(({ id }) => deleteInquiry({ eventId, id }).unwrap())
+      .map(({ id }) => deleteInquiry({ eventId, id: id as number }).unwrap())
 
     await Promise.all([
       ...createdInquiryPromises,

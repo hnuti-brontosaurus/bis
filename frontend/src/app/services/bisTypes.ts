@@ -201,11 +201,14 @@ export type Question = Overwrite<
   }
 >
 
-type InquiryType = 'text' | 'checkbox' | 'radio'
+export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale' | 'header'
 
 type InquiryData = {
   type: InquiryType
   options?: { option: string }[]
+  comment?: boolean
+  fixed?: boolean
+  layout?: 'horizontal' | 'vertical'
 }
 
 export type InquiryRead = Overwrite<

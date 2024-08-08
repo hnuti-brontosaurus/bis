@@ -1,5 +1,5 @@
 import { WebFeedbackForm } from 'app/services/bis'
-import { User } from 'app/services/bisTypes'
+import { InquiryRead, User } from 'app/services/bisTypes'
 import { EventFeedback, Reply } from 'app/services/testApi'
 import {
   Actions,
@@ -17,19 +17,55 @@ import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { validationErrors2Message } from 'utils/validationErrors'
-import { sortOrder } from '../../utils/helpers'
+import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
-  replies: replies
-    .map(({ reply, ...rest }) => ({
-      reply: Array.isArray(reply) ? reply.join(', ') : reply,
-      ...rest,
-    }))
-    .filter(reply => !!reply.reply),
+  replies: replies.map(mapReply).filter(reply => !!reply.reply),
   ...data,
 })
+
+const mapReply = (reply: Reply): Reply => {
+  if (Array.isArray(reply.reply)) {
+    // checkboxes
+    return { ...reply, reply: reply.reply.join(', ') }
+  } else if (reply.data?.comment) {
+    // scales
+    return {
+      ...reply,
+      reply: `${reply.reply} ${reply.data.comment}`,
+      data: {
+        ...reply.data,
+        rating: reply.reply,
+      },
+    }
+  } else {
+    return reply
+  }
+}
+
+interface InquirySection {
+  header: string
+  inquiries: InquiryRead[]
+}
+
+const groupInquiriesByHeaders = (
+  inquiries: InquiryRead[],
+): InquirySection[] => {
+  const sections: InquirySection[] = []
+  for (const inquiry of inquiries) {
+    if (inquiry.data?.type === 'header') {
+      sections.push({
+        header: inquiry.inquiry,
+        inquiries: [],
+      })
+    } else {
+      sections[sections.length - 1].inquiries.push(inquiry)
+    }
+  }
+  return sections
+}
 
 export const EventFeedbackForm: FC<{
   feedbackForm: WebFeedbackForm
@@ -94,11 +130,15 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            <FormSection header="Dotazník">
-              {orderedInquiries.map((inquiry, index) => (
-                <Inquiry key={index} inquiry={inquiry} index={index} />
-              ))}
-            </FormSection>
+            {groupInquiriesByHeaders(orderedInquiries).map(
+              ({ header, inquiries }) => (
+                <FormSection header={header}>
+                  {inquiries.map((inquiry, index) => (
+                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
+                  ))}
+                </FormSection>
+              ),
+            )}
           </FormSectionGroup>
           <Actions>
             <Button secondary type="reset">
