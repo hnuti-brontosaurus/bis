@@ -241,11 +241,11 @@ export const CloseEvent = () => {
       ...inquiry,
       order,
     }))
-    console.log(inquiriesWithOrder)
     const createdInquiryPromises = inquiriesWithOrder
       .filter(inquiry => !inquiry.id)
       .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())
     const updateInquiryPromises = inquiriesWithOrder
+      .filter(inquiry => inquiry.id)
       .filter(inquiry => {
         const oldInquiry = defaultValues.inquiries.find(
           oi => oi.id === inquiry.id,
@@ -256,6 +256,7 @@ export const CloseEvent = () => {
         updateInquiry({ eventId, id: id as number, inquiry }).unwrap(),
       )
     const deletedInquiryPromises = defaultValues.inquiries
+      .filter(inquiry => inquiry.id)
       .filter(inquiry => !inquiries.find(other => other.id === inquiry.id))
       .map(({ id }) => deleteInquiry({ eventId, id: id as number }).unwrap())
 
