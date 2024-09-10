@@ -424,6 +424,24 @@ def get_participants_list(request, event_id):
 )
 @api_view(["get"])
 @permission_classes([IsAuthenticated])
+def get_feedbacks(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+        return HttpResponseForbidden()
+
+    feedbacks = EventFeedback.objects.filter(event_record__event=event)
+    return export.export_to_xlsx_response(feedbacks)
+
+
+@extend_schema(
+    responses={
+        HTTP_200_OK: None,
+        HTTP_404_NOT_FOUND: OpenApiResponse(description="Not found"),
+        HTTP_403_FORBIDDEN: OpenApiResponse(description="Forbidden"),
+    }
+)
+@api_view(["get"])
+@permission_classes([IsAuthenticated])
 def export_files(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     if not Permissions(request.user, Event, "frontend").has_change_permission(event):
