@@ -25,7 +25,7 @@ endef
 build: .env submodule_sync
 	echo '.git' > .dockerignore
 	cat .gitignore >> .dockerignore
-	docker-compose build
+	docker compose build
 	make gen_dev_dockercompose_file
 
 .env:
