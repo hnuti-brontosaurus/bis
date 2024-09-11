@@ -5,6 +5,7 @@ import { EventFeedbackRead } from 'app/services/testApi'
 import { FullEvent } from 'app/services/bisTypes'
 import { EventFeedbackTable } from './EventFeedbackTable'
 import styles from './EventFeedback.module.scss'
+import { ExportFeedbackButton } from './ExportFeedbackButton'
 import { FeedbackDetail } from './FeedbackDetail'
 
 export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
@@ -24,7 +25,12 @@ export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Zpětná vazba</h2>
+      <h2 className={styles.title}>
+        Zpětná vazba
+        <div className={styles.buttonContainer}>
+          <ExportFeedbackButton eventId={event.id} />
+        </div>
+      </h2>
       <EventFeedbackTable
         inquiries={inquiries.results}
         feedbacks={feedbacks.results}
