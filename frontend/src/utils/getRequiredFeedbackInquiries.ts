@@ -79,6 +79,7 @@ const checkInSection: QuestionnaireSection = [
     // TODO remove when comment can be added to previous inquiry
     inquiry:
       'Chceš nám napsat něco více k tomu, proč sis vybral/a tuto akci? Budeme rádi za jakýkoli komentář',
+    is_required: false,
     data: {
       type: 'text',
       fixed: true,
