@@ -23,7 +23,11 @@ import pick from 'lodash/pick'
 import { FieldErrorsImpl, useForm } from 'react-hook-form'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
-import { hasFormError, withOverwriteArray } from 'utils/helpers'
+import {
+  hasFormError,
+  isEventVolunteering,
+  withOverwriteArray,
+} from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
 import { EvidenceStep } from './EvidenceStep'
@@ -260,7 +264,7 @@ export const CloseEventForm = ({
     feedbackFormMethods.watch,
   )
 
-  const isVolunteering = event.category.slug === 'public__volunteering'
+  const isVolunteering = isEventVolunteering(event)
 
   // attendance list is required when the event is camp or weekend event
   const areParticipantsRequired = ['camp', 'weekend_event'].includes(
@@ -391,6 +395,7 @@ export const CloseEventForm = ({
       </Step>
       <Step name="zpětná vazba">
         <FeedbackStep
+          eventId={event.id}
           methods={feedbackFormMethods}
           firstIndex={countEvidenceFirstStep() + 6} // TODO decrement if feedback section is removed from "práce a další"
         />

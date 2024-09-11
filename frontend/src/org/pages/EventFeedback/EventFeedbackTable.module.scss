@@ -1,13 +1,13 @@
 @use 'styles/colors';
 @use 'styles/media';
 
+.container {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .table {
   table-layout: auto;
-  width: 100%;
-  @include media.for-phone-only {
-    max-width: inherit;
-    overflow: auto;
-  }
 
   th, td {
     padding: .5rem;

@@ -1,7 +1,15 @@
-import { InquiryRead } from 'app/services/bisTypes'
+import { InquiryRead, InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { FormInputError, FormSubsection } from 'components'
-import { createContext, FC, useContext, useEffect, useMemo } from 'react'
+import { Button, FormInputError, FormSubsection } from 'components'
+import range from 'lodash/range'
+import {
+  createContext,
+  FC,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useFormContext } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import styles from './Inquiry.module.scss'
@@ -38,7 +46,11 @@ const OptionInquiry: FC = () => {
   const { inquiry } = useInquiryContext()
   const register = useRegister()
   return (
-    <fieldset className={styles.wrap}>
+    <fieldset
+      className={classNames(styles.wrap, {
+        [styles.horizontalLayout]: inquiry.data?.layout === 'horizontal',
+      })}
+    >
       {inquiry.data?.options?.map(({ option }) => (
         <label
           key={option}
@@ -52,10 +64,61 @@ const OptionInquiry: FC = () => {
   )
 }
 
-const components: { [key: string]: FC } = {
+const ScaleInquiry: FC = () => {
+  const { inquiry, index } = useInquiryContext()
+  const { register, getValues } = useFormContext()
+  const [showComment, setShowComment] = useState(
+    !!getValues(`replies.${index}.data.comment`),
+  )
+
+  return (
+    <>
+      <div className={styles.scale}>
+        <div>
+          <div className={styles.scaleLabels}>
+            <div>zcela nesplňuje</div>
+            <div>zcela splňuje</div>
+          </div>
+          <fieldset className={styles.scaleRange}>
+            {range(1, 11).map(rating => (
+              <label
+                key={rating}
+                className={classNames('radioLabel', styles.scaleOption)}
+              >
+                <input
+                  type="radio"
+                  value={rating}
+                  {...register(`replies.${index}.reply`, {
+                    required: inquiry.is_required && required,
+                  })}
+                />
+                {rating}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+        {inquiry.data?.comment && (
+          <Button type="button" tertiary onClick={() => setShowComment(true)}>
+            přidat komentář
+          </Button>
+        )}
+      </div>
+      {showComment && (
+        <textarea
+          className={classNames(styles.text, styles.scaleText)}
+          {...register(`replies.${index}.data.comment`)}
+        />
+      )}
+    </>
+  )
+}
+
+const components: Record<InquiryType, FC> = {
   text: TextInquiry,
   checkbox: OptionInquiry,
   radio: OptionInquiry,
+  scale: ScaleInquiry,
+  header: () => null,
 }
 
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
@@ -73,9 +136,6 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
 
   const type = inquiry.data!.type
   const Component = components[type]
-  if (!Component) {
-    throw new Error(`Unsupported inquiry type "${type}"!`)
-  }
 
   return (
     <InquiryContext.Provider value={context}>

@@ -5,6 +5,7 @@ import { EventFeedbackRead } from 'app/services/testApi'
 import { FullEvent } from 'app/services/bisTypes'
 import { EventFeedbackTable } from './EventFeedbackTable'
 import styles from './EventFeedback.module.scss'
+import { ExportFeedbackButton } from './ExportFeedbackButton'
 import { FeedbackDetail } from './FeedbackDetail'
 
 export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
@@ -12,7 +13,7 @@ export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
     eventId: event.id,
   })
   const { data: inquiries } = api.endpoints.readEventFeedbackInquiries.useQuery(
-    { eventId: event.id },
+    { eventId: event.id, pageSize: 1000 }, // TODO is there a better way to load all?
   )
   const [displayedFeedback, setDisplayedFeedback] = useState<
     EventFeedbackRead | undefined
@@ -24,7 +25,12 @@ export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Zpětná vazba</h2>
+      <h2 className={styles.title}>
+        Zpětná vazba
+        <div className={styles.buttonContainer}>
+          <ExportFeedbackButton eventId={event.id} />
+        </div>
+      </h2>
       <EventFeedbackTable
         inquiries={inquiries.results}
         feedbacks={feedbacks.results}
