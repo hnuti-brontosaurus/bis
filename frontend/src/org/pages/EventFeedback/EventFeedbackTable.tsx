@@ -29,12 +29,14 @@ export const EventFeedbackTable: FC<{
             {inquiries
               .filter(inquiry => inquiry.data?.type !== 'header')
               .map(({ id }) => (
-                <td key={id} onClick={() => onRowClick(feedback.id)}>
-                  {
+                <BoundedCell
+                  key={id}
+                  onClick={() => onRowClick(feedback.id)}
+                  value={
                     feedback.replies.find(({ inquiry }) => inquiry.id === id)
                       ?.reply
                   }
-                </td>
+                />
               ))}
           </tr>
         ))}
@@ -42,3 +44,14 @@ export const EventFeedbackTable: FC<{
     </table>
   </div>
 )
+
+const BoundedCell: FC<{
+  value?: string
+  onClick: () => void
+}> = ({ value, onClick }) => {
+  return (
+    <td title={value} className={styles.boundedCell} onClick={onClick}>
+      {value}
+    </td>
+  )
+}

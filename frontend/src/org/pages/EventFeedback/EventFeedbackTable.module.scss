@@ -21,9 +21,16 @@
   td {
     border-bottom: 1px solid colors.$gray-200;
     cursor: pointer;
+    white-space: nowrap;
   }
 
   tbody tr:hover {
     background-color: colors.$gray-100;
   }
+}
+
+.boundedCell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
