@@ -39,12 +39,15 @@ export const FeedbackStepInfo: FC = () => {
               (Během tvorby dotazníku budeš mít možnost tento odkaz zadat.)
             </li>
             <li>
-              <strong>Uprav dotazník</strong> tak, aby co nejlépe vyhovoval tvé
-              akci, tvým potřebám a tvým účastníkům.
+              <strong>Můžeš přidat vlastní otázky.</strong> Zpětná vazba se
+              skládá z otázek zaměřených na cíle společné pro všechny akce Hnutí
+              Brontosaurus. Tyto otázky nelze je upravit. Můžeš si k nim ale
+              přidat vlastní otázky, které se zaměří na tvou konkrétní akci.
             </li>
             <li>
-              <strong>Pošli odkaz.</strong> Odkaz rozešli účastníkům, nezapomeň
-              jim napsat, proč by zpětnou vazbu měli vyplnit :)
+              <strong>Pošli odkaz.</strong> Odkaz na zpětnou vazbu rozešli
+              účastníkům, nezapomeň jim napsat, proč by zpětnou vazbu měli
+              vyplnit :)
             </li>
             <li>
               <strong>Prohlédni si odpovědi</strong> a motivuj se jimi při
