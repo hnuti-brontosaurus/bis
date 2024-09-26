@@ -26,7 +26,11 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
       <FormSectionGroup startIndex={firstIndex}>
         <FormSection header="zpětná vazba">
           <FeedbackStepInfo />
-          <FormSubsection header="Úvod k dotazníku" required>
+          <FormSubsection
+            header="Úvod k dotazníku"
+            required
+            help={formTexts.record.feedback_form.introduction.help}
+          >
             <FullSizeElement>
               <FormInputError>
                 <textarea
