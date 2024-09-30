@@ -100,14 +100,16 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
         {fixed && <FaLock className={styles.lock} />}Otázka {index + 1}
         <div className={styles.questionInputGroup}>
           <FormInputError className={styles.questionInput}>
-            <input
-              type="text"
-              disabled={fixed}
-              {...register(`inquiries.${index}.inquiry` as const, {
-                required: messages.required,
-              })}
-              title={fixed ? getValues(`inquiries.${index}.inquiry`) : ''}
-            />
+            {fixed ? (
+              <div>{getValues(`inquiries.${index}.inquiry`)}</div>
+            ) : (
+              <input
+                type="text"
+                {...register(`inquiries.${index}.inquiry` as const, {
+                  required: messages.required,
+                })}
+              />
+            )}
           </FormInputError>
           <FormInputError className={styles.typeInput}>
             <select
