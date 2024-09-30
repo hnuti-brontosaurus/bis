@@ -28,13 +28,14 @@
       }
 
       .questionInput {
-        flex: auto;
+        flex: 1 1 auto;
 
         input {
           width: 100%;
         }
       }
       .typeInput {
+        flex: 0 0 auto;
         width: 130px;
         position: relative;
         select {
@@ -42,6 +43,7 @@
         }
       }
       .questionRequired {
+        flex: 0 0 auto;
         display: inline-flex;
         width: unset;
         margin: unset;
@@ -93,6 +95,7 @@
 }
 
 .delete {
+  flex: 0 0 auto;
   background-color: transparent !important;
   color: colors.$error;
   font-size: 1.5rem;
