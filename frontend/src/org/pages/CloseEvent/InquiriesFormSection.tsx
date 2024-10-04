@@ -1,6 +1,6 @@
 import { InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { Button, FormInputError, FormSubsection, InfoBox } from 'components'
+import { Button, FormInputError, FormSubsection } from 'components'
 import { FC } from 'react'
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
 import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
@@ -80,7 +80,7 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
   index,
   onRemove,
 }) => {
-  const { register, watch, setValue, getValues } =
+  const { register, setValue, getValues } =
     useFormContext<FeedbackStepFormShape>()
 
   const inquiryType = useWatch({ name: `inquiries.${index}.data.type` })
@@ -100,14 +100,16 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
         {fixed && <FaLock className={styles.lock} />}Otázka {index + 1}
         <div className={styles.questionInputGroup}>
           <FormInputError className={styles.questionInput}>
-            <input
-              type="text"
-              disabled={fixed}
-              {...register(`inquiries.${index}.inquiry` as const, {
-                required: messages.required,
-              })}
-              title={fixed ? getValues(`inquiries.${index}.inquiry`) : ''}
-            />
+            {fixed ? (
+              <div>{getValues(`inquiries.${index}.inquiry`)}</div>
+            ) : (
+              <input
+                type="text"
+                {...register(`inquiries.${index}.inquiry` as const, {
+                  required: messages.required,
+                })}
+              />
+            )}
           </FormInputError>
           <FormInputError className={styles.typeInput}>
             <select
@@ -166,10 +168,6 @@ export const InquiriesFormSection: FC = () => {
         'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností, škála 1–10 = výběr na škále 1–10 (zcela splňuje – zcela nesplňuje) s volitelným komentářem, nadpis sekce = vytvoří v dotazníku číslovanou sekci'
       }
     >
-      <InfoBox>
-        SEM PŘIJDE NĚJAKÝ TEXT O TOM, ŽE TAM JSOU FIXNÍ OTÁZKY, PROČ TAM JSOU,
-        PROČ JSOU PRO HB DŮLEŽITÉ A ŽE NA KONCI JE MOŽNÉ PŘIDAT VLASTNÍ OTÁZKY.
-      </InfoBox>
       <div className={styles.questionsBox}>
         <ul className={styles.questionList}>
           {fields.fields.map((item, index) => (

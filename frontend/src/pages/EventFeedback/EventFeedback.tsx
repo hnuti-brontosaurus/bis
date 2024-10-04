@@ -62,7 +62,9 @@ export const EventFeedback: FC = () => {
     return <Loading>Připravujeme zpětnou vazbu</Loading>
   }
   if (!event?.record?.feedback_form) {
-    return <Error message="Tato akce ještě nesbírá zpětnou vazbu." />
+    return (
+      <Error message="Otázky pro zpětnou vazbu nejsou uložené. Pokud jsi tento odkaz dostal/a od organizátorů akce, kontaktuj je, prosím." />
+    )
   }
 
   const handleSubmit = async (feedback: EventFeedbackShape) => {

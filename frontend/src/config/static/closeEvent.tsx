@@ -10,6 +10,7 @@ export const form = {
       introduction: {
         initial:
           'Ahoj,\nvěříme, že sis víkendovku nebo tábor užil/a naplno, získal/a spoustu nových kamarádů a dovedností. Tvoje zkušenost je pro nás velmi cenná. Chtěli bychom Tě jménem jménem organizátorů i Hnutí Brontosaurus požádat o pár informací a zhodnocení celé akce. Vyplněním této ankety i Ty přispěješ k tomu, aby naše akce byly čím dál lepší.\nDěkujeme!',
+        help: 'Text, který se objeví na začátku dotazníku. Pokud chceš, můžeš si připravený text opravit.',
       },
       after_submit_text: {
         initial:

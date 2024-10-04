@@ -104,30 +104,6 @@ export const EvidenceStep = ({
               <input type="text" {...register('finance.bank_account_number')} />
             </FormSubsection>
           </FormSection>
-          <FormSection header="Zpětná vazba">
-            <InfoBox>
-              Zpětná vazba od účastníků udělá vaši příští akci ještě lepší!
-              Spokojení účastníci jsou tou nejlepší odměnou pro každého
-              organizátora. Jejich zpětná vazba je velmi cenná a umožní vám
-              reflexi toho, co se povedlo a co můžete do příště ještě vylepšit.
-              Na tomto odkazu zpětnou vazbu pro účastníky lehce připravíte.
-            </InfoBox>
-            <div>
-              <Help>
-                Přihlašte se univerzálním heslem “vyplnto” nebo heslem vaší
-                organizační jednotky.
-              </Help>{' '}
-              <ExternalButtonLink
-                tertiary
-                href="https://zpetna-vazba.brontosaurus.cz/login.php"
-                target="__blank"
-                rel="noopener noreferrer"
-                className={styles.outerLinkButton}
-              >
-                Připravit zpětnou vazbu <HiExternalLink />
-              </ExternalButtonLink>
-            </div>
-          </FormSection>
           <FormSection header="Závěrečná zpráva">
             <InfoBox>
               Vyplněná závěrečná zpráva o akci nám pomáhá zlepšovat podporu vám
