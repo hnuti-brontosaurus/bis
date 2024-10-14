@@ -5,7 +5,7 @@ import style from './DetailedInstructionsLink.module.scss'
 
 export const DetailedInstructionsLink: FC = () => (
   <ExternalButtonLink
-    href="https://www.brontosaurus.cz" // FIXME change link
+    href="https://drive.google.com/file/d/1KlSNJW9kYDRoGWAqAPsOH8XOf8hFZin-/view"
     tertiary
     target="__blank"
     rel="noopener noreferrer"
