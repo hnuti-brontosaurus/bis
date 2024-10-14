@@ -6,6 +6,7 @@ import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
 import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
+import { DetailedInstructionsLink } from './DetailedInstructionsLink'
 import styles from './InquiryFormSection.module.scss'
 
 const questionTypes: { type: InquiryType; name: string }[] = [
@@ -163,7 +164,12 @@ export const InquiriesFormSection: FC = () => {
 
   return (
     <FormSubsection
-      header="Otázky"
+      header={
+        <>
+          Otázky
+          <DetailedInstructionsLink />
+        </>
+      }
       help={
         'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností, škála 1–10 = výběr na škále 1–10 (zcela splňuje – zcela nesplňuje) s volitelným komentářem, nadpis sekce = vytvoří v dotazníku číslovanou sekci'
       }
