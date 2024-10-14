@@ -1,6 +1,7 @@
 import { FC, useState } from 'react'
 import { FaAngleDown, FaAngleUp } from 'react-icons/fa'
 import { InfoBox } from 'components'
+import { DetailedInstructionsLink } from './DetailedInstructionsLink'
 import styles from './FeedbackStepInfo.module.scss'
 
 export const FeedbackStepInfo: FC = () => {
@@ -28,7 +29,10 @@ export const FeedbackStepInfo: FC = () => {
             zaměřit se na to důležité a organizovat stále lepší akce s menší
             námahou.
           </p>
-          <header>Stručný návod</header>
+          <header>
+            Stručný návod
+            <DetailedInstructionsLink />
+          </header>
           <ol>
             <li>
               <strong>Motivuj účastníky k vyplnění:</strong> Pokud jim pošleš
