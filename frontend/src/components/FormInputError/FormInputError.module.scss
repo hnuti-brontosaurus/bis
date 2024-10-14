@@ -3,8 +3,8 @@
 .container {
   display: inline-block;
   position: relative;
-  top: calc((0.75rem + 4px) / 2);
   margin: 0 2px;
+  margin-top: calc((0.75rem + 4px) / 2);
 }
 
 .blockContainer {
