@@ -5,7 +5,7 @@ import style from './DetailedInstructionsLink.module.scss'
 
 export const DetailedInstructionsLink: FC = () => (
   <ExternalButtonLink
-    href="https://drive.google.com/file/d/1KlSNJW9kYDRoGWAqAPsOH8XOf8hFZin-/view"
+    href="https://drive.google.com/file/d/119C-T4vovVu_AW7X-t8C5GqDaVuH7EhX/view"
     tertiary
     target="__blank"
     rel="noopener noreferrer"
