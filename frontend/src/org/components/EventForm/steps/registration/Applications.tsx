@@ -284,7 +284,7 @@ export const Applications: FC<{
             <TableCellIconButton
               icon={QueueIcon}
               action={() => moveToQueue(application, event.id)}
-              color="#BF7B06" // TODO
+              color={colors.orange}
               tooltipContent="Přesunout mezi náhradníky"
               disabled={
                 application.state === ApplicationStates.approved ||
