@@ -104,6 +104,19 @@ export const Applications: FC<{
       },
     })
 
+  const togglePaidFor = (
+    application: EventApplication,
+    eventId: number,
+    value: boolean,
+  ) =>
+    updateApplication({
+      id: application.id,
+      eventId,
+      patchedEventApplication: {
+        paid_for: value,
+      },
+    })
+
   const { data: membershipCategories } =
     api.endpoints.readMembershipCategories.useQuery({})
   const { data: administrationUnitsData } =
@@ -262,6 +275,17 @@ export const Applications: FC<{
         ))}
         <td onClick={showDetails}>{application.note}</td>
         <td>
+          <label className="checkboxLabel">
+            <input
+              type="checkbox"
+              onChange={e =>
+                togglePaidFor(application, event.id, e.target.checked)
+              }
+              checked={application.paid_for}
+            />
+          </label>
+        </td>
+        <td>
           <div className={styles.actionCell}>
             <TableCellIconButton
               icon={Detail}
@@ -387,6 +411,7 @@ export const Applications: FC<{
                     <th>{question.question}</th>
                   ))}
                   <th>poznámka</th>
+                  <th>zaplatil/a</th>
                   <th>
                     <div className={styles.actionCell}>
                       <Detail className={styles.iconHead} />
