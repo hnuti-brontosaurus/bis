@@ -23,6 +23,7 @@ export enum ApplicationStates {
   approved = 'approved',
   pending = 'pending',
   rejected = 'rejected',
+  queued = 'queued',
 }
 
 export const ParticipantsStep: FC<{

@@ -130,6 +130,10 @@ export const Applications: FC<{
     app => app.state === ApplicationStates.approved,
   )
 
+  const applicationsQueued = applications.filter(
+    app => app.state === ApplicationStates.queued,
+  )
+
   const applicationsRejected = applications.filter(
     app => app.state === ApplicationStates.rejected,
   )
@@ -393,6 +397,20 @@ export const Applications: FC<{
                     </>
                   )}
                   {applicationsAccepted.map((application: EventApplication) => (
+                    <ApplicationRow
+                      key={application.id}
+                      application={application}
+                    />
+                  ))}
+                  {applicationsQueued.length > 0 && (
+                    <>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS}></td>
+                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>Náhradníci</OneCellRow>
+                    </>
+                  )}
+                  {applicationsQueued.map(application => (
                     <ApplicationRow
                       key={application.id}
                       application={application}
