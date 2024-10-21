@@ -1,4 +1,5 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
+import { ReactComponent as QueueIcon } from 'assets/participant-queue.svg'
 import { api } from 'app/services/bis'
 import type { AdministrationUnit, FullEvent } from 'app/services/bisTypes'
 import { EventApplication } from 'app/services/bisTypes'
@@ -13,7 +14,6 @@ import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
 import {
   FaInfoCircle as Detail,
-  FaPeopleArrows,
   FaTrash as Bin,
   FaTrashRestoreAlt,
   FaUserPlus as AddUser,
@@ -282,7 +282,7 @@ export const Applications: FC<{
               />
             )}
             <TableCellIconButton
-              icon={FaPeopleArrows}
+              icon={QueueIcon}
               action={() => moveToQueue(application, event.id)}
               color="#BF7B06" // TODO
               tooltipContent="Přesunout mezi náhradníky"
@@ -393,7 +393,7 @@ export const Applications: FC<{
                       {withParticipants && (
                         <AddUser className={classNames(styles.iconHead)} />
                       )}
-                      <FaPeopleArrows className={classNames(styles.iconHead)} />
+                      <QueueIcon className={classNames(styles.iconHead)} />
                       <Bin className={classNames(styles.iconHead)}></Bin>
                     </div>
                   </th>
