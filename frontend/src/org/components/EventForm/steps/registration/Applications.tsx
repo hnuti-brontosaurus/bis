@@ -13,6 +13,7 @@ import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
 import {
   FaInfoCircle as Detail,
+  FaPeopleArrows,
   FaTrash as Bin,
   FaTrashRestoreAlt,
   FaUserPlus as AddUser,
@@ -93,6 +94,15 @@ export const Applications: FC<{
       },
     })
   }
+
+  const moveToQueue = (application: EventApplication, eventId: number) =>
+    updateApplication({
+      id: application.id,
+      eventId,
+      patchedEventApplication: {
+        state: ApplicationStates.queued,
+      },
+    })
 
   const { data: membershipCategories } =
     api.endpoints.readMembershipCategories.useQuery({})
@@ -272,6 +282,16 @@ export const Applications: FC<{
               />
             )}
             <TableCellIconButton
+              icon={FaPeopleArrows}
+              action={() => moveToQueue(application, event.id)}
+              color="#BF7B06" // TODO
+              tooltipContent="Přesunout mezi náhradníky"
+              disabled={
+                application.state === ApplicationStates.approved ||
+                application.state === ApplicationStates.queued
+              }
+            />
+            <TableCellIconButton
               icon={
                 application.state === ApplicationStates.rejected
                   ? FaTrashRestoreAlt
@@ -290,9 +310,9 @@ export const Applications: FC<{
                   })
                 }
               }}
-              disabled={application.state === 'approved'}
+              disabled={application.state === ApplicationStates.approved}
               tooltipContent={
-                application.state === 'rejected'
+                application.state === ApplicationStates.rejected
                   ? 'Obnovit přihlášku'
                   : 'Odmítnout přihlášku'
               }
@@ -373,6 +393,7 @@ export const Applications: FC<{
                       {withParticipants && (
                         <AddUser className={classNames(styles.iconHead)} />
                       )}
+                      <FaPeopleArrows className={classNames(styles.iconHead)} />
                       <Bin className={classNames(styles.iconHead)}></Bin>
                     </div>
                   </th>
