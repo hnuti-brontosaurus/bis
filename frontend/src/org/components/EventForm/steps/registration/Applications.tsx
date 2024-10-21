@@ -411,7 +411,7 @@ export const Applications: FC<{
                     <th>{question.question}</th>
                   ))}
                   <th>poznámka</th>
-                  <th>zaplatil/a</th>
+                  <th>zaplaceno</th>
                   <th>
                     <div className={styles.actionCell}>
                       <Detail className={styles.iconHead} />
