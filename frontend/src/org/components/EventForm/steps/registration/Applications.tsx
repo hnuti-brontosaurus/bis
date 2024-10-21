@@ -222,7 +222,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 7 + event.questions.length
+  const ALL_COLUMNS = 8 + event.questions.length
 
   const ApplicationRow = ({
     application,
