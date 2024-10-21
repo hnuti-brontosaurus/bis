@@ -102,6 +102,9 @@ export const Participants: FC<{
 
     if (participants) {
       newParticipants = participants.results.map(p => p.id)
+      if (newParticipants.includes(newParticipantId)) {
+        return
+      }
     }
     newParticipants.push(newParticipantId)
 
