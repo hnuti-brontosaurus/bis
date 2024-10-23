@@ -911,14 +911,12 @@ export const api = createApi({
     }),
     readEventApplications: build.query<
       PaginatedList<EventApplication>,
-      { eventId: number; id?: number[] | undefined } & ListArguments
+      { eventId: number }
     >({
       query: queryArg => ({
         url: `frontend/events/${queryArg.eventId}/registration/applications/`,
         params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
+          page_size: 10000,
         },
       }),
       providesTags: results =>
@@ -954,7 +952,7 @@ export const api = createApi({
         const patchResult = dispatch(
           api.util.updateQueryData(
             'readEventApplications',
-            { eventId, pageSize: 10000 },
+            { eventId },
             draft => {
               const target = draft.results.find(
                 application => application.id === id,

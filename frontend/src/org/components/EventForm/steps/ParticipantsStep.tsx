@@ -58,7 +58,6 @@ export const ParticipantsStep: FC<{
       event
         ? {
             eventId: event.id,
-            pageSize: 10000,
           }
         : skipToken,
     )

@@ -140,7 +140,6 @@ export const Applications: FC<{
   const { data: applicationsData, isLoading: isReadApplicationsLoading } =
     api.endpoints.readEventApplications.useQuery({
       eventId: event.id,
-      pageSize: 10000,
     })
 
   let applications = applicationsData ? applicationsData.results : []
