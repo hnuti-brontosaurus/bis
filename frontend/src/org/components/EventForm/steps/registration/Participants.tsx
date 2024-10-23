@@ -93,8 +93,18 @@ export const Participants: FC<{
   const addParticipant = async (newParticipantId: string) => {
     let newParticipants: string[] = []
 
+    if (
+      otherOrganizers &&
+      otherOrganizers.map(({ id }) => id).includes(newParticipantId)
+    ) {
+      return
+    }
+
     if (participants) {
       newParticipants = participants.results.map(p => p.id)
+      if (newParticipants.includes(newParticipantId)) {
+        return
+      }
     }
     newParticipants.push(newParticipantId)
 
