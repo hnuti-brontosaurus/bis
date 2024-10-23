@@ -947,6 +947,26 @@ export const api = createApi({
         method: 'PATCH',
         body: queryArg.patchedEventApplication,
       }),
+      onQueryStarted: (
+        { id, eventId, patchedEventApplication },
+        { dispatch, queryFulfilled },
+      ) => {
+        const patchResult = dispatch(
+          api.util.updateQueryData(
+            'readEventApplications',
+            { eventId, pageSize: 10000 },
+            draft => {
+              const target = draft.results.find(
+                application => application.id === id,
+              )
+              if (target) {
+                Object.assign(target, patchedEventApplication)
+              }
+            },
+          ),
+        )
+        queryFulfilled.catch(patchResult.undo)
+      },
       invalidatesTags: () => [{ type: 'Application', id: 'APPLICATION_LIST' }],
     }),
     deleteEventApplication: build.mutation<
