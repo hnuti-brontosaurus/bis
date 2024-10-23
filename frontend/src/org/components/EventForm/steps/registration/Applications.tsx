@@ -306,13 +306,18 @@ export const Applications: FC<{
             )}
             <TableCellIconButton
               icon={QueueIcon}
-              action={() => moveToQueue(application, event.id)}
-              color={colors.orange}
-              tooltipContent="Přesunout mezi náhradníky"
-              disabled={
-                application.state === ApplicationStates.approved ||
+              action={() =>
                 application.state === ApplicationStates.queued
+                  ? restoreApplication(application, event)
+                  : moveToQueue(application, event.id)
               }
+              color={colors.orange}
+              tooltipContent={
+                application.state === ApplicationStates.queued
+                  ? 'Vrátit do přihlášených'
+                  : 'Přesunout mezi náhradníky'
+              }
+              disabled={application.state === ApplicationStates.approved}
             />
             <TableCellIconButton
               icon={
