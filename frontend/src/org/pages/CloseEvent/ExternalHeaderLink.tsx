@@ -1,17 +1,22 @@
-import { FC } from 'react'
+import { FC, ReactNode } from 'react'
 import { ExternalButtonLink } from 'components'
 import { HiExternalLink } from 'react-icons/hi'
-import style from './DetailedInstructionsLink.module.scss'
+import style from './ExternalHeaderLink.module.scss'
 
-export const DetailedInstructionsLink: FC = () => (
+interface Props {
+  href: string
+  children: ReactNode
+}
+
+export const ExternalHeaderLink: FC<Props> = ({ href, children }) => (
   <ExternalButtonLink
-    href="https://drive.google.com/file/d/119C-T4vovVu_AW7X-t8C5GqDaVuH7EhX/view"
+    href={href}
     tertiary
     target="__blank"
     rel="noopener noreferrer"
     className={style.link}
   >
-    podrobný návod
+    {children}
     <HiExternalLink />
   </ExternalButtonLink>
 )

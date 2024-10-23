@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import { FaAngleDown, FaAngleUp } from 'react-icons/fa'
 import { InfoBox } from 'components'
-import { DetailedInstructionsLink } from './DetailedInstructionsLink'
+import { ExternalHeaderLink } from './ExternalHeaderLink'
 import styles from './FeedbackStepInfo.module.scss'
 
 export const FeedbackStepInfo: FC = () => {
@@ -31,7 +31,12 @@ export const FeedbackStepInfo: FC = () => {
           </p>
           <header>
             Stručný návod
-            <DetailedInstructionsLink />
+            <ExternalHeaderLink href="https://drive.google.com/file/d/119C-T4vovVu_AW7X-t8C5GqDaVuH7EhX/view">
+              podrobný návod
+            </ExternalHeaderLink>
+            <ExternalHeaderLink href="https://drive.google.com/file/d/1KlSNJW9kYDRoGWAqAPsOH8XOf8hFZin-/view">
+              pdf zpětné vazby
+            </ExternalHeaderLink>
           </header>
           <ol>
             <li>
