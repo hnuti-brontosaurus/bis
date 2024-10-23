@@ -6,7 +6,7 @@ import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
 import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
-import { DetailedInstructionsLink } from './DetailedInstructionsLink'
+import { ExternalHeaderLink } from './ExternalHeaderLink'
 import styles from './InquiryFormSection.module.scss'
 
 const questionTypes: { type: InquiryType; name: string }[] = [
@@ -167,7 +167,9 @@ export const InquiriesFormSection: FC = () => {
       header={
         <>
           Otázky
-          <DetailedInstructionsLink />
+          <ExternalHeaderLink href="https://drive.google.com/file/d/119C-T4vovVu_AW7X-t8C5GqDaVuH7EhX/view">
+            podrobný návod
+          </ExternalHeaderLink>
         </>
       }
       help={
