@@ -312,7 +312,6 @@ export const CloseEventForm = ({
           feedback = data
         },
         errors => {
-          isValid = false
           feedbackErrors = errors
           feedback = feedbackFormMethods.getValues()
         },
