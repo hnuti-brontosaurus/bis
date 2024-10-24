@@ -26,6 +26,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
 import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
+import { PaidForCheckbox } from './PaidForCheckbox'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
 
@@ -276,17 +277,10 @@ export const Applications: FC<{
         <td onClick={showDetails}>{application.note}</td>
         <td>
           <div className={styles.actionCell}>
-            <label
-              className={classNames('checkboxLabel', styles.paidForCheckbox)}
-            >
-              <input
-                type="checkbox"
-                onChange={e =>
-                  togglePaidFor(application, event.id, e.target.checked)
-                }
-                checked={application.paid_for}
-              />
-            </label>
+            <PaidForCheckbox
+              value={application.paid_for}
+              onChange={value => togglePaidFor(application, event.id, value)}
+            />
             <TableCellIconButton
               icon={Detail}
               action={showDetails}
