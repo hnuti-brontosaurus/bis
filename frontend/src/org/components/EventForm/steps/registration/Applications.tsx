@@ -13,7 +13,7 @@ import {
 import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
 import {
-  FaCoins,
+  FaDollarSign,
   FaInfoCircle as Detail,
   FaTrash as Bin,
   FaTrashRestoreAlt,
@@ -418,7 +418,7 @@ export const Applications: FC<{
                   <th>poznámka</th>
                   <th>
                     <div className={styles.actionCell}>
-                      <FaCoins
+                      <FaDollarSign
                         className={classNames(
                           styles.iconHead,
                           styles.paidForHead,
