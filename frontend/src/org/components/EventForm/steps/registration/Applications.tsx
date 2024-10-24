@@ -13,6 +13,7 @@ import {
 import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
 import {
+  FaCoins,
   FaInfoCircle as Detail,
   FaTrash as Bin,
   FaTrashRestoreAlt,
@@ -221,7 +222,7 @@ export const Applications: FC<{
 
   const thereAreApplications = applications && applications.length !== 0
 
-  const ALL_COLUMNS = 8 + event.questions.length
+  const ALL_COLUMNS = 7 + event.questions.length
 
   const ApplicationRow = ({
     application,
@@ -274,18 +275,18 @@ export const Applications: FC<{
         ))}
         <td onClick={showDetails}>{application.note}</td>
         <td>
-          <label className="checkboxLabel">
-            <input
-              type="checkbox"
-              onChange={e =>
-                togglePaidFor(application, event.id, e.target.checked)
-              }
-              checked={application.paid_for}
-            />
-          </label>
-        </td>
-        <td>
           <div className={styles.actionCell}>
+            <label
+              className={classNames('checkboxLabel', styles.paidForCheckbox)}
+            >
+              <input
+                type="checkbox"
+                onChange={e =>
+                  togglePaidFor(application, event.id, e.target.checked)
+                }
+                checked={application.paid_for}
+              />
+            </label>
             <TableCellIconButton
               icon={Detail}
               action={showDetails}
@@ -415,9 +416,14 @@ export const Applications: FC<{
                     <th>{question.question}</th>
                   ))}
                   <th>poznámka</th>
-                  <th>zaplaceno</th>
                   <th>
                     <div className={styles.actionCell}>
+                      <FaCoins
+                        className={classNames(
+                          styles.iconHead,
+                          styles.paidForHead,
+                        )}
+                      />
                       <Detail className={styles.iconHead} />
                       {withParticipants && (
                         <AddUser className={classNames(styles.iconHead)} />
