@@ -3405,6 +3405,7 @@ export type EventApplication = {
   answers: Answer[]
   note?: string
   is_child_application?: boolean
+  paid_for: boolean
 }
 export type PaginatedEventApplicationList = {
   count?: number
@@ -3430,6 +3431,7 @@ export type PatchedEventApplication = {
   answers?: Answer[]
   note?: string
   is_child_application?: boolean
+  paid_for?: boolean
 }
 export type PaginatedQuestionList = {
   count?: number

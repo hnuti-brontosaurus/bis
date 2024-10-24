@@ -1,4 +1,5 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
+import { ReactComponent as QueueIcon } from 'assets/participant-queue.svg'
 import { api } from 'app/services/bis'
 import type { AdministrationUnit, FullEvent } from 'app/services/bisTypes'
 import { EventApplication } from 'app/services/bisTypes'
@@ -12,6 +13,7 @@ import {
 import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
 import {
+  FaDollarSign,
   FaInfoCircle as Detail,
   FaTrash as Bin,
   FaTrashRestoreAlt,
@@ -24,6 +26,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
 import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
+import { PaidForCheckbox } from './PaidForCheckbox'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { useExportAttendanceList } from './useExportAttendanceList'
 
@@ -94,6 +97,28 @@ export const Applications: FC<{
     })
   }
 
+  const moveToQueue = (application: EventApplication, eventId: number) =>
+    updateApplication({
+      id: application.id,
+      eventId,
+      patchedEventApplication: {
+        state: ApplicationStates.queued,
+      },
+    })
+
+  const togglePaidFor = (
+    application: EventApplication,
+    eventId: number,
+    value: boolean,
+  ) =>
+    updateApplication({
+      id: application.id,
+      eventId,
+      patchedEventApplication: {
+        paid_for: value,
+      },
+    })
+
   const { data: membershipCategories } =
     api.endpoints.readMembershipCategories.useQuery({})
   const { data: administrationUnitsData } =
@@ -117,7 +142,6 @@ export const Applications: FC<{
   const { data: applicationsData, isLoading: isReadApplicationsLoading } =
     api.endpoints.readEventApplications.useQuery({
       eventId: event.id,
-      pageSize: 10000,
     })
 
   let applications = applicationsData ? applicationsData.results : []
@@ -128,6 +152,10 @@ export const Applications: FC<{
 
   const applicationsAccepted = applications.filter(
     app => app.state === ApplicationStates.approved,
+  )
+
+  const applicationsQueued = applications.filter(
+    app => app.state === ApplicationStates.queued,
   )
 
   const applicationsRejected = applications.filter(
@@ -249,6 +277,10 @@ export const Applications: FC<{
         <td onClick={showDetails}>{application.note}</td>
         <td>
           <div className={styles.actionCell}>
+            <PaidForCheckbox
+              value={application.paid_for}
+              onChange={value => togglePaidFor(application, event.id, value)}
+            />
             <TableCellIconButton
               icon={Detail}
               action={showDetails}
@@ -268,6 +300,21 @@ export const Applications: FC<{
               />
             )}
             <TableCellIconButton
+              icon={QueueIcon}
+              action={() =>
+                application.state === ApplicationStates.queued
+                  ? restoreApplication(application, event)
+                  : moveToQueue(application, event.id)
+              }
+              color={colors.orange}
+              tooltipContent={
+                application.state === ApplicationStates.queued
+                  ? 'Vrátit do přihlášených'
+                  : 'Přesunout mezi náhradníky'
+              }
+              disabled={application.state === ApplicationStates.approved}
+            />
+            <TableCellIconButton
               icon={
                 application.state === ApplicationStates.rejected
                   ? FaTrashRestoreAlt
@@ -286,9 +333,9 @@ export const Applications: FC<{
                   })
                 }
               }}
-              disabled={application.state === 'approved'}
+              disabled={application.state === ApplicationStates.approved}
               tooltipContent={
-                application.state === 'rejected'
+                application.state === ApplicationStates.rejected
                   ? 'Obnovit přihlášku'
                   : 'Odmítnout přihlášku'
               }
@@ -365,10 +412,17 @@ export const Applications: FC<{
                   <th>poznámka</th>
                   <th>
                     <div className={styles.actionCell}>
+                      <FaDollarSign
+                        className={classNames(
+                          styles.iconHead,
+                          styles.paidForHead,
+                        )}
+                      />
                       <Detail className={styles.iconHead} />
                       {withParticipants && (
                         <AddUser className={classNames(styles.iconHead)} />
                       )}
+                      <QueueIcon className={classNames(styles.iconHead)} />
                       <Bin className={classNames(styles.iconHead)}></Bin>
                     </div>
                   </th>
@@ -393,6 +447,20 @@ export const Applications: FC<{
                     </>
                   )}
                   {applicationsAccepted.map((application: EventApplication) => (
+                    <ApplicationRow
+                      key={application.id}
+                      application={application}
+                    />
+                  ))}
+                  {applicationsQueued.length > 0 && (
+                    <>
+                      <tr>
+                        <td colSpan={ALL_COLUMNS}></td>
+                      </tr>
+                      <OneCellRow colSpan={ALL_COLUMNS}>Náhradníci</OneCellRow>
+                    </>
+                  )}
+                  {applicationsQueued.map(application => (
                     <ApplicationRow
                       key={application.id}
                       application={application}
