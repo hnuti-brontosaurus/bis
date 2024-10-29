@@ -119,18 +119,20 @@ class Event(SearchMixin, Model):
     def get_date(self):
         result = f"{self.end.day}. {self.end.month}. {self.end.year}"
 
-        if self.start != self.end:
-            result = "- " + result
-            if self.start.year != self.end.year:
-                result = f"{self.start.year}. " + result
-            if self.start.month != self.end.month:
-                result = f"{self.start.month}. " + result
-            if self.start.day != self.end.day:
-                result = f"{self.start.day}. " + result
+        if self.start == self.end:
+            return result
 
-        # if time.hour != 0:
-        #     result += f' {time.hour}:{time.minute:02d}'
-        return result
+        result = "- " + result
+        if self.start.year != self.end.year:
+            result = f"{self.start.year}. " + result
+            result = f"{self.start.month}. " + result
+            return f"{self.start.day}. " + result
+
+        if self.start.month != self.end.month:
+            result = f"{self.start.month}. " + result
+            return f"{self.start.day}. " + result
+
+        return f"{self.start.day}. " + result
 
     @classmethod
     def filter_queryset(cls, queryset, perm):
