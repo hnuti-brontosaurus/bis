@@ -595,6 +595,7 @@ class MembershipAdminAddForm(forms.ModelForm):
             ("individual", "Individuální"),
             ("family", "první rodinný člen"),
             ("family_member", "další rodinný člen"),
+            ("member_elsewhere", "platil v jiném ZČ"),
         ),
         label="Typ",
     )
