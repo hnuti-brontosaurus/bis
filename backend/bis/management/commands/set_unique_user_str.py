@@ -7,15 +7,8 @@ class Command(BaseCommand):
         data = {"": list(User.objects.all().select_related("address"))}
         new_data = {}
 
-        f1 = lambda user: user.get_name()
-
-        def f2(user):
-            _str = [user.get_name()]
-            if hasattr(user, "address") and user.address.city:
-                _str.append(user.address.city)
-            if user.age is not None:
-                _str.append(f"{user.age} let")
-            return ", ".join(_str)
+        f1 = lambda _: _.get_name()
+        f2 = lambda _: _.get_extended_name()
 
         for f in [f1, f2]:
             for key, value in data.items():

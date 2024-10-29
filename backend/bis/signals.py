@@ -33,6 +33,12 @@ def set_vokativ(instance: User, **kwargs):
             instance.vokativ = vokativ(instance.nickname).capitalize()
 
 
+@receiver(pre_save, sender=settings.AUTH_USER_MODEL, dispatch_uid="set__str")
+def set__str(instance: User, **kwargs):
+    if not instance._str:
+        instance._str = instance.get_extended_name()
+
+
 @receiver(post_save, sender=Location, dispatch_uid="set_region_for_location")
 def set_region_for_location(instance: Location, created, **kwargs):
     if instance.gps_location:

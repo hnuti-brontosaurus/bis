@@ -549,6 +549,14 @@ class User(SearchMixin, AbstractBaseUser):
 
         return name
 
+    def get_extended_name(self):
+        _str = [self.get_name()]
+        if hasattr(self, "address") and self.address.city:
+            _str.append(self.address.city)
+        if self.age is not None:
+            _str.append(f"{self.age} let")
+        return ", ".join(_str)
+
     def get_short_name(self):  # for admin
         return self.get_name()
 
