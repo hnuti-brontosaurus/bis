@@ -55,7 +55,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, action
 from django.contrib.auth.models import Group
-from django.contrib.gis.forms import PointField
+from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
 from django.db import ProgrammingError
