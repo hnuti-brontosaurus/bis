@@ -54,18 +54,35 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
+  margin: .5rem 0;
 
   .imageItem {
     position: relative;
-    .removeButton {
+
+    .toolbar {
       position: absolute;
       top: -0.6rem;
       right: -0.6rem;
-      background-color: pink;
+      display: flex;
+      gap: 2px;
+    }
+
+    .button {
       padding: 0.5rem;
       border-radius: 2rem;
+    }
+
+    .removeButton {
+      background-color: pink;
       &:hover {
         background-color: red;
+      }
+    }
+
+    .downloadButton {
+      background-color: lightgreen;
+      &:hover {
+        background-color: green;
       }
     }
   }

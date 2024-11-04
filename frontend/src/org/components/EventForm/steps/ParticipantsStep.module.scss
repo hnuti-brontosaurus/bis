@@ -7,6 +7,33 @@ h2 {
   font-size: 1.7rem;
 }
 
+.tableContainer {
+  overflow-x: auto;
+  transform: rotateX(.5turn);
+
+  table {
+    transform: rotateX(.5turn);
+  }
+
+  @include media.for-tablet-portrait-up {
+    th:first-child,
+    td:first-child {
+      position: sticky;
+      left: 0;
+    }
+
+    th:last-child,
+    td:last-child {
+      position: sticky;
+      right: 0;
+    }
+  }
+}
+
+.emptyList {
+  transform: rotateX(.5turn);
+}
+
 .table {
   table-layout: auto;
   width: 100%;
@@ -75,6 +102,12 @@ h2 {
   }
 }
 
+.actionCell {
+  display: flex;
+  gap: 7px;
+  margin: 0 5px;
+}
+
 .applicationWithParticipant {
   color: colors.$gray-300;
 }
@@ -130,12 +163,29 @@ h2 {
       }
     }
 
-    .existingParticipantContainer {
+    .existingParticipantContainerWrapper {
       margin-top: 12px;
-      overflow-x: auto;
       [class$=-control]{
         border-width: 2px;
         border-color: black;
+      }
+      .existingParticipantContainer{
+        overflow-x: auto;
+        @include media.for-tablet-portrait-up {
+          thead th, 
+          tbody td {
+            &:first-child
+            {
+              position: sticky;
+              left: 0;
+              background-image: linear-gradient(to right, #ffffff 0%, #ffffff  99.7%, #d9d9d9 100%);
+            }
+            &:last-child {
+              position: sticky;
+              right: 0;
+            }
+          }
+        }
       }
     }
 
@@ -181,19 +231,28 @@ h2 {
 }
 
 .oneCellRow {
-  border-left: 0px !important;
-  border-right: 0px;
-  text-align: center !important;
-  background-color: colors.$gray-200;
-  font-weight: 600;
+  z-index: 0; // create stacking context
 
   td {
-    text-align: center !important;
+    border-left: 0px !important;
+    border-right: 0px;
+    background-color: colors.$gray-200 !important;
+    font-weight: 600;
+  }
+
+  td:first-child {
+    z-index: 1;
+    position: sticky;
+    left: 0;
+  }
+
+  td:not(:first-child) {
+    position: relative !important;
   }
 }
 
 .iconHead {
-  width: 18px;
+  width: 16px;
   path {
     fill: black;
   }
@@ -222,4 +281,11 @@ h2 {
   border-radius: 8px;
   color: white;
   padding: 0 4px;
+}
+
+.boundedCell {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

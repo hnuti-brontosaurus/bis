@@ -3,17 +3,21 @@ from admin_numeric_filter.admin import NumericFilterModelAdmin, RangeNumericFilt
 from administration_units.models import AdministrationUnit
 from bis.admin_filters import (
     AgeFilter,
+    EventsWhereWasAsMainOrganizerCountFilter,
+    EventsWhereWasOrganizerCountFilter,
     FirstParticipatedInEventRangeFilter,
     MainOrganizerOfEventOfAdministrationUnitFilter,
     MainOrganizerOfEventRangeFilter,
     MemberDuringYearsFilter,
     MemberOfAdministrationUnitFilter,
+    MembershipCountFilter,
     NoBirthdayFilter,
     NoLoginFilter,
     OrganizerOfEventOfAdministrationUnitFilter,
     OrganizerOfEventRangeFilter,
     ParticipatedInEventOfAdministrationUnitFilter,
     ParticipatedInEventRangeFilter,
+    ParticipatedInEventsCountFilter,
     QualificationCategoryFilter,
     QualificationValidAtFilter,
     UserStatsDateFilter,
@@ -22,6 +26,7 @@ from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
     MembershipYearFilter,
+    UserExportFilter,
     get_admin_edit_url,
     list_filter_extra_text,
     list_filter_extra_title,
@@ -50,7 +55,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, action
 from django.contrib.auth.models import Group
-from django.contrib.gis.forms import PointField
+from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
 from django.db import ProgrammingError
@@ -289,6 +294,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         "get_board_member_of",
         "get_token",
         "last_after_event_email",
+        "is_contact_information_verified",
         "get_membership_actions",
         "create_membership",
     )
@@ -350,6 +356,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                     "last_login",
                     "date_joined",
                     "last_after_event_email",
+                    "is_contact_information_verified",
                     "get_board_member_of",
                     "vokativ",
                 ],
@@ -405,13 +412,22 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         AgeFilter,
         list_filter_extra_title("Členství"),
         ("memberships__year", MemberDuringYearsFilter),
+        ("memberships__id", MembershipCountFilter),
         MemberOfAdministrationUnitFilter,
-        list_filter_extra_title("Účast na akcích"),
+        list_filter_extra_title("Hlavní organizátor"),
         ("events_where_was_as_main_organizer__start", MainOrganizerOfEventRangeFilter),
+        (
+            "events_where_was_as_main_organizer__id",
+            EventsWhereWasAsMainOrganizerCountFilter,
+        ),
         MainOrganizerOfEventOfAdministrationUnitFilter,
+        list_filter_extra_title("Organizátor"),
         ("events_where_was_organizer__start", OrganizerOfEventRangeFilter),
+        ("events_where_was_organizer__id", EventsWhereWasOrganizerCountFilter),
         OrganizerOfEventOfAdministrationUnitFilter,
+        list_filter_extra_title("Účast na akcích"),
         ("participated_in_events__event__start", ParticipatedInEventRangeFilter),
+        ("participated_in_events__id", ParticipatedInEventsCountFilter),
         ParticipatedInEventOfAdministrationUnitFilter,
         ("participated_in_events__event__end", FirstParticipatedInEventRangeFilter),
         list_filter_extra_title("Kvalifikace"),
@@ -432,6 +448,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
         NoLoginFilter,
+        UserExportFilter,
     ]
 
     search_fields = User.get_search_fields()
@@ -476,6 +493,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                 "qualifications__category",
                 "events_where_was_organizer",
                 "participated_in_events__event",
+                "memberships",
                 "memberships__category",
             )
         )
@@ -577,6 +595,7 @@ class MembershipAdminAddForm(forms.ModelForm):
             ("individual", "Individuální"),
             ("family", "první rodinný člen"),
             ("family_member", "další rodinný člen"),
+            ("member_elsewhere", "platil v jiném ZČ"),
         ),
         label="Typ",
     )
@@ -649,7 +668,7 @@ class MembershipAdminAddForm(forms.ModelForm):
 
                     try:
                         key = f"{cleaned_data['user'].id}_{self.request.user.id}"
-                        ThrottleLog.check_throttled("guess_birthday", key, 3, 24)
+                        ThrottleLog.check_throttled("guess_birthday", key, 5, 24)
                     except Throttled as e:
                         raise ValidationError(str(e))
 
@@ -735,6 +754,7 @@ class MembershipAdmin(PermissionMixin, NestedModelAdmin):
         "get_user_link",
         "year",
         "category",
+        "price",
         "administration_unit",
         "get_membership_actions",
     ]

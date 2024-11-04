@@ -200,7 +200,8 @@ export const OrganizerStep = ({
                   </>
                 )}
                 , musí mít minimálně 18 let a aktivní členství v roce konání
-                akce.
+                akce. Nedříve musíte zadat datum konání akce, aby bylo možné
+                kvalifikaci ověřit.
               </InfoBox>
               <FormInputError>
                 <Controller

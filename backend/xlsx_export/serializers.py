@@ -8,6 +8,7 @@ from event.models import (
     EventRecord,
     EventRegistration,
 )
+from feedback.models import EventFeedback, Inquiry
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
 from rest_framework.fields import ReadOnlyField, SerializerMethodField
@@ -66,11 +67,14 @@ class UserExportSerializer(ModelSerializer):
             "health_insurance_company",
             "pronoun",
             "eyca_card",
+            "close_person",
         ).prefetch_related(
             "roles",
             "all_emails",
-            "qualifications",
+            "qualifications__category",
             "memberships",
+            "memberships__administration_unit",
+            "memberships__category",
             "offers__programs",
             "offers__organizer_roles",
             "offers__team_roles",
@@ -115,16 +119,23 @@ class DonorExportSerializer(ModelSerializer):
     @staticmethod
     def get_related(queryset):
         return queryset.select_related(
-            "user__address",
-            "user__contact_address",
             "regional_center_support",
             "basic_section_support",
+            "user__address",
+            "user__contact_address",
             "user__offers",
             "user__health_insurance_company",
             "user__pronoun",
+            "user__eyca_card",
+            "user__close_person",
         ).prefetch_related(
-            "user__roles",
             "variable_symbols",
+            "user__roles",
+            "user__all_emails",
+            "user__qualifications__category",
+            "user__memberships",
+            "user__memberships__administration_unit",
+            "user__memberships__category",
             "user__offers__programs",
             "user__offers__organizer_roles",
             "user__offers__team_roles",
@@ -154,12 +165,20 @@ class MembershipExportSerializer(ModelSerializer):
         return queryset.select_related(
             "category",
             "administration_unit",
+            "user__address",
             "user__contact_address",
             "user__offers",
             "user__health_insurance_company",
             "user__pronoun",
+            "user__eyca_card",
+            "user__close_person",
         ).prefetch_related(
             "user__roles",
+            "user__all_emails",
+            "user__qualifications__category",
+            "user__memberships",
+            "user__memberships__administration_unit",
+            "user__memberships__category",
             "user__offers__programs",
             "user__offers__organizer_roles",
             "user__offers__team_roles",
@@ -269,6 +288,7 @@ class EventExportSerializer(ModelSerializer):
             "location__accessibility_from_prague",
             "location__accessibility_from_brno",
             "location__region",
+            "group",
             "category",
             "program",
             "main_organizer",
@@ -331,16 +351,23 @@ class DonationExportSerializer(ModelSerializer):
     def get_related(queryset):
         return queryset.select_related(
             "donation_source",
-            "donor__user__address",
-            "donor__user__contact_address",
             "donor__regional_center_support",
             "donor__basic_section_support",
+            "donor__user__address",
+            "donor__user__contact_address",
             "donor__user__offers",
             "donor__user__health_insurance_company",
             "donor__user__pronoun",
+            "donor__user__eyca_card",
+            "donor__user__close_person",
         ).prefetch_related(
-            "donor__user__roles",
             "donor__variable_symbols",
+            "donor__user__roles",
+            "donor__user__all_emails",
+            "donor__user__qualifications__category",
+            "donor__user__memberships",
+            "donor__user__memberships__administration_unit",
+            "donor__user__memberships__category",
             "donor__user__offers__programs",
             "donor__user__offers__organizer_roles",
             "donor__user__offers__team_roles",
@@ -447,6 +474,8 @@ class EventApplicationExportSerializer(ModelSerializer):
             "pronoun",
             "created_at",
             "note",
+            "internal_note",
+            "paid_for",
             "close_person",
             "address",
         )
@@ -466,3 +495,31 @@ class EventApplicationExportSerializer(ModelSerializer):
         )
         for question in questions:
             yield str(question.id), question.question
+
+
+class EventFeedbackExportSerializer(ModelSerializer):
+    @staticmethod
+    def get_related(queryset):
+        return queryset.prefetch_related("replies")
+
+    class Meta:
+        model = EventFeedback
+        fields = (
+            "name",
+            "email",
+            "created_at",
+            "note",
+        )
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        for reply in instance.replies.all():
+            result[str(reply.inquiry.id)] = reply.reply
+        return result
+
+    def get_extra_fields(self, queryset):
+        inquiries = Inquiry.objects.filter(
+            feedback_form__event_record=queryset.first().event_record
+        )
+        for inquiry in inquiries:
+            yield str(inquiry.id), inquiry.inquiry

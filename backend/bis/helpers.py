@@ -5,6 +5,7 @@ from time import time
 
 from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
+from dateutil.utils import today
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
@@ -236,15 +237,19 @@ class MembershipStats:
 
     def get_data(self):
         data = {
-            category.name: (
-                self.queryset.filter(category=category).count(),
-                category.price,
-            )
+            category.name: [
+                item.price
+                for item in self.queryset.filter(category=category).select_related(
+                    "category"
+                )
+            ]
             for category in MembershipCategory.objects.all()
         }
-        total = sum(v[0] * v[1] for v in data.values())
+        total = sum(price for items in data.values() for price in items)
         data = {
-            key: f"{v[0] * v[1]} Kč ({v[0]}x{v[1]})" for key, v in data.items() if v[0]
+            key: f"{sum(items)} Kč ({len(items)}x)"
+            for key, items in data.items()
+            if items
         }
         data["Celkem"] = f"{total} Kč"
         return data
@@ -280,6 +285,14 @@ def filter_queryset_with_multiple_or_queries(queryset, queries):
     for query in queries:
         ids = ids.union(queryset.filter(query).order_by().values_list("id", flat=True))
     return queryset.filter(id__in=ids)
+
+
+def get_locked_year():
+    locked_year = today().year - 1
+    if today().month < 3:
+        locked_year -= 1
+
+    return locked_year
 
 
 def make_a(content, link):

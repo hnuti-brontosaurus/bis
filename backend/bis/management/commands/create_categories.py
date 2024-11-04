@@ -166,22 +166,22 @@ class Command(BaseCommand):
         )
 
         MembershipCategory.objects.update_or_create(
-            slug="family", defaults=dict(name="první rodinný člen", price=350)
+            slug="family", defaults=dict(name="první rodinný člen")
         )
         MembershipCategory.objects.update_or_create(
-            slug="family_member", defaults=dict(name="další rodinný člen", price=25)
+            slug="family_member", defaults=dict(name="další rodinný člen")
         )
         MembershipCategory.objects.update_or_create(
-            slug="kid", defaults=dict(name="dětské do 15 let", price=150)
+            slug="kid", defaults=dict(name="dětské do 15 let")
         )
         MembershipCategory.objects.update_or_create(
-            slug="student", defaults=dict(name="individuální 15-26 let", price=100)
+            slug="student", defaults=dict(name="individuální 15-26 let")
         )
         MembershipCategory.objects.update_or_create(
-            slug="adult", defaults=dict(name="individuální nad 26 let", price=350)
+            slug="adult", defaults=dict(name="individuální nad 26 let")
         )
         MembershipCategory.objects.update_or_create(
-            slug="member_elsewhere", defaults=dict(name="platil v jiném ZČ", price=0)
+            slug="member_elsewhere", defaults=dict(name="platil v jiném ZČ")
         )
 
         EventGroupCategory.objects.update_or_create(
@@ -268,7 +268,7 @@ class Command(BaseCommand):
         EventTag.objects.update_or_create(
             slug="region_event",
             defaults=dict(
-                name="Akce Brontosarus v regionech",
+                name="Akce Brontosarus",
                 description="Dobrovolnické akce, jež mají za cíl udělat kus užitečné práce pro přírodu, krajinu či památky a zároveň dobrovolnicví představit veřejnosti a oslovit lidi k zapojení. Akce mohou také prezentovat činnost Brontosaura v daném regionu. Typicky půjde o půldenní, jednodenní, max. víkendové akce konané v období 19. – 28. 4. 2024.",
             ),
         )

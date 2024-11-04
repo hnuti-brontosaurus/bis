@@ -1,12 +1,37 @@
 import classNames from 'classnames'
-import get from 'lodash/get'
-import { ChangeEvent, forwardRef, useEffect, useState } from 'react'
+import forEach from 'lodash/forEach'
+import { ChangeEvent, FC, forwardRef, useState } from 'react'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
-import { FaPencilAlt, FaTimes } from 'react-icons/fa'
+import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
+import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import styles from './ImageUpload.module.scss'
+
+export const DownloadLink: FC<{ url: string }> = ({ url }) => {
+  const fileName =
+    url.match(/filename=(.*?);/)?.[1] ?? url.match(/[^/]*$/)?.[0] ?? ''
+  return (
+    <a
+      href={url}
+      download={fileName}
+      className={classNames(styles.button, styles.downloadButton)}
+    >
+      <FaDownload />
+    </a>
+  )
+}
+
+const useUnsupportedHeicMessage = () => {
+  const showMessage = useShowMessage()
+  return (file: File) =>
+    showMessage({
+      type: 'error',
+      message: `Nelze nahrát ${file.name}`,
+      detail: 'Formát HEIC/HEIF není podporovaný.',
+    })
+}
 
 export const UncontrolledImageUpload = forwardRef<
   HTMLInputElement,
@@ -19,13 +44,18 @@ export const UncontrolledImageUpload = forwardRef<
   }
 >(({ value, onChange, colorTheme, ...rest }, ref) => {
   const [internalState, setInternalState] = useState<string>('')
+  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
 
   const actualValue = value ?? internalState
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    const value = file ? await file2base64(file) : ''
-    setInternalState(value)
-    onChange({ ...e, target: { ...e.target, value, type: 'text' } })
+    if (file && file.type === 'image/heif') {
+      showUnsupportedHeicMessage(file)
+    } else {
+      const value = file ? await file2base64(file) : ''
+      setInternalState(value)
+      onChange({ ...e, target: { ...e.target, value, type: 'text' } })
+    }
   }
 
   return (
@@ -34,13 +64,13 @@ export const UncontrolledImageUpload = forwardRef<
         ref={ref}
         style={{ display: 'none' }}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf"
         onChange={handleChange}
         {...rest}
       />
       {actualValue ? (
         <div className={styles.imageWrapper}>
-          <img src={actualValue} alt="" className={styles.image} />
+          <object data={actualValue} className={styles.image} />
           <div className={styles.editOverlay}>
             <FaPencilAlt size={26} />
           </div>
@@ -83,8 +113,36 @@ export const ImageUpload = ({
   )
 }
 
-// TODO it would be great to have multi image upload
-// i.e. users could select multiple images at once
+export const ImageAdd = ({
+  name,
+  onAdd,
+  colorTheme,
+}: {
+  name: string
+  onAdd: (files: FileList) => void
+  colorTheme?: string
+}) => (
+  <label tabIndex={0}>
+    <input
+      name={`${name}.add`}
+      style={{ display: 'none' }}
+      type="file"
+      accept="image/*,application/pdf"
+      multiple
+      onChange={event => event.target.files && onAdd(event.target.files)}
+    />
+    <div
+      className={classNames(
+        styles.addButton,
+        colorTheme === 'opportunities' && styles.opportunitiesTheme,
+      )}
+    >
+      <MdPhotoCamera size={60} />
+      Přidej fotky
+    </div>
+  </label>
+)
+
 export const ImagesUpload = ({
   name,
   image = 'image',
@@ -94,41 +152,23 @@ export const ImagesUpload = ({
   image?: string
   colorTheme?: string
 }) => {
-  const { control, watch, getValues } = useFormContext()
+  const { control, watch } = useFormContext()
   const imageFields = useFieldArray({
     control,
     name,
   })
+  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
 
-  useEffect(() => {
-    // when there is no empty image, add empty image (add button)
-    // somehow, watch doesn't always trigger at the beginning, therefore we add it also here
-    const values = getValues(name)
-    if (
-      !values ||
-      values.length === 0 ||
-      values.length ===
-        (values as { [image: string]: string }[]).filter(obj =>
-          Boolean(obj[image]),
-        ).length
-    )
-      imageFields.append({ [image]: '' })
-    // when images change, check that there is always one empty
-    const subscription = watch((data /*, { name, type }*/) => {
-      const values = get(data, name)
-      if (
-        !values ||
-        values.length === 0 ||
-        values.length ===
-          (values as { [image: string]: string }[]).filter(obj =>
-            Boolean(obj[image]),
-          ).length
-      )
-        imageFields.append({ [image]: '' })
+  const addImages = (files: FileList) => {
+    forEach(files, async file => {
+      if (file.type === 'image/heif') {
+        showUnsupportedHeicMessage(file)
+      } else {
+        const value = await file2base64(file)
+        imageFields.append({ [image]: value })
+      }
     })
-
-    return () => subscription.unsubscribe()
-  }, [watch, imageFields, getValues, name, image])
+  }
 
   return (
     <ul className={styles.imageList}>
@@ -143,17 +183,23 @@ export const ImagesUpload = ({
               )}
             />
             {watch(`${name}.${index}.${image}`) && (
-              <button
-                className={styles.removeButton}
-                type="button"
-                onClick={() => imageFields.remove(index)}
-              >
-                <FaTimes />
-              </button>
+              <div className={styles.toolbar}>
+                <DownloadLink url={watch(`${name}.${index}.${image}`)} />
+                <button
+                  className={classNames(styles.button, styles.removeButton)}
+                  type="button"
+                  onClick={() => imageFields.remove(index)}
+                >
+                  <FaTimes />
+                </button>
+              </div>
             )}
           </li>
         )
       })}
+      <li key="add" className={styles.imageItem}>
+        <ImageAdd name={name} onAdd={addImages} />
+      </li>
     </ul>
   )
 }

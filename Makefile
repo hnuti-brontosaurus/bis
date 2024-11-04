@@ -17,7 +17,7 @@ endef
 
 
 define compose_with_trap
-$(call with_trap, docker-compose                                                           \
+$(call with_trap, docker compose                                                           \
     -f docker-compose.yaml                                                                 \
     -f docker-compose/dev.yaml $1)
 endef
@@ -25,7 +25,7 @@ endef
 build: .env submodule_sync
 	echo '.git' > .dockerignore
 	cat .gitignore >> .dockerignore
-	docker-compose build
+	docker compose build
 	make gen_dev_dockercompose_file
 
 .env:
@@ -72,10 +72,10 @@ submodule_update: submodule_sync
 	git submodule update --init --recursive --remote
 
 run:
-	docker-compose up -d
+	docker compose up -d
 
 build_frontend:
-	docker-compose run frontend sh docker-entrypoint.sh build
+	docker compose run frontend sh docker-entrypoint.sh build
 
 dev:
 	$(call compose_with_trap,                                                              \
@@ -93,7 +93,7 @@ frontend:
 		-f docker-compose/dev_$$OS.yaml up)
 
 node_modules/cypress/bin/cypress:
-	yarn add cypress@12.1.0 wait-on --dev
+	yarn --cwd frontend install --frozen-lockfile
 
 prepare_test_env:
 	rm -Rf ./*data_test
@@ -102,7 +102,7 @@ prepare_test_env:
 
 startup_testing:
 	$(call with_os,                                                                        \
-	    docker-compose                                                                     \
+	    docker compose                                                                     \
 	        --profile dev                                                                  \
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
@@ -111,7 +111,7 @@ startup_testing:
 
 startup_testing_frontend:
 	$(call with_os,                                                                        \
-	    docker-compose                                                                     \
+	    docker compose                                                                     \
 	        --profile frontend                                                             \
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
@@ -127,26 +127,26 @@ test_backend:
 
 test_frontend: node_modules/cypress/bin/cypress
 	make startup_testing_frontend
-	yarn run wait-on http-get://localhost:3000
+	yarn --cwd frontend run wait-on http-get://localhost:3000
 	$(call with_trap, yarn --cwd frontend run cypress run)
 
 
 test_e2e: node_modules/cypress/bin/cypress
 	make prepare_test_env
 	make startup_testing
-	yarn run wait-on http-get://localhost/api/
-	yarn run wait-on http-get://localhost:3000
-	$(call with_trap, yarn run cypress run)
+	yarn --cwd frontend run wait-on http-get://localhost/api/
+	yarn --cwd frontend run wait-on http-get://localhost:3000
+	$(call with_trap, yarn --cwd frontend run cypress run)
 
 test: test_backend test_frontend
 
 open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 	make startup_testing
-	yarn run wait-on http-get://localhost/api/
-	$(call with_trap, yarn run cypress open)
+	yarn --cwd frontend run wait-on http-get://localhost/api/
+	$(call with_trap, yarn --cwd frontend run cypress open)
 
 clean:
-	docker-compose down -t 0 --remove-orphans
+	docker compose down -t 0 --remove-orphans
 
 
 init_test_db:

@@ -1,0 +1,57 @@
+@use 'styles/media';
+
+// in case of overlong answers
+.wrap {
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.text {
+  width: 100%;
+  @include media.for-tablet-landscape-up {
+    width: 500px;
+  }
+}
+
+.scale {
+  display: flex;
+  gap: 1em;
+}
+
+.scaleLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .2em;
+}
+
+.scaleRange {
+  display: flex;
+  gap: .7em;
+}
+
+.scaleOption {
+  grid-template-columns: auto;
+  justify-items: center;
+  margin: 0;
+  gap: .3em;
+}
+
+.scaleText {
+  margin-top: .7em;
+}
+
+.horizontalLayout {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+
+  @include media.for-phone-only {
+    flex-direction: column;
+  }
+}

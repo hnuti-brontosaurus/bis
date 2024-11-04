@@ -43,8 +43,7 @@ class EventViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = (
-            Event.objects.exclude(propagation__isnull=True)
-            .order_by("start")
+            Event.objects.order_by("id")
             .select_related(
                 "location",
                 "category",
@@ -64,13 +63,13 @@ class EventViewSet(ReadOnlyModelViewSet):
         if self.action == "list":
             queryset = queryset.filter(
                 is_canceled=False, propagation__is_shown_on_web=True
-            )
+            ).exclude(propagation__isnull=True)
 
         return queryset
 
 
 class OpportunityViewSet(ReadOnlyModelViewSet):
-    queryset = Opportunity.objects.order_by("priority", "start").select_related(
+    queryset = Opportunity.objects.order_by("priority", "start", "id").select_related(
         "category",
         "location",
         "contact_person",

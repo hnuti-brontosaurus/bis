@@ -1,7 +1,7 @@
 from datetime import date
 
 from api.helpers import catch_related_object_does_not_exist
-from bis.helpers import AgeStats
+from bis.helpers import AgeStats, get_locked_year
 from bis.models import (
     EYCACard,
     Location,
@@ -452,6 +452,7 @@ class UserSerializer(ModelSerializer):
             "health_issues",
             "pronoun",
             "is_active",
+            "is_contact_information_verified",
             "date_joined",
             "roles",
             "donor",
@@ -616,7 +617,7 @@ class FeedbackFormSerializer(ModelSerializer):
 
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
-    # feedback_form = FeedbackFormSerializer(allow_null=True)
+    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     age_stats = SerializerMethodField()
 
@@ -631,7 +632,7 @@ class RecordSerializer(ModelSerializer):
             "note",
             "contacts",
             "age_stats",
-            # "feedback_form",
+            "feedback_form",
         )
 
     def get_age_stats(self, instance) -> dict:
@@ -656,7 +657,6 @@ class EventSerializer(ModelSerializer):
 
     group = EventGroupCategorySerializer()
     category = EventCategorySerializer()
-    tags = EventTagSerializer(many=True)
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
 
@@ -700,13 +700,12 @@ class EventSerializer(ModelSerializer):
         return []
 
     def create(self, validated_data):
-        locked_year = today().year - 1
-        if today().month < 3:
-            locked_year -= 1
-        if validated_data["start"].year <= locked_year:
-            raise DjangoValidationError("Cannot create events in the past")
+        user = self.context["request"].user
+        if validated_data["end"].year <= get_locked_year():
+            if not user.is_superuser and not user.is_office_worker:
+                raise DjangoValidationError("Nemůžeš vytvářet události v minulosti")
 
-        validated_data["created_by"] = self.context["request"].user
+        validated_data["created_by"] = user
         instance = super().create(validated_data)
 
         if self.context["request"].user != instance.main_organizer:
@@ -714,9 +713,18 @@ class EventSerializer(ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        user = self.context["request"].user
+        if validated_data.get("end") and instance.end != validated_data["end"]:
+            if validated_data["end"].year <= get_locked_year():
+                if not user.is_superuser and not user.is_office_worker:
+                    raise DjangoValidationError(
+                        "Nemůžeš změnit datum události do minulosti"
+                    )
+
         is_closing = not instance.is_closed and validated_data.get("is_closed")
         if is_closing:
             validated_data["closed_at"] = date.today()
+
         instance = super().update(instance, validated_data)
         if is_closing:
             emails.event_end_participants_notification(instance)
@@ -940,6 +948,8 @@ class EventApplicationSerializer(ModelSerializer):
             "address",
             "answers",
             "note",
+            "internal_note",
+            "paid_for",
             "is_child_application",
         )
 
@@ -954,8 +964,15 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all([key in ["user", "state", "note"] for key in validated_data]):
-            raise ValidationError("Only user, state and note are editable")
+        if not all(
+            [
+                key in ["user", "state", "internal_note", "paid_for"]
+                for key in validated_data
+            ]
+        ):
+            raise ValidationError(
+                "Only user, state, paid_for and internal_note are editable"
+            )
         return super().update(instance, validated_data)
 
 
@@ -1013,12 +1030,6 @@ class EventFeedbackSerializer(ModelSerializer):
         instance = super().create(validated_data)
         emails.feedback_created(instance)
         return instance
-
-    @catch_related_object_does_not_exist
-    def update(self, instance, validated_data):
-        if not all([key in ["user", "note"] for key in validated_data]):
-            raise ValidationError("Only user and note are editable")
-        return super().update(instance, validated_data)
 
 
 class UserSearchSerializer(ModelSerializer):

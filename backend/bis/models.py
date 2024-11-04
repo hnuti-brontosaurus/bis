@@ -94,6 +94,7 @@ class Location(SearchMixin, Model):
 
     class Meta:
         ordering = ("name",)
+        indexes = [Index(fields=["name"])]
 
     def __str__(self):
         return self.name
@@ -278,6 +279,7 @@ class User(SearchMixin, AbstractBaseUser):
     is_active = BooleanField(default=True)
     date_joined = DateField(default=datetime.date.today)
     last_after_event_email = DateField(blank=True, null=True)
+    is_contact_information_verified = BooleanField(default=False)
     internal_note = TextField(blank=True)
 
     _import_id = CharField(max_length=255, default="")
@@ -470,6 +472,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "internal_note",
                     "photo",
                     "last_after_event_email",
+                    "is_contact_information_verified",
                 ]:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))
@@ -545,6 +548,14 @@ class User(SearchMixin, AbstractBaseUser):
             return f"{self.email}"
 
         return name
+
+    def get_extended_name(self):
+        _str = [self.get_name()]
+        if hasattr(self, "address") and self.address.city:
+            _str.append(self.address.city)
+        if self.age is not None:
+            _str.append(f"{self.age} let")
+        return ", ".join(_str)
 
     def get_short_name(self):  # for admin
         return self.get_name()
@@ -689,9 +700,10 @@ class User(SearchMixin, AbstractBaseUser):
         if self.get_qualifications():
             roles += ["qualified_organizer", "organizer"]
 
-        roles = [RoleCategory.objects.get(slug=role) for role in set(roles)]
-
-        self.roles.set(roles)
+        roles = set(roles)
+        if roles != set(self.roles.values_list("slug", flat=True)):
+            roles = RoleCategory.objects.filter(slug__in=roles)
+            self.roles.set(roles)
 
 
 @translate_model
@@ -760,9 +772,35 @@ class Membership(Model):
 
     class Meta:
         ordering = ("-year", "user__last_name", "user__first_name")
+        indexes = [Index(fields=["year"]), Index(fields=["_year"])]
 
     def __str__(self):
         return f"Člen {self.administration_unit} {self.category}, {self.year}"
+
+    @property
+    @admin.display(description="Cena")
+    def price(self):
+        if self.year >= 2024:
+            return {
+                "family": 450,
+                "family_member": 50,
+                "kid": 250,
+                "student": 200,
+                "adult": 450,
+                "member_elsewhere": 0,
+            }[self.category.slug]
+
+        if self.year >= 2014:
+            return {
+                "family": 350,
+                "family_member": 25,
+                "kid": 150,
+                "student": 100,
+                "adult": 350,
+                "member_elsewhere": 0,
+            }[self.category.slug]
+
+        return 0
 
     @classmethod
     def do_extend_for(cls, user, slug, administration_unit):

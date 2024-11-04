@@ -33,47 +33,10 @@ def set_vokativ(instance: User, **kwargs):
             instance.vokativ = vokativ(instance.nickname).capitalize()
 
 
-@receiver(pre_save, sender=settings.AUTH_USER_MODEL, dispatch_uid="set_search_field")
-def set_search_field(instance: User, **kwargs):
-    instance._search_field = unidecode
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid="set_unique_str")
-def set_unique_str(instance: User, **kwargs):
-    data = {"": list(User.objects.all().select_related("address"))}
-    new_data = {}
-
-    f1 = lambda user: user.get_name()
-
-    def f2(user):
-        _str = [user.get_name()]
-        if hasattr(user, "address") and user.address.city:
-            _str.append(user.address.city)
-        if user.age is not None:
-            _str.append(f"{user.age} let")
-        return ", ".join(_str)
-
-    for f in [f1, f2]:
-        for key, value in data.items():
-            if len(value) > 1:
-                for user in value:
-                    new_data.setdefault(f(user), []).append(user)
-
-            else:
-                new_data[key] = value
-
-        new_data, data = data, new_data
-        new_data.clear()
-
-    to_update = []
-    for key, value in data.items():
-        for user in value:
-            if user._str != key:
-                user._str = key
-                to_update.append(user)
-
-    if to_update:
-        User.objects.bulk_update(to_update, ["_str"], batch_size=100)
+@receiver(pre_save, sender=settings.AUTH_USER_MODEL, dispatch_uid="set__str")
+def set__str(instance: User, **kwargs):
+    if not instance._str:
+        instance._str = instance.get_extended_name()
 
 
 @receiver(post_save, sender=Location, dispatch_uid="set_region_for_location")
@@ -137,26 +100,3 @@ def set_users_primary_email(instance: UserEmail, **kwargs):
 @receiver(post_save, sender=User, dispatch_uid="update_roles")
 def update_roles(instance: User, **kwargs):
     instance.update_roles()
-
-
-class paused_user_str_signal:
-    def __enter__(self):
-        post_save.disconnect(
-            sender=settings.AUTH_USER_MODEL, dispatch_uid="set_unique_str"
-        )
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        post_save.connect(
-            set_unique_str,
-            sender=settings.AUTH_USER_MODEL,
-            dispatch_uid="set_unique_str",
-        )
-        User.objects.first().save()
-
-
-def with_paused_user_str_signal(f):
-    def wrapper(*args, **kwargs):
-        with paused_user_str_signal():
-            return f(*args, **kwargs)
-
-    return wrapper

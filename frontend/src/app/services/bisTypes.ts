@@ -4,7 +4,7 @@
  * and when we decide to fix some types, the change propagates application-wide
  */
 
-import type { Optional, Overwrite } from 'utility-types'
+import { Assign, Optional, Overwrite } from 'utility-types'
 import type * as original from './testApi'
 export type {
   AdministrationUnit,
@@ -56,6 +56,21 @@ export type EventGroupCategory = Overwrite<
 export type Event = Overwrite<
   original.Event,
   { category: EventCategory; group: EventGroupCategory }
+>
+
+export type FullEvent = Assign<
+  Overwrite<
+    Event,
+    {
+      main_organizer: User // in older events, main_organizer may be missing
+      other_organizers: User[]
+      location: Location | undefined
+    }
+  >,
+  {
+    images: EventPropagationImage[]
+    questions: Question[]
+  }
 >
 
 export type PropagationPayload = Overwrite<
@@ -184,6 +199,21 @@ export type Question = Overwrite<
   {
     data?: QuestionData
   }
+>
+
+export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale' | 'header'
+
+type InquiryData = {
+  type: InquiryType
+  options?: { option: string }[]
+  comment?: boolean
+  fixed?: boolean
+  layout?: 'horizontal' | 'vertical'
+}
+
+export type InquiryRead = Overwrite<
+  original.InquiryRead,
+  { data?: InquiryData }
 >
 
 export type RoleSlug =

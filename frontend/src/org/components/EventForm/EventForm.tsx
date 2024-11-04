@@ -1,5 +1,10 @@
 import { api } from 'app/services/bis'
-import type { Event, EventPayload, Location } from 'app/services/bisTypes'
+import type {
+  FullEvent,
+  Event,
+  EventPayload,
+  Location,
+} from 'app/services/bisTypes'
 import {
   EventPropagationImagePayload,
   Question,
@@ -571,7 +576,7 @@ export const EventForm: FC<{
       <Step name="přihlášky" hidden={!initialData?.id}>
         {initialData?.id && initialData?.name && (
           <ParticipantsStep
-            event={initialData as unknown as Event}
+            event={initialData as unknown as FullEvent}
             onlyApplications
           />
         )}

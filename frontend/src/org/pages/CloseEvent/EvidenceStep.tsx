@@ -12,17 +12,22 @@ import { form as formTexts } from 'config/static/closeEvent'
 import { FormProvider, UseFormReturn } from 'react-hook-form'
 import { HiExternalLink } from 'react-icons/hi'
 import { required } from 'utils/validationMessages'
+import { ExportFilesButton } from '../../components'
 import { EvidenceStepFormShape } from './CloseEventForm'
 import styles from './EvidenceStep.module.scss'
 
 export const EvidenceStep = ({
+  eventId,
   isVolunteering,
   methods,
   firstIndex = 2,
+  multipleSubevents,
 }: {
+  eventId: number
   isVolunteering: boolean
   methods: UseFormReturn<EvidenceStepFormShape, any>
   firstIndex?: number
+  multipleSubevents: boolean
 }) => {
   const { register } = methods
 
@@ -36,6 +41,12 @@ export const EvidenceStep = ({
               header="Odpracováno člověkohodin"
               help={formTexts.record.total_hours_worked.help}
             >
+              {multipleSubevents && (
+                <InfoBox>
+                  Tato akce je zadaná jako opakovaná. Zadejte celkový počet
+                  odpracovaných hodin na všech opakovaných akcích.
+                </InfoBox>
+              )}
               <FormInputError>
                 <input
                   type="number"
@@ -60,7 +71,14 @@ export const EvidenceStep = ({
               </FormInputError>
             </FormSubsection>
           </FormSection>
-          <FormSection header="Evidence akce">
+          <FormSection
+            header={
+              <>
+                Evidence akce&emsp;
+                <ExportFilesButton eventId={eventId} />
+              </>
+            }
+          >
             <FormSubsection header="Fotky z akce" help={formTexts.photos.help}>
               <ImagesUpload name="photos" image="photo" />
             </FormSubsection>
@@ -86,30 +104,6 @@ export const EvidenceStep = ({
               <input type="text" {...register('finance.bank_account_number')} />
             </FormSubsection>
           </FormSection>
-          <FormSection header="Zpětná vazba">
-            <InfoBox>
-              Zpětná vazba od účastníků udělá vaši příští akci ještě lepší!
-              Spokojení účastníci jsou tou nejlepší odměnou pro každého
-              organizátora. Jejich zpětná vazba je velmi cenná a umožní vám
-              reflexi toho, co se povedlo a co můžete do příště ještě vylepšit.
-              Na tomto odkazu zpětnou vazbu pro účastníky lehce připravíte.
-            </InfoBox>
-            <div>
-              <Help>
-                Přihlašte se univerzálním heslem “vyplnto” nebo heslem vaší
-                organizační jednotky.
-              </Help>{' '}
-              <ExternalButtonLink
-                tertiary
-                href="https://zpetna-vazba.brontosaurus.cz/login.php"
-                target="__blank"
-                rel="noopener noreferrer"
-                className={styles.outerLinkButton}
-              >
-                Připravit zpětnou vazbu <HiExternalLink />
-              </ExternalButtonLink>
-            </div>
-          </FormSection>
           <FormSection header="Závěrečná zpráva">
             <InfoBox>
               Vyplněná závěrečná zpráva o akci nám pomáhá zlepšovat podporu vám
@@ -134,7 +128,11 @@ export const EvidenceStep = ({
           </FormSection>
           <FormSection header="Follow up e-mail pro účastníky">
             <InfoBox>
-              Kontakt s účastníky po akci dokresluje celkový dojem z akce a je základem toho, aby se účastníci rádi vraceli na další akce HB. Stáhni si šablonu pro follow up e-mail, který je nejlepší poslat všem účastníkům týden až dva po akci. Účastníkům tak ukážeš, že na ně ani po akci nezapomínáš.
+              Kontakt s účastníky po akci dokresluje celkový dojem z akce a je
+              základem toho, aby se účastníci rádi vraceli na další akce HB.
+              Stáhni si šablonu pro follow up e-mail, který je nejlepší poslat
+              všem účastníkům týden až dva po akci. Účastníkům tak ukážeš, že na
+              ně ani po akci nezapomínáš.
             </InfoBox>
             <div>
               <ExternalButtonLink

@@ -1,0 +1,12 @@
+.infoBox {
+  margin: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  > * {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}

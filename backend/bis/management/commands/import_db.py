@@ -23,7 +23,6 @@ from bis.models import (
     UserContactAddress,
     UserEmail,
 )
-from bis.signals import with_paused_user_str_signal
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -284,7 +283,6 @@ class Command(BaseCommand):
 
         return data
 
-    @with_paused_user_str_signal
     def import_users(self, data):
         for i, (id, item) in enumerate(data["adresa"].items()):
             print_progress("importing users", i, len(data["adresa"]))

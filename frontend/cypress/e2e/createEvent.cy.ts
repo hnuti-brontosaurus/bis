@@ -133,18 +133,17 @@ describe('create event', () => {
       .parent()
       .should('be.visible')
       .selectFile('cypress/e2e/image.png')
-    cy.get('[name=images\\.0\\.image]')
+    cy.get('[name=images\\.add]')
       .parent()
       .should('be.visible')
       .selectFile('cypress/e2e/image.png')
-    cy.get('[name=images\\.1\\.image]')
+    cy.get('[name=images\\.0\\.image]').parent().should('be.visible')
+    cy.get('[name=images\\.add]')
       .parent()
       .should('be.visible')
       .selectFile('cypress/e2e/image.png')
-    cy.get('[name=images\\.2\\.image]')
-      .parent()
-      .should('be.visible')
-      .selectFile('cypress/e2e/image.png')
+    cy.get('[name=images\\.1\\.image]').parent().should('be.visible')
+    cy.get('[name=images\\.add]').parent().should('be.visible')
 
     next()
 
@@ -661,14 +660,29 @@ describe('create event', () => {
       cy.get('[name=start]').type('2022-12-29')
       cy.get('[name=end]').type('2022-12-31')
 
+      cy.intercept(
+        { method: 'POST', pathname: '/api/frontend/events' },
+        {
+          statusCode: 400,
+          body: ['Nemůžeš vytvářet události v minulosti'],
+        },
+      ).as('createEvent')
+
+      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
+      cy.intercept(
+        'POST',
+        '/api/frontend/events/1000/questionnaire/questions/',
+        {},
+      )
+
       submit()
 
       cy.get('[class^=SystemMessage_header]')
         .should('be.visible')
-        .contains('chyby ve validaci')
+        .contains('Nepodařilo se nám uložit akci')
       cy.get('[class^=SystemMessage_detail]')
         .should('be.visible')
-        .contains('Akci z minulého roku musíte uložit před koncem února')
+        .contains('Nemůžeš vytvářet události v minulosti')
     })
 
     it('before 03/01 allow saving event from past year', () => {
@@ -705,11 +719,52 @@ describe('create event', () => {
       cy.get('[name=start]').type('2021-12-29')
       cy.get('[name=end]').type('2021-12-31')
 
+      cy.intercept(
+        { method: 'POST', pathname: '/api/frontend/events' },
+        {
+          statusCode: 400,
+          body: ['Nemůžeš vytvářet události v minulosti'],
+        },
+      ).as('createEvent')
+
+      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
+      cy.intercept(
+        'POST',
+        '/api/frontend/events/1000/questionnaire/questions/',
+        {},
+      )
+
       submit()
 
       cy.get('[class^=SystemMessage]')
-        .should('contain', 'chyby ve validaci')
-        .should('contain', 'Začátek akce:')
+        .should('contain', 'Nepodařilo se nám uložit akci')
+        .should('contain', 'Nemůžeš vytvářet události v minulosti')
+    })
+
+    it.only('after 03/01 allow saving event which continues into this year', () => {
+      cy.setClock('2023-03-01')
+      cy.visit('/org/akce/vytvorit?klonovat=1000')
+      next()
+
+      cy.get('[name=start]').type('2022-09-01')
+      cy.get('[name=end]').type('2023-06-30')
+
+      cy.intercept(
+        { method: 'POST', pathname: '/api/frontend/events' },
+        { id: 1000 },
+      ).as('createEvent')
+
+      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
+      cy.intercept(
+        'POST',
+        '/api/frontend/events/1000/questionnaire/questions/',
+        {},
+      )
+
+      submit()
+
+      cy.wait('@createEvent')
+      cy.get('@createEvent.all').should('have.length', 1)
     })
 
     context('admin or office_worker', () => {
@@ -818,9 +873,9 @@ const fillForm = () => {
   next()
 
   cy.get('input[name=name]').should('be.visible').type('Event Name III')
-  cy.get('input[name=start]').should('be.visible').type('2023-01-15')
+  cy.get('input[name=start]').should('be.visible').type('2123-01-15')
   cy.get('input[name=start_time]').should('be.visible').type('15:31')
-  cy.get('input[name=end]').should('be.visible').type('2023-01-17')
+  cy.get('input[name=end]').should('be.visible').type('2123-01-17')
   cy.get('[name=category]').should('be.visible').select(2)
   cy.get('[name=program]').should('be.visible').select('Akce příroda')
   cy.get('#react-select-3-input')

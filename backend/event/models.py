@@ -119,18 +119,20 @@ class Event(SearchMixin, Model):
     def get_date(self):
         result = f"{self.end.day}. {self.end.month}. {self.end.year}"
 
-        if self.start != self.end:
-            result = "- " + result
-            if self.start.year != self.end.year:
-                result = f"{self.start.year}. " + result
-            if self.start.month != self.end.month:
-                result = f"{self.start.month}. " + result
-            if self.start.day != self.end.day:
-                result = f"{self.start.day}. " + result
+        if self.start == self.end:
+            return result
 
-        # if time.hour != 0:
-        #     result += f' {time.hour}:{time.minute:02d}'
-        return result
+        result = "- " + result
+        if self.start.year != self.end.year:
+            result = f"{self.start.year}. " + result
+            result = f"{self.start.month}. " + result
+            return f"{self.start.day}. " + result
+
+        if self.start.month != self.end.month:
+            result = f"{self.start.month}. " + result
+            return f"{self.start.day}. " + result
+
+        return f"{self.start.day}. " + result
 
     @classmethod
     def filter_queryset(cls, queryset, perm):
@@ -335,7 +337,10 @@ class EventRecord(Model):
         return self.event.has_edit_permission(user)
 
     def get_participants_count(self):
-        return self.number_of_participants or len(self.get_all_participants())
+        return (
+            self.number_of_participants
+            or len(self.get_all_participants()) * self.event.number_of_sub_events
+        )
 
     def get_young_participants_count(self):
         under_26 = len(
@@ -346,7 +351,10 @@ class EventRecord(Model):
                 and relativedelta(self.event.start, p.birthday).years <= 26
             ]
         )
-        return self.number_of_participants_under_26 or under_26
+        return (
+            self.number_of_participants_under_26
+            or under_26 * self.event.number_of_sub_events
+        )
 
     def get_young_percentage(self):
         participants_count = self.get_participants_count()

@@ -15,8 +15,10 @@ def try_to_run(fn, *args, **kwargs):
             e,
             extra={
                 "fn": str(fn),
-                "args": args,
-                "kwargs": kwargs,
+                "data": {
+                    "args": args,
+                    "kwargs": kwargs,
+                },
             },
         )
 
@@ -28,6 +30,8 @@ class Command(BaseCommand):
         try_to_run(call_command, "record_history")
         try_to_run(call_command, "import_locations")
         try_to_run(call_command, "import_donations")
+        try_to_run(call_command, "set_unique_user_str")
+        try_to_run(call_command, "set_date_joined")
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.qualification_about_to_end)
@@ -50,11 +54,11 @@ class Command(BaseCommand):
         if day_of_year == (27, 10):
             try_to_run(emails.fill_memberships, call=2)
 
-        if day_of_year in [
-            (15, 1),
-            (15, 3),
-            (15, 5),
-            (15, 9),
-            (30, 11),
-        ]:
-            try_to_run(emails.send_opportunities_summary)
+        # if day_of_year in [
+        #     (15, 1),
+        #     (15, 3),
+        #     (15, 5),
+        #     (15, 9),
+        #     (30, 11),
+        # ]:
+        #     try_to_run(emails.send_opportunities_summary)

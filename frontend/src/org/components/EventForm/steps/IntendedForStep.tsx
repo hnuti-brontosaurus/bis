@@ -208,7 +208,7 @@ export const IntendedForStep = ({
                     <FormSubsection
                       header="Propagovat akci v Roverském kmeni"
                       required={isCamp && hasVIPPropagationOption}
-                      help="Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 100 Kč."
+                      help="Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 1 000 Kč."
                     >
                       <FormInputError>
                         <Controller

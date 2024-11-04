@@ -1,0 +1,9 @@
+@use "styles/colors";
+
+.main {
+  white-space: pre-wrap;
+  background-color: colors.$bronto;
+  color: white;
+  font-weight: bold;
+  padding: 1rem;
+}

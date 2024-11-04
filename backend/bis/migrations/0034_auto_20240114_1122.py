@@ -11,7 +11,7 @@ def migrate(apps, schema_editor):
         membership.created_at = date(membership.year, 1, 1)
         memberships.append(membership)
 
-    Membership.objects.bulk_update(memberships, ["created_at"])
+    Membership.objects.bulk_update(memberships, ["created_at"], batch_size=100)
 
 
 class Migration(migrations.Migration):

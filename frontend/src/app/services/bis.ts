@@ -45,6 +45,7 @@ import type {
   EventTag,
   FinanceReceipt,
   HealthInsuranceCompany,
+  InquiryRead,
   Location,
   LoginRequest,
   MembershipCategory,
@@ -57,6 +58,7 @@ import type {
   QualificationCategory,
   Question,
   Questionnaire,
+  Record,
   Region,
   Registration,
   TokenResponse,
@@ -64,6 +66,12 @@ import type {
   UserPayload,
   UserSearch,
 } from './bisTypes'
+import {
+  EventFeedback,
+  EventFeedbackRead,
+  FeedbackForm,
+  Inquiry,
+} from './testApi'
 
 export const ALL_USERS = 2000
 
@@ -92,10 +100,12 @@ export const api = createApi({
     'EventImage',
     'EventPhoto',
     'EventQuestion',
+    'EventFeedbackInquiry',
     'FinanceReceipt',
     'Location',
     'Opportunity',
     'Participant',
+    'Feedback',
   ],
   endpoints: build => ({
     /**
@@ -697,6 +707,85 @@ export const api = createApi({
         { type: 'WebEvent', id: eventId },
       ],
     }),
+    createEventFeedbackInquiry: build.mutation<
+      Inquiry,
+      { eventId: number; inquiry: Inquiry }
+    >({
+      query: ({ eventId, inquiry }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/`,
+        method: 'POST',
+        body: inquiry,
+      }),
+      invalidatesTags: (_result, _error, { eventId }) => [
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
+    readEventFeedbackInquiries: build.query<
+      PaginatedList<InquiryRead>,
+      { eventId: number } & ListArguments
+    >({
+      query: queryArg => ({
+        url: `/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+      providesTags: (results, error, { eventId }) =>
+        results?.results
+          ? results.results
+              .map(inquiry => ({
+                type: 'EventFeedbackInquiry' as const,
+                id: `${eventId}_${inquiry.id}`,
+              }))
+              .concat([
+                {
+                  type: 'EventFeedbackInquiry' as const,
+                  id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+                },
+              ])
+          : [],
+    }),
+    updateEventFeedbackInquiry: build.mutation<
+      Inquiry,
+      { eventId: number; id: number; inquiry: Partial<Inquiry> }
+    >({
+      query: ({ eventId, id, inquiry }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        method: 'PATCH',
+        body: inquiry,
+      }),
+      invalidatesTags: (_result, _error, { id, eventId }) => [
+        { type: 'EventFeedbackInquiry', id: `${eventId}_${id}` },
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
+    deleteEventFeedbackInquiry: build.mutation<
+      void,
+      { eventId: number; id: number }
+    >({
+      query: ({ eventId, id }) => ({
+        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { id, eventId }) => [
+        { type: 'EventFeedbackInquiry', id: `${eventId}_${id}` },
+        {
+          type: 'EventFeedbackInquiry',
+          id: `${eventId}_FEEDBACK_INQUIRY_LIST`,
+        },
+        { type: 'WebEvent', id: eventId },
+      ],
+    }),
     createFinanceReceipt: build.mutation<
       FinanceReceipt,
       {
@@ -770,6 +859,36 @@ export const api = createApi({
         ],
       },
     ),
+    createEventFeedback: build.mutation<
+      EventFeedback,
+      { eventId: number; feedback: EventFeedback }
+    >({
+      query: ({ eventId, feedback }) => ({
+        url: `frontend/events/${eventId}/record/feedbacks/`,
+        method: 'POST',
+        body: feedback,
+      }),
+      invalidatesTags: (result, error, { eventId }) => [
+        { type: 'Feedback', id: `${eventId}_FEEDBACK_LIST` },
+      ],
+    }),
+    readEventFeedbacks: build.query<
+      PaginatedList<EventFeedbackRead>,
+      { eventId: number } & ListArguments
+    >({
+      query: queryArg => ({
+        url: `frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        method: 'GET',
+        params: {
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+          search: queryArg.search,
+        },
+      }),
+      providesTags: (results, error, { eventId }) => [
+        { type: 'Feedback', id: `${eventId}_FEEDBACK_LIST` },
+      ],
+    }),
     createEventApplication: build.mutation<
       EventApplication,
       { application: EventApplicationPayload; eventId: number }
@@ -1114,11 +1233,14 @@ type WebRegistration = Overwrite<
   Registration,
   { questionnaire: WebQuestionnaire | null }
 >
+export type WebFeedbackForm = Assign<FeedbackForm, { inquiries: InquiryRead[] }>
+type WebRecord = Overwrite<Record, { feedback_form?: WebFeedbackForm }>
 
 export type WebEvent = Overwrite<
   Event,
   {
     registration: WebRegistration | null
+    record?: WebRecord
     location?: Location
   }
 >

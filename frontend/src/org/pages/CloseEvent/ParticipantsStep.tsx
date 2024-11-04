@@ -1,4 +1,4 @@
-import { Event } from 'app/services/bisTypes'
+import { FullEvent } from 'app/services/bisTypes'
 import { ReactComponent as Counted } from 'assets/counting.svg'
 import { ReactComponent as EmailList } from 'assets/email-list.svg'
 import { ReactComponent as FullList } from 'assets/full-list.svg'
@@ -9,6 +9,7 @@ import {
   FormSectionGroup,
   IconSelect,
   IconSelectGroup,
+  InfoBox,
   Label,
   NumberInput,
 } from 'components'
@@ -61,7 +62,7 @@ export const ParticipantsStep = ({
   areParticipantsRequired,
   methods,
 }: {
-  event: Event
+  event: FullEvent
   areParticipantsRequired: boolean
   methods: UseFormReturn<ParticipantsStepFormInnerShape>
 }) => {
@@ -147,6 +148,15 @@ export const ParticipantsStep = ({
             (inputType === 'count' || inputType === 'simple-list') && (
               <div>
                 <FormSection required header="Počet účastníků">
+                  {event.number_of_sub_events &&
+                    event.number_of_sub_events > 1 && (
+                      <InfoBox>
+                        Tato akce je zadaná jako opakovaná. Zadejte tedy celkový
+                        počet všech účastníků, kteří se opakovaných akcí
+                        účastnili. Např. pokud se akce opakuje 3x s průměrnou
+                        účastí 10 lidí, pak je počet účastníků 30.
+                      </InfoBox>
+                    )}
                   <InlineSection>
                     <Label required>
                       Počet účastníků celkem (včetně organizátorů)

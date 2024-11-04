@@ -150,6 +150,7 @@ export const SelectUnknownUser = forwardRef<
         isClearable
         options={userOptions ? userOptions : []}
         inputValue={searchQuery}
+        filterOption={() => true}
         onInputChange={input => setSearchQuery(input)}
         value={value}
         onChange={async user => {

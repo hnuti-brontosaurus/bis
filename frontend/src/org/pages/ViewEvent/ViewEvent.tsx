@@ -5,14 +5,12 @@ import {
   Breadcrumbs,
   Button,
   ButtonLink,
-  DataView,
   ExternalButtonLink,
+  InfoBox,
   Loading,
 } from 'components'
-import * as combinedTranslations from 'config/static/combinedTranslations'
 import { sanitize } from 'dompurify'
-import type { FullEvent } from 'hooks/readFullEvent'
-// import { useRemoveEvent } from 'hooks/removeEvent'
+import type { FullEvent } from 'app/services/bisTypes'
 import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { useCancelEvent, useRestoreCanceledEvent } from 'hooks/useCancelEvent'
@@ -27,7 +25,7 @@ import {
   FaRegCheckCircle,
   FaRegCopy,
   FaRegEye,
-  // FaTrashAlt,
+  FaThumbsUp,
   FaUsers,
 } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
@@ -39,6 +37,7 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
+import { ExportFilesButton } from 'org/components'
 import styles from './ViewEvent.module.scss'
 
 export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
@@ -214,6 +213,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <FaRegCopy /> klonovat
               </ButtonLink>
             )}
+            <ExportFilesButton eventId={eventId} />
             {!isEventClosed(event) ? (
               <>
                 {getRegistrationMethodBeforeFull(event) === 'standard' && (
@@ -236,6 +236,19 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                     <FaRegEye /> přihláška <FaExternalLinkAlt />
                   </ExternalButtonLink>
                 )}
+                {event.record?.feedback_form && (
+                  <>
+                    <ButtonLink
+                      secondary
+                      to={`/org/akce/${eventId}/zpetna_vazba`}
+                    >
+                      <FaThumbsUp /> zpětné vazby
+                    </ButtonLink>
+                    <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
+                      <FaRegEye /> zpětná vazba
+                    </ButtonLink>
+                  </>
+                )}
                 {event.is_canceled ? (
                   <Button secondary onClick={() => restoreCanceledEvent(event)}>
                     <FaRedo /> obnovit
@@ -252,6 +265,15 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               </>
             ) : null}
           </Actions>
+        )}
+
+        {event.record?.feedback_form && (
+          <InfoBox className={styles.feedbackLink}>
+            Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
+            <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+              {window.location.origin}/akce/{eventId}/zpetna_vazba
+            </ButtonLink>
+          </InfoBox>
         )}
 
         <div className={styles.infoBoxDetail}>

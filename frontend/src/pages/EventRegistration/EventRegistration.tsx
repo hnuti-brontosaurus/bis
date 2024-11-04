@@ -143,8 +143,7 @@ export const EventRegistration = () => {
 
   const handleCancel = () => {
     // redirect to event detail on brontosaurus.cz
-    // TODO set a more generic address (not always dobrovolnicke-akce)
-    globalThis.location.href = `https://brontosaurus.cz/dobrovolnicke-akce/detail/${eventId}/`
+    globalThis.location.href = `https://brontosaurus.cz/akce/${eventId}/`
   }
 
   return (
