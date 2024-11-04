@@ -17,7 +17,7 @@ import { ReactElement, useEffect } from 'react'
 import { Controller, FormProvider } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import { MethodsShapes } from '..'
-import * as validationMessages from 'utils/validationMessages'
+import { validateUrl } from 'utils/helpers'
 
 const foodIcons: { [name: string]: ReactElement } = {
   's masem': <Piglet />,
@@ -250,14 +250,7 @@ export const PropagationStep = ({
                 id="propagation.web_url"
                 {...register('propagation.web_url', {
                   validate: {
-                    url: value => {
-                      try {
-                        new URL(value as string)
-                        return true
-                      } catch (e) {
-                        return validationMessages.url
-                      }
-                    },
+                    url: validateUrl,
                   },
                 })}
               />
