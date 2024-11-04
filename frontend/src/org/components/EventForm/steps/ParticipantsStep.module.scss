@@ -163,20 +163,28 @@ h2 {
       }
     }
 
-    .existingParticipantContainer {
+    .existingParticipantContainerWrapper {
       margin-top: 12px;
-      overflow-x: auto;
       [class$=-control]{
         border-width: 2px;
         border-color: black;
       }
-      thead th, 
-      tbody td {
-        &:nth-child(1)
-        {
-          position: sticky;
-          left: 0;
-          background-image: linear-gradient(to right, #ffffff 0%, #ffffff  99.7%, #d9d9d9 100%);
+      .existingParticipantContainer{
+        overflow-x: auto;
+        @include media.for-tablet-portrait-up {
+          thead th, 
+          tbody td {
+            &:first-child
+            {
+              position: sticky;
+              left: 0;
+              background-image: linear-gradient(to right, #ffffff 0%, #ffffff  99.7%, #d9d9d9 100%);
+            }
+            &:last-child {
+              position: sticky;
+              right: 0;
+            }
+          }
         }
       }
     }

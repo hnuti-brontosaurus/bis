@@ -148,19 +148,52 @@ class DonationPointsAggregation(Model):
                 events.filter(
                     group__slug="other",
                     category__slug__in=[
-                        "public__educational__lecture",
-                        "public__club__lecture",
                         "public__club__meeting",
+                        "public__club__lecture",
+                        "public__educational__lecture",
                     ],
                 )
             )
         if slug == "other_without_clubs":
-            other = cls.do_count_events(events.filter(group__slug="other"))
-            return other - cls.do_get_count("clubs", since, till, administration_unit)
+            return cls.do_count_events(
+                events.filter(
+                    group__slug="other",
+                    category__slug__in=[
+                        "public__volunteering",
+                        "public__only_experiential",
+                        "public__educational__course",
+                        "public__other__for_public",
+                        "public__other__eco_tent",
+                    ],
+                )
+            )
         if slug == "weekend_events":
-            return cls.do_count_events(events.filter(group__slug="weekend_event"))
+            return cls.do_count_events(
+                events.filter(
+                    group__slug="weekend_event",
+                    category__slug__in=[
+                        "public__volunteering",
+                        "public__only_experiential",
+                        "public__educational__course",
+                        "public__educational__educational_with_stay",
+                        "public__other__for_public",
+                        "public__other__eco_tent",
+                    ],
+                )
+            )
         if slug == "camps":
-            return cls.do_count_events(events.filter(group__slug="camp"))
+            return cls.do_count_events(
+                events.filter(
+                    group__slug="camp",
+                    category__slug__in=[
+                        "public__volunteering",
+                        "public__only_experiential",
+                        "public__educational__course",
+                        "public__educational__educational_with_stay",
+                        "public__other__eco_tent",
+                    ],
+                )
+            )
 
         if slug == "50_worked_hours":
             hours_worked = events.values_list("record__total_hours_worked", flat=True)

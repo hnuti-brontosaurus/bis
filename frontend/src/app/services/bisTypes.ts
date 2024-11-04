@@ -201,6 +201,21 @@ export type Question = Overwrite<
   }
 >
 
+export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale' | 'header'
+
+type InquiryData = {
+  type: InquiryType
+  options?: { option: string }[]
+  comment?: boolean
+  fixed?: boolean
+  layout?: 'horizontal' | 'vertical'
+}
+
+export type InquiryRead = Overwrite<
+  original.InquiryRead,
+  { data?: InquiryData }
+>
+
 export type RoleSlug =
   | 'director'
   | 'admin'

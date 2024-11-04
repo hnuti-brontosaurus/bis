@@ -8,6 +8,7 @@ from event.models import (
     EventRecord,
     EventRegistration,
 )
+from feedback.models import EventFeedback, Inquiry
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
 from rest_framework.fields import ReadOnlyField, SerializerMethodField
@@ -494,3 +495,31 @@ class EventApplicationExportSerializer(ModelSerializer):
         )
         for question in questions:
             yield str(question.id), question.question
+
+
+class EventFeedbackExportSerializer(ModelSerializer):
+    @staticmethod
+    def get_related(queryset):
+        return queryset.prefetch_related("replies")
+
+    class Meta:
+        model = EventFeedback
+        fields = (
+            "name",
+            "email",
+            "created_at",
+            "note",
+        )
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        for reply in instance.replies.all():
+            result[str(reply.inquiry.id)] = reply.reply
+        return result
+
+    def get_extra_fields(self, queryset):
+        inquiries = Inquiry.objects.filter(
+            feedback_form__event_record=queryset.first().event_record
+        )
+        for inquiry in inquiries:
+            yield str(inquiry.id), inquiry.inquiry

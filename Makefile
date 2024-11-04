@@ -17,7 +17,7 @@ endef
 
 
 define compose_with_trap
-$(call with_trap, docker-compose                                                           \
+$(call with_trap, docker compose                                                           \
     -f docker-compose.yaml                                                                 \
     -f docker-compose/dev.yaml $1)
 endef
@@ -25,7 +25,7 @@ endef
 build: .env submodule_sync
 	echo '.git' > .dockerignore
 	cat .gitignore >> .dockerignore
-	docker-compose build
+	docker compose build
 	make gen_dev_dockercompose_file
 
 .env:
@@ -72,10 +72,10 @@ submodule_update: submodule_sync
 	git submodule update --init --recursive --remote
 
 run:
-	docker-compose up -d
+	docker compose up -d
 
 build_frontend:
-	docker-compose run frontend sh docker-entrypoint.sh build
+	docker compose run frontend sh docker-entrypoint.sh build
 
 dev:
 	$(call compose_with_trap,                                                              \
@@ -102,7 +102,7 @@ prepare_test_env:
 
 startup_testing:
 	$(call with_os,                                                                        \
-	    docker-compose                                                                     \
+	    docker compose                                                                     \
 	        --profile dev                                                                  \
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
@@ -111,7 +111,7 @@ startup_testing:
 
 startup_testing_frontend:
 	$(call with_os,                                                                        \
-	    docker-compose                                                                     \
+	    docker compose                                                                     \
 	        --profile frontend                                                             \
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
@@ -146,7 +146,7 @@ open_cypress: node_modules/cypress/bin/cypress prepare_test_env
 	$(call with_trap, yarn --cwd frontend run cypress open)
 
 clean:
-	docker-compose down -t 0 --remove-orphans
+	docker compose down -t 0 --remove-orphans
 
 
 init_test_db:

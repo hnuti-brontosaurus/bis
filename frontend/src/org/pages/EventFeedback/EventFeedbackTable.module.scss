@@ -1,0 +1,36 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  table-layout: auto;
+
+  th, td {
+    padding: .5rem;
+  }
+
+  th {
+    border-bottom: 1px solid colors.$gray-400;
+    text-align: left;
+  }
+
+  td {
+    border-bottom: 1px solid colors.$gray-200;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover {
+    background-color: colors.$gray-100;
+  }
+}
+
+.boundedCell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

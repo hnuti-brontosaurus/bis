@@ -54,11 +54,11 @@ class Command(BaseCommand):
         if day_of_year == (27, 10):
             try_to_run(emails.fill_memberships, call=2)
 
-        if day_of_year in [
-            (15, 1),
-            (15, 3),
-            (15, 5),
-            (15, 9),
-            (30, 11),
-        ]:
-            try_to_run(emails.send_opportunities_summary)
+        # if day_of_year in [
+        #     (15, 1),
+        #     (15, 3),
+        #     (15, 5),
+        #     (15, 9),
+        #     (30, 11),
+        # ]:
+        #     try_to_run(emails.send_opportunities_summary)

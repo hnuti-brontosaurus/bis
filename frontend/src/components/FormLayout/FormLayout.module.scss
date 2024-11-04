@@ -45,13 +45,17 @@
 
   header {
     margin-top: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
     font-size: 1.2rem;
     font-weight: 600;
     @include media.for-phone-only {
       margin-top: 0;
     }
   }
+}
+
+.subsection header {
+  margin-bottom: 0;
 }
 
 .subsection {
@@ -143,7 +147,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
+  align-items: baseline;
   row-gap: 0;
   column-gap: 1rem;
 }

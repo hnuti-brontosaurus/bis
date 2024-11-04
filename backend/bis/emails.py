@@ -433,5 +433,16 @@ def send_opportunities_summary():
     )
 
 
-def feedback_created(instance):
-    return None
+def feedback_created(feedback):
+    event = feedback.event_record.event
+    ecomail.send_email(
+        emails["bis"],
+        "Nová zpětná vazba!",
+        "248",
+        [event.main_organizer.email],
+        variables={
+            "participant_name": feedback.name or "neznámý účastník",
+            "event_name": event.name,
+            "event_feedbacks_link": f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/zpetna_vazba",
+        },
+    )

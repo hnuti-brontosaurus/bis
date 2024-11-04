@@ -6,6 +6,7 @@ import {
   Button,
   ButtonLink,
   ExternalButtonLink,
+  InfoBox,
   Loading,
 } from 'components'
 import { sanitize } from 'dompurify'
@@ -24,6 +25,7 @@ import {
   FaRegCheckCircle,
   FaRegCopy,
   FaRegEye,
+  FaThumbsUp,
   FaUsers,
 } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
@@ -234,6 +236,19 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                     <FaRegEye /> přihláška <FaExternalLinkAlt />
                   </ExternalButtonLink>
                 )}
+                {event.record?.feedback_form && (
+                  <>
+                    <ButtonLink
+                      secondary
+                      to={`/org/akce/${eventId}/zpetna_vazba`}
+                    >
+                      <FaThumbsUp /> zpětné vazby
+                    </ButtonLink>
+                    <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
+                      <FaRegEye /> zpětná vazba
+                    </ButtonLink>
+                  </>
+                )}
                 {event.is_canceled ? (
                   <Button secondary onClick={() => restoreCanceledEvent(event)}>
                     <FaRedo /> obnovit
@@ -250,6 +265,15 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               </>
             ) : null}
           </Actions>
+        )}
+
+        {event.record?.feedback_form && (
+          <InfoBox className={styles.feedbackLink}>
+            Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
+            <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+              {window.location.origin}/akce/{eventId}/zpetna_vazba
+            </ButtonLink>
+          </InfoBox>
         )}
 
         <div className={styles.infoBoxDetail}>

@@ -63,7 +63,9 @@ export const FormInputErrorSimple = ({
       >
         {children}
       </div>
-      <div className={styles.errorMessage}>{errorMessage ?? <>&nbsp;</>}</div>
+      {errorMessage && (
+        <div className={styles.errorMessage}>{errorMessage}</div>
+      )}
     </div>
   )
 }

@@ -1,0 +1,36 @@
+@use 'styles/media';
+@use 'styles/colors';
+
+.container {
+  width: 100%;
+  border: 2px solid colors.$gray-200;
+  margin: 50px auto 0;
+
+  @include media.for-medium-desktop-up {
+    width: 80%;
+  }
+
+  @include media.for-phone-only {
+    padding: 10px;
+  }
+  @include media.for-tablet-portrait-up {
+    padding: 20px;
+  }
+  @include media.for-tablet-landscape-up {
+    padding: 40px;
+  }
+}
+
+.title {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  font-size: 1.7rem;
+  margin-bottom: 16px;
+}
+
+.buttonContainer {
+  font-weight: initial;
+  margin-left: 20px;
+  display: inline-flex;
+  gap: 10px;
+}

@@ -617,7 +617,7 @@ class FeedbackFormSerializer(ModelSerializer):
 
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
-    # feedback_form = FeedbackFormSerializer(allow_null=True)
+    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     age_stats = SerializerMethodField()
 
@@ -632,7 +632,7 @@ class RecordSerializer(ModelSerializer):
             "note",
             "contacts",
             "age_stats",
-            # "feedback_form",
+            "feedback_form",
         )
 
     def get_age_stats(self, instance) -> dict:
@@ -700,10 +700,12 @@ class EventSerializer(ModelSerializer):
         return []
 
     def create(self, validated_data):
+        user = self.context["request"].user
         if validated_data["end"].year <= get_locked_year():
-            raise DjangoValidationError("Nemůžeš vytvářet události v minulosti")
+            if not user.is_superuser and not user.is_office_worker:
+                raise DjangoValidationError("Nemůžeš vytvářet události v minulosti")
 
-        validated_data["created_by"] = self.context["request"].user
+        validated_data["created_by"] = user
         instance = super().create(validated_data)
 
         if self.context["request"].user != instance.main_organizer:
@@ -711,11 +713,13 @@ class EventSerializer(ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        user = self.context["request"].user
         if validated_data.get("end") and instance.end != validated_data["end"]:
             if validated_data["end"].year <= get_locked_year():
-                raise DjangoValidationError(
-                    "Nemůžeš změnit datum události do minulosti"
-                )
+                if not user.is_superuser and not user.is_office_worker:
+                    raise DjangoValidationError(
+                        "Nemůžeš změnit datum události do minulosti"
+                    )
 
         is_closing = not instance.is_closed and validated_data.get("is_closed")
         if is_closing:
