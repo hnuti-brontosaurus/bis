@@ -13,7 +13,7 @@ import {
 } from 'react-hook-form'
 import { Schema } from 'type-fest'
 import { required } from './validationMessages'
-import * as validationMessages from 'utils/validationMessages'
+import * as validationMessages from './validationMessages'
 
 export function getIdBySlug<T, O extends { id: number; slug: T }>(
   objects: O[],
