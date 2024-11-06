@@ -319,6 +319,9 @@ export const getErrorMessage = <T extends FieldValues>(
  * Validates whether a given string is a properly formatted URL.
  */
 export const validateUrl =  (value?: string) => {
+  if (!value) {
+    return true; // Allow empty string as valid input since the URL is optional
+  }
   try {
     new URL(value as string)
     return true
