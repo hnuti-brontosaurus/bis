@@ -17,16 +17,29 @@ import { MethodsShapes } from '..'
 export const InvitationStep = ({
   methods,
   isVolunteering,
+  isWeekendEvent,
+  isCamp,
+  isInternalSectionMeeting,
 }: {
   methods: MethodsShapes['invitation']
   isVolunteering: boolean
+  isWeekendEvent: boolean
+  isCamp: boolean
+  isInternalSectionMeeting: boolean
 }) => {
   const { control } = methods
 
   return (
     <FormProvider {...methods}>
       <form>
-        <FormSectionGroup startIndex={17}>
+        <FormSectionGroup
+          startIndex={
+            (isWeekendEvent || isCamp) &&
+            !(isWeekendEvent && isInternalSectionMeeting)
+              ? 19
+              : 17
+          }
+        >
           <FormSection header="Pozvánka">
             <FullSizeElement>
               <FormSubheader

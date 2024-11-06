@@ -38,6 +38,9 @@ export const OrganizerStep = ({
   methods,
   mainOrganizerDependencies,
   isNotOnWeb,
+  isWeekendEvent,
+  isCamp,
+  isInternalSectionMeeting,
 }: {
   methods: MethodsShapes['organizers']
   mainOrganizerDependencies: {
@@ -47,6 +50,9 @@ export const OrganizerStep = ({
     start?: string
   }
   isNotOnWeb: boolean
+  isWeekendEvent: boolean
+  isCamp: boolean
+  isInternalSectionMeeting: boolean
 }) => {
   const { control, watch, trigger, register, setValue, getValues } = methods
   const { data: allQualifications } = api.endpoints.readQualifications.useQuery(
@@ -156,10 +162,17 @@ export const OrganizerStep = ({
     allQualifications.results.find(q => q.slug === slug),
   ) as QualificationCategory[]
 
+  const sectionStartIndex = isNotOnWeb
+    ? 11
+    : (isWeekendEvent || isCamp) &&
+      !(isWeekendEvent && isInternalSectionMeeting)
+    ? 22
+    : 20
+
   return (
     <FormProvider {...methods}>
       <form>
-        <FormSectionGroup startIndex={isNotOnWeb ? 11 : 20}>
+        <FormSectionGroup startIndex={sectionStartIndex}>
           <FormSection
             header="Hlavní organizátor/ka"
             required
