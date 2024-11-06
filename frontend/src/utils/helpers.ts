@@ -320,7 +320,7 @@ export const getErrorMessage = <T extends FieldValues>(
  */
 export const validateUrl =  (value?: string) => {
   if (!value) {
-    return true; // Allow empty string as valid input since the URL is optional
+    return true; // Allow empty string as valid input since the URL can be optional
   }
   try {
     new URL(value as string)
