@@ -13,6 +13,7 @@ import {
 } from 'react-hook-form'
 import { Schema } from 'type-fest'
 import { required } from './validationMessages'
+import * as validationMessages from './validationMessages'
 
 export function getIdBySlug<T, O extends { id: number; slug: T }>(
   objects: O[],
@@ -313,3 +314,18 @@ export const getErrorMessage = <T extends FieldValues>(
   errors: FieldErrors<T>,
   name: FieldName<T>,
 ) => (get(errors, name) as FieldError | undefined)?.message
+
+/**
+ * Validates whether a given string is a properly formatted URL.
+ */
+export const validateUrl =  (value?: string) => {
+  if (!value) {
+    return true; // Allow empty string as valid input since the URL can be optional
+  }
+  try {
+    new URL(value as string)
+    return true
+  } catch (e) {
+    return validationMessages.url
+  }
+}

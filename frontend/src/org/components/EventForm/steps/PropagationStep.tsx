@@ -17,6 +17,7 @@ import { ReactElement, useEffect } from 'react'
 import { Controller, FormProvider } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import { MethodsShapes } from '..'
+import { validateUrl } from 'utils/helpers'
 
 const foodIcons: { [name: string]: ReactElement } = {
   's masem': <Piglet />,
@@ -240,14 +241,18 @@ export const PropagationStep = ({
           </FormSection>
           <FormSection
             header="Web o akci"
-            help="Možnost přidat odkaz na webovou stránku vaší akce."
+            help='Možnost přidat odkaz na webovou stránku vaší akce. Odkaz vkládejte včetně "https://"'
             onWeb
           >
             <FormInputError>
               <input
                 type="url"
                 id="propagation.web_url"
-                {...register('propagation.web_url', {})}
+                {...register('propagation.web_url', {
+                  validate: {
+                    url: validateUrl,
+                  },
+                })}
               />
             </FormInputError>
           </FormSection>
