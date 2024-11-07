@@ -162,16 +162,16 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
             )}
             {currentApplication.answers &&
               currentApplication.answers.map(answer => (
-                <div key={answer.question.id}>
+                <div key={answer.question.id} className={styles.QAContainer}>
                   <div>
-                    <h4>{answer.question.question}</h4>
+                    <h5>{answer.question.question}</h5>
                   </div>
                   <div>{answer.answer}</div>
                 </div>
               ))}
             <div>
               <div>
-                <h4>Poznámka</h4>
+                <h5>Poznámka</h5>
               </div>
               <div>{currentApplication.note}</div>
             </div>
