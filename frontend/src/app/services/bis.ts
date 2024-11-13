@@ -911,14 +911,12 @@ export const api = createApi({
     }),
     readEventApplications: build.query<
       PaginatedList<EventApplication>,
-      { eventId: number; id?: number[] | undefined } & ListArguments
+      { eventId: number }
     >({
       query: queryArg => ({
         url: `frontend/events/${queryArg.eventId}/registration/applications/`,
         params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
+          page_size: 10000,
         },
       }),
       providesTags: results =>
@@ -947,6 +945,26 @@ export const api = createApi({
         method: 'PATCH',
         body: queryArg.patchedEventApplication,
       }),
+      onQueryStarted: (
+        { id, eventId, patchedEventApplication },
+        { dispatch, queryFulfilled },
+      ) => {
+        const patchResult = dispatch(
+          api.util.updateQueryData(
+            'readEventApplications',
+            { eventId },
+            draft => {
+              const target = draft.results.find(
+                application => application.id === id,
+              )
+              if (target) {
+                Object.assign(target, patchedEventApplication)
+              }
+            },
+          ),
+        )
+        queryFulfilled.catch(patchResult.undo)
+      },
       invalidatesTags: () => [{ type: 'Application', id: 'APPLICATION_LIST' }],
     }),
     deleteEventApplication: build.mutation<
