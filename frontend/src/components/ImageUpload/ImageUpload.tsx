@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { ChangeEvent, FC, forwardRef, useState } from 'react'
+import { FC } from 'react'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
@@ -33,44 +33,49 @@ const useUnsupportedHeicMessage = () => {
     })
 }
 
-export const UncontrolledImageUpload = forwardRef<
-  HTMLInputElement,
-  {
-    name: string
-    value?: string
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void
-    onBlur: any
-    colorTheme?: string
-  }
->(({ value, onChange, colorTheme, ...rest }, ref) => {
-  const [internalState, setInternalState] = useState<string>('')
+const ImageInput: FC<{ name: string; required?: boolean }> = ({
+  name,
+  required,
+}) => {
   const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
+  return (
+    <Controller
+      name={name}
+      rules={{ required: required && messages.required }}
+      render={({ field: { value, onChange, ...field } }) => (
+        <input
+          {...field}
+          style={{ display: 'none' }}
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={async event => {
+            const file = event.target.files?.[0]
+            if (file && file.type === 'image/heif') {
+              showUnsupportedHeicMessage(file)
+            } else {
+              const value = file ? await file2base64(file) : ''
+              onChange(value)
+            }
+          }}
+        />
+      )}
+    />
+  )
+}
 
-  const actualValue = value ?? internalState
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type === 'image/heif') {
-      showUnsupportedHeicMessage(file)
-    } else {
-      const value = file ? await file2base64(file) : ''
-      setInternalState(value)
-      onChange({ ...e, target: { ...e.target, value, type: 'text' } })
-    }
-  }
+export const ImageField: FC<{
+  name: string
+  colorTheme?: string
+  required?: boolean
+}> = ({ name, required, colorTheme }) => {
+  const { watch } = useFormContext()
 
   return (
     <label tabIndex={0}>
-      <input
-        ref={ref}
-        style={{ display: 'none' }}
-        type="file"
-        accept="image/*,application/pdf"
-        onChange={handleChange}
-        {...rest}
-      />
-      {actualValue ? (
+      <ImageInput name={name} required={required} />
+      {watch(name) ? (
         <div className={styles.imageWrapper}>
-          <object data={actualValue} className={styles.image} />
+          <object data={watch(name)} className={styles.image} />
           <div className={styles.editOverlay}>
             <FaPencilAlt size={26} />
           </div>
@@ -88,7 +93,7 @@ export const UncontrolledImageUpload = forwardRef<
       )}
     </label>
   )
-})
+}
 
 export const ImageUpload = ({
   name,
@@ -99,18 +104,7 @@ export const ImageUpload = ({
   required?: boolean
   colorTheme?: string
 }) => {
-  const { control } = useFormContext()
-
-  return (
-    <Controller
-      name={name}
-      rules={{ required: required && messages.required }}
-      control={control}
-      render={({ field }) => (
-        <UncontrolledImageUpload {...field} colorTheme={colorTheme} />
-      )}
-    />
-  )
+  return <ImageField name={name} required={required} colorTheme={colorTheme} />
 }
 
 export const ImageAdd = ({
@@ -175,12 +169,9 @@ export const ImagesUpload = ({
       {imageFields.fields.map((item, index) => {
         return (
           <li key={item.id} className={styles.imageItem}>
-            <Controller
+            <ImageField
               name={`${name}.${index}.${image}`}
-              control={control}
-              render={({ field }) => (
-                <UncontrolledImageUpload {...field} colorTheme={colorTheme} />
-              )}
+              colorTheme={colorTheme}
             />
             {watch(`${name}.${index}.${image}`) && (
               <div className={styles.toolbar}>
