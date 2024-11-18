@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { FC } from 'react'
+import { FC, ReactNode } from 'react'
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
@@ -63,6 +63,21 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
   )
 }
 
+const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
+  children,
+  colorTheme,
+}) => (
+  <div
+    className={classNames(
+      styles.addButton,
+      colorTheme === 'opportunities' && styles.opportunitiesTheme,
+    )}
+  >
+    <MdPhotoCamera size={60} />
+    {children}
+  </div>
+)
+
 export const ImageField: FC<{
   name: string
   colorTheme?: string
@@ -81,15 +96,7 @@ export const ImageField: FC<{
           </div>
         </div>
       ) : (
-        <div
-          className={classNames(
-            styles.addButton,
-            colorTheme === 'opportunities' && styles.opportunitiesTheme,
-          )}
-        >
-          <MdPhotoCamera size={60} />
-          Přidej fotku
-        </div>
+        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
       )}
     </label>
   )
@@ -125,15 +132,7 @@ export const ImageAdd = ({
       multiple
       onChange={event => event.target.files && onAdd(event.target.files)}
     />
-    <div
-      className={classNames(
-        styles.addButton,
-        colorTheme === 'opportunities' && styles.opportunitiesTheme,
-      )}
-    >
-      <MdPhotoCamera size={60} />
-      Přidej fotky
-    </div>
+    <ImageAddIcon colorTheme={colorTheme}>Přidej fotky</ImageAddIcon>
   </label>
 )
 
