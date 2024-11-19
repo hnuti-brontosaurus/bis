@@ -1,7 +1,12 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
 import { FC, ReactNode } from 'react'
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
+import {
+  Controller,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form'
 import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
@@ -78,29 +83,14 @@ const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
   </div>
 )
 
-export const ImageField: FC<{
-  name: string
-  colorTheme?: string
-  required?: boolean
-}> = ({ name, required, colorTheme }) => {
-  const { watch } = useFormContext()
-
-  return (
-    <label tabIndex={0}>
-      <ImageInput name={name} required={required} />
-      {watch(name) ? (
-        <div className={styles.imageWrapper}>
-          <object data={watch(name)} className={styles.image} />
-          <div className={styles.editOverlay}>
-            <FaPencilAlt size={26} />
-          </div>
-        </div>
-      ) : (
-        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
-      )}
-    </label>
-  )
-}
+const ImagePreview: FC<{ value: string }> = ({ value }) => (
+  <div className={styles.imageWrapper}>
+    <object data={value} className={styles.image} />
+    <div className={styles.editOverlay}>
+      <FaPencilAlt size={26} />
+    </div>
+  </div>
+)
 
 export const ImageUpload = ({
   name,
@@ -111,7 +101,17 @@ export const ImageUpload = ({
   required?: boolean
   colorTheme?: string
 }) => {
-  return <ImageField name={name} required={required} colorTheme={colorTheme} />
+  const value = useWatch({ name })
+  return (
+    <label tabIndex={0}>
+      <ImageInput name={name} required={required} />
+      {value ? (
+        <ImagePreview value={value} />
+      ) : (
+        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
+      )}
+    </label>
+  )
 }
 
 export const ImageAdd = ({
@@ -168,22 +168,20 @@ export const ImagesUpload = ({
       {imageFields.fields.map((item, index) => {
         return (
           <li key={item.id} className={styles.imageItem}>
-            <ImageField
-              name={`${name}.${index}.${image}`}
-              colorTheme={colorTheme}
-            />
-            {watch(`${name}.${index}.${image}`) && (
-              <div className={styles.toolbar}>
-                <DownloadLink url={watch(`${name}.${index}.${image}`)} />
-                <button
-                  className={classNames(styles.button, styles.removeButton)}
-                  type="button"
-                  onClick={() => imageFields.remove(index)}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-            )}
+            <label tabIndex={0}>
+              <ImageInput name={`${name}.${index}.${image}`} />
+              <ImagePreview value={watch(`${name}.${index}.${image}`)} />
+            </label>
+            <div className={styles.toolbar}>
+              <DownloadLink url={watch(`${name}.${index}.${image}`)} />
+              <button
+                className={classNames(styles.button, styles.removeButton)}
+                type="button"
+                onClick={() => imageFields.remove(index)}
+              >
+                <FaTimes />
+              </button>
+            </div>
           </li>
         )
       })}
