@@ -83,14 +83,17 @@ const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
   </div>
 )
 
-const ImagePreview: FC<{ value: string }> = ({ value }) => (
-  <div className={styles.imageWrapper}>
-    <object data={value} className={styles.image} />
-    <div className={styles.editOverlay}>
-      <FaPencilAlt size={26} />
+const ImagePreview: FC<{ name: string }> = ({ name }) => {
+  const value = useWatch({ name })
+  return (
+    <div className={styles.imageWrapper}>
+      <object data={value} className={styles.image} />
+      <div className={styles.editOverlay}>
+        <FaPencilAlt size={26} />
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 export const ImageUpload = ({
   name,
@@ -106,7 +109,7 @@ export const ImageUpload = ({
     <label tabIndex={0}>
       <ImageInput name={name} required={required} />
       {value ? (
-        <ImagePreview value={value} />
+        <ImagePreview name={name} />
       ) : (
         <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
       )}
@@ -170,7 +173,7 @@ export const ImagesUpload = ({
           <li key={item.id} className={styles.imageItem}>
             <label tabIndex={0}>
               <ImageInput name={`${name}.${index}.${image}`} />
-              <ImagePreview value={watch(`${name}.${index}.${image}`)} />
+              <ImagePreview name={`${name}.${index}.${image}`} />
             </label>
             <div className={styles.toolbar}>
               <DownloadLink url={watch(`${name}.${index}.${image}`)} />
