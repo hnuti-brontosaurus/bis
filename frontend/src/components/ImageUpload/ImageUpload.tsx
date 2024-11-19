@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { FC, ReactNode } from 'react'
+import { FC, ReactNode, useEffect } from 'react'
 import {
   Controller,
   useFieldArray,
@@ -95,12 +95,29 @@ const ImagePreview: FC<{ name: string }> = ({ name }) => {
   )
 }
 
+const ImageThumbnail: FC<{ name: string; thumbnail?: string }> = ({
+  name,
+  thumbnail,
+}) => {
+  const value = useWatch({ name })
+  const { formState, setValue, getFieldState } = useFormContext()
+  useEffect(() => {
+    if (thumbnail && getFieldState(name, formState).isDirty) {
+      setValue(thumbnail, value)
+    }
+  }, [value, setValue, formState, thumbnail, name, getFieldState])
+
+  return <ImagePreview name={thumbnail ?? name} />
+}
+
 export const ImageUpload = ({
   name,
+  thumbnail,
   required,
   colorTheme,
 }: {
   name: string
+  thumbnail?: string
   required?: boolean
   colorTheme?: string
 }) => {
@@ -109,7 +126,7 @@ export const ImageUpload = ({
     <label tabIndex={0}>
       <ImageInput name={name} required={required} />
       {value ? (
-        <ImagePreview name={name} />
+        <ImageThumbnail name={name} thumbnail={thumbnail} />
       ) : (
         <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
       )}
@@ -142,10 +159,12 @@ export const ImageAdd = ({
 export const ImagesUpload = ({
   name,
   image = 'image',
+  thumbnail,
   colorTheme,
 }: {
   name: string
   image?: string
+  thumbnail?: string
   colorTheme?: string
 }) => {
   const { control, watch } = useFormContext()
@@ -161,7 +180,9 @@ export const ImagesUpload = ({
         showUnsupportedHeicMessage(file)
       } else {
         const value = await file2base64(file)
-        imageFields.append({ [image]: value })
+        const field = { [image]: value }
+        thumbnail && (field[thumbnail] = value)
+        imageFields.append(field)
       }
     })
   }
@@ -173,7 +194,10 @@ export const ImagesUpload = ({
           <li key={item.id} className={styles.imageItem}>
             <label tabIndex={0}>
               <ImageInput name={`${name}.${index}.${image}`} />
-              <ImagePreview name={`${name}.${index}.${image}`} />
+              <ImageThumbnail
+                name={`${name}.${index}.${image}`}
+                thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
+              />
             </label>
             <div className={styles.toolbar}>
               <DownloadLink url={watch(`${name}.${index}.${image}`)} />
