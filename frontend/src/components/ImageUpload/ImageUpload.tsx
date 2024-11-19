@@ -48,6 +48,7 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
       name={name}
       rules={{ required: required && messages.required }}
       render={({ field: { value, onChange, ...field } }) => (
+        /* cannot set value to file input, throws error */
         <input
           {...field}
           style={{ display: 'none' }}
