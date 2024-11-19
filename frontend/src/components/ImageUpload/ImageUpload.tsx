@@ -186,7 +186,7 @@ export const ImagesUpload = ({
         )
       })}
       <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={addImages} />
+        <ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />
       </li>
     </ul>
   )
