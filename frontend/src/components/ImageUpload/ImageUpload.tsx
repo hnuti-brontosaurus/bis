@@ -1,7 +1,12 @@
 import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { ChangeEvent, FC, forwardRef, useState } from 'react'
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
+import { FC, ReactNode, useEffect } from 'react'
+import {
+  Controller,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form'
 import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
@@ -33,83 +38,100 @@ const useUnsupportedHeicMessage = () => {
     })
 }
 
-export const UncontrolledImageUpload = forwardRef<
-  HTMLInputElement,
-  {
-    name: string
-    value?: string
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void
-    onBlur: any
-    colorTheme?: string
-  }
->(({ value, onChange, colorTheme, ...rest }, ref) => {
-  const [internalState, setInternalState] = useState<string>('')
-  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
-
-  const actualValue = value ?? internalState
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type === 'image/heif') {
-      showUnsupportedHeicMessage(file)
-    } else {
-      const value = file ? await file2base64(file) : ''
-      setInternalState(value)
-      onChange({ ...e, target: { ...e.target, value, type: 'text' } })
-    }
-  }
-
-  return (
-    <label tabIndex={0}>
-      <input
-        ref={ref}
-        style={{ display: 'none' }}
-        type="file"
-        accept="image/*,application/pdf"
-        onChange={handleChange}
-        {...rest}
-      />
-      {actualValue ? (
-        <div className={styles.imageWrapper}>
-          <object data={actualValue} className={styles.image} />
-          <div className={styles.editOverlay}>
-            <FaPencilAlt size={26} />
-          </div>
-        </div>
-      ) : (
-        <div
-          className={classNames(
-            styles.addButton,
-            colorTheme === 'opportunities' && styles.opportunitiesTheme,
-          )}
-        >
-          <MdPhotoCamera size={60} />
-          Přidej fotku
-        </div>
-      )}
-    </label>
-  )
-})
-
-export const ImageUpload = ({
+const ImageInput: FC<{ name: string; required?: boolean }> = ({
   name,
   required,
-  colorTheme,
-}: {
-  name: string
-  required?: boolean
-  colorTheme?: string
 }) => {
-  const { control } = useFormContext()
-
+  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
   return (
     <Controller
       name={name}
       rules={{ required: required && messages.required }}
-      control={control}
-      render={({ field }) => (
-        <UncontrolledImageUpload {...field} colorTheme={colorTheme} />
+      render={({ field: { value, onChange, ...field } }) => (
+        /* cannot set value to file input, throws error */
+        <input
+          {...field}
+          style={{ display: 'none' }}
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={async event => {
+            const file = event.target.files?.[0]
+            if (file && file.type === 'image/heif') {
+              showUnsupportedHeicMessage(file)
+            } else {
+              const value = file ? await file2base64(file) : ''
+              onChange(value)
+            }
+          }}
+        />
       )}
     />
+  )
+}
+
+const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
+  children,
+  colorTheme,
+}) => (
+  <div
+    className={classNames(
+      styles.addButton,
+      colorTheme === 'opportunities' && styles.opportunitiesTheme,
+    )}
+  >
+    <MdPhotoCamera size={60} />
+    {children}
+  </div>
+)
+
+const ImagePreview: FC<{ name: string }> = ({ name }) => {
+  const value = useWatch({ name })
+  return (
+    <div className={styles.imageWrapper}>
+      <object data={value} className={styles.image} />
+      <div className={styles.editOverlay}>
+        <FaPencilAlt size={26} />
+      </div>
+    </div>
+  )
+}
+
+const ImageThumbnail: FC<{ name: string; thumbnail?: string }> = ({
+  name,
+  thumbnail,
+}) => {
+  const value = useWatch({ name })
+  const { formState, setValue, getFieldState } = useFormContext()
+  useEffect(() => {
+    if (thumbnail && getFieldState(name, formState).isDirty) {
+      setValue(thumbnail, value)
+    }
+  }, [value, setValue, formState, thumbnail, name, getFieldState])
+
+  return <ImagePreview name={thumbnail ?? name} />
+}
+
+export const ImageUpload = ({
+  name,
+  thumbnail,
+  required,
+  colorTheme,
+}: {
+  name: string
+  thumbnail?: string
+  required?: boolean
+  colorTheme?: string
+}) => {
+  const value = useWatch({ name })
+  return (
+    <label tabIndex={0}>
+      <ImageInput name={name} required={required} />
+      {value ? (
+        <ImageThumbnail name={name} thumbnail={thumbnail} />
+      ) : (
+        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
+      )}
+    </label>
   )
 }
 
@@ -131,25 +153,19 @@ export const ImageAdd = ({
       multiple
       onChange={event => event.target.files && onAdd(event.target.files)}
     />
-    <div
-      className={classNames(
-        styles.addButton,
-        colorTheme === 'opportunities' && styles.opportunitiesTheme,
-      )}
-    >
-      <MdPhotoCamera size={60} />
-      Přidej fotky
-    </div>
+    <ImageAddIcon colorTheme={colorTheme}>Přidej fotky</ImageAddIcon>
   </label>
 )
 
 export const ImagesUpload = ({
   name,
   image = 'image',
+  thumbnail,
   colorTheme,
 }: {
   name: string
   image?: string
+  thumbnail?: string
   colorTheme?: string
 }) => {
   const { control, watch } = useFormContext()
@@ -165,7 +181,9 @@ export const ImagesUpload = ({
         showUnsupportedHeicMessage(file)
       } else {
         const value = await file2base64(file)
-        imageFields.append({ [image]: value })
+        const field = { [image]: value }
+        thumbnail && (field[thumbnail] = value)
+        imageFields.append(field)
       }
     })
   }
@@ -175,30 +193,28 @@ export const ImagesUpload = ({
       {imageFields.fields.map((item, index) => {
         return (
           <li key={item.id} className={styles.imageItem}>
-            <Controller
-              name={`${name}.${index}.${image}`}
-              control={control}
-              render={({ field }) => (
-                <UncontrolledImageUpload {...field} colorTheme={colorTheme} />
-              )}
-            />
-            {watch(`${name}.${index}.${image}`) && (
-              <div className={styles.toolbar}>
-                <DownloadLink url={watch(`${name}.${index}.${image}`)} />
-                <button
-                  className={classNames(styles.button, styles.removeButton)}
-                  type="button"
-                  onClick={() => imageFields.remove(index)}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-            )}
+            <label tabIndex={0}>
+              <ImageInput name={`${name}.${index}.${image}`} />
+              <ImageThumbnail
+                name={`${name}.${index}.${image}`}
+                thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
+              />
+            </label>
+            <div className={styles.toolbar}>
+              <DownloadLink url={watch(`${name}.${index}.${image}`)} />
+              <button
+                className={classNames(styles.button, styles.removeButton)}
+                type="button"
+                onClick={() => imageFields.remove(index)}
+              >
+                <FaTimes />
+              </button>
+            </div>
           </li>
         )
       })}
       <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={addImages} />
+        <ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />
       </li>
     </ul>
   )

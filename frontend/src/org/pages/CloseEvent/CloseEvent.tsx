@@ -80,6 +80,7 @@ export const CloseEvent = () => {
     },
     photos: photos.results.map(({ photo, ...rest }) => ({
       photo: photo.original,
+      thumbnail: photo.small,
       ...rest,
     })),
     pages: pages.results,

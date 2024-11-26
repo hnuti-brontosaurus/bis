@@ -80,7 +80,7 @@ export const EvidenceStep = ({
             }
           >
             <FormSubsection header="Fotky z akce" help={formTexts.photos.help}>
-              <ImagesUpload name="photos" image="photo" />
+              <ImagesUpload name="photos" image="photo" thumbnail="thumbnail" />
             </FormSubsection>
             <FormSubsection
               header="Sken prezenční listiny"
