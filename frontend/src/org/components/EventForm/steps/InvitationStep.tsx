@@ -7,12 +7,14 @@ import {
   htmlRequired,
   ImagesUpload,
   ImageUpload,
+  InfoBox,
   RichTextEditor,
 } from 'components'
 import { form as formTexts } from 'config/static/event'
 import { Controller, FormProvider } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import { MethodsShapes } from '..'
+import styles from './InvitationStep.module.scss'
 
 export const InvitationStep = ({
   methods,
@@ -168,6 +170,10 @@ export const InvitationStep = ({
             onWeb
             help="Hlavní foto se zobrazí v náhledu akce na webu"
           >
+            <InfoBox className={styles.narrowInfoBox}>
+              Nahraj pouze fotku bez textu a grafiky pro kvalitní zobrazení na
+              webu.
+            </InfoBox>
             <FormInputError>
               <ImageUpload required name="main_image.image" />
             </FormInputError>
