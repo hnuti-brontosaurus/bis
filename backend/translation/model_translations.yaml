@@ -327,10 +327,10 @@ EventRecord:
     feedback_form: Formulář zpětné vazby
     number_of_participants:
       - Počet účastníků
-      - Vyplň pouze pokud nejsou vyplnění konkrétní účastníci
+      - U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích
     number_of_participants_under_26:
       - Počet účastníků pod 26 let
-      - Vyplň pouze pokud nejsou vyplnění konkrétní účastníci
+      - U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích
 EventContact:
   name: Zjednodušená prezenční listina z jednodenní akce
   name_plural: Zjednodušené prezenční listiny z jednodenní akce
