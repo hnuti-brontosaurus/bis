@@ -396,7 +396,7 @@ export const CloseEventForm = ({
         <FeedbackStep
           eventId={event.id}
           methods={feedbackFormMethods}
-          firstIndex={countEvidenceFirstStep() + 5}
+          firstIndex={countEvidenceFirstStep() + 6}
         />
       </Step>
     </Steps>
