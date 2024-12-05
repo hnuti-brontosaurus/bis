@@ -146,6 +146,22 @@ export const EvidenceStep = ({
               </ExternalButtonLink>
             </div>
           </FormSection>
+          <FormSection header="Zpětná vazba Ústředí HB">
+            <InfoBox>
+              Pokud se na vaší akci vyskytla jakákoliv problémová situace, nebo
+              chcete něco sdělit Ústředí HB, vyplňte tento formulář:
+            </InfoBox>
+            <ExternalButtonLink
+              tertiary
+              href="https://docs.google.com/forms/d/e/1FAIpQLSf0iDdyvMJp09wD-hk7tSJyFfEMkIER677nNavbKklteij8Qg/viewform"
+              target="__blank"
+              rel="noopener noreferrer"
+              className={styles.outerLinkButton}
+            >
+              Stížnost na situaci na akci
+              <HiExternalLink />
+            </ExternalButtonLink>
+          </FormSection>
           {/* Údaje , které je třeba zadat po akci:
 Počet účastníků celkem *
 Z toho počet účastníků do 26 let * 
