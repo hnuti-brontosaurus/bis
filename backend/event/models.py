@@ -1,5 +1,6 @@
 from os.path import basename
 
+import geopy.distance
 from administration_units.models import AdministrationUnit
 from bis.helpers import (
     SearchMixin,
@@ -22,9 +23,11 @@ from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.gis.db.models import *
+from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
+from geopy.distance import distance
 from phonenumber_field.modelfields import PhoneNumberField
 from tinymce.models import HTMLField
 from translation.translate import translate_model
@@ -100,6 +103,19 @@ class Event(SearchMixin, Model):
     def clean(self):
         if self.main_organizer:
             Qualification.validate_main_organizer(self, self.main_organizer)
+        if self.location:
+            if (
+                distance(Point(16.6797381, 49.3061528), self.location.gps_location).km
+                < 5
+            ):
+                raise ValidationError(
+                    "Nelze pořádate akce v této lokalitě, pro více informací kontaktuje kancelář HB"
+                )
+
+            if "švýcárna" in self.location.name.lower():
+                raise ValidationError(
+                    "Nelze pořádate akce v této lokalitě, pro více informací kontaktuje kancelář HB"
+                )
 
     @update_roles("main_organizer")
     def save(
