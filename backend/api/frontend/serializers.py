@@ -710,6 +710,17 @@ class EventSerializer(ModelSerializer):
 
         if self.context["request"].user != instance.main_organizer:
             emails.event_created(instance)
+
+        if (
+            instance.main_organizer.id == "1e82e062-9fd0-4f1a-af14-6d3645b1195a"
+            or instance.administration_units.filter(id=8).exists()
+        ):  # robby nebo modry kamen
+            emails.text(
+                "bis@brontosaurus.cz",
+                "Robby nebo Modrý kámen vytvořil novou akci",
+                f"Najdeš ji https://bis.brontosaurus.cz/admin/bis/event/{instance.id}/change/",
+            )
+
         return instance
 
     def update(self, instance, validated_data):
