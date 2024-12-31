@@ -1,7 +1,5 @@
 import { useDebouncedState } from 'hooks/debouncedState'
-import { useEffect, useState } from 'react'
-
-const API_KEY = process.env.REACT_APP_MAPY_CZ_API_KEY
+import { useMapSuggest } from 'hooks/useMapSuggest'
 
 export const MapyCzSearch = ({
   onSelect,
@@ -13,16 +11,7 @@ export const MapyCzSearch = ({
   onError: (error: Error) => void
 }) => {
   const [query, debouncedQuery, setQuery] = useDebouncedState(1000, '')
-  const [options, setOptions] = useState([])
-  useEffect(() => {
-    if (query.length >= 2) {
-      fetch(
-        `https://api.mapy.cz/v1/suggest?query=${debouncedQuery}&apikey=${API_KEY}`,
-      )
-        .then(result => result.json())
-        .then(options => setOptions(options.items))
-    }
-  }, [debouncedQuery, setOptions])
+  const options = useMapSuggest(debouncedQuery)
 
   return (
     <>
