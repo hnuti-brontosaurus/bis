@@ -1,5 +1,7 @@
-import { useSMap } from 'hooks/useSMap'
-import { useEffect, useRef } from 'react'
+import { useDebouncedState } from 'hooks/debouncedState'
+import { useEffect, useState } from 'react'
+
+const API_KEY = process.env.REACT_APP_MAPY_CZ_API_KEY
 
 export const MapyCzSearch = ({
   onSelect,
@@ -10,34 +12,32 @@ export const MapyCzSearch = ({
   // unused prop to ensure that the component has the same interface as OSMSearch
   onError: (error: Error) => void
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [SMap] = useSMap()
-
+  const [query, debouncedQuery, setQuery] = useDebouncedState(1000, '')
+  const [options, setOptions] = useState([])
   useEffect(() => {
-    if (SMap && inputRef.current) {
-      const cb = (suggestData: any) => {
-        inputRef.current!.value = ''
-        onSelect(
-          [suggestData.data.latitude, suggestData.data.longitude],
-          suggestData.phrase,
-        )
-      }
-      const suggest = new SMap.Suggest(inputRef.current)
-      suggest.addListener('suggest', cb)
-
-      return () => {
-        suggest.removeListener('suggest', cb)
-        suggest.destroy()
-      }
+    if (query.length >= 2) {
+      fetch(
+        `https://api.mapy.cz/v1/suggest?query=${debouncedQuery}&apikey=${API_KEY}`,
+      )
+        .then(result => result.json())
+        .then(options => setOptions(options.items))
     }
-  }, [SMap, onSelect])
+  }, [debouncedQuery, setOptions])
 
   return (
-    <input
-      className={className}
-      type="text"
-      ref={inputRef}
-      placeholder="Hledej místo na mapě"
-    />
+    <>
+      <input
+        className={className}
+        type="text"
+        value={query}
+        onChange={event => setQuery(event.target.value)}
+        placeholder="Hledej místo na mapě"
+      />
+      <ul>
+        {options.map(option => (
+          <li key={option.name}>{option.name}</li>
+        ))}
+      </ul>
+    </>
   )
 }
