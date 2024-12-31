@@ -6,6 +6,7 @@ export interface MapItem {
   name: string
   label: string
   position: { lon: number; lat: number }
+  location: string
 }
 
 interface Props {

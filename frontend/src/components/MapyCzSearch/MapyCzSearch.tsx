@@ -1,7 +1,18 @@
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
-import { useState } from 'react'
+import { FC, useState } from 'react'
 import Select from 'react-select'
+
+import style from './MapyCzSearch.module.scss'
+
+const OptionLabel: FC<MapItem> = ({ name, label, location }) => (
+  <div>
+    <div>{name}</div>
+    <div className={style.specific}>
+      {label}, {location}
+    </div>
+  </div>
+)
 
 export const MapyCzSearch = ({
   onSelect,
@@ -30,7 +41,8 @@ export const MapyCzSearch = ({
       onInputChange={setQuery}
       value={value}
       onChange={setValue}
-      getOptionLabel={option => option.name}
+      getOptionValue={({ name }) => name}
+      formatOptionLabel={OptionLabel}
       className={className}
     />
   )
