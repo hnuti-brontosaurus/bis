@@ -1,9 +1,11 @@
+import classNames from 'classnames'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
 import { FC } from 'react'
 import Select, { components, MenuProps } from 'react-select'
 
 import style from './MapyCzSearch.module.scss'
+import selectStyle from '../SelectObject.module.scss'
 
 const OptionLabel: FC<MapItem> = ({ name, label, location }) => (
   <div>
@@ -26,11 +28,13 @@ const MenuWithAttribution: FC<MenuProps<MapItem>> = props => (
 export const MapyCzSearch = ({
   onSelect,
   className,
+  colorTheme,
 }: {
   onSelect: (coords: [number, number], name: string) => void
   className?: string
   // unused prop to ensure that the component has the same interface as OSMSearch
   onError: (error: Error) => void
+  colorTheme?: string
 }) => {
   const [query, debouncedQuery, setQuery] = useDebouncedState(1000, '')
   const [options, { loading }] = useMapSuggest(debouncedQuery, {
@@ -53,7 +57,9 @@ export const MapyCzSearch = ({
       onChange={setValue}
       getOptionValue={({ name }) => name}
       formatOptionLabel={OptionLabel}
-      className={className}
+      className={classNames(className, selectStyle.selectObject, {
+        [selectStyle.opportunitiesTheme]: colorTheme === 'opportunities',
+      })}
       components={{ Menu: MenuWithAttribution }}
       noOptionsMessage={() => {
         if (query !== debouncedQuery) {
