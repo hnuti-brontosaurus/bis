@@ -33,7 +33,9 @@ export const MapyCzSearch = ({
   onError: (error: Error) => void
 }) => {
   const [query, debouncedQuery, setQuery] = useDebouncedState(1000, '')
-  const options = useMapSuggest(debouncedQuery)
+  const [options, { loading }] = useMapSuggest(debouncedQuery, {
+    minQueryLength: 2,
+  })
 
   const setValue = (newValue: MapItem | null) => {
     if (newValue) {
@@ -47,11 +49,23 @@ export const MapyCzSearch = ({
       inputValue={query}
       onInputChange={setQuery}
       value={null}
+      isLoading={loading}
       onChange={setValue}
       getOptionValue={({ name }) => name}
       formatOptionLabel={OptionLabel}
       className={className}
       components={{ Menu: MenuWithAttribution }}
+      noOptionsMessage={() => {
+        if (query !== debouncedQuery) {
+          return <>Čekám až dopíšeš&hellip;</>
+        } else if (query.length < 2) {
+          return 'Zadej alespoň 2 znaky'
+        } else {
+          return 'Nenalezeno'
+        }
+      }}
+      loadingMessage={() => <>Hledám&hellip;</>}
+      placeholder={<>Hledej&hellip;</>}
     />
   )
 }
