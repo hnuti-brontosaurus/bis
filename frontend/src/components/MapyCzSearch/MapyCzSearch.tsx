@@ -1,7 +1,7 @@
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
 import { FC, useState } from 'react'
-import Select from 'react-select'
+import Select, { components, MenuProps } from 'react-select'
 
 import style from './MapyCzSearch.module.scss'
 
@@ -12,6 +12,15 @@ const OptionLabel: FC<MapItem> = ({ name, label, location }) => (
       {label}, {location}
     </div>
   </div>
+)
+
+const MenuWithAttribution: FC<MenuProps<MapItem>> = props => (
+  <components.Menu {...props}>
+    {props.children}
+    <div className={style.attribution}>
+      Hledají <img src="https://api.mapy.cz/img/api/logo-small.svg" />
+    </div>
+  </components.Menu>
 )
 
 export const MapyCzSearch = ({
@@ -44,6 +53,7 @@ export const MapyCzSearch = ({
       getOptionValue={({ name }) => name}
       formatOptionLabel={OptionLabel}
       className={className}
+      components={{ Menu: MenuWithAttribution }}
     />
   )
 }

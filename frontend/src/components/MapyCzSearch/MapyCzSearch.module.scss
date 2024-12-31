@@ -4,3 +4,16 @@
   font-size: 0.8em;
   color: colors.$gray-400;
 }
+
+.attribution {
+  padding: 5px;
+  font-size: 10px;
+  text-align: right;
+  color: colors.$gray-400;
+
+  img {
+    height: 12px;
+    display: inline-block;
+    vertical-align: text-bottom;
+  }
+}
