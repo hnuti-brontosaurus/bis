@@ -22,7 +22,7 @@ jobs:
         run: touch submodule_sync
 
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: pip install pre-commit==3.8.0
 
       - name: Run pre-commit
         run: pre-commit run -a
