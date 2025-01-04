@@ -49,6 +49,9 @@ User:
     date_joined: Datum vzniku uživatelského profilu
     close_person: Rodič / blízká osoba
     health_insurance_company: Pojišťovna
+    behaviour_issues:
+      - Problémový účastník
+      - Pokud vyplněno, zobrazí se jako varování organizátorům akcí u přihlášky
     roles: Role
     internal_note: Poznámka ústředí
     subscribed_to_newsletter: Odebírá novinky?

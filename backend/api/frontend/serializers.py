@@ -450,6 +450,7 @@ class UserSerializer(ModelSerializer):
             "subscribed_to_newsletter",
             "health_insurance_company",
             "health_issues",
+            "behaviour_issues",
             "pronoun",
             "is_active",
             "is_contact_information_verified",

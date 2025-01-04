@@ -100,6 +100,7 @@ class UserExportSerializer(ModelSerializer):
             "age",
             "health_insurance_company",
             "health_issues",
+            "behaviour_issues",
             "date_joined",
             "roles",
             "subscribed_to_newsletter",

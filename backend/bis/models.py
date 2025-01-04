@@ -275,6 +275,7 @@ class User(SearchMixin, AbstractBaseUser):
     pronoun = ForeignKey(
         PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name="users"
     )
+    behaviour_issues = TextField(blank=True)
 
     is_active = BooleanField(default=True)
     date_joined = DateField(default=datetime.date.today)
@@ -467,6 +468,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "close_person",
                     "health_insurance_company",
                     "health_issues",
+                    "behaviour_issues",
                     "pronoun",
                     "subscribed_to_newsletter",
                     "internal_note",

@@ -359,6 +359,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                     "is_contact_information_verified",
                     "get_board_member_of",
                     "vokativ",
+                    "behaviour_issues",
                 ],
                 "classes": ("collapse",),
             },
