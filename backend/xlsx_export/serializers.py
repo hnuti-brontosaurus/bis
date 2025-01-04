@@ -250,9 +250,14 @@ class RecordExportSerializer(ModelSerializer):
     get_young_participants_count = ReadOnlyField(label="Z toho účastníků do 26 let")
     get_young_percentage = ReadOnlyField(label="% účastníků do 26 let")
 
+    has_participants_list = SerializerMethodField(label="Má prezenčku")
+    has_photos = SerializerMethodField(label="Má fotky")
+
     class Meta:
         model = EventRecord
         fields = (
+            "has_participants_list",
+            "has_photos",
             "get_participants_count",
             "get_young_participants_count",
             "get_young_percentage",
@@ -260,6 +265,12 @@ class RecordExportSerializer(ModelSerializer):
             "comment_on_work_done",
             "note",
         )
+
+    def get_has_participants_list(self, instance):
+        return instance.attendance_list_pages.exists()
+
+    def get_has_photos(self, instance):
+        return instance.photos.exists()
 
 
 class EventExportSerializer(ModelSerializer):
