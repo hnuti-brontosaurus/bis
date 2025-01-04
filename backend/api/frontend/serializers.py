@@ -1100,8 +1100,8 @@ class GetAttendanceListRequestSerializer(Serializer):
     formatting = ChoiceField(["pdf", "xlsx"], default="pdf")
 
 
-class AttendanceListResponseSerializer(Serializer):
-    format = ChoiceField(["pdf", "xlsx"], default="pdf")
+class GetParticipantsListRequestSerializer(Serializer):
+    formatting = ChoiceField(["pdf", "xlsx"], default="pdf")
 
 
 class EventRouterKwargsSerializer(Serializer):

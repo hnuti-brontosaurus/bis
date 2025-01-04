@@ -12,6 +12,7 @@ from api.frontend.serializers import (
     EventSerializer,
     FinanceReceiptSerializer,
     GetAttendanceListRequestSerializer,
+    GetParticipantsListRequestSerializer,
     GetUnknownUserRequestSerializer,
     GetUserByEmailRequestSerializer,
     GetUserByEmailResponseSerializer,
@@ -390,29 +391,26 @@ def get_attendance_list(request, data, event_id):
     event = get_object_or_404(Event, id=event_id)
     if not Permissions(request.user, Event, "frontend").has_change_permission(event):
         return HttpResponseForbidden()
-    return export.get_attendance_list(event)[data["formatting"]]
+    return export.get_attendance_list(event, data["formatting"])
 
 
 @extend_schema(
+    parameters=[GetParticipantsListRequestSerializer],
     responses={
         HTTP_200_OK: None,
         HTTP_404_NOT_FOUND: OpenApiResponse(description="Not found"),
         HTTP_403_FORBIDDEN: OpenApiResponse(description="Forbidden"),
-    }
+    },
 )
 @api_view(["get"])
 @permission_classes([IsAuthenticated])
-def get_participants_list(request, event_id):
+@parse_request_data(GetParticipantsListRequestSerializer, "query_params")
+def get_participants_list(request, data, event_id):
     event = get_object_or_404(Event, id=event_id)
     if not Permissions(request.user, Event, "frontend").has_change_permission(event):
         return HttpResponseForbidden()
 
-    participants = (
-        hasattr(event, "record")
-        and event.record.get_all_participants()
-        or event.other_organizers.all()
-    )
-    return export.export_to_xlsx_response(participants)
+    return export.get_attendance_list(event, data["formatting"], True)
 
 
 @extend_schema(

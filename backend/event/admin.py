@@ -375,16 +375,11 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             obj = self.get_object(request, unquote(object_id), to_field)
             has_record = hasattr(obj, "record")
             if "_attendance_list_xlsx_export" in request.POST:
-                return get_attendance_list(obj)["xlsx"]
+                return get_attendance_list(obj, "xlsx")
             if "_attendance_list_pdf_export" in request.POST:
-                return get_attendance_list(obj)["pdf"]
+                return get_attendance_list(obj, "pdf")
             if "_participants_xlsx_export" in request.POST:
-                participants = (
-                    has_record
-                    and obj.record.get_all_participants()
-                    or obj.other_organizers.all()
-                )
-                return export_to_xlsx_response(participants)
+                return get_attendance_list(obj, "xlsx", True)
             if "_attendance_list_emails_export" in request.POST:
                 participants = (
                     has_record and obj.record.participants.all() or User.objects.none()

@@ -290,17 +290,23 @@ def do_export_to_xlsx(queryset):
     return file
 
 
-def get_attendance_list_data(event, for_admin=False):
+def get_attendance_list_data(event, use_participants):
     organizers = list(event.other_organizers.all())
-    applications = (registration := getattr(event, "registration", [])) and list(
-        registration.applications.all()
-    )
-    applications = [
-        application
-        for application in applications
-        if application.state in ["pending", "approved"]
-    ]
-    for item in organizers + applications:
+    if use_participants:
+        rows = list(
+            event.record.get_all_participants()
+            if hasattr(event, "record")
+            else event.other_organizers.all()
+        )
+    else:
+        applications = list(
+            EventApplication.objects.filter(
+                state__in=["pending", "approved"], event_registration__event=event
+            ).order_by("state", "created_at")
+        )
+        rows = organizers + applications
+
+    for item in rows:
         address = getattr(item, "address", "")
         if not address and (applications_user := getattr(item, "user", None)):
             address = getattr(applications_user, "address", "")
@@ -314,9 +320,8 @@ def get_attendance_list_data(event, for_admin=False):
             item in organizers,
         )
 
-    if not for_admin:
-        for i in range(max(10, len(applications) // 10)):
-            yield 7 * ("",)
+    for i in range(max(10, len(rows) // 10)):
+        yield 7 * ("",)
 
 
 def get_attendance_list_rows(ws):
@@ -348,7 +353,22 @@ def get_attendance_list_rows(ws):
             yield start + 1 + i
 
 
-def get_attendance_list(event: Event):
+def get_attendance_list(event: Event, formatting, use_participants=False):
+    if formatting == "xlsx":
+        if use_participants:
+            queryset = (
+                hasattr(event, "record")
+                and event.record.get_all_participants()
+                or event.other_organizers.all()
+            )
+        else:
+            queryset = EventApplication.objects.filter(
+                state__in=["pending", "approved"], event_registration__event=event
+            ).order_by("state", "created_at")
+
+        return export_to_xlsx_response(queryset)
+
+    assert formatting == "pdf"
     wb = openpyxl.load_workbook(
         join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx")
     )
@@ -359,7 +379,9 @@ def get_attendance_list(event: Event):
     ws["C4"] = event.location.name
     ws["C5"] = ", ".join(au.abbreviation for au in event.administration_units.all())
 
-    for row, data in zip(get_attendance_list_rows(ws), get_attendance_list_data(event)):
+    rows = get_attendance_list_rows(ws)
+    data_rows = get_attendance_list_data(event, use_participants)
+    for row, data in zip(rows, data_rows):
         for cell, value in zip("BCDEFG", data[:-1]):
             ws[f"{cell}{row}"] = value
         if data[-1]:
@@ -391,13 +413,7 @@ def get_attendance_list(event: Event):
         },
     )
 
-    applications = EventApplication.objects.filter(
-        state__in=["pending", "approved"], event_registration__event=event
-    ).order_by("state", "created_at")
-    return {
-        "xlsx": export_to_xlsx_response(applications),
-        "pdf": FileResponse(open(tmp_pdf.name, "rb")),
-    }
+    return FileResponse(open(tmp_pdf.name, "rb"))
 
 
 def export_files(event: Event):
