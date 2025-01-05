@@ -6,12 +6,9 @@ import type {
   MembershipCategory,
   User,
 } from 'app/services/bisTypes'
-import { EmailButton, PhoneButton, StyledModal, DataView } from 'components'
+import { EmailButton, PhoneButton, StyledModal } from 'components'
+import { FC } from 'react'
 import styles from '../ParticipantsStep.module.scss'
-import { FC, Fragment } from 'react'
-import { mergeWith, omit } from 'lodash'
-import { withOverwriteArray } from 'utils/helpers'
-import * as combinedTranslations from 'config/static/combinedTranslations'
 
 interface IShowApplicationModalProps {
   open: boolean
@@ -37,8 +34,6 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
   // setShowAddParticipantModal,
   // deleteEventApplication,
   userId,
-  categories,
-  administrationUnits,
   currentParticipant,
   participantsMap,
 }) => {
@@ -63,23 +58,6 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
           id: userId,
         }
       : skipToken,
-  )
-  // we'll also show last year membership till end of February
-  // we want to give people time to register for the new year
-  // and still show continuity of membership
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth()
-  const currentMemberships = (user?.memberships ?? []).filter(
-    membership =>
-      membership.year === currentYear ||
-      (currentMonth < 2 && membership.year === currentYear - 1),
-  )
-  // TODO consider showing historical memberships, too
-
-  const formattedUser = mergeWith(
-    omit(user, 'id', '_search_id', 'display_name'),
-    { memberships: user?.memberships },
-    withOverwriteArray,
   )
 
   if (!open) return null
