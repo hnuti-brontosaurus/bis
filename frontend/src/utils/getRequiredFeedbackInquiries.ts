@@ -36,7 +36,7 @@ const checkInSection: QuestionnaireSection = [
     },
   },
   {
-    inquiry: 'Jak ses dozvěděl/a o tomto táboře?',
+    inquiry: 'Jak ses dozvěděl/a o této akci?',
     is_required: true,
     data: {
       type: 'radio',
@@ -199,7 +199,7 @@ const involvementSection: QuestionnaireSection = [
       options: [
         { option: 'přidat se do organizátorského týmu' },
         { option: 'absolvovat organizátorský kurz' },
-        { option: 'zůčastnit se další akce Hnutí Brontosaurus' },
+        { option: 'zúčastnit se další akce Hnutí Brontosaurus' },
         { option: 'vytvořit vlastní akci' },
         {
           option: 'zapojit se do dobrovolnického centra v Brně nebo Praze',
