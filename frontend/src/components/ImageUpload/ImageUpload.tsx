@@ -7,7 +7,7 @@ import {
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
+import { FaDownload, FaImage, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
@@ -72,7 +72,12 @@ const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
   return (
     <div className={styles.imageWrapper}>
-      <object data={value} className={styles.image} />
+      <object data={value} className={styles.image}>
+        <div className={styles.fallback}>
+          <FaImage size={60} />
+          (nelze zobrazit)
+        </div>
+      </object>
       <div className={styles.editOverlay}>
         <FaPencilAlt size={26} />
       </div>

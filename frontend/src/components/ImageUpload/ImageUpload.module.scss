@@ -25,6 +25,19 @@
   }
 }
 
+.fallback {
+  height: 10rem;
+  width: 10rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1rem;
+  color: colors.$bronto-500;
+}
+
 .imageWrapper {
   cursor: pointer;
   position: relative;
