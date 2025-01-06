@@ -25,6 +25,7 @@ services:
       API_BASE: 'api/'
       DEBUG: 0
       REACT_APP_SENTRY_DSN: https://f3a6554a5b71437682e51b0410e20c64@o4504321204027392.ingest.sentry.io/4504453023924224
+      REACT_APP_MAPY_CZ_API_KEY: chqysuJbnz1zVPuiyvVCuP_kSaCHVVVzUDPwtrDcn30
 
   backend:
     container_name: bis-backend
