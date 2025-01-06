@@ -6,12 +6,11 @@ import type {
   MembershipCategory,
   User,
 } from 'app/services/bisTypes'
-import { EmailButton, PhoneButton, StyledModal, DataView } from 'components'
-import styles from '../ParticipantsStep.module.scss'
-import { FC, Fragment } from 'react'
+import { EmailButton, PhoneButton, StyledModal } from 'components'
 import { mergeWith, omit } from 'lodash'
+import { FC, Fragment } from 'react'
 import { withOverwriteArray } from 'utils/helpers'
-import * as combinedTranslations from 'config/static/combinedTranslations'
+import styles from '../ParticipantsStep.module.scss'
 
 interface IShowApplicationModalProps {
   open: boolean
@@ -64,6 +63,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
         }
       : skipToken,
   )
+
   // we'll also show last year membership till end of February
   // we want to give people time to register for the new year
   // and still show continuity of membership
@@ -81,6 +81,8 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
     { memberships: user?.memberships },
     withOverwriteArray,
   )
+
+  console.log(currentApplication)
 
   if (!open) return null
 
@@ -177,103 +179,106 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
             </div>
           </div>
         )}
-      {userId && user && (
-        <div>
-          <div className={styles.addedUserBlock}>
-            <h3>Uživatel přidaný na akci: </h3>
-            <h4>
-              {user.first_name} {user.last_name}{' '}
-              {user.nickname && `(${user.nickname})`}{' '}
-            </h4>
-          </div>
+      {(!currentApplication || Object.keys(currentApplication).length === 0) &&
+        userId &&
+        user && (
+          <div>
+            <div className={styles.addedUserBlock}>
+              <h3>Uživatel přidaný na akci: </h3>
+              <h4>
+                {user.first_name} {user.last_name}{' '}
+                {user.nickname && `(${user.nickname})`}{' '}
+              </h4>
+            </div>
 
-          {user.birthday && (
-            <div>
-              <span>Datum narození: </span>
-              <span>{user.birthday}</span>
-            </div>
-          )}
-          {user.pronoun?.name && (
-            <div>
-              <span>Oslovení: </span>
-              <span>{user.pronoun.name}</span>
-            </div>
-          )}
-
-          {user.email && (
-            <div>
-              <span>E-mail: </span>
-              <span>
-                <EmailButton>{user.email}</EmailButton>
-              </span>
-            </div>
-          )}
-          {user.phone && (
-            <div>
-              <span>Telefon: </span>
-              <span>
-                <PhoneButton>{user.phone}</PhoneButton>
-              </span>
-            </div>
-          )}
-          {user.health_issues && (
-            <div>
-              <span>Zdravotní omezení: </span>
-              <span>{user.health_issues}</span>
-            </div>
-          )}
-          {user.close_person && (
-            <div>
-              <span>Blízká osoba: </span>
-              <span>{`${user.close_person.first_name} ${user.close_person.last_name}`}</span>
-              {user.close_person.email && (
-                <span>
-                  'email: ' <EmailButton>{user.close_person.email}</EmailButton>
-                </span>
-              )}
-              {user.close_person.phone && (
-                <span>
-                  'tel: ' <PhoneButton>{user.close_person.phone}</PhoneButton>
-                </span>
-              )}
-            </div>
-          )}
-          {currentMemberships && currentMemberships.length !== 0 && (
-            <div>
-              <span>Členství: </span>
+            {user.birthday && (
               <div>
-                {currentMemberships.map(membership => {
-                  return (
-                    <Fragment
-                      key={`${membership.year}-${membership.administration_unit}-${membership.category}`}
-                    >
-                      {administrationUnits && categories && (
-                        <div>
-                          {
-                            administrationUnits.find(
-                              unit =>
-                                membership.administration_unit === unit.id,
-                            )?.name
-                          }
-                          {' - '}
-                          {
-                            categories.find(
-                              category =>
-                                membership.category.id === category.id,
-                            )?.name
-                          }{' '}
-                          ({membership.year})
-                        </div>
-                      )}
-                    </Fragment>
-                  )
-                })}
+                <span>Datum narození: </span>
+                <span>{user.birthday}</span>
               </div>
-            </div>
-          )}
-        </div>
-      )}
-      {userId &&
+            )}
+            {user.pronoun?.name && (
+              <div>
+                <span>Oslovení: </span>
+                <span>{user.pronoun.name}</span>
+              </div>
+            )}
+
+            {user.email && (
+              <div>
+                <span>E-mail: </span>
+                <span>
+                  <EmailButton>{user.email}</EmailButton>
+                </span>
+              </div>
+            )}
+            {user.phone && (
+              <div>
+                <span>Telefon: </span>
+                <span>
+                  <PhoneButton>{user.phone}</PhoneButton>
+                </span>
+              </div>
+            )}
+            {user.health_issues && (
+              <div>
+                <span>Zdravotní omezení: </span>
+                <span>{user.health_issues}</span>
+              </div>
+            )}
+            {user.close_person && (
+              <div>
+                <span>Blízká osoba: </span>
+                <span>{`${user.close_person.first_name} ${user.close_person.last_name}`}</span>
+                {user.close_person.email && (
+                  <span>
+                    'email: '{' '}
+                    <EmailButton>{user.close_person.email}</EmailButton>
+                  </span>
+                )}
+                {user.close_person.phone && (
+                  <span>
+                    'tel: ' <PhoneButton>{user.close_person.phone}</PhoneButton>
+                  </span>
+                )}
+              </div>
+            )}
+            {currentMemberships && currentMemberships.length !== 0 && (
+              <div>
+                <span>Členství: </span>
+                <div>
+                  {currentMemberships.map(membership => {
+                    return (
+                      <Fragment
+                        key={`${membership.year}-${membership.administration_unit}-${membership.category}`}
+                      >
+                        {administrationUnits && categories && (
+                          <div>
+                            {
+                              administrationUnits.find(
+                                unit =>
+                                  membership.administration_unit === unit.id,
+                              )?.name
+                            }
+                            {' - '}
+                            {
+                              categories.find(
+                                category =>
+                                  membership.category.id === category.id,
+                              )?.name
+                            }{' '}
+                            ({membership.year})
+                          </div>
+                        )}
+                      </Fragment>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      {/*  {userId &&
         user &&
         currentApplication &&
         currentApplication.email === formattedUser.email && (
@@ -285,7 +290,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
               genericTranslations={combinedTranslations.generic}
             />
           </div>
-        )}
+        )} */}
     </StyledModal>
   )
 }
