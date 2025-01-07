@@ -1,7 +1,8 @@
-import { FC } from 'react'
 import { useDebouncedState } from 'hooks/debouncedState'
-import { useMapSuggest } from 'hooks/useMapSuggest'
-import { useFormContext } from 'react-hook-form'
+import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
+import { FC } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+import Select, { FormatOptionLabelMeta } from 'react-select'
 import { FormInputError } from '../FormInputError/FormInputError'
 import { InlineSection, Label } from '../FormLayout/FormLayout'
 
@@ -9,17 +10,50 @@ interface Props {
   name: string
 }
 
+const OptionLabel = (
+  { name, location }: MapItem,
+  { context }: FormatOptionLabelMeta<MapItem>,
+) => (
+  <div>
+    <div>{name}</div>
+    {context === 'menu' && (
+      <div style={{ color: 'gray', fontSize: '.7em' }}>{location}</div>
+    )}
+  </div>
+)
+
 export const AddressSubform: FC<Props> = ({ name }) => {
-  const { register } = useFormContext()
+  const { register, setValue } = useFormContext()
   const [query, debouncedQuery, setQuery] = useDebouncedState(250, '')
-  const [options, { loading }] = useMapSuggest(debouncedQuery)
+  const [options, { loading }] = useMapSuggest(debouncedQuery, {
+    locationType: ['regional.address'],
+  })
 
   return (
     <>
       <InlineSection>
         <Label>Ulice a číslo domu</Label>
         <FormInputError>
-          <input type="text" {...register(`${name}.street`)} />
+          <Controller
+            name={`${name}.street`}
+            render={({ field: { name, onChange, value, ref } }) => (
+              <Select<MapItem>
+                inputValue={query}
+                onInputChange={setQuery}
+                onChange={(value: MapItem | null) => {
+                  if (value) {
+                    onChange(value.name)
+                  } else {
+                    onChange('')
+                  }
+                }}
+                options={options}
+                filterOption={() => true}
+                getOptionValue={({ name }) => name}
+                formatOptionLabel={OptionLabel}
+              />
+            )}
+          />
         </FormInputError>
       </InlineSection>
       <InlineSection>
