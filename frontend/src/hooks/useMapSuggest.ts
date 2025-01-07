@@ -7,18 +7,19 @@ export interface MapItem {
   label: string
   position: { lon: number; lat: number }
   location: string
+  regionalStructure: { name: string; type: RegionalType }[]
+  zip: string
 }
 
-export type LocationType =
-  | 'regional'
+type RegionalType =
   | 'regional.country'
   | 'regional.region'
   | 'regional.municipality'
   | 'regional.municipality_part'
   | 'regional.street'
   | 'regional.address'
-  | 'poi'
-  | 'coordinate'
+
+export type LocationType = 'regional' | RegionalType | 'poi' | 'coordinate'
 
 interface Props {
   minQueryLength?: number

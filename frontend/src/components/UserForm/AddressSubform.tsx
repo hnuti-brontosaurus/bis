@@ -36,13 +36,21 @@ export const AddressSubform: FC<Props> = ({ name }) => {
         <FormInputError>
           <Controller
             name={`${name}.street`}
-            render={({ field: { name, onChange, value, ref } }) => (
+            render={({ field: { name: inputName, onChange, value, ref } }) => (
               <Select<MapItem>
+                name={inputName}
                 inputValue={query}
                 onInputChange={setQuery}
-                onChange={(value: MapItem | null) => {
-                  if (value) {
-                    onChange(value.name)
+                onChange={(newValue: MapItem | null) => {
+                  if (newValue) {
+                    onChange(newValue.name)
+                    const city = newValue.regionalStructure.find(
+                      ({ type }) => type === 'regional.municipality',
+                    )
+                    setValue(name, {
+                      city: city?.name,
+                      zip_code: newValue.zip,
+                    })
                   } else {
                     onChange('')
                   }
