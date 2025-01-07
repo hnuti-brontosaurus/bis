@@ -36,7 +36,7 @@ export const MapyCzSearch = ({
   onError: (error: Error) => void
   colorTheme?: string
 }) => {
-  const [query, debouncedQuery, setQuery] = useDebouncedState(1000, '')
+  const [query, debouncedQuery, setQuery] = useDebouncedState(250, '')
   const [options, { loading }] = useMapSuggest(debouncedQuery, {
     minQueryLength: 2,
   })
@@ -60,6 +60,7 @@ export const MapyCzSearch = ({
       className={classNames(className, selectStyle.selectObject, {
         [selectStyle.opportunitiesTheme]: colorTheme === 'opportunities',
       })}
+      filterOption={() => true}
       components={{ Menu: MenuWithAttribution }}
       noOptionsMessage={() => {
         if (query !== debouncedQuery) {
