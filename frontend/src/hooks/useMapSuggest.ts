@@ -9,13 +9,25 @@ export interface MapItem {
   location: string
 }
 
+export type LocationType =
+  | 'regional'
+  | 'regional.country'
+  | 'regional.region'
+  | 'regional.municipality'
+  | 'regional.municipality_part'
+  | 'regional.street'
+  | 'regional.address'
+  | 'poi'
+  | 'coordinate'
+
 interface Props {
   minQueryLength?: number
+  locationType?: LocationType[]
 }
 
 export const useMapSuggest = (
   query: string,
-  { minQueryLength = 2 }: Props = {},
+  { minQueryLength = 2, locationType }: Props = {},
 ): [MapItem[], { loading: boolean }] => {
   const [results, setResults] = useState<MapItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -24,6 +36,7 @@ export const useMapSuggest = (
     const params = new URLSearchParams({
       query,
     })
+    locationType && params.append('type', locationType.join(','))
     if (query.length >= minQueryLength) {
       setLoading(true)
       fetch(`https://api.mapy.cz/v1/suggest?${params.toString()}`, {
