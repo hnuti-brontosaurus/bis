@@ -148,9 +148,15 @@ export const Applications: FC<{
 
   let applications = applicationsData ? applicationsData.results : []
 
-  const { data: applicationUsersData } = api.endpoints.readUsers.useQuery({
-    id: applications.map(application => application.user).filter(isString),
-  })
+  const { data: applicationUsersData } = api.endpoints.readUsers.useQuery(
+    applicationsData
+      ? {
+          id: applications
+            .map(application => application.user)
+            .filter(isString),
+        }
+      : skipToken,
+  )
   const applicationUsers = applicationUsersData?.results ?? []
 
   const applicationsPending = applications.filter(
