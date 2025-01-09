@@ -7,6 +7,7 @@ import type {
   User,
 } from 'app/services/bisTypes'
 import { EmailButton, PhoneButton, StyledModal, DataView } from 'components'
+import { IoWarning } from 'react-icons/io5'
 import styles from '../ParticipantsStep.module.scss'
 import { FC, Fragment } from 'react'
 import { mergeWith, omit } from 'lodash'
@@ -90,6 +91,15 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
       onClose={onClose}
       title={`Přihláška na akci ${eventName}`}
     >
+      {user && user.behaviour_issues && (
+        <div>
+          <h3>
+            <IoWarning style={{ display: 'inline' /* FIXME styling */ }} />{' '}
+            Problémy na akcích
+          </h3>
+          {user.behaviour_issues}
+        </div>
+      )}
       {currentApplication &&
         (!participantsMap ||
           !user ||
