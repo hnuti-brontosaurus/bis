@@ -43,14 +43,12 @@ export const AddressSubform: FC<Props> = ({ name }) => {
                 onInputChange={setQuery}
                 onChange={(newValue: MapItem | null) => {
                   if (newValue) {
-                    onChange(newValue.name)
                     const city = newValue.regionalStructure.find(
                       ({ type }) => type === 'regional.municipality',
                     )
-                    setValue(name, {
-                      city: city?.name,
-                      zip_code: newValue.zip,
-                    })
+                    setValue(`${name}.city`, city?.name)
+                    setValue(`${name}.zip_code`, newValue.zip)
+                    onChange(newValue.name)
                   } else {
                     onChange('')
                   }
