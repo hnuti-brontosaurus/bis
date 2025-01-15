@@ -2,9 +2,13 @@ import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
 import { FC } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import Select, { FormatOptionLabelMeta } from 'react-select'
+import Select from 'react-select'
 import { FormInputError } from '../FormInputError/FormInputError'
 import { InlineSection, Label } from '../FormLayout/FormLayout'
+import {
+  createOptionLabel,
+  MenuWithAttribution,
+} from '../MapyCzSearch/MapyCzComponents'
 
 interface Props {
   name: string
@@ -12,18 +16,6 @@ interface Props {
 
 type Option = Pick<MapItem, 'name' | 'regionalStructure'> &
   Partial<Pick<MapItem, 'location' | 'zip'>>
-
-const OptionLabel = (
-  { name, location }: Option,
-  { context }: FormatOptionLabelMeta<Option>,
-) => (
-  <div>
-    <div>{name}</div>
-    {context === 'menu' && (
-      <div style={{ color: 'gray', fontSize: '.7em' }}>{location}</div>
-    )}
-  </div>
-)
 
 const sameName = (name: string) => (option: Option) => name === option.name
 
@@ -72,8 +64,12 @@ export const AddressSubform: FC<Props> = ({ name }) => {
                     !!options.find(sameName(option.value))
                   }
                   getOptionValue={({ name }) => name}
-                  formatOptionLabel={OptionLabel}
+                  formatOptionLabel={createOptionLabel(
+                    ({ name }) => name,
+                    ({ location }) => location,
+                  )}
                   isLoading={loading}
+                  components={{ Menu: MenuWithAttribution }}
                 />
               )
             }}

@@ -1,29 +1,10 @@
 import classNames from 'classnames'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
-import { FC } from 'react'
-import Select, { components, MenuProps } from 'react-select'
+import Select from 'react-select'
+import { createOptionLabel, MenuWithAttribution } from './MapyCzComponents'
 
-import style from './MapyCzSearch.module.scss'
 import selectStyle from '../SelectObject.module.scss'
-
-const OptionLabel: FC<MapItem> = ({ name, label, location }) => (
-  <div>
-    <div>{name}</div>
-    <div className={style.specific}>
-      {label}, {location}
-    </div>
-  </div>
-)
-
-const MenuWithAttribution: FC<MenuProps<MapItem>> = props => (
-  <components.Menu {...props}>
-    {props.children}
-    <div className={style.attribution}>
-      Hledají <img src="https://api.mapy.cz/img/api/logo-small.svg" />
-    </div>
-  </components.Menu>
-)
 
 export const MapyCzSearch = ({
   onSelect,
@@ -56,7 +37,10 @@ export const MapyCzSearch = ({
       isLoading={loading}
       onChange={setValue}
       getOptionValue={({ name }) => name}
-      formatOptionLabel={OptionLabel}
+      formatOptionLabel={createOptionLabel(
+        ({ name }) => name,
+        ({ label, location }) => `${label}, ${location}`,
+      )}
       className={classNames(className, selectStyle.selectObject, {
         [selectStyle.opportunitiesTheme]: colorTheme === 'opportunities',
       })}
