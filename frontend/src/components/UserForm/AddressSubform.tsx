@@ -10,9 +10,12 @@ interface Props {
   name: string
 }
 
+type Option = Pick<MapItem, 'name' | 'regionalStructure'> &
+  Partial<Pick<MapItem, 'location' | 'zip'>>
+
 const OptionLabel = (
-  { name, location }: MapItem,
-  { context }: FormatOptionLabelMeta<MapItem>,
+  { name, location }: Option,
+  { context }: FormatOptionLabelMeta<Option>,
 ) => (
   <div>
     <div>{name}</div>
@@ -21,6 +24,10 @@ const OptionLabel = (
     )}
   </div>
 )
+
+const sameName = (name: string) => (option: Option) => name === option.name
+
+const createOption = (name: string): Option => ({ name, regionalStructure: [] })
 
 export const AddressSubform: FC<Props> = ({ name }) => {
   const { register, setValue } = useFormContext()
@@ -36,29 +43,37 @@ export const AddressSubform: FC<Props> = ({ name }) => {
         <FormInputError>
           <Controller
             name={`${name}.street`}
-            render={({ field: { name: inputName, onChange, value, ref } }) => (
-              <Select<MapItem>
-                name={inputName}
-                inputValue={query}
-                onInputChange={setQuery}
-                onChange={(newValue: MapItem | null) => {
-                  if (newValue) {
-                    const city = newValue.regionalStructure.find(
-                      ({ type }) => type === 'regional.municipality',
-                    )
-                    setValue(`${name}.city`, city?.name)
-                    setValue(`${name}.zip_code`, newValue.zip)
-                    onChange(newValue.name)
-                  } else {
-                    onChange('')
-                  }
-                }}
-                options={options}
-                filterOption={() => true}
-                getOptionValue={({ name }) => name}
-                formatOptionLabel={OptionLabel}
-              />
-            )}
+            render={({ field: { name: inputName, onChange, value, ref } }) => {
+              const finalOptions =
+                options.find(sameName(value)) && value !== ''
+                  ? options
+                  : (options as Option[]).concat([createOption(value)])
+              return (
+                <Select<Option>
+                  ref={ref}
+                  name={inputName}
+                  value={finalOptions.find(sameName(value))}
+                  inputValue={query}
+                  onInputChange={setQuery}
+                  onChange={(newValue: Option | null) => {
+                    if (newValue) {
+                      const city = newValue.regionalStructure.find(
+                        ({ type }) => type === 'regional.municipality',
+                      )
+                      setValue(`${name}.city`, city?.name)
+                      setValue(`${name}.zip_code`, newValue.zip)
+                      onChange(newValue.name)
+                    } else {
+                      onChange('')
+                    }
+                  }}
+                  options={finalOptions}
+                  filterOption={() => true}
+                  getOptionValue={({ name }) => name}
+                  formatOptionLabel={OptionLabel}
+                />
+              )
+            }}
           />
         </FormInputError>
       </InlineSection>
