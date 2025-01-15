@@ -11,6 +11,7 @@ import {
   MenuWithAttribution,
 } from '../MapyCzSearch/MapyCzComponents'
 
+import style from './AddressSubform.module.scss'
 import selectStyle from '../SelectObject.module.scss'
 
 interface Props {
@@ -48,10 +49,14 @@ export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
                 <Select<Option>
                   ref={ref}
                   name={inputName}
-                  className={classNames(selectStyle.selectObject, {
-                    [selectStyle.opportunitiesTheme]:
-                      colorTheme === 'opportunuties',
-                  })}
+                  className={classNames(
+                    selectStyle.selectObject,
+                    style.select,
+                    {
+                      [selectStyle.opportunitiesTheme]:
+                        colorTheme === 'opportunuties',
+                    },
+                  )}
                   value={finalOptions.find(sameName(value))}
                   inputValue={query}
                   onInputChange={setQuery}
