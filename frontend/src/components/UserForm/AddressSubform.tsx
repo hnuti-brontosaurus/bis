@@ -1,3 +1,4 @@
+import classNames from 'classnames'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
 import { FC } from 'react'
@@ -10,8 +11,11 @@ import {
   MenuWithAttribution,
 } from '../MapyCzSearch/MapyCzComponents'
 
+import selectStyle from '../SelectObject.module.scss'
+
 interface Props {
   name: string
+  colorTheme?: string
 }
 
 type Option = Pick<MapItem, 'name' | 'regionalStructure'> &
@@ -21,7 +25,7 @@ const sameName = (name: string) => (option: Option) => name === option.name
 
 const createOption = (name: string): Option => ({ name, regionalStructure: [] })
 
-export const AddressSubform: FC<Props> = ({ name }) => {
+export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
   const { register, setValue } = useFormContext()
   const [query, debouncedQuery, setQuery] = useDebouncedState(250, '')
   const [options, { loading }] = useMapSuggest(debouncedQuery, {
@@ -44,6 +48,10 @@ export const AddressSubform: FC<Props> = ({ name }) => {
                 <Select<Option>
                   ref={ref}
                   name={inputName}
+                  className={classNames(selectStyle.selectObject, {
+                    [selectStyle.opportunitiesTheme]:
+                      colorTheme === 'opportunuties',
+                  })}
                   value={finalOptions.find(sameName(value))}
                   inputValue={query}
                   onInputChange={setQuery}
