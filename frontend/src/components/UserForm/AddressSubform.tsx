@@ -71,6 +71,7 @@ export const AddressSubform: FC<Props> = ({ name }) => {
                   filterOption={() => true}
                   getOptionValue={({ name }) => name}
                   formatOptionLabel={OptionLabel}
+                  isLoading={loading}
                 />
               )
             }}
