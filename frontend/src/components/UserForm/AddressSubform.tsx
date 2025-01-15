@@ -68,7 +68,9 @@ export const AddressSubform: FC<Props> = ({ name }) => {
                     }
                   }}
                   options={finalOptions}
-                  filterOption={() => true}
+                  filterOption={option =>
+                    !!options.find(sameName(option.value))
+                  }
                   getOptionValue={({ name }) => name}
                   formatOptionLabel={OptionLabel}
                   isLoading={loading}
