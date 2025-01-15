@@ -2,7 +2,12 @@ import classNames from 'classnames'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
 import Select from 'react-select'
-import { createOptionLabel, MenuWithAttribution } from './MapyCzComponents'
+import {
+  createOptionLabel,
+  loadingMessage,
+  MenuWithAttribution,
+  noOptionsMessage,
+} from './MapyCzComponents'
 
 import selectStyle from '../SelectObject.module.scss'
 
@@ -46,16 +51,8 @@ export const MapyCzSearch = ({
       })}
       filterOption={() => true}
       components={{ Menu: MenuWithAttribution }}
-      noOptionsMessage={() => {
-        if (query !== debouncedQuery) {
-          return <>Čekám až dopíšeš&hellip;</>
-        } else if (query.length < 2) {
-          return 'Zadej alespoň 2 znaky'
-        } else {
-          return 'Nenalezeno'
-        }
-      }}
-      loadingMessage={() => <>Hledám&hellip;</>}
+      noOptionsMessage={noOptionsMessage(query, debouncedQuery, 2)}
+      loadingMessage={loadingMessage}
       placeholder={<>Hledej&hellip;</>}
     />
   )

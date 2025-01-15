@@ -8,7 +8,9 @@ import { FormInputError } from '../FormInputError/FormInputError'
 import { InlineSection, Label } from '../FormLayout/FormLayout'
 import {
   createOptionLabel,
+  loadingMessage,
   MenuWithAttribution,
+  noOptionsMessage,
 } from '../MapyCzSearch/MapyCzComponents'
 
 import style from './AddressSubform.module.scss'
@@ -83,6 +85,8 @@ export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
                   )}
                   isLoading={loading}
                   components={{ Menu: MenuWithAttribution }}
+                  loadingMessage={loadingMessage}
+                  noOptionsMessage={noOptionsMessage(query, debouncedQuery, 2)}
                 />
               )
             }}

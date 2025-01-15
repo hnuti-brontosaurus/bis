@@ -39,3 +39,16 @@ export const createOptionLabel: CreateOptionLabelType =
         specific={context === 'menu' ? getSpecific(option) : undefined}
       />
     )
+
+export const loadingMessage = () => <>Hledám&hellip;</>
+
+export const noOptionsMessage =
+  (inputValue: string, query: string, limit: number) => () => {
+    if (inputValue !== query) {
+      return <>Čekám až dopíšeš&hellip;</>
+    } else if (inputValue.length < limit) {
+      return <>Zadej alespoň {limit} znaky</> // TODO correct plurals
+    } else {
+      return <>Nic jsem nenašel</>
+    }
+  }
