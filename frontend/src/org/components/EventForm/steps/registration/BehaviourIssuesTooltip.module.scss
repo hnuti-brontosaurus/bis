@@ -1,0 +1,6 @@
+@use 'styles/colors';
+
+.main {
+  color: colors.$error;
+  margin-left: 1ch;
+}
