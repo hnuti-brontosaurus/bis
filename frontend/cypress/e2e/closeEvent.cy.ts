@@ -138,6 +138,19 @@ describe('Close event - evidence and participants', () => {
       ).as('suggestAddress')
     })
 
+    const fillAddress = name => {
+      cy.get(`[name="${name}"]`)
+        .closest('[class*=AddressSubform_select]')
+        .find('[class*=control] [class*=Input] input')
+        .type('Hvězdová 4')
+      cy.wait('@suggestAddress')
+      cy.get(`[name="${name}"]`)
+        .closest('[class*=AddressSubform_select]')
+        .find('[class*=MenuList] [class*=option]')
+        .eq(0)
+        .click()
+    }
+
     describe('Adding non-existent user as participant', () => {
       // do the initial visiting and clicking to open user form modal
       const visitPage = () => {
@@ -164,9 +177,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('[placeholder=MM]').should('be.visible').type('01')
         cy.get('[placeholder=RRRR]').should('be.visible').type('1950')
         cy.get('[name=email]').type('test@example.com')
-        cy.get('[name=address\\.street]').type('abc')
-        cy.get('[name=address\\.city]').type('de')
-        cy.get('[name=address\\.zip_code]').type('10000')
+        fillAddress('address.street')
 
         // give form a chance to persist
         cy.wait(1000)
@@ -181,16 +192,7 @@ describe('Close event - evidence and participants', () => {
       it('filling address also fills city and zip code', () => {
         visitPage()
         clickAddNewParticipant()
-        cy.get('[name=address\\.street]')
-          .closest('[class*=AddressSubform_select]')
-          .find('[class*=control] [class*=Input] input')
-          .type('Hvězdová 4')
-        cy.wait('@suggestAddress')
-        cy.get('[name=address\\.street]')
-          .closest('[class*=AddressSubform_select]')
-          .find('[class*=MenuList] [class*=option]')
-          .eq(0)
-          .click()
+        fillAddress('address.street')
         cy.get('[name=address\\.city]').should('have.value', 'Brno')
         cy.get('[name=address\\.zip_code]').should('have.value', '602 00')
       })
@@ -229,9 +231,9 @@ describe('Close event - evidence and participants', () => {
             email: 'test@example.com',
             birthday: '1950-01-01',
             address: {
-              street: 'abc',
-              city: 'de',
-              zip_code: '10000',
+              street: 'Hvězdová 303/4',
+              city: 'Brno',
+              zip_code: '602 00',
             },
             contact_address: null,
             close_person: null,
@@ -411,7 +413,7 @@ describe('Close event - evidence and participants', () => {
         .clear()
         .type('Dana')
 
-      cy.get('[name=address\\.street]').clear().type('NewStreetName 42')
+      fillAddress('address.street')
       cy.get('[name=address\\.city]').clear().type('NewTown')
       cy.get('[name=address\\.zip_code]').clear().type('12345')
       cy.get('[name=health_insurance_company]').select(4)
@@ -429,7 +431,7 @@ describe('Close event - evidence and participants', () => {
         expect(a.request.body).to.deep.include({
           first_name: 'Dana',
           address: {
-            street: 'NewStreetName 42',
+            street: 'Hvězdová 303/4',
             city: 'NewTown',
             zip_code: '12345',
           },
