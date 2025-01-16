@@ -106,6 +106,36 @@ describe('Close event - evidence and participants', () => {
         { method: 'PATCH', pathname: '/api/frontend/events/1000/' },
         {},
       ).as('updateEvent')
+      cy.intercept(
+        { method: 'GET', url: 'https://api.mapy.cz/v1/suggest?*' },
+        {
+          items: [
+            {
+              name: 'Hvězdová 303/4',
+              label: 'Adresa',
+              position: { lon: 16.62287, lat: 49.20063 },
+              bbox: [
+                16.620062420875346, 49.199532900919216, 16.625676891401096,
+                49.20173403915781,
+              ],
+              type: 'regional.address',
+              location: 'Brno - Zábrdovice, Česko',
+              regionalStructure: [
+                { name: '303/4', type: 'regional.address' },
+                { name: 'Hvězdová', type: 'regional.street' },
+                { name: 'Zábrdovice', type: 'regional.municipality_part' },
+                { name: 'Brno-sever', type: 'regional.municipality_part' },
+                { name: 'Brno', type: 'regional.municipality' },
+                { name: 'okres Brno-město', type: 'regional.region' },
+                { name: 'Jihomoravský kraj', type: 'regional.region' },
+                { name: 'Česko', type: 'regional.country', isoCode: 'CZ' },
+              ],
+              zip: '602 00',
+            },
+          ],
+          locality: [],
+        },
+      ).as('suggestAddress')
     })
 
     describe('Adding non-existent user as participant', () => {
@@ -147,6 +177,23 @@ describe('Close event - evidence and participants', () => {
           exists ? 'exist' : 'not.exist',
         )
       }
+
+      it('filling address also fills city and zip code', () => {
+        visitPage()
+        clickAddNewParticipant()
+        cy.get('[name=address\\.street]')
+          .closest('[class*=AddressSubform_select]')
+          .find('[class*=control] [class*=Input] input')
+          .type('Hvězdová 4')
+        cy.wait('@suggestAddress')
+        cy.get('[name=address\\.street]')
+          .closest('[class*=AddressSubform_select]')
+          .find('[class*=MenuList] [class*=option]')
+          .eq(0)
+          .click()
+        cy.get('[name=address\\.city]').should('have.value', 'Brno')
+        cy.get('[name=address\\.zip_code]').should('have.value', '602 00')
+      })
 
       it('should open a modal, receive data of new user, and save them as a participant', () => {
         visitPage()
