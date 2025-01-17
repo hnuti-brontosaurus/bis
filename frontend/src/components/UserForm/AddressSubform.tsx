@@ -46,7 +46,7 @@ export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
               const finalOptions =
                 options.find(sameName(value)) && value !== ''
                   ? options
-                  : (options as Option[]).concat([createOption(value)])
+                  : (options as Option[]).concat([createOption(value)]) // create option for initial field value
               return (
                 <Select<Option>
                   ref={ref}
@@ -75,8 +75,8 @@ export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
                     }
                   }}
                   options={finalOptions}
-                  filterOption={option =>
-                    !!options.find(sameName(option.value))
+                  filterOption={
+                    option => !!options.find(sameName(option.value)) // hide initial value option
                   }
                   getOptionValue={({ name }) => name}
                   formatOptionLabel={createOptionLabel(
