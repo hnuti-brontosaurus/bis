@@ -12,6 +12,7 @@ import {
 } from 'components'
 import { useRejectApplication } from 'hooks/rejectApplication'
 import React, { FC, ReactNode, useState } from 'react'
+import { isString } from 'lodash'
 import {
   FaDollarSign,
   FaInfoCircle as Detail,
@@ -24,6 +25,7 @@ import { formatDateTime } from 'utils/helpers'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
+import { BehaviourIssuesTooltip } from './BehaviourIssuesTooltip'
 import { EmailListModal } from './EmailListModal'
 import { NewApplicationModal } from './NewApplicationModal'
 import { PaidForCheckbox } from './PaidForCheckbox'
@@ -146,6 +148,17 @@ export const Applications: FC<{
 
   let applications = applicationsData ? applicationsData.results : []
 
+  const { data: applicationUsersData } = api.endpoints.readUsers.useQuery(
+    applicationsData
+      ? {
+          id: applications
+            .map(application => application.user)
+            .filter(isString),
+        }
+      : skipToken,
+  )
+  const applicationUsers = applicationUsersData?.results ?? []
+
   const applicationsPending = applications.filter(
     app => app.state === ApplicationStates.pending,
   )
@@ -257,6 +270,9 @@ export const Applications: FC<{
       >
         <td onClick={showDetails}>
           {application.first_name} {application.last_name}
+          <BehaviourIssuesTooltip
+            user={applicationUsers.find(({ id }) => id == application.user)}
+          />
         </td>
         <td onClick={showDetails}>
           {application.birthday && formatDateTime(application.birthday)}
