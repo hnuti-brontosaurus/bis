@@ -16,7 +16,7 @@ def upload_bank_records(file):
     ]
 
     data = StringIO(file.read().decode("utf-8").strip())
-    data = list(csv.reader(data, delimiter=","))
+    data = list(csv.reader(data, delimiter=";"))
     header, data = data[0], data[1:]
 
     header = {i: column.strip() for i, column in enumerate(header)}
