@@ -106,7 +106,50 @@ describe('Close event - evidence and participants', () => {
         { method: 'PATCH', pathname: '/api/frontend/events/1000/' },
         {},
       ).as('updateEvent')
+      cy.intercept(
+        { method: 'GET', url: 'https://api.mapy.cz/v1/suggest?*' },
+        {
+          items: [
+            {
+              name: 'Hvězdová 303/4',
+              label: 'Adresa',
+              position: { lon: 16.62287, lat: 49.20063 },
+              bbox: [
+                16.620062420875346, 49.199532900919216, 16.625676891401096,
+                49.20173403915781,
+              ],
+              type: 'regional.address',
+              location: 'Brno - Zábrdovice, Česko',
+              regionalStructure: [
+                { name: '303/4', type: 'regional.address' },
+                { name: 'Hvězdová', type: 'regional.street' },
+                { name: 'Zábrdovice', type: 'regional.municipality_part' },
+                { name: 'Brno-sever', type: 'regional.municipality_part' },
+                { name: 'Brno', type: 'regional.municipality' },
+                { name: 'okres Brno-město', type: 'regional.region' },
+                { name: 'Jihomoravský kraj', type: 'regional.region' },
+                { name: 'Česko', type: 'regional.country', isoCode: 'CZ' },
+              ],
+              zip: '602 00',
+            },
+          ],
+          locality: [],
+        },
+      ).as('suggestAddress')
     })
+
+    const fillAddress = name => {
+      cy.get(`[name="${name}"]`)
+        .closest('[class*=AddressSubform_select]')
+        .find('[class*=control] [class*=Input] input')
+        .type('Hvězdová 4')
+      cy.wait('@suggestAddress')
+      cy.get(`[name="${name}"]`)
+        .closest('[class*=AddressSubform_select]')
+        .find('[class*=MenuList] [class*=option]')
+        .eq(0)
+        .click()
+    }
 
     describe('Adding non-existent user as participant', () => {
       // do the initial visiting and clicking to open user form modal
@@ -134,9 +177,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('[placeholder=MM]').should('be.visible').type('01')
         cy.get('[placeholder=RRRR]').should('be.visible').type('1950')
         cy.get('[name=email]').type('test@example.com')
-        cy.get('[name=address\\.street]').type('abc')
-        cy.get('[name=address\\.city]').type('de')
-        cy.get('[name=address\\.zip_code]').type('10000')
+        fillAddress('address.street')
 
         // give form a chance to persist
         cy.wait(1000)
@@ -147,6 +188,14 @@ describe('Close event - evidence and participants', () => {
           exists ? 'exist' : 'not.exist',
         )
       }
+
+      it('filling address also fills city and zip code', () => {
+        visitPage()
+        clickAddNewParticipant()
+        fillAddress('address.street')
+        cy.get('[name=address\\.city]').should('have.value', 'Brno')
+        cy.get('[name=address\\.zip_code]').should('have.value', '602 00')
+      })
 
       it('should open a modal, receive data of new user, and save them as a participant', () => {
         visitPage()
@@ -182,9 +231,9 @@ describe('Close event - evidence and participants', () => {
             email: 'test@example.com',
             birthday: '1950-01-01',
             address: {
-              street: 'abc',
-              city: 'de',
-              zip_code: '10000',
+              street: 'Hvězdová 303/4',
+              city: 'Brno',
+              zip_code: '602 00',
             },
             contact_address: null,
             close_person: null,
@@ -364,7 +413,7 @@ describe('Close event - evidence and participants', () => {
         .clear()
         .type('Dana')
 
-      cy.get('[name=address\\.street]').clear().type('NewStreetName 42')
+      fillAddress('address.street')
       cy.get('[name=address\\.city]').clear().type('NewTown')
       cy.get('[name=address\\.zip_code]').clear().type('12345')
       cy.get('[name=health_insurance_company]').select(4)
@@ -382,7 +431,7 @@ describe('Close event - evidence and participants', () => {
         expect(a.request.body).to.deep.include({
           first_name: 'Dana',
           address: {
-            street: 'NewStreetName 42',
+            street: 'Hvězdová 303/4',
             city: 'NewTown',
             zip_code: '12345',
           },

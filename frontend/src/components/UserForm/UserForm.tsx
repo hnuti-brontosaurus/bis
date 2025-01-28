@@ -33,6 +33,7 @@ import { Optional } from 'utility-types'
 import { withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
+import { AddressSubform } from './AddressSubform'
 
 /**
  * Expected fields are defined here:
@@ -470,47 +471,10 @@ export const UserForm = ({
               </FormInputError>
             </InlineSection>
             <FormSubsection header="Adresa" required>
-              <InlineSection>
-                <Label>Ulice a číslo domu</Label>
-                <FormInputError>
-                  <input type="text" {...register('address.street')} />
-                </FormInputError>
-              </InlineSection>
-              <InlineSection>
-                <Label>Obec</Label>
-                <FormInputError>
-                  <input type="text" {...register('address.city')} />
-                </FormInputError>
-              </InlineSection>
-              <InlineSection>
-                <Label>Směrovací číslo</Label>
-                <FormInputError>
-                  <input type="text" {...register('address.zip_code')} />
-                </FormInputError>
-              </InlineSection>
+              <AddressSubform name="address" />
             </FormSubsection>
             <FormSubsection header="Kontaktní adresa">
-              <InlineSection>
-                <Label>Ulice a číslo domu</Label>
-                <FormInputError>
-                  <input type="text" {...register('contact_address.street')} />
-                </FormInputError>
-              </InlineSection>
-              <InlineSection>
-                <Label>Obec</Label>
-                <FormInputError>
-                  <input type="text" {...register('contact_address.city')} />
-                </FormInputError>
-              </InlineSection>
-              <InlineSection>
-                <Label>Směrovací číslo</Label>
-                <FormInputError>
-                  <input
-                    type="text"
-                    {...register('contact_address.zip_code')}
-                  />
-                </FormInputError>
-              </InlineSection>
+              <AddressSubform name="contact_address" />
             </FormSubsection>
           </FormSection>
           <FormSection
