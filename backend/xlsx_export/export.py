@@ -413,7 +413,7 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
         },
     )
 
-    return FileResponse(open(tmp_pdf.name, "rb"))
+    return FileResponse(open(tmp_pdf.name, "rb"), as_attachment=True)
 
 
 def export_files(event: Event):
