@@ -6,11 +6,19 @@ import type {
   MembershipCategory,
   User,
 } from 'app/services/bisTypes'
-import { EmailButton, PhoneButton, StyledModal } from 'components'
+import {
+  EmailButton,
+  Help,
+  PhoneButton,
+  StyledModal
+} from 'components'
 import { mergeWith, omit } from 'lodash'
 import { FC, Fragment } from 'react'
+import { IoWarning } from 'react-icons/io5'
 import { withOverwriteArray } from 'utils/helpers'
 import styles from '../ParticipantsStep.module.scss'
+
+import style from './ShowApplicationModal.module.scss'
 
 interface IShowApplicationModalProps {
   open: boolean
@@ -92,6 +100,20 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
       onClose={onClose}
       title={`Přihláška na akci ${eventName}`}
     >
+      {user && user.behaviour_issues && (
+        <div className={style.behaviour}>
+          <h3>
+            <IoWarning className={style.icon} /> Problémy na akcích{' '}
+            <Help>
+              Na základě zpětné vazby organizátorů a účastníků akcí byl tento
+              účastník výkonným výborem označen za problémového. Níže je krátký
+              popis jeho chování. Pokud chcete vědět více, napište na{' '}
+              <EmailButton>vv@brontosaurus.cz</EmailButton>
+            </Help>
+          </h3>
+          {user.behaviour_issues}{' '}
+        </div>
+      )}
       {currentApplication &&
         (!participantsMap ||
           !user ||

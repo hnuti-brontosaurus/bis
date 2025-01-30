@@ -103,7 +103,7 @@ class Event(SearchMixin, Model):
     def clean(self):
         if self.main_organizer:
             Qualification.validate_main_organizer(self, self.main_organizer)
-        if self.location:
+        if self.location and self._state.adding:
             if (
                 distance(Point(16.6797381, 49.3061528), self.location.gps_location).km
                 < 5

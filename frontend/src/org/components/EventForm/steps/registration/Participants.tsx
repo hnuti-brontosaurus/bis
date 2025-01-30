@@ -23,6 +23,7 @@ import colors from 'styles/colors.module.scss'
 import { formatAddress, formatDateTime } from 'utils/helpers'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
+import { BehaviourIssuesTooltip } from './BehaviourIssuesTooltip'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
@@ -467,6 +468,7 @@ export const Participants: FC<{
                           participant.nickname && `(${participant.nickname})`
                         }`}{' '}
                         {participant.last_name}
+                        <BehaviourIssuesTooltip user={participant} />
                       </td>
                       <td>{formatDateTime(participant.birthday)}</td>
                       <td>

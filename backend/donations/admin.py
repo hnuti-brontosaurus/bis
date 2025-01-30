@@ -194,7 +194,9 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
 
             try:
                 if "_donation_confirmation_pdf_export" in request.POST:
-                    return FileResponse(get_donation_confirmation(obj)[0])
+                    return FileResponse(
+                        get_donation_confirmation(obj)[0], as_attachment=True
+                    )
                 if "_donation_confirmation_pdf_email" in request.POST:
                     donation_confirmation(obj, *get_donation_confirmation(obj))
                     messages.info(request, "Potvrzení o daru úspěšně odesláno")

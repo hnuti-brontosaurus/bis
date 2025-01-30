@@ -3186,6 +3186,7 @@ export type User = {
   subscribed_to_newsletter?: boolean
   health_insurance_company: HealthInsuranceCompany
   health_issues?: string
+  behaviour_issues?: string
   pronoun: PronounCategory
   is_active: boolean
   date_joined: string
