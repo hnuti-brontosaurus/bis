@@ -6,16 +6,9 @@ import type {
   MembershipCategory,
   User,
 } from 'app/services/bisTypes'
-import {
-  EmailButton,
-  Help,
-  PhoneButton,
-  StyledModal
-} from 'components'
-import { mergeWith, omit } from 'lodash'
+import { EmailButton, Help, PhoneButton, StyledModal } from 'components'
 import { FC, Fragment } from 'react'
 import { IoWarning } from 'react-icons/io5'
-import { withOverwriteArray } from 'utils/helpers'
 import styles from '../ParticipantsStep.module.scss'
 
 import style from './ShowApplicationModal.module.scss'
@@ -84,14 +77,6 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
   )
   // TODO consider showing historical memberships, too
 
-  const formattedUser = mergeWith(
-    omit(user, 'id', '_search_id', 'display_name'),
-    { memberships: user?.memberships },
-    withOverwriteArray,
-  )
-
-  console.log(currentApplication)
-
   if (!open) return null
 
   return (
@@ -117,7 +102,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
       {currentApplication &&
         (!participantsMap ||
           !user ||
-          (user && currentApplication.id.toString() === user.id)) && (
+          (user && currentApplication.user?.toString() === user.id)) && (
           <div>
             {' '}
             <h3>Přihláška:</h3>
@@ -168,18 +153,22 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
                 <span>{`${currentApplication.close_person.first_name} ${currentApplication.close_person.last_name}`}</span>
                 {currentApplication.close_person.email && (
                   <>
-                    <span>email:</span>
-                    <EmailButton>
-                      {currentApplication.close_person.email}
-                    </EmailButton>
+                    <span>
+                      , e-mail:{' '}
+                      <EmailButton>
+                        {currentApplication.close_person.email}
+                      </EmailButton>
+                    </span>
                   </>
                 )}
                 {currentApplication.close_person.phone && (
                   <>
-                    <span>tel: </span>
-                    <PhoneButton>
-                      {currentApplication.close_person.phone}
-                    </PhoneButton>
+                    <span>
+                      , tel:{' '}
+                      <PhoneButton>
+                        {currentApplication.close_person.phone}
+                      </PhoneButton>
+                    </span>
                   </>
                 )}
               </div>
@@ -254,13 +243,13 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
                 <span>{`${user.close_person.first_name} ${user.close_person.last_name}`}</span>
                 {user.close_person.email && (
                   <span>
-                    'email: '{' '}
+                    , email:{' '}
                     <EmailButton>{user.close_person.email}</EmailButton>
                   </span>
                 )}
                 {user.close_person.phone && (
                   <span>
-                    'tel: ' <PhoneButton>{user.close_person.phone}</PhoneButton>
+                    , tel: <PhoneButton>{user.close_person.phone}</PhoneButton>
                   </span>
                 )}
               </div>
