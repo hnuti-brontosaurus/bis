@@ -190,9 +190,9 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
             </div>
           </div>
         )}
-      {(!currentApplication || Object.keys(currentApplication).length === 0) &&
-        userId &&
-        user && (
+      {userId &&
+        user &&
+        (!currentApplication || currentApplication.user !== userId) && (
           <div>
             <div className={styles.addedUserBlock}>
               <h3>Uživatel přidaný na akci: </h3>
