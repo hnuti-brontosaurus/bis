@@ -194,7 +194,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
         user &&
         (!currentApplication || currentApplication.user !== userId) && (
           <div>
-            <div className={styles.addedUserBlock}>
+            <div>
               <h3>Uživatel přidaný na akci: </h3>
               <h4>
                 {user.first_name} {user.last_name}{' '}
