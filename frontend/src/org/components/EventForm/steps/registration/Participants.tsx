@@ -27,7 +27,6 @@ import { BehaviourIssuesTooltip } from './BehaviourIssuesTooltip'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
 import { useExportParticipantsList } from './useExportParticipantsList'
-import { useExportAttendanceList } from './useExportAttendanceList'
 import type * as original from 'app/services/testApi'
 
 export const Participants: FC<{
@@ -87,9 +86,6 @@ export const Participants: FC<{
 
   const [exportParticipantsList, { isLoading: isExportLoading }] =
     useExportParticipantsList()
-
-  const [exportAttendanceList, { isLoading: isGeneratingPdf }] =
-    useExportAttendanceList()
 
   const addParticipant = async (newParticipantId: string) => {
     let newParticipants: string[] = []
@@ -292,7 +288,7 @@ export const Participants: FC<{
           small
           type="button"
           onClick={() => {
-            exportParticipantsList({ eventId })
+            exportParticipantsList({ eventId, format: 'xlsx' })
           }}
           isLoading={isExportLoading}
         >
@@ -307,9 +303,9 @@ export const Participants: FC<{
           small
           type="button"
           onClick={() => {
-            exportAttendanceList({ eventId, format: 'pdf' })
+            exportParticipantsList({ eventId, format: 'pdf' })
           }}
-          isLoading={isGeneratingPdf}
+          isLoading={isExportLoading}
         >
           Tisknout prezenční listinu
         </Button>
