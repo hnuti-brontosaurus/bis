@@ -26,11 +26,11 @@ def show_history(history: dict):
     for position, position_data in history.items():
         for user_id, user_data in position_data.items():
             if user_id not in user_map:
-                user_map[user_id] = User.objects.get(id=user_id)
+                user_map[user_id] = User.objects.filter(id=user_id).first() or user_id
             user = user_map[user_id]
 
-            for range in user_data:
-                result.append([position, user, range])
+            for interval in user_data:
+                result.append([position, user, interval])
 
     result.sort(key=lambda x: x[2][1], reverse=True)
 
