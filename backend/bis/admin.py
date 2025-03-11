@@ -701,7 +701,9 @@ class MembershipAdminAddForm(forms.ModelForm):
 
         cleaned_data["year"] = cleaned_data["year"] or today().year
         if cleaned_data["year"] != today().year:
-            if not self.request.user.is_superuser:
+            if not (
+                self.request.user.is_superuser or self.request.user.is_office_worker
+            ):
                 raise ValidationError(
                     {"year": "Můžeš přidávat členství jen za tento rok"}
                 )
