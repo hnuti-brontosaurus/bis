@@ -3,6 +3,10 @@ export const footerLinks: { name: string; url: string }[] = [
     name: 'Mozek',
     url: 'https://mozek.brontosaurus.cz/index.php/hemisfera-orgu/dokumenty/pro-organizatory',
   },
+  {
+    name: 'Sborník her a programů',
+    url: 'https://bis.brontosaurus.cz/game_book/',
+  },
   { name: 'Zapoj se', url: 'https://brontosaurus.cz/zapoj-se/' },
   {
     name: 'Mapa lokalit',
