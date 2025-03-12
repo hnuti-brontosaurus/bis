@@ -738,7 +738,6 @@ class MembershipAdminAddForm(forms.ModelForm):
 class MembershipAdmin(PermissionMixin, NestedModelAdmin):
     date_hierarchy = "_year"
     change_list_template = "bis/membership_change_list.html"
-    list_per_page = 1000
     exclude = ("_import_id", "_year")
     actions = [export_to_xlsx, extend_memberships, export_membership_emails]
     autocomplete_fields = "user", "administration_unit"
