@@ -23,12 +23,14 @@ from bis.models import User
 from common.thumbnails import get_thumbnail_path
 from django.conf import settings
 from django.contrib import admin, messages
+from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import FileResponse
 from django.utils.formats import date_format
 from event.models import Event
+from other.models import SavedFile
 from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
 from questionnaire.models import EventApplication
@@ -229,17 +231,13 @@ executor = ThreadPoolExecutor(max_workers=1)
 def send_later(request, result):
     try:
         file = result.result()
+        saved_file = SavedFile.objects.create(name=file.name)
+        name = f"saved_file_{saved_file.id}.xlsx"
+        saved_file.file.save(name, open(file.name, "rb"), save=False)
         emails.text(
             request.user.email,
             "Vygenerovaný export",
-            "tumáš!",
-            attachments=[
-                {
-                    "content_type": "xlsx",
-                    "name": Path(file.name).name,
-                    "data": b64encode(open(file.name, "rb").read()).decode(),
-                }
-            ],
+            f"tu: {settings.FULL_HOSTNAME}/media/saved_files/{name} máš!",
         )
     except Exception as e:
         logging.exception(f"Error sending xlsx export to email: {e}")
@@ -248,7 +246,7 @@ def send_later(request, result):
 @admin.action(description="Exportuj data")
 def export_to_xlsx(model_admin, request, queryset):
     result = executor.submit(do_export_to_xlsx, queryset)
-    for _ in range(40):
+    for _ in range(20):
         sleep(1)
         if result.done():
             file = result.result()
@@ -527,28 +525,3 @@ def get_donation_confirmation(donor):
     )
     page.save(tmp_pdf.name)
     return open(tmp_pdf.name, "rb"), year
-
-
-def get_donation_points(donation_points):
-    wb = openpyxl.Workbook()
-    ws = wb.active
-
-    ws.cell(1, 1).value = "Body dotací"
-    ws.cell(2, 1).value = "od"
-    ws.cell(2, 2).value = str(donation_points.since)
-    ws.cell(2, 3).value = "do"
-    ws.cell(2, 4).value = str(donation_points.till)
-
-    for r, row in enumerate(donation_points.get_rows()):
-        for c, cell in enumerate(row):
-            ws.cell(4 + r, 1 + c).value = cell
-
-    tmp_file = NamedTemporaryFile(
-        mode="w",
-        suffix=".xlsx",
-        newline="",
-        encoding="utf8",
-        prefix="donation_points_",
-    )
-    wb.save(tmp_file.name)
-    return open(tmp_file.name, "rb")

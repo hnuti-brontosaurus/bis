@@ -1,5 +1,7 @@
-from datetime import timedelta
+from datetime import date, timedelta
+from tempfile import NamedTemporaryFile
 
+import openpyxl
 from administration_units.models import AdministrationUnit
 from bis.helpers import AgeStats, filter_queryset_with_multiple_or_queries
 from bis.models import User
@@ -9,7 +11,6 @@ from django.contrib.gis.db.models import *
 from django.core.files import File
 from donations.models import Donation
 from translation.translate import translate_model
-from xlsx_export.export import get_donation_points
 
 
 @translate_model
@@ -228,11 +229,35 @@ class DonationPoints(Model):
     def __str__(self):
         return self.name
 
+    def get_donation_points(self):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        ws.cell(1, 1).value = "Body dotací"
+        ws.cell(2, 1).value = "od"
+        ws.cell(2, 2).value = str(self.since)
+        ws.cell(2, 3).value = "do"
+        ws.cell(2, 4).value = str(self.till)
+
+        for r, row in enumerate(self.get_rows()):
+            for c, cell in enumerate(row):
+                ws.cell(4 + r, 1 + c).value = cell
+
+        tmp_file = NamedTemporaryFile(
+            mode="w",
+            suffix=".xlsx",
+            newline="",
+            encoding="utf8",
+            prefix="donation_points_",
+        )
+        wb.save(tmp_file.name)
+        return open(tmp_file.name, "rb")
+
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         if not self._state.adding:
-            file = File(get_donation_points(self))
+            file = File(self.get_donation_points())
             self.file.save(f"{self.name}.xlsx", file, save=False)
         super().save(force_insert, force_update, using, update_fields)
 
@@ -318,3 +343,13 @@ class DonationPointsColumn(Model):
 
     def __str__(self):
         return f"Sloupec {self.aggregation}"
+
+
+class SavedFile(Model):
+    name = CharField(max_length=63)
+    file = FileField(upload_to="saved_files")
+    created_at = DateField(auto_now_add=True)
+
+    @classmethod
+    def remove_old(cls):
+        SavedFile.objects.delete(created_at__lte=today() - timedelta(days=14))

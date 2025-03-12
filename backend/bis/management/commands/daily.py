@@ -3,6 +3,7 @@ from datetime import date
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from other.models import SavedFile
 
 from bis import emails
 
@@ -36,6 +37,7 @@ class Command(BaseCommand):
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.qualification_about_to_end)
         try_to_run(emails.qualification_ended)
+        try_to_run(SavedFile.remove_old)
 
         today = date.today()
         # weekly
