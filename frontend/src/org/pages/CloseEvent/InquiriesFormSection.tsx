@@ -1,7 +1,7 @@
 import { InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import { Button, FormInputError, FormSubsection } from 'components'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
 import { FaLock, FaPlus, FaTrashAlt } from 'react-icons/fa'
 import * as messages from 'utils/validationMessages'
@@ -86,10 +86,12 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
 
   const inquiryType = useWatch({ name: `inquiries.${index}.data.type` })
   const isHeader = inquiryType === 'header'
-  if (isHeader) {
-    setValue(`inquiries.${index}.is_required`, false)
-  }
-  setValue(`inquiries.${index}.data.comment`, inquiryType === 'scale')
+  useEffect(() => {
+    if (isHeader) {
+      setValue(`inquiries.${index}.is_required`, false)
+    }
+    setValue(`inquiries.${index}.data.comment`, inquiryType === 'scale')
+  }, [inquiryType])
 
   const fixed = !!getValues(`inquiries.${index}.data.fixed`)
 
