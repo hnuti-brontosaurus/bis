@@ -90,13 +90,13 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
           <h3>
             <IoWarning className={style.icon} /> Problémy na akcích{' '}
             <Help>
-              Na základě zpětné vazby organizátorů a účastníků akcí byl tento
-              účastník výkonným výborem označen za problémového. Níže je krátký
-              popis jeho chování. Pokud chcete vědět více, napište na{' '}
-              <EmailButton>vv@brontosaurus.cz</EmailButton>
+              Tento účastník*ice byl označen za problémového*ou na základě
+              zpětné vazby organizátorů či účastníků a po provedené kontrole
+              KRKem. Níže je krátký popis jeho chování. Pokud chcete vědět více,
+              napište na <EmailButton>vv@brontosaurus.cz</EmailButton>.
             </Help>
           </h3>
-          {user.behaviour_issues}{' '}
+          {user.behaviour_issues}
         </div>
       )}
       {currentApplication &&
