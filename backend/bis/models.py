@@ -892,7 +892,7 @@ class Membership(Model):
 
     @permission_cache
     def has_edit_permission(self, user):
-        return self.user.has_edit_permission(user) and self.year == today().year
+        return self.year == today().year and self.user.has_edit_permission(user)
 
     def clean(self):
         if Membership.objects.filter(
