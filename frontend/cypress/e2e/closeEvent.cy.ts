@@ -194,7 +194,7 @@ describe('Close event - evidence and participants', () => {
         clickAddNewParticipant()
         fillAddress('address.street')
         cy.get('[name=address\\.city]').should('have.value', 'Brno')
-        cy.get('[name=address\\.zip_code]').should('have.value', '602 00')
+        cy.get('[name=address\\.zip_code]').should('have.value', '60200')
       })
 
       it('should open a modal, receive data of new user, and save them as a participant', () => {
@@ -233,7 +233,7 @@ describe('Close event - evidence and participants', () => {
             address: {
               street: 'Hvězdová 303/4',
               city: 'Brno',
-              zip_code: '602 00',
+              zip_code: '60200',
             },
             contact_address: null,
             close_person: null,
