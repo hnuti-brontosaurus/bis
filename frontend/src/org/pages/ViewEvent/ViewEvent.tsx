@@ -153,12 +153,12 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
             </span>
             {event?.vip_propagation?.short_invitation_text}
           </p>
-          <p className={styles.invitationText}>
+          {/*<p className={styles.invitationText}>
             <span className={styles.inlineHeaderSmall}>
               Propagovat akci v Roverském kmeni?:{' '}
             </span>
             {event?.vip_propagation?.rover_propagation ? 'ano' : 'ne'}
-          </p>
+          </p>*/}
         </section>
       </>
     ) : null
