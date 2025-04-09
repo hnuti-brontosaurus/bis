@@ -501,13 +501,19 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               <tbody>
                 <tr>
                   <th>Hlavní organizátor</th>
-                  <td>{event.main_organizer?.display_name}</td>
+                  <td>
+                    {event.main_organizer?.first_name}{' '}
+                    {event.main_organizer?.last_name}
+                  </td>
                 </tr>
                 <tr>
                   <th>Organizační tým</th>
                   <td>
                     {event.other_organizers
-                      .map(organizer => organizer.display_name)
+                      .map(
+                        organizer =>
+                          `${organizer.first_name} ${organizer.last_name}`,
+                      )
                       .join(', ')}
                   </td>
                 </tr>
