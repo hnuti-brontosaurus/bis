@@ -68,7 +68,10 @@ export const AddressSubform: FC<Props> = ({ name, colorTheme }) => {
                         ({ type }) => type === 'regional.municipality',
                       )
                       setValue(`${name}.city`, city?.name)
-                      setValue(`${name}.zip_code`, newValue.zip)
+                      setValue(
+                        `${name}.zip_code`,
+                        newValue.zip?.replace(/\s+/g, ''),
+                      )
                       onChange(newValue.name)
                     } else {
                       onChange('')
