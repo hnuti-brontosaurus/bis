@@ -201,7 +201,7 @@ export const IntendedForStep = ({
                     ></textarea>
                   </FormInputError>
                 </FullSizeElement>
-                {
+                {/*
                   // only "camp" can see this
                   // https://docs.google.com/document/d/1p3nz0-kVJxwN_pRCYYyhy0BObyGox6LDk35RQPADT4g/edit?disco=AAAAc3SBnZQ
                   isCamp && (
@@ -255,7 +255,7 @@ export const IntendedForStep = ({
                       </FormInputError>
                     </FormSubsection>
                   )
-                }
+                */}
               </>
             )
           }
