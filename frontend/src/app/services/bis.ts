@@ -67,6 +67,7 @@ import type {
   UserSearch,
 } from './bisTypes'
 import {
+  DashboardItem,
   EventFeedback,
   EventFeedbackRead,
   FeedbackForm,
@@ -1184,6 +1185,15 @@ export const api = createApi({
           page_size: queryArg.pageSize,
           search: queryArg.search,
         },
+      }),
+    }),
+    readDashboardItems: build.query<
+      PaginatedList<DashboardItem>,
+      ListArguments
+    >({
+      query: params => ({
+        url: '/frontend/dashboard_items/',
+        params,
       }),
     }),
 
