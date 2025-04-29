@@ -6,10 +6,29 @@
   background-color: colors.$gray-100;
 
   td {
-    padding: .3rem;
+    padding: 0 .3rem;
   }
 }
 
-.row:not(:first-child) {
+.title:not(:first-child) {
   border-top: 1px solid colors.$gray-300;
+
+  td {
+    padding-top: .3rem;
+  }
+}
+
+.single td {
+  padding-bottom: .3rem;
+}
+
+.description {
+  font-style: italic;
+  td {
+    padding: 0 .7rem;
+  }
+}
+
+.description:not(:last-child) td {
+  padding-bottom: .3rem;
 }
