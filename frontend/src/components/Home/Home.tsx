@@ -3,6 +3,8 @@ import classNames from 'classnames'
 import { GuideOwl } from 'components'
 import { ReactNode } from 'react'
 import { Link, To } from 'react-router-dom'
+import { DashboardItem } from 'app/services/testApi'
+import { Dashboard } from '../Dashboard/Dashboard'
 import styles from './Home.module.scss'
 
 export interface HomeButtonConfig {
@@ -19,7 +21,13 @@ export interface HomeButtonConfig {
     | 'simple'
 }
 
-export const Home = ({ buttons }: { buttons: HomeButtonConfig[] }) => (
+export const Home = ({
+  buttons,
+  dashboardItems,
+}: {
+  buttons: HomeButtonConfig[]
+  dashboardItems?: DashboardItem[]
+}) => (
   <>
     <GuideOwl id="main-guide" left>
       {' '}
@@ -52,6 +60,7 @@ export const Home = ({ buttons }: { buttons: HomeButtonConfig[] }) => (
           </Link>
         ))}
       </nav>
+      {dashboardItems && <Dashboard items={dashboardItems} />}
       <img className={styles.illustration} src={illustration} alt="" />
     </div>
   </>

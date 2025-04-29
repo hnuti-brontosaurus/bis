@@ -45,5 +45,10 @@ export const Home = () => {
       return buttons
     } else return merge([], buttons, [{ link: '' }])
   }, [canCreateEvent])
-  return <HomeNav buttons={processedButtons} />
+  return (
+    <HomeNav
+      buttons={processedButtons}
+      dashboardItems={dashboardItems && dashboardItems.results}
+    />
+  )
 }
