@@ -1,0 +1,15 @@
+@use 'styles/colors';
+
+.main {
+  border-radius: 1rem;
+  padding: 1rem;
+  background-color: colors.$gray-100;
+
+  td {
+    padding: .3rem;
+  }
+}
+
+.row:not(:first-child) {
+  border-top: 1px solid colors.$gray-300;
+}
