@@ -7,11 +7,10 @@ import {
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { FaDownload, FaPencilAlt, FaTimes } from 'react-icons/fa'
+import { FaDownload, FaImage, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
-import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import styles from './ImageUpload.module.scss'
 
 export const DownloadLink: FC<{ url: string }> = ({ url }) => {
@@ -28,21 +27,10 @@ export const DownloadLink: FC<{ url: string }> = ({ url }) => {
   )
 }
 
-const useUnsupportedHeicMessage = () => {
-  const showMessage = useShowMessage()
-  return (file: File) =>
-    showMessage({
-      type: 'error',
-      message: `Nelze nahrát ${file.name}`,
-      detail: 'Formát HEIC/HEIF není podporovaný.',
-    })
-}
-
 const ImageInput: FC<{ name: string; required?: boolean }> = ({
   name,
   required,
 }) => {
-  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
   return (
     <Controller
       name={name}
@@ -56,12 +44,8 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
           accept="image/*,application/pdf"
           onChange={async event => {
             const file = event.target.files?.[0]
-            if (file && file.type === 'image/heif') {
-              showUnsupportedHeicMessage(file)
-            } else {
-              const value = file ? await file2base64(file) : ''
-              onChange(value)
-            }
+            const value = file ? await file2base64(file) : ''
+            onChange(value)
           }}
         />
       )}
@@ -88,7 +72,12 @@ const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
   return (
     <div className={styles.imageWrapper}>
-      <object data={value} className={styles.image} />
+      <object data={value} className={styles.image}>
+        <div className={styles.fallback}>
+          <FaImage size={60} />
+          (nelze zobrazit)
+        </div>
+      </object>
       <div className={styles.editOverlay}>
         <FaPencilAlt size={26} />
       </div>
@@ -173,18 +162,13 @@ export const ImagesUpload = ({
     control,
     name,
   })
-  const showUnsupportedHeicMessage = useUnsupportedHeicMessage()
 
   const addImages = (files: FileList) => {
     forEach(files, async file => {
-      if (file.type === 'image/heif') {
-        showUnsupportedHeicMessage(file)
-      } else {
-        const value = await file2base64(file)
-        const field = { [image]: value }
-        thumbnail && (field[thumbnail] = value)
-        imageFields.append(field)
-      }
+      const value = await file2base64(file)
+      const field = { [image]: value }
+      thumbnail && (field[thumbnail] = value)
+      imageFields.append(field)
     })
   }
 
