@@ -1,6 +1,12 @@
 @use 'styles/colors';
+@use 'styles/media';
 
 .main {
+  width: calc(500px + 1.5rem); // same as buttons
+  @include media.for-phone-only {
+    width: 100%;
+  }
+
   border-radius: 1rem;
   padding: 1rem;
   background-color: colors.$gray-100;
