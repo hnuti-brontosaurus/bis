@@ -9,10 +9,25 @@
 
   border-radius: 1rem;
   padding: 1rem;
-  background-color: colors.$gray-100;
 
   display: grid;
   grid-template-columns: max-content 1fr;
+
+  position: relative;
+  z-index: 0;
+}
+
+.main::after {
+  content: '';
+  z-index: -1;
+  position: absolute;
+  inset: 0;
+  background-color: colors.$gray-100;
+  background-image: url("../../assets/happy-earth-TODO-replace-with-original.webp");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: .5;
 }
 
 .date {
