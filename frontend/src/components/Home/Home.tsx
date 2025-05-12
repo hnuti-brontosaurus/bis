@@ -60,8 +60,11 @@ export const Home = ({
           </Link>
         ))}
       </nav>
-      {dashboardItems && <Dashboard items={dashboardItems} />}
-      <img className={styles.illustration} src={illustration} alt="" />
+      {dashboardItems ? (
+        <Dashboard items={dashboardItems} />
+      ) : (
+        <img className={styles.illustration} src={illustration} alt="" />
+      )}
     </div>
   </>
 )
