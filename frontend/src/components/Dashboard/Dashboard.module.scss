@@ -11,30 +11,31 @@
   padding: 1rem;
   background-color: colors.$gray-100;
 
-  td {
-    padding: 0 .3rem;
-  }
+  display: grid;
+  grid-template-columns: max-content 1fr;
 }
 
-.title:not(:first-child) {
+.date {
+  padding-right: .3rem;
+}
+
+.date:not(:first-child),
+.title:not(:nth-child(2)) {
   border-top: 1px solid colors.$gray-300;
-
-  td {
-    padding-top: .3rem;
-  }
+  padding-top: .3rem;
 }
 
-.single td {
+.single {
   padding-bottom: .3rem;
 }
 
 .description {
+  padding: 0 .7rem;
+
+  grid-column: span 2;
   font-style: italic;
-  td {
-    padding: 0 .7rem;
-  }
 }
 
-.description:not(:last-child) td {
+.description:not(:last-child) {
   padding-bottom: .3rem;
 }

@@ -5,23 +5,19 @@ import classNames from 'classnames'
 import styles from './Dashboard.module.scss'
 
 export const Dashboard: FC<{ items: DashboardItem[] }> = ({ items }) => (
-  <div className={styles.main}>
-    <table>
-      <tbody>{items.map(DashboardRow)}</tbody>
-    </table>
-  </div>
+  <div className={styles.main}>{items.map(DashboardRow)}</div>
 )
 
 const DashboardRow: FC<DashboardItem> = ({ date, name, description }) => (
   <>
-    <tr className={classNames(styles.title, { [styles.single]: !description })}>
-      <td>{formatDateTime(date)}</td>
-      <td>{name}</td>
-    </tr>
-    {description && (
-      <tr className={styles.description}>
-        <td colSpan={2}>{description}</td>
-      </tr>
-    )}
+    <div className={classNames(styles.date, { [styles.single]: !description })}>
+      {formatDateTime(date)}
+    </div>
+    <div
+      className={classNames(styles.title, { [styles.single]: !description })}
+    >
+      {name}
+    </div>
+    {description && <div className={styles.description}>{description}</div>}
   </>
 )
