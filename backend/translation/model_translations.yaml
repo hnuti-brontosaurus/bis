@@ -334,6 +334,7 @@ EventRecord:
     number_of_participants_under_26:
       - Počet účastníků pod 26 let
       - U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích
+    is_event_closed_email_enabled: Má se odeslat automatický e-mail po uzavření akce?
 EventContact:
   name: Zjednodušená prezenční listina z jednodenní akce
   name_plural: Zjednodušené prezenční listiny z jednodenní akce

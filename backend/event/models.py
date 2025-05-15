@@ -343,6 +343,8 @@ class EventRecord(Model):
 
     note = TextField(blank=True)
 
+    is_event_closed_email_enabled = BooleanField(default=True)
+
     class Meta:
         ordering = ("-event__start",)
 
