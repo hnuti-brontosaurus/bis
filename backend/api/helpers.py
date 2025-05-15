@@ -1,12 +1,15 @@
 import base64
 import binascii
+import io
 import re
 from typing import TypedDict
 
+import pyheif
 from common.thumbnails import ThumbnailImageField, get_thumbnail_path
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
+from PIL import Image
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import FileField, ImageField
 from rest_framework.pagination import PageNumberPagination
@@ -62,6 +65,22 @@ class Base64FieldMixin:
             decoded_file = base64.b64decode(base64_data)
         except (TypeError, binascii.Error, ValueError) as e:
             raise ValidationError(e)
+
+        if extension in ["heic", "heif"]:
+            heif_file = pyheif.read(decoded_file)
+            image = Image.frombytes(
+                heif_file.mode,
+                heif_file.size,
+                heif_file.data,
+                "raw",
+                heif_file.mode,
+                heif_file.stride,
+            )
+            jpeg_bytes_io = io.BytesIO()
+            image.save(jpeg_bytes_io, format="JPEG")
+            decoded_file = jpeg_bytes_io.getvalue()
+            extension = "jpeg"
+            content_type = "image/jpeg"
 
         complete_file_name = filename + "." + extension
         data = SimpleUploadedFile(
