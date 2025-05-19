@@ -1187,13 +1187,12 @@ export const api = createApi({
         },
       }),
     }),
-    readDashboardItems: build.query<
-      PaginatedList<DashboardItem>,
-      ListArguments
-    >({
-      query: params => ({
+    readDashboardItems: build.query<PaginatedList<DashboardItem>, void>({
+      query: () => ({
         url: '/frontend/dashboard_items/',
-        params,
+        params: {
+          page_size: 1000,
+        },
       }),
     }),
 

@@ -4,7 +4,7 @@ import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { merge } from 'lodash'
 import { useMemo } from 'react'
-import { api } from '../../../app/services/bis'
+import { api } from 'app/services/bis'
 
 const buttons: HomeButtonConfig[] = [
   {
@@ -36,9 +36,7 @@ const buttons: HomeButtonConfig[] = [
 export const Home = () => {
   useTitle('Organizátorský přístup')
   const [canCreateEvent] = useAllowedToCreateEvent()
-  const { data: dashboardItems } = api.endpoints.readDashboardItems.useQuery({
-    pageSize: 10,
-  })
+  const { data: dashboardItems } = api.endpoints.readDashboardItems.useQuery()
 
   const processedButtons = useMemo(() => {
     if (canCreateEvent) {
