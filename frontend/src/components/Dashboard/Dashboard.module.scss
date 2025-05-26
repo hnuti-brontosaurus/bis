@@ -1,0 +1,39 @@
+@use 'styles/colors';
+@use 'styles/media';
+
+.main {
+  width: calc(500px + 1.5rem); // same as buttons
+  @include media.for-phone-only {
+    width: 100%;
+  }
+
+  border-radius: 1rem;
+  padding: 1rem;
+  line-height: 1.3;
+
+  display: grid;
+  grid-template-columns: max-content 1fr;
+
+  background-color: colors.$gray-100;
+}
+
+.date {
+  padding-right: .3rem;
+}
+
+.date:not(:first-child),
+.title:not(:nth-child(2)) {
+  border-top: 1px solid colors.$gray-300;
+  padding-top: .3rem;
+}
+
+.single {
+  padding-bottom: .3rem;
+}
+
+.description {
+  padding: .3rem .7rem;
+
+  grid-column: span 2;
+  font-style: italic;
+}
