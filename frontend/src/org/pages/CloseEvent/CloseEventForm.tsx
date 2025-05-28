@@ -46,7 +46,12 @@ export type CloseEventPayload = DeepPick<
 
 // Forms setup
 export type EvidenceStepFormShape = {
-  record: Pick<Record, 'total_hours_worked' | 'comment_on_work_done'>
+  record: Pick<
+    Record,
+    | 'total_hours_worked'
+    | 'comment_on_work_done'
+    | 'is_event_closed_email_enabled'
+  >
   finance: Pick<Finance, 'bank_account_number'>
 } & {
   photos: EventPhotoPayload[]

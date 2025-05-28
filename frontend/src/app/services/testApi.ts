@@ -3045,6 +3045,7 @@ export type Record = {
   note?: string
   contacts?: EventContact[]
   feedback_form: FeedbackForm | null
+  is_event_closed_email_enabled?: boolean
 }
 export type Event = {
   id: number

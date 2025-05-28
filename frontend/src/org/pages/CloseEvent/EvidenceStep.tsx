@@ -162,6 +162,17 @@ export const EvidenceStep = ({
               <HiExternalLink />
             </ExternalButtonLink>
           </FormSection>
+          <FormSection header="E-mail s informacemi o HB">
+            <FormInputError>
+              <label className="checkboxLabel">
+                <input
+                  type="checkbox"
+                  {...register('record.is_event_closed_email_enabled')}
+                />
+                zaslat účastníkům e-mail s informacemi o HB
+              </label>
+            </FormInputError>
+          </FormSection>
           {/* Údaje , které je třeba zadat po akci:
 Počet účastníků celkem *
 Z toho počet účastníků do 26 let * 
