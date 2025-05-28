@@ -158,7 +158,7 @@ export const EvidenceStep = ({
               rel="noopener noreferrer"
               className={styles.outerLinkButton}
             >
-              Stížnost na situaci na akci
+              Zpětná vazba na situaci na akci
               <HiExternalLink />
             </ExternalButtonLink>
           </FormSection>
