@@ -15,6 +15,7 @@ import { required } from 'utils/validationMessages'
 import { ExportFilesButton } from '../../components'
 import { EvidenceStepFormShape } from './CloseEventForm'
 import styles from './EvidenceStep.module.scss'
+import { OptOutCheckbox } from './OptOutCheckbox'
 
 export const EvidenceStep = ({
   eventId,
@@ -165,10 +166,10 @@ export const EvidenceStep = ({
           <FormSection header="E-mail s informacemi o HB">
             <FormInputError>
               <label className="checkboxLabel">
-                <input
-                  type="checkbox"
+                <OptOutCheckbox
+                  message="Tohle je fakt důležité. Opravdu to chcete zrušit?"
                   {...register('record.is_event_closed_email_enabled')}
-                />
+                ></OptOutCheckbox>
                 zaslat účastníkům e-mail s informacemi o HB
               </label>
             </FormInputError>
