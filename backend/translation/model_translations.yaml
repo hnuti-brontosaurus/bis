@@ -606,6 +606,7 @@ DashboardItem:
   fields:
     for_roles: Pro role
     repeats_every_year: Opakuje se každý rok?
+    visible_date: Zobrazený termín
 
 DonationPointsAggregation:
   name: Agregace

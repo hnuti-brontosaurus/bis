@@ -1077,7 +1077,7 @@ class EventDraftSerializer(ModelSerializer):
 class DashboardItemSerializer(ModelSerializer):
     class Meta:
         model = DashboardItem
-        fields = "date", "name", "description"
+        fields = "visible_date", "date", "name", "description"
 
 
 class GetUnknownUserRequestSerializer(Serializer):

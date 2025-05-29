@@ -10,6 +10,7 @@ from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from django.core.files import File
 from donations.models import Donation
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
@@ -52,8 +53,9 @@ class DuplicateUser(Model):
 @translate_model
 class DashboardItem(Model):
     date = DateField()
-    name = CharField(max_length=63)
-    description = TextField(blank=True)
+    visible_date = HTMLField(max_length=63, blank=True)
+    name = HTMLField(max_length=63)
+    description = HTMLField(blank=True)
     repeats_every_year = BooleanField(default=False)
 
     for_roles = ManyToManyField(RoleCategory, related_name="dashboard_items")

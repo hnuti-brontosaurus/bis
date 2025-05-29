@@ -81,7 +81,14 @@ def mark_as_resolved(model_admin, request, queryset):
 
 @admin.register(DashboardItem)
 class DashboardItemAdmin(PermissionMixin, NestedModelAdmin):
-    list_display = "name", "date", "repeats_every_year", "description", "get_roles"
+    list_display = (
+        "name",
+        "visible_date",
+        "date",
+        "repeats_every_year",
+        "description",
+        "get_roles",
+    )
 
     save_as = True
 
