@@ -630,6 +630,7 @@ class RecordSerializer(ModelSerializer):
             "participants",
             "number_of_participants",
             "number_of_participants_under_26",
+            "is_event_closed_email_enabled",
             "note",
             "contacts",
             "age_stats",
