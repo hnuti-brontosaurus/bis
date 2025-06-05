@@ -98,6 +98,7 @@ const pickEvidenceData = (data: Partial<CloseEventFormShape>) =>
     data,
     'record.total_hours_worked',
     'record.comment_on_work_done',
+    'record.is_event_closed_email_enabled',
     'finance.bank_account_number',
     'photos',
     'pages',
