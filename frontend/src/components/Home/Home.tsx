@@ -29,7 +29,7 @@ export const Home = ({
   dashboardItems?: DashboardItem[]
 }) => (
   <>
-    <GuideOwl id="main-guide" left>
+    {/*<GuideOwl id="main-guide" left>
       {' '}
       Tady najdeš{' '}
       <a
@@ -40,7 +40,7 @@ export const Home = ({
       >
         průvodce používání BIS
       </a>
-    </GuideOwl>
+    </GuideOwl>*/}
     <div className={styles.container}>
       <nav className={styles.mainMenu}>
         {buttons.map(({ title, detail, link, theme }) => (
