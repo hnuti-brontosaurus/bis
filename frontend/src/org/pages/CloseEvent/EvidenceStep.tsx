@@ -167,7 +167,8 @@ export const EvidenceStep = ({
             <FormInputError>
               <label className="checkboxLabel">
                 <OptOutCheckbox
-                  message="Tohle je fakt důležité. Opravdu to chcete zrušit?"
+                  message="Pokud akci uzavíráte včas, dopočujeme nechat možnost zaškrtnutou. Email po akci obsahuje mnoho důležitých informací, které účastníkům ukazují jak se i přihlásit na další akce a nabízí způsoby, jak s Hnutím Brontosaurus zůstat v kontaktu."
+                  title="Opravdu chcete zrušit odeslání mailu?"
                   {...register('record.is_event_closed_email_enabled')}
                 ></OptOutCheckbox>
                 zaslat účastníkům e-mail s informacemi o HB

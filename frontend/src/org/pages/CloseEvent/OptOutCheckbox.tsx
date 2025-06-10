@@ -1,17 +1,24 @@
-import { ChangeEvent, FC, ForwardedRef, forwardRef, Ref, useState } from 'react'
 import { Actions, Button, StyledModal } from 'components'
+import {
+  ChangeEvent,
+  ForwardedRef,
+  forwardRef,
+  ReactNode,
+  useState,
+} from 'react'
 import { ChangeHandler } from 'react-hook-form'
 
 interface Props {
   onChange: ChangeHandler
   onBlur: ChangeHandler
   name: string
-  message: string
+  title: string
+  message: ReactNode
 }
 
 export const OptOutCheckbox = forwardRef(
   (
-    { onChange, onBlur, name, message }: Props,
+    { onChange, onBlur, name, message, title }: Props,
     ref: ForwardedRef<HTMLInputElement>,
   ) => {
     const [confirmedEvent, setConfirmedEvent] =
@@ -48,8 +55,9 @@ export const OptOutCheckbox = forwardRef(
         <StyledModal
           open={!!confirmedEvent}
           onClose={cancelChange}
-          title={message}
+          title={title}
         >
+          {message}
           <Actions>
             <Button secondary onClick={cancelChange}>
               Ne
