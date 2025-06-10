@@ -2942,6 +2942,7 @@ export type DashboardItem = {
   date: string
   name: string
   description?: string
+  visible_date: string
 }
 export type PaginatedDashboardItemList = {
   count?: number
