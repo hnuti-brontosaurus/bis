@@ -15,6 +15,7 @@ import { required } from 'utils/validationMessages'
 import { ExportFilesButton } from '../../components'
 import { EvidenceStepFormShape } from './CloseEventForm'
 import styles from './EvidenceStep.module.scss'
+import { OptOutCheckbox } from './OptOutCheckbox'
 
 export const EvidenceStep = ({
   eventId,
@@ -161,6 +162,18 @@ export const EvidenceStep = ({
               Zpětná vazba na situaci na akci
               <HiExternalLink />
             </ExternalButtonLink>
+          </FormSection>
+          <FormSection header="E-mail s informacemi o HB">
+            <FormInputError>
+              <label className="checkboxLabel">
+                <OptOutCheckbox
+                  message="Pokud akci uzavíráte včas, dopočujeme nechat možnost zaškrtnutou. Email po akci obsahuje mnoho důležitých informací, které účastníkům ukazují jak se i přihlásit na další akce a nabízí způsoby, jak s Hnutím Brontosaurus zůstat v kontaktu."
+                  title="Opravdu chcete zrušit odeslání mailu?"
+                  {...register('record.is_event_closed_email_enabled')}
+                ></OptOutCheckbox>
+                zaslat účastníkům e-mail s informacemi o HB
+              </label>
+            </FormInputError>
           </FormSection>
           {/* Údaje , které je třeba zadat po akci:
 Počet účastníků celkem *
