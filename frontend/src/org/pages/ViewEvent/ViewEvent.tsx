@@ -214,7 +214,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               </ButtonLink>
             )}
             <ExportFilesButton eventId={eventId} />
-            {!isEventClosed(event) ? (
+            {!isEventClosed(event) && (
               <>
                 {getRegistrationMethodBeforeFull(event) === 'standard' && (
                   <ButtonLink to="prihlasky" secondary>
@@ -236,19 +236,20 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                     <FaRegEye /> přihláška <FaExternalLinkAlt />
                   </ExternalButtonLink>
                 )}
-                {event.record?.feedback_form && (
-                  <>
-                    <ButtonLink
-                      secondary
-                      to={`/org/akce/${eventId}/zpetna_vazba`}
-                    >
-                      <FaThumbsUp /> zpětné vazby
-                    </ButtonLink>
-                    <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
-                      <FaRegEye /> zpětná vazba
-                    </ButtonLink>
-                  </>
-                )}
+              </>
+            )}
+            {event.record?.feedback_form && (
+              <>
+                <ButtonLink secondary to={`/org/akce/${eventId}/zpetna_vazba`}>
+                  <FaThumbsUp /> zpětné vazby
+                </ButtonLink>
+                <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
+                  <FaRegEye /> zpětná vazba
+                </ButtonLink>
+              </>
+            )}
+            {!isEventClosed(event) && (
+              <>
                 {event.is_canceled ? (
                   <Button secondary onClick={() => restoreCanceledEvent(event)}>
                     <FaRedo /> obnovit
@@ -263,11 +264,11 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                   <FaTrashAlt /> smazat
                 </Button> */}
               </>
-            ) : null}
+            )}
           </Actions>
         )}
 
-        {event.record?.feedback_form && (
+        {event.record?.feedback_form && !isEventClosed(event) && (
           <InfoBox className={styles.feedbackLink}>
             Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
             <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
