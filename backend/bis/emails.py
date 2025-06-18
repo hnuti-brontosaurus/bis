@@ -5,6 +5,7 @@ from administration_units.models import AdministrationUnit
 from bis.helpers import make_a, make_br, make_ul
 from bis.models import Qualification
 from categories.models import EventProgramCategory, PronounCategory
+from common.helpers import get_date_range
 from dateutil.utils import today
 from django.conf import settings
 from django.utils.formats import date_format
@@ -416,19 +417,21 @@ def send_opportunities_summary():
         on_web_start__lte=today(),
         on_web_end__gte=today(),
     )
-    opportunities = make_br(
-        make_a(
-            opportunity.name,
-            f"https://brontosaurus.cz/zapoj-se/prilezitost/{opportunity.id}/",
-        )
-        + f", {opportunity.location}, {date_format(opportunity.start)} - {date_format(opportunity.end)}"
+    opportunities = [
+        {
+            "name": opportunity.name,
+            "link": f"https://brontosaurus.cz/zapoj-se/prilezitost/{opportunity.id}/",
+            "location": opportunity.location.name,
+            "when": get_date_range(opportunity.start, opportunity.end),
+        }
         for opportunity in opportunities
-    )
+    ]
     ecomail.send_email(
         emails["education"],
         "Příležitosti",
         "201",
-        ["organizatori@brontosaurus.cz"],
+        # ["organizatori@brontosaurus.cz"],
+        ["lamanchy@gmail.com"],
         variables={"opportunities": opportunities},
     )
 

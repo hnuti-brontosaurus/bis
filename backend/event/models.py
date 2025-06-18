@@ -19,6 +19,7 @@ from categories.models import (
     GrantCategory,
 )
 from common.abstract_models import BaseContact
+from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
@@ -133,22 +134,7 @@ class Event(SearchMixin, Model):
 
     @admin.display(description="Termín akce")
     def get_date(self):
-        result = f"{self.end.day}. {self.end.month}. {self.end.year}"
-
-        if self.start == self.end:
-            return result
-
-        result = "- " + result
-        if self.start.year != self.end.year:
-            result = f"{self.start.year}. " + result
-            result = f"{self.start.month}. " + result
-            return f"{self.start.day}. " + result
-
-        if self.start.month != self.end.month:
-            result = f"{self.start.month}. " + result
-            return f"{self.start.day}. " + result
-
-        return f"{self.start.day}. " + result
+        return get_date_range(self.start, self.end)
 
     @classmethod
     def filter_queryset(cls, queryset, perm):
