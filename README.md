@@ -30,3 +30,7 @@ token = f"Token {User.objects.get(email='asdf').auth_token.key}"
 `git remote add dev root@dev.bis.lomic.cz:/home/git/repo.git`
 
 `git push -f dev master`
+
+`PGPASSWORD=$DB_PASSWORD pg_dump -U $DB_USERNAME -h $DB_HOST -d $DB_NAME -F t -f /app/media/mydb.dump`
+
+`PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --no-owner -F t /home/lamanchy/laman/Downloads/mydb.dump`
