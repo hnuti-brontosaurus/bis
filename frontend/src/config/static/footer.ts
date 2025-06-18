@@ -7,6 +7,10 @@ export const footerLinks: { name: string; url: string }[] = [
     name: 'Sborník her a programů',
     url: 'https://bis.brontosaurus.cz/game_book/',
   },
+  {
+    name: 'Půjčovna materiálu',
+    url: 'https://docs.google.com/spreadsheets/d/1PKku0tknm5q164isXXuIwKSvtRp8GfVldBeFAYwnNAk/edit?gid=0#gid=0',
+  },
   { name: 'Zapoj se', url: 'https://brontosaurus.cz/zapoj-se/' },
   {
     name: 'Mapa lokalit',
