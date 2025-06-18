@@ -735,12 +735,25 @@ class EventSerializer(ModelSerializer):
                     )
 
         is_closing = not instance.is_closed and validated_data.get("is_closed")
+        had_attendance = EventAttendanceListPage.objects.fitler(
+            record__event=instance
+        ).exists()
+        had_photos = EventPhoto.objects.filter(record__event=instance).exists()
         if is_closing:
             validated_data["closed_at"] = date.today()
 
         instance = super().update(instance, validated_data)
         if is_closing:
             emails.event_end_participants_notification(instance)
+
+        has_attendance = EventAttendanceListPage.objects.fitler(
+            record__event=instance
+        ).exists()
+        has_photos = EventPhoto.objects.filter(record__event=instance).exists()
+
+        if (not had_attendance and has_attendance) or (not had_photos and has_photos):
+            emails.event_attendance_or_photos_notification(instance)
+
         return instance
 
 

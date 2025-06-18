@@ -256,6 +256,16 @@ def event_end_participants_notification(event):
     participants_to_notify.update(last_after_event_email=date.today())
 
 
+def event_attendance_or_photos_notification(event):
+    ecomail.send_email(
+        emails["bis"],
+        "Nahrány fotky (či prezenčka) k akci",
+        "225",
+        [event.program.email],
+        variables={"event": event.name},
+    )
+
+
 def get_consultants():
     valid_qualifications = Qualification.objects.filter(
         valid_since__lte=date.today(),
