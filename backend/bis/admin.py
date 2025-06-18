@@ -115,7 +115,7 @@ def merge_selected_first(model_admin, request, queryset):
 
 @admin.register(Location)
 class LocationAdmin(PermissionMixin, ModelAdmin):
-    actions = [merge_selected_first, merge_selected_last]
+    actions = [export_to_xlsx, merge_selected_first, merge_selected_last]
     inlines = (
         LocationContactPersonAdmin,
         LocationPatronAdmin,

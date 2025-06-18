@@ -195,7 +195,7 @@ class MembershipExportSerializer(ModelSerializer):
         )
 
 
-class LocationExportSerializer(ModelSerializer):
+class EventLocationExportSerializer(ModelSerializer):
     region = StringRelatedField(label="Kraj")
 
     class Meta:
@@ -285,7 +285,7 @@ class EventExportSerializer(ModelSerializer):
     is_volunteering = ReadOnlyField(label="S dobrovolnickou prací")
     get_date = ReadOnlyField(label="Datum konání")
 
-    location = LocationExportSerializer()
+    location = EventLocationExportSerializer()
     finance = FinanceExportSerializer()
     propagation = PropagationExportSerializer()
     registration = RegistrationExportSerializer()
@@ -535,3 +535,48 @@ class EventFeedbackExportSerializer(ModelSerializer):
         )
         for inquiry in inquiries:
             yield str(inquiry.id), inquiry.inquiry
+
+
+class LocationExportSerializer(ModelSerializer):
+    program = StringRelatedField()
+    accessibility_from_prague = StringRelatedField()
+    accessibility_from_brno = StringRelatedField()
+    region = StringRelatedField()
+    contact_person = StringRelatedField()
+    patron = StringRelatedField()
+
+    @staticmethod
+    def get_related(queryset):
+        return queryset.select_related(
+            "program",
+            "accessibility_from_prague",
+            "accessibility_from_brno",
+            "region",
+            "contact_person",
+            "patron",
+        )
+
+    class Meta:
+        model = Location
+        fields = (
+            "name",
+            "description",
+            "address",
+            "gps_location",
+            "is_traditional",
+            "for_beginners",
+            "is_full",
+            "is_unexplored",
+            "program",
+            "accessibility_from_prague",
+            "accessibility_from_brno",
+            "volunteering_work",
+            "volunteering_work_done",
+            "volunteering_work_goals",
+            "options_around",
+            "facilities",
+            "web",
+            "region",
+            "contact_person",
+            "patron",
+        )

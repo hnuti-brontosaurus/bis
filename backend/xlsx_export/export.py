@@ -45,6 +45,7 @@ from xlsx_export.serializers import (
     EventApplicationExportSerializer,
     EventExportSerializer,
     EventFeedbackExportSerializer,
+    LocationExportSerializer,
     MembershipExportSerializer,
     UserExportSerializer,
 )
@@ -276,6 +277,7 @@ def do_export_to_xlsx(queryset):
             EventApplicationExportSerializer,
             MembershipExportSerializer,
             EventFeedbackExportSerializer,
+            LocationExportSerializer,
         ]
         if s.Meta.model is queryset.model
     ][0]
