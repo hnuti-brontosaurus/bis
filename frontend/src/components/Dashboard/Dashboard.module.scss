@@ -32,8 +32,10 @@
 }
 
 .description {
-  padding: .3rem .7rem;
+  padding: 0 .7rem .3rem;
 
   grid-column: span 2;
   font-style: italic;
+  line-height: 1.1;
+  font-size: .9rem;
 }
