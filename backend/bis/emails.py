@@ -272,11 +272,11 @@ def get_consultants():
         )
     ]
     consultants = "".join(
-        f"<li>{consultant.get_name()}, {consultant.email}</li>"
+        f"<li>{consultant.get_name(show_nickname=False)}, {consultant.email}</li>"
         for consultant in consultants
     )
     kids_consultants = "".join(
-        f"<li>{consultant.get_name()}, {consultant.email}</li>"
+        f"<li>{consultant.get_name(show_nickname=False)}, {consultant.email}</li>"
         for consultant in kids_consultants
     )
 
@@ -290,6 +290,13 @@ def qualification_about_to_end():
     for qualification in Qualification.get_expiring_qualifications(
         date.today() + timedelta(days=90)
     ):
+        if qualification.category.slug in [
+            "consultant",
+            "instructor",
+            "consultant_for_kids",
+        ]:
+            continue
+
         ecomail.send_email(
             emails["education"],
             "Blíží se konec platnosti kvalifikace",
@@ -305,6 +312,13 @@ def qualification_about_to_end():
 
 def qualification_ended():
     for qualification in Qualification.get_expiring_qualifications(date.today()):
+        if qualification.category.slug in [
+            "consultant",
+            "instructor",
+            "consultant_for_kids",
+        ]:
+            continue
+
         ecomail.send_email(
             emails["education"],
             "Konec platnosti kvalifikace",

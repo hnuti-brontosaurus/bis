@@ -538,9 +538,9 @@ class User(SearchMixin, AbstractBaseUser):
             self.save()
 
     @admin.display(description="Uživatel")
-    def get_name(self):
+    def get_name(self, show_nickname=True):
         name = f"{self.first_name} {self.last_name}".strip()
-        if self.nickname:
+        if self.nickname and show_nickname:
             if name:
                 name = f"{self.nickname} ({name})"
             else:
@@ -964,8 +964,9 @@ class Qualification(Model):
                     return True
 
     @classmethod
-    def get_expiring_qualifications(cls, to_date):
-        for qualification in cls.objects.filter(valid_till=to_date):
+    def get_expiring_qualifications(cls, to_date, extra_filter=None):
+        extra_filter = extra_filter or {}
+        for qualification in cls.objects.filter(valid_till=to_date, **extra_filter):
             if not cls.user_has_required_qualification(
                 qualification.user,
                 [qualification.category.slug],
