@@ -164,6 +164,16 @@ export const EvidenceStep = ({
             </ExternalButtonLink>
           </FormSection>
           <FormSection header="E-mail s informacemi o HB">
+            <ExternalButtonLink
+              tertiary
+              href="https://drive.google.com/file/d/1doK_qrD2YW42Qhfd1msRml6YW4he6292/view"
+              target="__blank"
+              rel="noopener noreferrer"
+              className={styles.outerLinkButton}
+            >
+              E-mail účastníkům po akci
+              <HiExternalLink />
+            </ExternalButtonLink>
             <FormInputError>
               <label className="checkboxLabel">
                 <OptOutCheckbox
