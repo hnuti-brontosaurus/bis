@@ -718,7 +718,7 @@ class EventSerializer(ModelSerializer):
             or instance.administration_units.filter(id=8).exists()
         ):  # robby nebo modry kamen
             emails.text(
-                "bis@brontosaurus.cz",
+                ["bis@brontosaurus.cz"],
                 "Robby nebo Modrý kámen vytvořil novou akci",
                 f"Najdeš ji https://bis.brontosaurus.cz/admin/bis/event/{instance.id}/change/",
             )

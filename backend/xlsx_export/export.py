@@ -236,7 +236,7 @@ def send_later(request, result):
         name = f"saved_file_{saved_file.id}.xlsx"
         saved_file.file.save(name, open(file.name, "rb"), save=False)
         emails.text(
-            request.user.email,
+            [request.user.email],
             "Vygenerovaný export",
             f"tu: {settings.FULL_HOSTNAME}/media/saved_files/{name} máš!",
         )

@@ -1,4 +1,5 @@
 import logging
+import shutil
 from datetime import date
 
 from django.core.management import call_command
@@ -24,6 +25,17 @@ def try_to_run(fn, *args, **kwargs):
         )
 
 
+def check_disk_space():
+    total, used, free = shutil.disk_usage("/app/media")
+    used = used / total * 100
+    if used > 90:
+        emails.text(
+            ["bis@brontosaurus.cz", "lamanchy@gmail.com"],
+            f"BIS disk usage is high",
+            f"{used}% today ;)",
+        )
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         try_to_run(call_command, "create_categories")
@@ -44,6 +56,7 @@ class Command(BaseCommand):
         if today.weekday() == 0:
             try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
+            try_to_run(check_disk_space)
 
         # monthly
         if today.day == 1:

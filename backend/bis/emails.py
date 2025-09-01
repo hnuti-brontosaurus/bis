@@ -24,18 +24,18 @@ emails = {
 
 
 def login_code(email, code):
-    text(email, "Kód pro přihlášení", f"tvůj kód pro přihlášení je {code}.")
+    text([email], "Kód pro přihlášení", f"tvůj kód pro přihlášení je {code}.")
 
 
-def text(email, subject, text, reply_to=None, attachments=None):
-    text = text.replace("\n", "<br>")
+def text(recipients, subject, content, reply_to=None, attachments=None):
+    content = content.replace("\n", "<br>")
     ecomail.send_email(
         emails["bis"],
         subject,
         "111",
-        [email],
+        recipients,
         reply_to=reply_to,
-        variables={"content": text},
+        variables={"content": content},
         attachments=attachments,
     )
 
