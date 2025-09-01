@@ -21,10 +21,6 @@ export const footerLinks: { name: string; url: string }[] = [
     url: 'http://peceoprirodu.cz/databaze/sign/in?backlink=jpop9',
   },
   {
-    name: 'Zpětná vazba',
-    url: 'https://zpetna-vazba.brontosaurus.cz/login.php',
-  },
-  {
     name: 'Mentoři',
     url: 'https://mozek.brontosaurus.cz/index.php/cely-mozek/organizovani-akci/mentorsky-program',
   },
