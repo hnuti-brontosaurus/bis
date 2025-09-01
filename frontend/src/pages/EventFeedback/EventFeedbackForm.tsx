@@ -22,7 +22,10 @@ import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
 const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
-  replies: replies.map(mapReply).filter(reply => !!reply.reply),
+  replies: replies
+    .filter(reply => !!reply)
+    .map(mapReply)
+    .filter(reply => !!reply.reply),
   ...data,
 })
 
