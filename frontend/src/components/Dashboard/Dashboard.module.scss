@@ -6,7 +6,7 @@
   @include media.for-phone-only {
     width: 100%;
   }
-  @media (min-width: 1000px) { // TODO
+  @include media.for-desktop-up {
     height: calc(240px + 2.5rem); // same as buttons
   }
 
