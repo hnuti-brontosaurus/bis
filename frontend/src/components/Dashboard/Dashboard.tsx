@@ -5,7 +5,9 @@ import { formatDateTime } from 'utils/helpers'
 import styles from './Dashboard.module.scss'
 
 export const Dashboard: FC<{ items: DashboardItem[] }> = ({ items }) => (
-  <div className={styles.main}>{items.map(DashboardRow)}</div>
+  <div className={styles.main}>
+    <div className={styles.scrollContainer}>{items.map(DashboardRow)}</div>
+  </div>
 )
 
 const DashboardRow: FC<DashboardItem> = ({
