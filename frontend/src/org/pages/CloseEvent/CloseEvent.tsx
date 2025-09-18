@@ -1,6 +1,6 @@
 import { api } from 'app/services/bis'
 import type { EventPayload, FullEvent } from 'app/services/bisTypes'
-import { Breadcrumbs, GuideOwl, Loading } from 'components'
+import { Breadcrumbs, ButtonLink, GuideOwl, InfoBox, Loading } from 'components'
 import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
@@ -312,6 +312,14 @@ export const CloseEvent = () => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
+      <InfoBox>
+        S uzavřením akce se účastníkům automaticky pošle zpětná vazba. Zpětnou
+        vazbu můžeš upravit ve{' '}
+        <ButtonLink to={{ search: '?krok=3' }} tertiary>
+          3. záložce
+        </ButtonLink>
+        .
+      </InfoBox>
       <GuideOwl id="po-akce-guide-owl">
         Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po
         akci) do 20 dnů od skončení.
