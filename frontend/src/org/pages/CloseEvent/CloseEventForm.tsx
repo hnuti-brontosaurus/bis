@@ -26,6 +26,7 @@ import { Assign, Optional } from 'utility-types'
 import {
   hasFormError,
   isEventVolunteering,
+  isFeedbackRequired,
   withOverwriteArray,
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
@@ -279,6 +280,8 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
+  const feedbackRequired = isFeedbackRequired(event)
+
   const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
@@ -318,6 +321,9 @@ export const CloseEventForm = ({
           feedback = data
         },
         errors => {
+          if (feedbackRequired) {
+            isValid = false
+          }
           feedbackErrors = errors
           feedback = feedbackFormMethods.getValues()
         },
@@ -330,7 +336,12 @@ export const CloseEventForm = ({
         type: 'error',
         message: 'Opravte, prosím, chyby ve validaci',
         detail: validationErrors2Message(
-          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
+          merge(
+            {},
+            evidenceErrors,
+            participantsErrors,
+            feedbackRequired ? feedbackErrors : {},
+          ) as FieldErrorsImpl,
           translations.event,
           translations.generic,
         ),

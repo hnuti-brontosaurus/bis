@@ -142,6 +142,16 @@ export const isEventClosed = (event: { end: string }): boolean =>
 export const isEventVolunteering = (event: FullEvent): boolean =>
   event.category.slug === 'public__volunteering'
 
+export const isFeedbackRequired = (event: FullEvent): boolean =>
+  ['camp', 'weekend_event'].includes(event.group.slug) &&
+  [
+    'nature',
+    'monuments',
+    'holidays_with_brontosaurus',
+    'education',
+    'none',
+  ].includes(event.program.slug)
+
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')
   const d = new Date(datetime)
@@ -318,9 +328,9 @@ export const getErrorMessage = <T extends FieldValues>(
 /**
  * Validates whether a given string is a properly formatted URL.
  */
-export const validateUrl =  (value?: string) => {
+export const validateUrl = (value?: string) => {
   if (!value) {
-    return true; // Allow empty string as valid input since the URL can be optional
+    return true // Allow empty string as valid input since the URL can be optional
   }
   try {
     new URL(value as string)
