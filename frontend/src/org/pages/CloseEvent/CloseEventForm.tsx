@@ -409,7 +409,7 @@ export const CloseEventForm = ({
           }
         />
       </Step>
-      <Step name="zpětná vazba">
+      <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
         <FeedbackStep
           eventId={event.id}
           methods={feedbackFormMethods}
