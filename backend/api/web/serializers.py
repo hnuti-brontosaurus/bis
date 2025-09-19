@@ -116,7 +116,7 @@ class EventRegistrationSerializer(ModelSerializer):
 class InquirySerializer(ModelSerializer):
     class Meta:
         model = Inquiry
-        fields = "id", "inquiry", "data", "is_required", "order"
+        fields = "id", "inquiry", "slug", "data", "is_required", "order"
 
 
 class FeedbackFormSerializer(ModelSerializer):

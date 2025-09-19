@@ -56,6 +56,7 @@ class FeedbackForm(Model):
 @translate_model
 class Inquiry(Model):
     inquiry = CharField(max_length=255)
+    slug = SlugField(blank=True, max_length=255)
     data = JSONField(default=dict)
     is_required = BooleanField(default=True)
     order = PositiveIntegerField(default=0)

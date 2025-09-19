@@ -1008,6 +1008,7 @@ class InquirySerializer(ModelSerializer):
         fields = (
             "id",
             "inquiry",
+            "slug",
             "data",
             "is_required",
             "order",
