@@ -11,12 +11,7 @@ import { CloseEvent } from 'org/pages/CloseEvent'
 import { CreateEvent } from 'org/pages/CreateEvent'
 import { CreateOpportunity } from 'org/pages/CreateOpportunity'
 import { EventApplications } from 'org/pages/EventApplications'
-import {
-  ActiveEvents,
-  AllEvents,
-  EventsLayout,
-  UnfinishedEvents,
-} from 'org/pages/EventList'
+import { AllEvents, EventsLayout, UnfinishedEvents } from 'org/pages/EventList'
 import { Home as OrgHome } from 'org/pages/Home'
 import { OpportunityList } from 'org/pages/OpportunityList'
 import { UpdateEvent } from 'org/pages/UpdateEvent'
@@ -109,7 +104,6 @@ export const App = () => {
           </Route>
           <Route path="akce" element={<EventsLayout />}>
             <Route index element={<Navigate to="vsechny" replace />} />
-            <Route path="aktualni" element={<ActiveEvents />} />
             <Route path="vsechny" element={<AllEvents />} />
             <Route path="nevyplnene" element={<UnfinishedEvents />} />
           </Route>
