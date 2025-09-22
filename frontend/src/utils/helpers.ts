@@ -1,4 +1,4 @@
-import type { Address, Event, FullEvent } from 'app/services/bisTypes'
+import type { Address, FullEvent } from 'app/services/bisTypes'
 import { cloneDeep, mapValues } from 'lodash'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
@@ -84,29 +84,6 @@ export const toDataURL = async (url: string): Promise<string> => {
   )
 }
 
-/**
- * get event status
- * draft - event is going to be edited
- * open - event is ready to be advertised, in progress, and not finished
- * finished - event has finished, and its record is filled
- * closed - too much time has passed and the event can only be viewed
- *
- * TODO this is unfinished. We don't have info about draft and finished
- */
-export type EventStatus =
-  | 'draft'
-  | 'inProgress'
-  | 'finished'
-  | 'closed'
-  | 'canceled'
-
-export const getEventStatus = (event: Event): EventStatus => {
-  if (event.is_canceled) return 'canceled'
-  if (isEventClosed(event)) return 'closed'
-  if (event.is_closed) return 'finished'
-  return 'inProgress'
-}
-
 // event should be finished before March next year
 const shouldBeFinishedUntil = (event: { end: string }): number => {
   const eventEnd = new Date(event.end)
@@ -132,12 +109,6 @@ export const getEventCannotBeOlderThan = (): string => {
   const allowedYear = isBeforeMarch ? now.getFullYear() - 1 : now.getFullYear()
   return `${allowedYear}-01-01`
 }
-
-/**
- * Find out whether event is so old that it can't be edited anymore
- */
-export const isEventClosed = (event: { end: string }): boolean =>
-  shouldBeFinishedUntil(event) < Date.now()
 
 export const isEventVolunteering = (event: FullEvent): boolean =>
   event.category.slug === 'public__volunteering'
@@ -318,9 +289,9 @@ export const getErrorMessage = <T extends FieldValues>(
 /**
  * Validates whether a given string is a properly formatted URL.
  */
-export const validateUrl =  (value?: string) => {
+export const validateUrl = (value?: string) => {
   if (!value) {
-    return true; // Allow empty string as valid input since the URL can be optional
+    return true // Allow empty string as valid input since the URL can be optional
   }
   try {
     new URL(value as string)
