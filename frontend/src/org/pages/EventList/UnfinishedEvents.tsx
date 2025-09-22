@@ -4,7 +4,6 @@ import { UnscalablePaginatedList } from 'components'
 import { useTitle } from 'hooks/title'
 import { EventTable } from 'org/components'
 import { useOutletContext } from 'react-router-dom'
-import { getEventStatus } from 'utils/helpers'
 
 export const UnfinishedEvents = () => {
   useTitle('Moje nevyplněné akce')
@@ -15,7 +14,7 @@ export const UnfinishedEvents = () => {
   // for now we just show the events without record
 
   const inputEvents = (events.results ?? []).filter(
-    event => getEventStatus(event) === 'inProgress',
+    event => !event.is_archived && !event.is_closed && !event.is_canceled,
   )
 
   return (
