@@ -11,7 +11,7 @@ import { isEqual } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
-import { sortOrder } from 'utils/helpers'
+import { isFeedbackRequired, sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 import { defaultsDeep } from 'lodash'
 
@@ -312,14 +312,16 @@ export const CloseEvent = () => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
-      <InfoBox>
-        S uzavřením akce se účastníkům automaticky pošle zpětná vazba. Zpětnou
-        vazbu můžeš upravit ve{' '}
-        <ButtonLink to={{ search: '?krok=3' }} tertiary>
-          3. záložce
-        </ButtonLink>
-        .
-      </InfoBox>
+      {isFeedbackRequired(event) && (
+        <InfoBox>
+          S uzavřením akce se účastníkům automaticky pošle zpětná vazba. Zpětnou
+          vazbu můžeš upravit ve{' '}
+          <ButtonLink to={{ search: '?krok=3' }} tertiary>
+            3. záložce
+          </ButtonLink>
+          .
+        </InfoBox>
+      )}
       <GuideOwl id="po-akce-guide-owl">
         Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po
         akci) do 20 dnů od skončení.
