@@ -9,53 +9,47 @@ import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { useCancelEvent, useRestoreCanceledEvent } from 'hooks/useCancelEvent'
 import { FC, ReactElement, useMemo } from 'react'
 import { AiOutlineStop } from 'react-icons/ai'
-import { FaPencilAlt, FaRegCheckCircle } from 'react-icons/fa'
+import { FaRegCheckCircle } from 'react-icons/fa'
 import { TbDotsVertical } from 'react-icons/tb'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  EventStatus,
-  formatDateRange,
-  getEventStatus,
-  isEventClosed,
-} from 'utils/helpers'
+import { formatDateRange } from 'utils/helpers'
 
 /**
  * A list of default actions for different event statuses
  */
 
-const appropriateActions: Record<
-  EventStatus,
-  {
-    title: string
-    link: (event: Event) => string
-    icon: ReactElement
+interface EventAction {
+  title: string
+  link: string
+  icon: ReactElement
+}
+
+const getEventAction = (event: Event): EventAction => {
+  if (event.is_canceled) {
+    return {
+      title: 'akce zrušena',
+      link: `/org/akce/${event.id}`,
+      icon: <AiOutlineStop className={styles.canceled} />,
+    }
+  } else if (event.is_archived) {
+    return {
+      title: 'akce je archivovaná (prohlédnout akci)',
+      link: `/org/akce/${event.id}`,
+      icon: <FaRegCheckCircle className={styles.closed} />,
+    }
+  } else if (event.is_closed) {
+    return {
+      title: 'akce je uzavřená (prohlédnout akci)',
+      link: `/org/akce/${event.id}`,
+      icon: <FaRegCheckCircle className={styles.finished} />,
+    }
+  } else {
+    return {
+      title: 'akce je otevřená (nahrát povinné informace po akci)',
+      link: `/org/akce/${event.id}/uzavrit`,
+      icon: <FaRegCheckCircle className={styles.inProgress} />,
+    }
   }
-> = {
-  draft: {
-    title: 'upravit',
-    link: event => `/org/akce/${event.id}/upravit`,
-    icon: <FaPencilAlt className={styles.draft} />,
-  },
-  inProgress: {
-    title: 'akce je otevřená (nahrát povinné informace po akci)',
-    link: event => `/org/akce/${event.id}/uzavrit`,
-    icon: <FaRegCheckCircle className={styles.inProgress} />,
-  },
-  finished: {
-    title: 'akce je uzavřená (prohlédnout akci)',
-    link: event => `/org/akce/${event.id}`,
-    icon: <FaRegCheckCircle className={styles.finished} />,
-  },
-  closed: {
-    title: 'akce je archivovaná (prohlédnout akci)',
-    link: event => `/org/akce/${event.id}`,
-    icon: <FaRegCheckCircle className={styles.closed} />,
-  },
-  canceled: {
-    title: 'akce zrušena',
-    link: event => `/org/akce/${event.id}`,
-    icon: <AiOutlineStop className={styles.canceled} />,
-  },
 }
 
 export const EventTable: FC<{
@@ -125,7 +119,7 @@ export const EventTable: FC<{
       </thead>
       <tbody>
         {events.map(event => {
-          const status = getEventStatus(event)
+          const eventAction = getEventAction(event)
           return (
             <tr key={event.id}>
               <td
@@ -134,11 +128,8 @@ export const EventTable: FC<{
                   columnsToHideOnMobile?.includes(1) && 'mobileHiddenCell',
                 )}
               >
-                <Link
-                  title={appropriateActions[status].title}
-                  to={appropriateActions[status].link(event)}
-                >
-                  {appropriateActions[status].icon}
+                <Link title={eventAction.title} to={eventAction.link}>
+                  {eventAction.icon}
                 </Link>
               </td>
               <td
@@ -200,7 +191,7 @@ export const EventTable: FC<{
                   }
                   className={styles.buttonInsideCell}
                 >
-                  {!isEventClosed(event) && (
+                  {!event.is_archived && (
                     <MenuItem>
                       <Link to={`/org/akce/${event.id}/upravit`}>upravit</Link>
                     </MenuItem>
@@ -212,7 +203,7 @@ export const EventTable: FC<{
                       </Link>
                     </MenuItem>
                   )}
-                  {!isEventClosed(event) && (
+                  {!event.is_archived && (
                     <>
                       <MenuItem>
                         <Link to={`/org/akce/${event.id}/uzavrit`}>

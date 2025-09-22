@@ -33,7 +33,6 @@ import { useOutletContext, useParams } from 'react-router-dom'
 import {
   formatDateRange,
   formatDateTime,
-  isEventClosed,
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
@@ -195,7 +194,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
         </div>
         {!readonly && (
           <Actions>
-            {!isEventClosed(event) ? (
+            {!event.is_archived ? (
               <>
                 <ButtonLink secondary to={`/org/akce/${eventId}/upravit`}>
                   <FaPencilAlt /> upravit
@@ -214,7 +213,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               </ButtonLink>
             )}
             <ExportFilesButton eventId={eventId} />
-            {!isEventClosed(event) && (
+            {!event.is_archived && (
               <>
                 {getRegistrationMethodBeforeFull(event) === 'standard' && (
                   <ButtonLink to="prihlasky" secondary>
@@ -248,7 +247,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 </ButtonLink>
               </>
             )}
-            {!isEventClosed(event) && (
+            {!event.is_archived && (
               <>
                 {event.is_canceled ? (
                   <Button secondary onClick={() => restoreCanceledEvent(event)}>
@@ -268,7 +267,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
           </Actions>
         )}
 
-        {event.record?.feedback_form && !isEventClosed(event) && (
+        {event.record?.feedback_form && !event.is_archived && (
           <InfoBox className={styles.feedbackLink}>
             Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
             <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
