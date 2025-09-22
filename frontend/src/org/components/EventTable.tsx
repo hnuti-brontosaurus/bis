@@ -12,12 +12,7 @@ import { AiOutlineStop } from 'react-icons/ai'
 import { FaPencilAlt, FaRegCheckCircle } from 'react-icons/fa'
 import { TbDotsVertical } from 'react-icons/tb'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  EventStatus,
-  formatDateRange,
-  getEventStatus,
-  isEventClosed,
-} from 'utils/helpers'
+import { EventStatus, formatDateRange, getEventStatus } from 'utils/helpers'
 
 /**
  * A list of default actions for different event statuses
@@ -200,7 +195,7 @@ export const EventTable: FC<{
                   }
                   className={styles.buttonInsideCell}
                 >
-                  {!isEventClosed(event) && (
+                  {!event.is_archived && (
                     <MenuItem>
                       <Link to={`/org/akce/${event.id}/upravit`}>upravit</Link>
                     </MenuItem>
@@ -212,7 +207,7 @@ export const EventTable: FC<{
                       </Link>
                     </MenuItem>
                   )}
-                  {!isEventClosed(event) && (
+                  {!event.is_archived && (
                     <>
                       <MenuItem>
                         <Link to={`/org/akce/${event.id}/uzavrit`}>

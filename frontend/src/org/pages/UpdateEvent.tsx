@@ -18,7 +18,7 @@ import { ApplicationStates } from 'org/components/EventForm/steps/ParticipantsSt
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { Optional } from 'utility-types'
-import { isEventClosed, sortOrder, withOverwriteArray } from 'utils/helpers'
+import { sortOrder, withOverwriteArray } from 'utils/helpers'
 
 export const UpdateEvent = () => {
   const params = useParams()
@@ -77,7 +77,7 @@ export const UpdateEvent = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (isEventClosed(event))
+  if (event.is_archived)
     return (
       <>
         <Breadcrumbs eventName={event && event.name} />
