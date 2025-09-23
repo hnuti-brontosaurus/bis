@@ -314,8 +314,11 @@ export const CloseEvent = () => {
       />
       {isFeedbackRequired(event) && (
         <InfoBox>
-          S uzavřením akce se účastníkům automaticky pošle zpětná vazba. Zpětnou
-          vazbu můžeš upravit ve{' '}
+          S uzavřením akce se účastníkům automaticky pošle{' '}
+          <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+            formulář zpětné vazby
+          </ButtonLink>
+          . Otázky můžeš upravit ve{' '}
           <ButtonLink to={{ search: '?krok=3' }} tertiary>
             3. záložce
           </ButtonLink>
