@@ -7,13 +7,12 @@ import {
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
-import { isEqual } from 'lodash'
+import { defaultsDeep, isEqual } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { isFeedbackRequired, sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
-import { defaultsDeep } from 'lodash'
 
 export const CloseEvent = () => {
   const params = useParams()

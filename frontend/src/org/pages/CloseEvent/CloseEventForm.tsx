@@ -9,7 +9,14 @@ import {
   PatchedEvent,
   Record,
 } from 'app/services/bisTypes'
-import { Step, Steps } from 'components'
+import {
+  Actions,
+  Button,
+  ButtonLink,
+  Step,
+  Steps,
+  StyledModal,
+} from 'components'
 import * as translations from 'config/static/combinedTranslations'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import {
@@ -383,39 +390,53 @@ export const CloseEventForm = ({
   }
 
   return (
-    <Steps
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      actions={[
-        { name: 'uložit', props: { is_closed: false } },
-        { name: 'uložit a uzavřít', props: { is_closed: true } },
-      ]}
-    >
-      <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
-        <ParticipantsStep
-          areParticipantsRequired={areParticipantsRequired}
-          methods={participantsFormMethods}
-          event={event}
-        />
-      </Step>
-      <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
-        <EvidenceStep
-          eventId={event.id}
-          isVolunteering={isVolunteering}
-          methods={evidenceFormMethods}
-          firstIndex={countEvidenceFirstStep()}
-          multipleSubevents={
-            !!event.number_of_sub_events && event.number_of_sub_events > 1
-          }
-        />
-      </Step>
-      <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
-        <FeedbackStep
-          eventId={event.id}
-          methods={feedbackFormMethods}
-          firstIndex={countEvidenceFirstStep() + 6}
-        />
-      </Step>
-    </Steps>
+    <>
+      <Steps
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        actions={[
+          { name: 'uložit', props: { is_closed: false } },
+          { name: 'uložit a uzavřít', props: { is_closed: true } },
+        ]}
+      >
+        <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
+          <ParticipantsStep
+            areParticipantsRequired={areParticipantsRequired}
+            methods={participantsFormMethods}
+            event={event}
+          />
+        </Step>
+        <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
+          <EvidenceStep
+            eventId={event.id}
+            isVolunteering={isVolunteering}
+            methods={evidenceFormMethods}
+            firstIndex={countEvidenceFirstStep()}
+            multipleSubevents={
+              !!event.number_of_sub_events && event.number_of_sub_events > 1
+            }
+          />
+        </Step>
+        <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
+          <FeedbackStep
+            eventId={event.id}
+            methods={feedbackFormMethods}
+            firstIndex={countEvidenceFirstStep() + 6}
+          />
+        </Step>
+      </Steps>
+      <StyledModal open onClose={() => {}} title="Odešle se zpětná vazba">
+        S uzavření akce se účastníkům automaticky pošle{' '}
+        <ButtonLink to={`/akce/${event.id}/zpetna_vazba`} tertiary>
+          formulář zpětné vazby
+        </ButtonLink>
+        . V základu obsahuje otázky, které zajímají ústředí HB, další otázky
+        můžeš přidat ty.
+        <Actions>
+          <Button secondary>Upravit otázky</Button>
+          <Button primary>Uzavřít a odeslat</Button>
+        </Actions>
+      </StyledModal>
+    </>
   )
 }
