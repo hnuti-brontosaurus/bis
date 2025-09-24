@@ -33,6 +33,7 @@ import { useOutletContext, useParams } from 'react-router-dom'
 import {
   formatDateRange,
   formatDateTime,
+  isFeedbackRequired,
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
@@ -267,14 +268,16 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
           </Actions>
         )}
 
-        {event.record?.feedback_form && !event.is_archived && (
-          <InfoBox className={styles.feedbackLink}>
-            Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
-            <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
-              {window.location.origin}/akce/{eventId}/zpetna_vazba
-            </ButtonLink>
-          </InfoBox>
-        )}
+        {event.record?.feedback_form &&
+          !event.is_archived &&
+          !isFeedbackRequired(event) && (
+            <InfoBox className={styles.feedbackLink}>
+              Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
+              <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+                {window.location.origin}/akce/{eventId}/zpetna_vazba
+              </ButtonLink>
+            </InfoBox>
+          )}
 
         <div className={styles.infoBoxDetail}>
           <div className={styles.imageWrapper}>

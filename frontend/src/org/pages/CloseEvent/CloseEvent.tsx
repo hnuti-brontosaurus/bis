@@ -1,19 +1,18 @@
 import { api } from 'app/services/bis'
 import type { EventPayload, FullEvent } from 'app/services/bisTypes'
-import { Breadcrumbs, GuideOwl, Loading } from 'components'
+import { Breadcrumbs, ButtonLink, GuideOwl, InfoBox, Loading } from 'components'
 import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
-import { isEqual } from 'lodash'
+import { defaultsDeep, isEqual } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
-import { sortOrder } from 'utils/helpers'
+import { isFeedbackRequired, sortOrder } from 'utils/helpers'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
-import { defaultsDeep } from 'lodash'
 
 export const CloseEvent = () => {
   const params = useParams()
@@ -312,6 +311,19 @@ export const CloseEvent = () => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />
+      {isFeedbackRequired(event) && (
+        <InfoBox>
+          S uzavřením akce se účastníkům automaticky pošle{' '}
+          <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+            formulář zpětné vazby
+          </ButtonLink>
+          . Otázky můžeš upravit ve{' '}
+          <ButtonLink to={{ search: '?krok=3' }} tertiary>
+            3. záložce
+          </ButtonLink>
+          .
+        </InfoBox>
+      )}
       <GuideOwl id="po-akce-guide-owl">
         Akce musí být uzavřená (tj. mít kompletně vyplněné povinné údaje po
         akci) do 20 dnů od skončení.
