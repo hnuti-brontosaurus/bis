@@ -29,6 +29,7 @@ import merge from 'lodash/merge'
 import pick from 'lodash/pick'
 import { useState } from 'react'
 import { FieldErrorsImpl, useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
 import {
@@ -303,7 +304,7 @@ export const CloseEventForm = ({
     })
   }
 
-  const resolveSubmitConfirmation = (confirmed: boolean) => () => {
+  const resolveSubmitConfirmation = (confirmed: boolean) => {
     if (resolveConfirmation) {
       resolveConfirmation(confirmed)
       setResolveConfirmation(null)
@@ -413,6 +414,8 @@ export const CloseEventForm = ({
     onCancel()
   }
 
+  const navigate = useNavigate()
+
   return (
     <>
       <Steps
@@ -451,7 +454,7 @@ export const CloseEventForm = ({
       </Steps>
       <StyledModal
         open={!!resolveConfirmation}
-        onClose={resolveSubmitConfirmation(false)}
+        onClose={() => resolveSubmitConfirmation(false)}
         title="Odešle se zpětná vazba"
       >
         S uzavření akce se účastníkům automaticky pošle{' '}
@@ -461,10 +464,16 @@ export const CloseEventForm = ({
         . V základu obsahuje otázky, které zajímají ústředí HB, další otázky
         můžeš přidat ty.
         <Actions>
-          <Button secondary onClick={resolveSubmitConfirmation(false)}>
+          <Button
+            secondary
+            onClick={() => {
+              resolveSubmitConfirmation(false)
+              navigate({ search: '?krok=3' })
+            }}
+          >
             Upravit otázky
           </Button>
-          <Button primary onClick={resolveSubmitConfirmation(true)}>
+          <Button primary onClick={() => resolveSubmitConfirmation(true)}>
             Uzavřít a odeslat
           </Button>
         </Actions>
