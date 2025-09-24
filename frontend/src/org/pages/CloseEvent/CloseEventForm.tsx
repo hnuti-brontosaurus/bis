@@ -27,6 +27,7 @@ import {
 import { cloneDeep, mergeWith, omit } from 'lodash'
 import merge from 'lodash/merge'
 import pick from 'lodash/pick'
+import { useState } from 'react'
 import { FieldErrorsImpl, useForm } from 'react-hook-form'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
@@ -289,6 +290,26 @@ export const CloseEventForm = ({
 
   const feedbackRequired = isFeedbackRequired(event)
 
+  const [resolveConfirmation, setResolveConfirmation] = useState<
+    ((value: boolean) => void) | null
+  >(null)
+
+  const requireSubmitConfirmation = (isClosed: boolean): Promise<boolean> => {
+    if (!feedbackRequired || !isClosed) {
+      return Promise.resolve(true)
+    }
+    return new Promise(resolve => {
+      setResolveConfirmation(() => resolve) // passing resolve as is would be interpreted as updater function
+    })
+  }
+
+  const resolveSubmitConfirmation = (confirmed: boolean) => () => {
+    if (resolveConfirmation) {
+      resolveConfirmation(confirmed)
+      setResolveConfirmation(null)
+    }
+  }
+
   const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
@@ -375,8 +396,11 @@ export const CloseEventForm = ({
       )
         delete data.record.total_hours_worked
 
-      await onSubmit(formData2payload(data))
-      clearPersist()
+      const confirmed = await requireSubmitConfirmation(is_closed)
+      if (confirmed) {
+        await onSubmit(formData2payload(data))
+        clearPersist()
+      }
     }
   }
 
@@ -425,7 +449,11 @@ export const CloseEventForm = ({
           />
         </Step>
       </Steps>
-      <StyledModal open onClose={() => {}} title="Odešle se zpětná vazba">
+      <StyledModal
+        open={!!resolveConfirmation}
+        onClose={resolveSubmitConfirmation(false)}
+        title="Odešle se zpětná vazba"
+      >
         S uzavření akce se účastníkům automaticky pošle{' '}
         <ButtonLink to={`/akce/${event.id}/zpetna_vazba`} tertiary>
           formulář zpětné vazby
@@ -433,8 +461,12 @@ export const CloseEventForm = ({
         . V základu obsahuje otázky, které zajímají ústředí HB, další otázky
         můžeš přidat ty.
         <Actions>
-          <Button secondary>Upravit otázky</Button>
-          <Button primary>Uzavřít a odeslat</Button>
+          <Button secondary onClick={resolveSubmitConfirmation(false)}>
+            Upravit otázky
+          </Button>
+          <Button primary onClick={resolveSubmitConfirmation(true)}>
+            Uzavřít a odeslat
+          </Button>
         </Actions>
       </StyledModal>
     </>
