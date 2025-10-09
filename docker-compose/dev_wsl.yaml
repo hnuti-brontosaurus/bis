@@ -1,5 +1,8 @@
 version: '3'
 services:
+  nginx:
+    extra_hosts:
+      - host.docker.internal:host-gateway
   postgres:
     volumes:
       - postgresqldata:/var/lib/postgresql/data

@@ -41,6 +41,7 @@ services:
     volumes:
       - ./logs:/logs
       - ./backend:/app
+      - ./event_images:/event_images
     environment:
       SECRET_KEY: ${SECRET_KEY}
       SENTRY_DSN: https://00f28fbc60bd42468f7ca9818037daa5@o4504321204027392.ingest.sentry.io/4504452985192449
@@ -62,6 +63,7 @@ services:
       ECOMAIL_API_KEY: ${ECOMAIL_API_KEY}
       DARUJME_API_KEY: ${DARUJME_API_KEY}
       DARUJME_SECRET: ${DARUJME_SECRET}
+      PROD_API_TOKEN: ${PROD_API_TOKEN}
 
   postgres:
     container_name: bis-postgres
