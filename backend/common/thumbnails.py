@@ -30,8 +30,11 @@ class ThumbnailImageFieldFile(ImageFieldFile):
         except (UnidentifiedImageError, FileNotFoundError):
             return
 
-        image.thumbnail((size, size))
-        image.save(self.path)
+        try:
+            image.thumbnail((size, size))
+            image.save(self.path)
+        except (OSError, ValueError):
+            return
 
         self.field.remove_thumbnails(self.instance)
         self.field.create_thumbnails(self.instance)
