@@ -3240,6 +3240,7 @@ export type PatchedAttendanceListPage = {
 }
 export type Inquiry = {
   inquiry: string
+  slug?: string
   data?: {
     [key: string]: any
   }
@@ -3249,6 +3250,7 @@ export type Inquiry = {
 export type InquiryRead = {
   id: number
   inquiry: string
+  slug?: string
   data?: {
     [key: string]: any
   }
