@@ -30,5 +30,7 @@ yarn.lock
 .env
 
 /.idea
-/backend/old_database_dump/db.json
 /node_modules
+
+/event_images
+/backend/old_database_dump/db.json

@@ -4,6 +4,7 @@ from os.path import exists, join, splitext
 
 from django.conf import settings
 from django.db.models import ImageField, signals
+from django.db.models.fields.files import ImageFieldFile
 from PIL import Image, UnidentifiedImageError
 
 
@@ -12,7 +13,33 @@ def get_thumbnail_path(file_name, size_name):
     return join("thumbnails", f"{file_name}_{size_name}{file_extension}")
 
 
+class ThumbnailImageFieldFile(ImageFieldFile):
+    def resize_original_image(self, size_name):
+        if not self:
+            return
+
+        try:
+            size = settings.THUMBNAIL_SIZES[size_name]
+        except KeyError:
+            raise ValueError(
+                f"Thumbnail size '{size_name}' is not defined in THUMBNAIL_SIZES."
+            )
+
+        try:
+            image = Image.open(self.path)
+        except (UnidentifiedImageError, FileNotFoundError):
+            return
+
+        image.thumbnail((size, size))
+        image.save(self.path)
+
+        self.field.remove_thumbnails(self.instance)
+        self.field.create_thumbnails(self.instance)
+
+
 class ThumbnailImageField(ImageField):
+    attr_class = ThumbnailImageFieldFile
+
     def contribute_to_class(self, cls, name, **kwargs):
         old_init = cls.__init__
 
@@ -51,7 +78,7 @@ class ThumbnailImageField(ImageField):
                 if exists(thumbnail_path):
                     continue
 
-                if image and (image.width >= size or image.height >= size):
+                if image and (image.width > size or image.height > size):
                     try:
                         new = image.copy()
                         new.thumbnail((size, size))
