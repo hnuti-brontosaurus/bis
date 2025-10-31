@@ -342,10 +342,6 @@ export const eventRecord = {
     'Počet účastníků pod 26 let',
     'Vyplň pouze pokud nejsou vyplnění konkrétní účastníci',
   ],
-  feedback_form: {
-    introduction: 'Úvod k dotazníku',
-    after_submit_text: 'Text po odeslání',
-  },
 } as const
 
 export const eventContact = {
