@@ -9,14 +9,7 @@ import {
   PatchedEvent,
   Record,
 } from 'app/services/bisTypes'
-import {
-  Actions,
-  Button,
-  ButtonLink,
-  Step,
-  Steps,
-  StyledModal,
-} from 'components'
+import { Step, Steps } from 'components'
 import * as translations from 'config/static/combinedTranslations'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import {
@@ -27,15 +20,12 @@ import {
 import { cloneDeep, mergeWith, omit } from 'lodash'
 import merge from 'lodash/merge'
 import pick from 'lodash/pick'
-import { useState } from 'react'
 import { FieldErrorsImpl, useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
 import {
   hasFormError,
   isEventVolunteering,
-  isFeedbackRequired,
   withOverwriteArray,
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
@@ -289,28 +279,6 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
-  const feedbackRequired = isFeedbackRequired(event)
-
-  const [resolveConfirmation, setResolveConfirmation] = useState<
-    ((value: boolean) => void) | null
-  >(null)
-
-  const requireSubmitConfirmation = (isClosed: boolean): Promise<boolean> => {
-    if (!feedbackRequired || !isClosed) {
-      return Promise.resolve(true)
-    }
-    return new Promise(resolve => {
-      setResolveConfirmation(() => resolve) // passing resolve as is would be interpreted as updater function
-    })
-  }
-
-  const resolveSubmitConfirmation = (confirmed: boolean) => {
-    if (resolveConfirmation) {
-      resolveConfirmation(confirmed)
-      setResolveConfirmation(null)
-    }
-  }
-
   const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
@@ -350,9 +318,6 @@ export const CloseEventForm = ({
           feedback = data
         },
         errors => {
-          if (feedbackRequired) {
-            isValid = false
-          }
           feedbackErrors = errors
           feedback = feedbackFormMethods.getValues()
         },
@@ -365,12 +330,7 @@ export const CloseEventForm = ({
         type: 'error',
         message: 'Opravte, prosím, chyby ve validaci',
         detail: validationErrors2Message(
-          merge(
-            {},
-            evidenceErrors,
-            participantsErrors,
-            feedbackRequired ? feedbackErrors : {},
-          ) as FieldErrorsImpl,
+          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
           translations.event,
           translations.generic,
         ),
@@ -397,11 +357,8 @@ export const CloseEventForm = ({
       )
         delete data.record.total_hours_worked
 
-      const confirmed = await requireSubmitConfirmation(is_closed)
-      if (confirmed) {
-        await onSubmit(formData2payload(data))
-        clearPersist()
-      }
+      await onSubmit(formData2payload(data))
+      clearPersist()
     }
   }
 
@@ -414,70 +371,40 @@ export const CloseEventForm = ({
     onCancel()
   }
 
-  const navigate = useNavigate()
-
   return (
-    <>
-      <Steps
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        actions={[
-          { name: 'uložit', props: { is_closed: false } },
-          { name: 'uložit a uzavřít', props: { is_closed: true } },
-        ]}
-      >
-        <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
-          <ParticipantsStep
-            areParticipantsRequired={areParticipantsRequired}
-            methods={participantsFormMethods}
-            event={event}
-          />
-        </Step>
-        <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
-          <EvidenceStep
-            eventId={event.id}
-            isVolunteering={isVolunteering}
-            methods={evidenceFormMethods}
-            firstIndex={countEvidenceFirstStep()}
-            multipleSubevents={
-              !!event.number_of_sub_events && event.number_of_sub_events > 1
-            }
-          />
-        </Step>
-        <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
-          <FeedbackStep
-            eventId={event.id}
-            methods={feedbackFormMethods}
-            firstIndex={countEvidenceFirstStep() + 6}
-          />
-        </Step>
-      </Steps>
-      <StyledModal
-        open={!!resolveConfirmation}
-        onClose={() => resolveSubmitConfirmation(false)}
-        title="Odešle se zpětná vazba"
-      >
-        S uzavření akce se účastníkům automaticky pošle{' '}
-        <ButtonLink to={`/akce/${event.id}/zpetna_vazba`} tertiary>
-          formulář zpětné vazby
-        </ButtonLink>
-        . V základu obsahuje otázky, které zajímají ústředí HB, další otázky
-        můžeš přidat ty.
-        <Actions>
-          <Button
-            secondary
-            onClick={() => {
-              resolveSubmitConfirmation(false)
-              navigate({ search: '?krok=3' })
-            }}
-          >
-            Upravit otázky
-          </Button>
-          <Button primary onClick={() => resolveSubmitConfirmation(true)}>
-            Uzavřít a odeslat
-          </Button>
-        </Actions>
-      </StyledModal>
-    </>
+    <Steps
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      actions={[
+        { name: 'uložit', props: { is_closed: false } },
+        { name: 'uložit a uzavřít', props: { is_closed: true } },
+      ]}
+    >
+      <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
+        <ParticipantsStep
+          areParticipantsRequired={areParticipantsRequired}
+          methods={participantsFormMethods}
+          event={event}
+        />
+      </Step>
+      <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
+        <EvidenceStep
+          eventId={event.id}
+          isVolunteering={isVolunteering}
+          methods={evidenceFormMethods}
+          firstIndex={countEvidenceFirstStep()}
+          multipleSubevents={
+            !!event.number_of_sub_events && event.number_of_sub_events > 1
+          }
+        />
+      </Step>
+      <Step name="zpětná vazba">
+        <FeedbackStep
+          eventId={event.id}
+          methods={feedbackFormMethods}
+          firstIndex={countEvidenceFirstStep() + 6}
+        />
+      </Step>
+    </Steps>
   )
 }
