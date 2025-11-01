@@ -634,7 +634,6 @@ class RecordSerializer(ModelSerializer):
             "note",
             "contacts",
             "age_stats",
-            "feedback_form",
         )
 
     def get_age_stats(self, instance) -> dict:
@@ -693,6 +692,7 @@ class EventSerializer(ModelSerializer):
             "vip_propagation",
             "registration",
             "record",
+            "feedback_form",
         )
         read_only_fields = ["duration"]
 
@@ -1019,7 +1019,7 @@ class InquirySerializer(ModelSerializer):
     def create(self, validated_data):
         validated_data["feedback_form"] = Event.objects.get(
             id=self.context["view"].kwargs["event_id"]
-        ).record.feedback_form
+        ).feedback_form
         return super().create(validated_data)
 
 

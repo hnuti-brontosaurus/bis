@@ -127,12 +127,6 @@ class FeedbackFormSerializer(ModelSerializer):
         fields = "introduction", "after_submit_text", "inquiries"
 
 
-class EventRecordSerializer(ModelSerializer):
-    class Meta:
-        model = EventRecord
-        fields = ("feedback_form",)
-
-
 class LocationPhotoSerializer(ModelSerializer):
     class Meta:
         model = LocationPhoto
@@ -172,7 +166,6 @@ class LocationSerializer(ModelSerializer):
 class EventSerializer(ModelSerializer):
     propagation = EventPropagationSerializer(read_only=True)
     registration = EventRegistrationSerializer(read_only=True)
-    record = EventRecordSerializer(read_only=True)
     feedback_form = FeedbackFormSerializer(read_only=True)
 
     location = LocationSerializer()
@@ -204,7 +197,7 @@ class EventSerializer(ModelSerializer):
             "administration_units",
             "propagation",
             "registration",
-            "record",
+            "feedback_form",
         )
 
 

@@ -166,7 +166,7 @@ class EventViewSet(PermissionViewSetBase):
         "registration",
         "registration__questionnaire",
         "record",
-        "record__feedback_form",
+        "feedback_form",
         "category",
         "program",
     ).prefetch_related(
@@ -319,9 +319,7 @@ class InquiryViewSet(PermissionViewSetBase):
 
     def get_queryset(self):
         return (
-            super()
-            .get_queryset()
-            .filter(feedback_form__event_record__event=self.kwargs["event_id"])
+            super().get_queryset().filter(feedback_form__event=self.kwargs["event_id"])
         )
 
 
