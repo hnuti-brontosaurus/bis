@@ -128,8 +128,6 @@ class FeedbackFormSerializer(ModelSerializer):
 
 
 class EventRecordSerializer(ModelSerializer):
-    feedback_form = FeedbackFormSerializer(read_only=True)
-
     class Meta:
         model = EventRecord
         fields = ("feedback_form",)
@@ -175,6 +173,7 @@ class EventSerializer(ModelSerializer):
     propagation = EventPropagationSerializer(read_only=True)
     registration = EventRegistrationSerializer(read_only=True)
     record = EventRecordSerializer(read_only=True)
+    feedback_form = FeedbackFormSerializer(read_only=True)
 
     location = LocationSerializer()
     group = EventGroupCategorySerializer()

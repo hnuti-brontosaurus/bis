@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--till", type=int, help="Year including till download images."
+            "--year", type=int, help="Year including till download images."
         )
         parser.add_argument("--size", type=str, help="Size to resize to.")
 
@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
         year = event["start"][:4]
 
-        if int(year) >= options["till"]:
+        if int(year) == options["year"]:
             self.stdout.write(self.style.WARNING(f"Skipping event with year: {year}"))
             return
 

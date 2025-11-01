@@ -33,6 +33,7 @@ generic:
   emoji: Smajlík
   gps_location: GPS lokace
   created_by: Vytvořeno
+  sent_at: Odesláno
   data: Data
 
 admin:

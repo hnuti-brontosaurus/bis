@@ -530,9 +530,7 @@ class EventFeedbackExportSerializer(ModelSerializer):
         return result
 
     def get_extra_fields(self, queryset):
-        inquiries = Inquiry.objects.filter(
-            feedback_form__event_record=queryset.first().event_record
-        )
+        inquiries = Inquiry.objects.filter(feedback_form=queryset.first())
         for inquiry in inquiries:
             yield str(inquiry.id), inquiry.inquiry
 

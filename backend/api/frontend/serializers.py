@@ -613,12 +613,12 @@ class FeedbackFormSerializer(ModelSerializer):
         fields = (
             "introduction",
             "after_submit_text",
+            "sent_at",
         )
 
 
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
-    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     age_stats = SerializerMethodField()
 
@@ -656,6 +656,7 @@ class EventSerializer(ModelSerializer):
     vip_propagation = VIPPropagationSerializer(allow_null=True)
     registration = RegistrationSerializer(allow_null=True)
     record = RecordSerializer(allow_null=True)
+    feedback_form = FeedbackFormSerializer(allow_null=True)
 
     group = EventGroupCategorySerializer()
     category = EventCategorySerializer()
@@ -1051,9 +1052,9 @@ class EventFeedbackSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
-        validated_data["event_record"] = Event.objects.get(
+        validated_data["event"] = Event.objects.get(
             id=self.context["view"].kwargs["event_id"]
-        ).record
+        )
         instance = super().create(validated_data)
         emails.feedback_created(instance)
         return instance

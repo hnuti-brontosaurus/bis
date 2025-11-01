@@ -128,8 +128,6 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         EventPhotoAdmin,
         AttendanceListPageAdmin,
         EventContactAdmin,
-        FeedbackFormAdmin,
-        EventFeedbackAdmin,
     )
 
     readonly_fields = (
@@ -204,6 +202,8 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         EventVIPPropagationAdmin,
         EventRegistrationAdmin,
         EventRecordAdmin,
+        FeedbackFormAdmin,
+        EventFeedbackAdmin,
     )
     filter_horizontal = ("other_organizers",)
 

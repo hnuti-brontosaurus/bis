@@ -331,9 +331,7 @@ class EventFeedbackViewSet(PermissionViewSetBase):
     kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
-        return (
-            super().get_queryset().filter(event_record__event=self.kwargs["event_id"])
-        )
+        return super().get_queryset().filter(event=self.kwargs["event_id"])
 
     def get_permissions(self):
         if self.action == "create":
@@ -427,7 +425,7 @@ def get_feedbacks(request, event_id):
     if not Permissions(request.user, Event, "frontend").has_change_permission(event):
         return HttpResponseForbidden()
 
-    feedbacks = EventFeedback.objects.filter(event_record__event=event)
+    feedbacks = EventFeedback.objects.filter(event=event)
     return export.export_to_xlsx_response(feedbacks)
 
 

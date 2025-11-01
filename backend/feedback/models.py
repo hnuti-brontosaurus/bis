@@ -9,7 +9,7 @@ from translation.translate import translate_model
 
 @translate_model
 class EventFeedback(Model):
-    event_record = ForeignKey(EventRecord, related_name="feedbacks", on_delete=PROTECT)
+    event = ForeignKey(Event, related_name="feedbacks", on_delete=PROTECT)
     user = ForeignKey(
         User, related_name="feedbacks", on_delete=PROTECT, null=True, blank=True
     )
@@ -27,19 +27,18 @@ class EventFeedback(Model):
     @classmethod
     def filter_queryset(cls, queryset, perm):
         events = Event.filter_queryset(Event.objects.all(), perm)
-        return queryset.filter(event_record__event__in=events)
+        return queryset.filter(event__in=events)
 
     def has_edit_permission(self, user):
-        return self.event_record.has_edit_permission(user)
+        return self.event.has_edit_permission(user)
 
 
 @translate_model
 class FeedbackForm(Model):
-    event_record = OneToOneField(
-        EventRecord, on_delete=CASCADE, related_name="feedback_form"
-    )
+    event = ForeignKey(Event, related_name="feedback_form", on_delete=PROTECT)
     introduction = TextField(blank=True)
     after_submit_text = TextField(blank=True)
+    sent_at = DateField(null=True, blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -48,9 +47,7 @@ class FeedbackForm(Model):
         return "Formulář zpětné vazby"
 
     def has_edit_permission(self, user):
-        return not hasattr(
-            self, "event_record"
-        ) or self.event_record.has_edit_permission(user)
+        return self.event.has_edit_permission(user)
 
 
 @translate_model
@@ -73,7 +70,7 @@ class Inquiry(Model):
     @classmethod
     def filter_queryset(cls, queryset, perm):
         events = Event.filter_queryset(Event.objects.all(), perm)
-        return queryset.filter(feedback_form__event_record__event__in=events)
+        return queryset.filter(feedback_form__event__in=events)
 
     def has_edit_permission(self, user):
         return self.feedback_form.has_edit_permission(user)
@@ -98,4 +95,4 @@ class Reply(Model):
     @classmethod
     def filter_queryset(cls, queryset, perm):
         events = Event.filter_queryset(Event.objects.all(), perm)
-        return queryset.filter(feedback__event_record__event__in=events)
+        return queryset.filter(feedback__event__in=events)

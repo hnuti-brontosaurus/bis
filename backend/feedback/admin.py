@@ -22,4 +22,4 @@ class FeedbackFormAdmin(ReadonlyMixin, NestedStackedInline):
     inlines = (InquiryAdmin,)
 
     classes = ("collapse",)
-    readonly_fields = "introduction", "after_submit_text"
+    readonly_fields = "introduction", "after_submit_text", "sent_at"
