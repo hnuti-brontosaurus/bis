@@ -104,7 +104,7 @@ Cypress.Commands.add('interceptFullEvent', (id = 1000, fixture = 'event') => {
   cy.intercept(
     {
       method: 'GET',
-      pathname: `/api/frontend/events/${id}/record/feedback_form/inquiries/`,
+      pathname: `/api/frontend/events/${id}/feedback_form/inquiries/`,
     },
     { results: [] },
   )

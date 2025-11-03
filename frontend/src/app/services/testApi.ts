@@ -771,7 +771,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesListApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/`,
         params: {
           page: queryArg.page,
           page_size: queryArg.pageSize,
@@ -784,7 +784,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesCreateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/`,
         method: 'POST',
         body: queryArg.inquiry,
       }),
@@ -794,7 +794,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesRetrieveApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/${queryArg.id}/`,
       }),
     }),
     frontendEventsRecordFeedbackFormInquiriesUpdate: build.mutation<
@@ -802,7 +802,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesUpdateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/${queryArg.id}/`,
         method: 'PUT',
         body: queryArg.inquiry,
       }),
@@ -812,7 +812,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesPartialUpdateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/${queryArg.id}/`,
         method: 'PATCH',
         body: queryArg.patchedInquiry,
       }),
@@ -822,7 +822,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbackFormInquiriesDestroyApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedback_form/inquiries/${queryArg.id}/`,
         method: 'DELETE',
       }),
     }),
@@ -831,7 +831,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksListApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/`,
         params: {
           page: queryArg.page,
           page_size: queryArg.pageSize,
@@ -844,7 +844,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksCreateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/`,
         method: 'POST',
         body: queryArg.eventFeedback,
       }),
@@ -854,7 +854,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksRetrieveApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/${queryArg.id}/`,
       }),
     }),
     frontendEventsRecordFeedbacksUpdate: build.mutation<
@@ -862,7 +862,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksUpdateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/${queryArg.id}/`,
         method: 'PUT',
         body: queryArg.eventFeedback,
       }),
@@ -872,7 +872,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksPartialUpdateApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/${queryArg.id}/`,
         method: 'PATCH',
         body: queryArg.patchedEventFeedback,
       }),
@@ -882,7 +882,7 @@ const injectedRtkApi = api.injectEndpoints({
       FrontendEventsRecordFeedbacksDestroyApiArg
     >({
       query: queryArg => ({
-        url: `/api/frontend/events/${queryArg.eventId}/record/feedbacks/${queryArg.id}/`,
+        url: `/api/frontend/events/${queryArg.eventId}/feedbacks/${queryArg.id}/`,
         method: 'DELETE',
       }),
     }),
