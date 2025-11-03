@@ -61,8 +61,12 @@ export const CreateEvent = () => {
   )
 
   const initialData = useMemo(() => {
-    if (!eventToClone)
-      return { other_organizers: currentUser ? [currentUser] : [] } // pre-fill current user into organizers
+    if (!eventToClone) {
+      return {
+        other_organizers: currentUser ? [currentUser] : [],
+        feedback_form: {},
+      } // pre-fill current user into organizers
+    }
     const eventToCloneFixed = omit(eventToClone, [
       'id',
       'start',
