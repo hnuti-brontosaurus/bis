@@ -237,7 +237,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 )}
               </>
             )}
-            {event.record?.feedback_form && (
+            {event.feedback_form && (
               <>
                 <ButtonLink secondary to={`/org/akce/${eventId}/zpetna_vazba`}>
                   <FaThumbsUp /> zpětné vazby
@@ -267,7 +267,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
           </Actions>
         )}
 
-        {event.record?.feedback_form && !event.is_archived && (
+        {event.feedback_form && !event.is_archived && (
           <InfoBox className={styles.feedbackLink}>
             Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
             <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>

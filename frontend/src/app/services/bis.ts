@@ -1261,13 +1261,12 @@ type WebRegistration = Overwrite<
   { questionnaire: WebQuestionnaire | null }
 >
 export type WebFeedbackForm = Assign<FeedbackForm, { inquiries: InquiryRead[] }>
-type WebRecord = Overwrite<Record, { feedback_form?: WebFeedbackForm }>
 
 export type WebEvent = Overwrite<
   Event,
   {
     registration: WebRegistration | null
-    record?: WebRecord
     location?: Location
+    feedback_form?: WebFeedbackForm
   }
 >

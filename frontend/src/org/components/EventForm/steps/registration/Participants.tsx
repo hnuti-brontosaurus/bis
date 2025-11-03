@@ -113,7 +113,6 @@ export const Participants: FC<{
           contacts: [],
           number_of_participants: null,
           number_of_participants_under_26: null,
-          feedback_form: {},
         },
       },
     }).unwrap()
@@ -139,7 +138,6 @@ export const Participants: FC<{
           contacts: [],
           number_of_participants: null,
           number_of_participants_under_26: null,
-          feedback_form: {},
         },
       },
     }).unwrap()
@@ -179,7 +177,6 @@ export const Participants: FC<{
           record: {
             participants: updatedParticipants,
             contacts: [],
-            feedback_form: {},
           },
         },
       }).unwrap()

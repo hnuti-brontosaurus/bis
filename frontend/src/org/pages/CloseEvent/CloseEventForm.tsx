@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
   AttendanceListPagePayload,
+  Event,
   EventPhotoPayload,
   Finance,
   FinanceReceipt,
@@ -81,7 +82,7 @@ export type ParticipantsStepFormInnerShape = Assign<
 >
 
 export type FeedbackStepFormShape = {
-  record: Pick<Record, 'feedback_form'>
+  record: Pick<Event, 'feedback_form'>
   inquiries: Optional<InquiryRead, 'id' | 'order'>[]
 }
 

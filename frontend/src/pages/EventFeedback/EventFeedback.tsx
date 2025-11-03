@@ -61,7 +61,7 @@ export const EventFeedback: FC = () => {
   if (!event) {
     return <Loading>Připravujeme zpětnou vazbu</Loading>
   }
-  if (!event?.record?.feedback_form) {
+  if (!event?.feedback_form) {
     return (
       <Error message="Otázky pro zpětnou vazbu nejsou uložené. Pokud jsi tento odkaz dostal/a od organizátorů akce, kontaktuj je, prosím." />
     )
@@ -85,9 +85,7 @@ export const EventFeedback: FC = () => {
       </div>
       {formValues?.step === 'finished' ? (
         <div>
-          <MessageBox>
-            {event.record.feedback_form.after_submit_text}
-          </MessageBox>
+          <MessageBox>{event.feedback_form?.after_submit_text}</MessageBox>
           <Actions>
             <Button primary onClick={clearForm}>
               Další zpětná vazba
@@ -97,7 +95,7 @@ export const EventFeedback: FC = () => {
       ) : (
         <EventFeedbackForm
           id={eventId}
-          feedbackForm={event.record.feedback_form}
+          feedbackForm={event.feedback_form}
           user={user}
           onSubmit={handleSubmit}
           onCancel={clearForm}

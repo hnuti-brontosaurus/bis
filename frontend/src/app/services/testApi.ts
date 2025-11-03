@@ -3045,7 +3045,6 @@ export type Record = {
   number_of_participants_under_26?: number | null
   note?: string
   contacts?: EventContact[]
-  feedback_form: FeedbackForm | null
   is_event_closed_email_enabled?: boolean
 }
 export type Event = {
@@ -3080,6 +3079,7 @@ export type Event = {
   vip_propagation: VipPropagation | null
   registration: Registration | null
   record: Record | null
+  feedback_form: FeedbackForm | null
 }
 export type PaginatedEventList = {
   count?: number
