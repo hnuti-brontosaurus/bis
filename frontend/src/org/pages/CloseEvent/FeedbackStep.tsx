@@ -29,7 +29,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
           <FormSubsection
             header="Úvod k dotazníku"
             required
-            help={formTexts.record.feedback_form.introduction.help}
+            help={formTexts.feedback_form.introduction.help}
           >
             <FullSizeElement>
               <FormInputError>
@@ -42,9 +42,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
             </FullSizeElement>
           </FormSubsection>
           <FormSubsection header="Text po odeslání" required>
-            <InfoBox>
-              {formTexts.record.feedback_form.after_submit_text.help}
-            </InfoBox>
+            <InfoBox>{formTexts.feedback_form.after_submit_text.help}</InfoBox>
             <FullSizeElement>
               <FormInputError>
                 <textarea
