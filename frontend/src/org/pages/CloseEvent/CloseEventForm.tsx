@@ -82,7 +82,7 @@ export type ParticipantsStepFormInnerShape = Assign<
 >
 
 export type FeedbackStepFormShape = {
-  record: Pick<Event, 'feedback_form'>
+  feedback_form: Event['feedback_form']
   inquiries: Optional<InquiryRead, 'id' | 'order'>[]
 }
 
@@ -117,7 +117,7 @@ const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
   )
 
 const pickFeedbackData = (data: Partial<CloseEventFormShape>) =>
-  pick(data, 'inquiries', 'record.feedback_form')
+  pick(data, 'inquiries', 'feedback_form')
 
 const formData2payload = ({
   is_closed,

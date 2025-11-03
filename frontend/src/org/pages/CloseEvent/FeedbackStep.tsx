@@ -34,7 +34,7 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
             <FullSizeElement>
               <FormInputError>
                 <textarea
-                  {...methods.register('record.feedback_form.introduction', {
+                  {...methods.register('feedback_form.introduction', {
                     required,
                   })}
                 />
@@ -46,10 +46,9 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
             <FullSizeElement>
               <FormInputError>
                 <textarea
-                  {...methods.register(
-                    'record.feedback_form.after_submit_text',
-                    { required },
-                  )}
+                  {...methods.register('feedback_form.after_submit_text', {
+                    required,
+                  })}
                 />
               </FormInputError>
             </FullSizeElement>
