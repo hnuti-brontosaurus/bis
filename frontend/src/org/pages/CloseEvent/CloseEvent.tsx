@@ -75,10 +75,7 @@ export const CloseEvent = () => {
     record: defaultsDeep(event.record, {
       is_event_closed_email_enabled: true,
     }),
-    feedback_form: defaultsDeep(event.feedback_form, {
-      introduction: formTexts.feedback_form.introduction.initial,
-      after_submit_text: formTexts.feedback_form.after_submit_text.initial,
-    }),
+    feedback_form: event.feedback_form,
     photos: photos.results.map(({ photo, ...rest }) => ({
       photo: photo.original,
       thumbnail: photo.small,
