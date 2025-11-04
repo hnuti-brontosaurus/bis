@@ -366,6 +366,8 @@ export const EventForm: FC<{
     defaultValues: pick(initialAndSavedData, shapes.organizers),
   })
 
+  const feedbackForm = initialAndSavedData.feedback_form
+
   const methods: MethodsShapes = useMemo(
     () =>
       ({
@@ -442,7 +444,9 @@ export const EventForm: FC<{
     )
 
     if (Object.values(areValid).every(a => a)) {
-      const data = form2finalData(merge({}, ...Object.values(datas)))
+      const data = form2finalData(
+        merge({ feedback_form: feedbackForm }, ...Object.values(datas)),
+      )
       try {
         await onSubmit(data)
         cancelPersist()

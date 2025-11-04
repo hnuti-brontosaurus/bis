@@ -713,7 +713,7 @@ export const api = createApi({
       { eventId: number; inquiry: Inquiry }
     >({
       query: ({ eventId, inquiry }) => ({
-        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/`,
+        url: `/frontend/events/${eventId}/feedback_form/inquiries/`,
         method: 'POST',
         body: inquiry,
       }),
@@ -730,7 +730,7 @@ export const api = createApi({
       { eventId: number } & ListArguments
     >({
       query: queryArg => ({
-        url: `/frontend/events/${queryArg.eventId}/record/feedback_form/inquiries/`,
+        url: `/frontend/events/${queryArg.eventId}/feedback_form/inquiries/`,
         params: {
           page: queryArg.page,
           page_size: queryArg.pageSize,
@@ -757,7 +757,7 @@ export const api = createApi({
       { eventId: number; id: number; inquiry: Partial<Inquiry> }
     >({
       query: ({ eventId, id, inquiry }) => ({
-        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        url: `/frontend/events/${eventId}/feedback_form/inquiries/${id}/`,
         method: 'PATCH',
         body: inquiry,
       }),
@@ -775,7 +775,7 @@ export const api = createApi({
       { eventId: number; id: number }
     >({
       query: ({ eventId, id }) => ({
-        url: `/frontend/events/${eventId}/record/feedback_form/inquiries/${id}/`,
+        url: `/frontend/events/${eventId}/feedback_form/inquiries/${id}/`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, { id, eventId }) => [
@@ -865,7 +865,7 @@ export const api = createApi({
       { eventId: number; feedback: EventFeedback }
     >({
       query: ({ eventId, feedback }) => ({
-        url: `frontend/events/${eventId}/record/feedbacks/`,
+        url: `frontend/events/${eventId}/feedbacks/`,
         method: 'POST',
         body: feedback,
       }),
@@ -878,7 +878,7 @@ export const api = createApi({
       { eventId: number } & ListArguments
     >({
       query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/feedbacks/`,
+        url: `frontend/events/${queryArg.eventId}/feedbacks/`,
         method: 'GET',
         params: {
           page: queryArg.page,
@@ -1261,13 +1261,12 @@ type WebRegistration = Overwrite<
   { questionnaire: WebQuestionnaire | null }
 >
 export type WebFeedbackForm = Assign<FeedbackForm, { inquiries: InquiryRead[] }>
-type WebRecord = Overwrite<Record, { feedback_form?: WebFeedbackForm }>
 
 export type WebEvent = Overwrite<
   Event,
   {
     registration: WebRegistration | null
-    record?: WebRecord
     location?: Location
+    feedback_form?: WebFeedbackForm
   }
 >

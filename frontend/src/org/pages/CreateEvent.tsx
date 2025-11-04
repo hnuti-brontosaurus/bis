@@ -18,6 +18,7 @@ import { EventForm, EventSubmitShape, QualificationGuide } from 'org/components'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toDataURL } from 'utils/helpers'
+import { form as formTexts } from '../../config/static/closeEvent'
 import { event2payload } from './UpdateEvent'
 
 export const CreateEvent = () => {
@@ -61,8 +62,16 @@ export const CreateEvent = () => {
   )
 
   const initialData = useMemo(() => {
-    if (!eventToClone)
-      return { other_organizers: currentUser ? [currentUser] : [] } // pre-fill current user into organizers
+    if (!eventToClone) {
+      return {
+        other_organizers: currentUser ? [currentUser] : [], // pre-fill current user into organizers
+        // initialize feedback form
+        feedback_form: {
+          introduction: formTexts.feedback_form.introduction.initial,
+          after_submit_text: formTexts.feedback_form.after_submit_text.initial,
+        },
+      }
+    }
     const eventToCloneFixed = omit(eventToClone, [
       'id',
       'start',

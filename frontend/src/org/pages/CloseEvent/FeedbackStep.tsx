@@ -29,12 +29,12 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
           <FormSubsection
             header="Úvod k dotazníku"
             required
-            help={formTexts.record.feedback_form.introduction.help}
+            help={formTexts.feedback_form.introduction.help}
           >
             <FullSizeElement>
               <FormInputError>
                 <textarea
-                  {...methods.register('record.feedback_form.introduction', {
+                  {...methods.register('feedback_form.introduction', {
                     required,
                   })}
                 />
@@ -42,16 +42,13 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
             </FullSizeElement>
           </FormSubsection>
           <FormSubsection header="Text po odeslání" required>
-            <InfoBox>
-              {formTexts.record.feedback_form.after_submit_text.help}
-            </InfoBox>
+            <InfoBox>{formTexts.feedback_form.after_submit_text.help}</InfoBox>
             <FullSizeElement>
               <FormInputError>
                 <textarea
-                  {...methods.register(
-                    'record.feedback_form.after_submit_text',
-                    { required },
-                  )}
+                  {...methods.register('feedback_form.after_submit_text', {
+                    required,
+                  })}
                 />
               </FormInputError>
             </FullSizeElement>
