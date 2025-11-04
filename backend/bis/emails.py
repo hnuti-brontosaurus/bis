@@ -461,7 +461,7 @@ def send_opportunities_summary():
 
 
 def feedback_created(feedback):
-    event = feedback.event_record.event
+    event = feedback.event
     ecomail.send_email(
         emails["bis"],
         "Nová zpětná vazba!",
