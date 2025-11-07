@@ -7,6 +7,7 @@ type QuestionnaireSection = Optional<InquiryRead, 'id' | 'order'>[]
 const checkInSection: QuestionnaireSection = [
   {
     inquiry: 'Anketka',
+    slug: 'check_in_section_heading',
     data: { type: 'header', fixed: true },
   },
   {
@@ -95,6 +96,7 @@ const checkInSection: QuestionnaireSection = [
 const eventSection: QuestionnaireSection = [
   {
     inquiry: 'O akci',
+    slug: 'event_section_heading',
     data: { type: 'header', fixed: true },
   },
 
@@ -142,6 +144,7 @@ const eventSection: QuestionnaireSection = [
 const volunteeringSection: QuestionnaireSection = [
   {
     inquiry: 'Dobrovolnická činnost',
+    slug: 'volunteering_section_heading',
     data: { type: 'header', fixed: true },
   },
 
@@ -178,6 +181,7 @@ const volunteeringSection: QuestionnaireSection = [
 const atmosphereSection: QuestionnaireSection = [
   {
     inquiry: 'Atmosféra',
+    slug: 'atmosphere_section_heading',
     data: { type: 'header', fixed: true },
   },
   {
@@ -206,6 +210,7 @@ const atmosphereSection: QuestionnaireSection = [
 const involvementSection: QuestionnaireSection = [
   {
     inquiry: 'Zapojení',
+    slug: 'involvement_section_heading',
     data: { type: 'header', fixed: true },
   },
   {
