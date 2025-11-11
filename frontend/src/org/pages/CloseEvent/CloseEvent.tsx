@@ -10,6 +10,7 @@ import { isEqual } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { sortOrder } from 'utils/helpers'
+import { useUpdateInquiries } from '../../../hooks/useUpdateInquiries'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
 import { defaultsDeep } from 'lodash'
 
@@ -56,9 +57,7 @@ export const CloseEvent = () => {
   const [updateReceipt] = api.endpoints.updateFinanceReceipt.useMutation()
   const [deleteReceipt] = api.endpoints.deleteFinanceReceipt.useMutation()
 
-  const [createInquiry] = api.endpoints.createEventFeedbackInquiry.useMutation()
-  const [updateInquiry] = api.endpoints.updateEventFeedbackInquiry.useMutation()
-  const [deleteInquiry] = api.endpoints.deleteEventFeedbackInquiry.useMutation()
+  const updateInquiries = useUpdateInquiries()
 
   useShowApiErrorMessage(updateEventError)
 
@@ -240,37 +239,7 @@ export const CloseEvent = () => {
         ...deletedReceiptPromises,
       ])
 
-      /**
-       * Feedback inquiries
-       */
-      const inquiriesWithOrder = inquiries.map((inquiry, order) => ({
-        ...inquiry,
-        order,
-      }))
-      const createdInquiryPromises = inquiriesWithOrder
-        .filter(inquiry => !inquiry.id)
-        .map(inquiry => createInquiry({ eventId, inquiry }).unwrap())
-      const updateInquiryPromises = inquiriesWithOrder
-        .filter(inquiry => inquiry.id)
-        .filter(inquiry => {
-          const oldInquiry = defaultValues.inquiries.find(
-            oi => oi.id === inquiry.id,
-          )
-          return oldInquiry && !isEqual(oldInquiry, inquiry)
-        })
-        .map(({ id, ...inquiry }) =>
-          updateInquiry({ eventId, id: id as number, inquiry }).unwrap(),
-        )
-      const deletedInquiryPromises = defaultValues.inquiries
-        .filter(inquiry => inquiry.id)
-        .filter(inquiry => !inquiries.find(other => other.id === inquiry.id))
-        .map(({ id }) => deleteInquiry({ eventId, id: id as number }).unwrap())
-
-      await Promise.all([
-        ...createdInquiryPromises,
-        ...updateInquiryPromises,
-        ...deletedInquiryPromises,
-      ])
+      await updateInquiries(eventId, inquiries, defaultValues.inquiries)
 
       showMessage({
         type: evidence.is_closed ? 'success' : 'warning',
