@@ -168,7 +168,7 @@ export const CreateEvent = () => {
             : []
         const inquiries =
           getRequiredFeedbackInquiries(event).concat(additionalInquiries)
-        await updateInquiries(event.id, inquiries, [])
+        await Promise.all(updateInquiries(event.id, inquiries, []))
       } catch (error) {
         // when saving questions or images fails, we want to handle it differently
         // because the event already exists...

@@ -39,10 +39,6 @@ export const useUpdateInquiries = () => {
       .filter(inquiry => !inquiries.find(({ id }) => id === inquiry.id))
       .map(({ id }) => deleteInquiry({ eventId, id: id as number }).unwrap())
 
-    return Promise.all([
-      ...createPromises,
-      ...updatePromises,
-      ...deletePromises,
-    ])
+    return [...createPromises, ...updatePromises, ...deletePromises]
   }
 }

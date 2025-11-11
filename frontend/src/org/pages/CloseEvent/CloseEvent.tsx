@@ -239,7 +239,9 @@ export const CloseEvent = () => {
         ...deletedReceiptPromises,
       ])
 
-      await updateInquiries(eventId, inquiries, defaultValues.inquiries)
+      await Promise.all(
+        updateInquiries(eventId, inquiries, defaultValues.inquiries),
+      )
 
       showMessage({
         type: evidence.is_closed ? 'success' : 'warning',
