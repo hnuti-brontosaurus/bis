@@ -18,7 +18,7 @@ export const footerLinks: { name: string; url: string }[] = [
   },
   {
     name: 'Databáze budek',
-    url: 'http://peceoprirodu.cz/databaze/sign/in?backlink=jpop9',
+    url: 'https://databaze.peceoprirodu.cz/sign/in?backlink=mlbi2',
   },
   {
     name: 'Mentoři',
