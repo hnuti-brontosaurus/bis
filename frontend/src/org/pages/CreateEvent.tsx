@@ -1,4 +1,3 @@
-import { skipToken } from '@reduxjs/toolkit/query'
 import { api } from 'app/services/bis'
 import {
   Breadcrumbs,
@@ -6,6 +5,7 @@ import {
   Loading,
   useCreateOrSelectLocation,
 } from 'components'
+import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
   useShowMessage,
@@ -13,15 +13,14 @@ import {
 import { useCurrentUser } from 'hooks/currentUser'
 import { useReadFullEvent } from 'hooks/readFullEvent'
 import { useTitle } from 'hooks/title'
+import { useUpdateInquiries } from 'hooks/useUpdateInquiries'
 import { omit, startsWith } from 'lodash'
 import merge from 'lodash/merge'
 import { EventForm, EventSubmitShape, QualificationGuide } from 'org/components'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
 import { toDataURL } from 'utils/helpers'
-import { form as formTexts } from '../../config/static/closeEvent'
-import { useUpdateInquiries } from '../../hooks/useUpdateInquiries'
-import { getRequiredFeedbackInquiries } from '../../utils/getRequiredFeedbackInquiries'
 import { event2payload } from './UpdateEvent'
 
 export const CreateEvent = () => {
@@ -41,14 +40,6 @@ export const CreateEvent = () => {
     isLoading: isEventToCloneLoading,
     error: eventToCloneError,
   } = useReadFullEvent(cloneEventId)
-
-  const {
-    data: inquiriesToClone,
-    isLoading: isInquiriesToCloneLoading,
-    error: inquiriesToCloneError,
-  } = api.endpoints.readEventFeedbackInquiries.useQuery(
-    cloneEventId ? { eventId: cloneEventId, pageSize: 1000 } : skipToken,
-  )
 
   const [createEvent, createEventStatus] =
     api.endpoints.createEvent.useMutation()
@@ -100,12 +91,7 @@ export const CreateEvent = () => {
 
   if (eventToCloneError) return <Error error={eventToCloneError} />
 
-  if (inquiriesToCloneError) return <Error error={inquiriesToCloneError} />
-
-  if (
-    cloneEventId > 0 &&
-    (isEventToCloneLoading || isInquiriesToCloneLoading || !eventToClone)
-  )
+  if (cloneEventId > 0 && (isEventToCloneLoading || !eventToClone))
     return <Loading>Stahujeme akci ke zklonování</Loading>
 
   if (
@@ -174,11 +160,12 @@ export const CreateEvent = () => {
           ),
         )
 
-        const additionalInquiries = inquiriesToClone
-          ? inquiriesToClone.results
-              .filter(inquiry => !inquiry.data?.fixed)
-              .map(({ id, ...inquiry }) => inquiry)
-          : []
+        const additionalInquiries =
+          eventToClone && eventToClone.inquiries
+            ? eventToClone.inquiries
+                .filter(inquiry => !inquiry.data?.fixed)
+                .map(({ id, ...inquiry }) => inquiry)
+            : []
         const inquiries =
           getRequiredFeedbackInquiries(event).concat(additionalInquiries)
         await updateInquiries(event.id, inquiries, [])
