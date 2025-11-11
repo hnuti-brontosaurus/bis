@@ -1,5 +1,5 @@
 import { Optional } from 'utility-types'
-import { FullEvent, InquiryRead } from 'app/services/bisTypes'
+import { Event, InquiryRead } from 'app/services/bisTypes'
 import { isEventVolunteering } from './helpers'
 
 type QuestionnaireSection = Optional<InquiryRead, 'id' | 'order'>[]
@@ -249,7 +249,7 @@ const involvementSection: QuestionnaireSection = [
 ]
 
 export const getRequiredFeedbackInquiries = (
-  event: FullEvent,
+  event: Event,
 ): QuestionnaireSection =>
   checkInSection.concat(
     eventSection,

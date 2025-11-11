@@ -1,3 +1,4 @@
+import { skipToken } from '@reduxjs/toolkit/query'
 import { api } from 'app/services/bis'
 import {
   Breadcrumbs,
@@ -19,6 +20,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toDataURL } from 'utils/helpers'
 import { form as formTexts } from '../../config/static/closeEvent'
+import { useUpdateInquiries } from '../../hooks/useUpdateInquiries'
+import { getRequiredFeedbackInquiries } from '../../utils/getRequiredFeedbackInquiries'
 import { event2payload } from './UpdateEvent'
 
 export const CreateEvent = () => {
@@ -39,6 +42,14 @@ export const CreateEvent = () => {
     error: eventToCloneError,
   } = useReadFullEvent(cloneEventId)
 
+  const {
+    data: inquiriesToClone,
+    isLoading: isInquiriesToCloneLoading,
+    error: inquiriesToCloneError,
+  } = api.endpoints.readEventFeedbackInquiries.useQuery(
+    cloneEventId ? { eventId: cloneEventId, pageSize: 1000 } : skipToken,
+  )
+
   const [createEvent, createEventStatus] =
     api.endpoints.createEvent.useMutation()
   const [createEventQuestion, createEventQuestionStatus] =
@@ -47,6 +58,8 @@ export const CreateEvent = () => {
     api.endpoints.createEventImage.useMutation()
 
   const createOrSelectLocation = useCreateOrSelectLocation()
+
+  const updateInquiries = useUpdateInquiries()
 
   useShowApiErrorMessage(
     createEventStatus.error,
@@ -87,7 +100,12 @@ export const CreateEvent = () => {
 
   if (eventToCloneError) return <Error error={eventToCloneError} />
 
-  if (cloneEventId > 0 && (isEventToCloneLoading || !eventToClone))
+  if (inquiriesToCloneError) return <Error error={inquiriesToCloneError} />
+
+  if (
+    cloneEventId > 0 &&
+    (isEventToCloneLoading || isInquiriesToCloneLoading || !eventToClone)
+  )
     return <Loading>Stahujeme akci ke zklonování</Loading>
 
   if (
@@ -155,6 +173,15 @@ export const CreateEvent = () => {
             }).unwrap(),
           ),
         )
+
+        const additionalInquiries = inquiriesToClone
+          ? inquiriesToClone.results
+              .filter(inquiry => !inquiry.data?.fixed)
+              .map(({ id, ...inquiry }) => inquiry)
+          : []
+        const inquiries =
+          getRequiredFeedbackInquiries(event).concat(additionalInquiries)
+        await updateInquiries(event.id, inquiries, [])
       } catch (error) {
         // when saving questions or images fails, we want to handle it differently
         // because the event already exists...
