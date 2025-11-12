@@ -5,6 +5,7 @@ import {
   Loading,
   useCreateOrSelectLocation,
 } from 'components'
+import { form as formTexts } from 'config/static/closeEvent'
 import {
   useShowApiErrorMessage,
   useShowMessage,
@@ -12,13 +13,14 @@ import {
 import { useCurrentUser } from 'hooks/currentUser'
 import { useReadFullEvent } from 'hooks/readFullEvent'
 import { useTitle } from 'hooks/title'
+import { useUpdateInquiries } from 'hooks/useUpdateInquiries'
 import { omit, startsWith } from 'lodash'
 import merge from 'lodash/merge'
 import { EventForm, EventSubmitShape, QualificationGuide } from 'org/components'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { toDataURL } from 'utils/helpers'
-import { form as formTexts } from '../../config/static/closeEvent'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
+import { EVENT_CATEGORY_VOLUNTEERING_SLUG, toDataURL } from 'utils/helpers'
 import { event2payload } from './UpdateEvent'
 
 export const CreateEvent = () => {
@@ -39,6 +41,8 @@ export const CreateEvent = () => {
     error: eventToCloneError,
   } = useReadFullEvent(cloneEventId)
 
+  const { data: categories } = api.endpoints.readEventCategories.useQuery()
+
   const [createEvent, createEventStatus] =
     api.endpoints.createEvent.useMutation()
   const [createEventQuestion, createEventQuestionStatus] =
@@ -47,6 +51,8 @@ export const CreateEvent = () => {
     api.endpoints.createEventImage.useMutation()
 
   const createOrSelectLocation = useCreateOrSelectLocation()
+
+  const updateInquiries = useUpdateInquiries()
 
   useShowApiErrorMessage(
     createEventStatus.error,
@@ -86,6 +92,8 @@ export const CreateEvent = () => {
   }, [currentUser, eventToClone])
 
   if (eventToCloneError) return <Error error={eventToCloneError} />
+
+  if (!categories) return <Loading>Připravujeme formulář</Loading>
 
   if (cloneEventId > 0 && (isEventToCloneLoading || !eventToClone))
     return <Loading>Stahujeme akci ke zklonování</Loading>
@@ -155,6 +163,22 @@ export const CreateEvent = () => {
             }).unwrap(),
           ),
         )
+
+        const isVolunteering =
+          categories.results.find(({ id }) => id === event.category)?.slug ===
+          EVENT_CATEGORY_VOLUNTEERING_SLUG
+
+        const additionalInquiries =
+          eventToClone && eventToClone.inquiries
+            ? eventToClone.inquiries
+                .filter(inquiry => !inquiry.data?.fixed)
+                .map(({ id, ...inquiry }) => inquiry)
+            : []
+        const inquiries =
+          getRequiredFeedbackInquiries(isVolunteering).concat(
+            additionalInquiries,
+          )
+        await Promise.all(updateInquiries(event.id, inquiries, []))
       } catch (error) {
         // when saving questions or images fails, we want to handle it differently
         // because the event already exists...

@@ -25,8 +25,8 @@ import { FieldErrorsImpl, useForm } from 'react-hook-form'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
 import {
+  EVENT_CATEGORY_VOLUNTEERING_SLUG,
   hasFormError,
-  isEventVolunteering,
   withOverwriteArray,
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
@@ -271,7 +271,8 @@ export const CloseEventForm = ({
     feedbackFormMethods.watch,
   )
 
-  const isVolunteering = isEventVolunteering(event)
+  const isVolunteering =
+    event.category.slug === EVENT_CATEGORY_VOLUNTEERING_SLUG
 
   // attendance list is required when the event is camp or weekend event
   const areParticipantsRequired = ['camp', 'weekend_event'].includes(

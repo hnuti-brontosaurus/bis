@@ -39,6 +39,9 @@ export const useReadFullEvent = (
   const locationQuery = api.endpoints.readLocation.useQuery(
     event?.location ? { id: event.location } : skipToken,
   )
+  const inquiriesQuery = api.endpoints.readEventFeedbackInquiries.useQuery(
+    eventId > 0 ? { eventId, pageSize: 1000 } : skipToken,
+  )
 
   const allQueries = [
     eventQuery,
@@ -47,6 +50,7 @@ export const useReadFullEvent = (
     mainOrganizerQuery,
     otherOrganizersQuery,
     locationQuery,
+    inquiriesQuery,
   ]
 
   const isLoading = allQueries.some(query => query.isLoading)
@@ -61,6 +65,7 @@ export const useReadFullEvent = (
       (!eventQuery.data.main_organizer || mainOrganizerQuery.data) &&
       otherOrganizersQuery.data &&
       questionsQuery.data &&
+      inquiriesQuery.data &&
       (!eventQuery.data.location || locationQuery.data)
         ? {
             ...eventQuery.data,
@@ -68,6 +73,7 @@ export const useReadFullEvent = (
             other_organizers: otherOrganizersQuery.data.results,
             images: imagesQuery.data.results,
             questions: questionsQuery.data.results,
+            inquiries: inquiriesQuery.data.results,
             location:
               (eventQuery.data.location && locationQuery.data) || undefined,
           }

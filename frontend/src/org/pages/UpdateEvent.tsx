@@ -1,5 +1,5 @@
-import { FullEvent } from 'app/services/bisTypes'
 import { api } from 'app/services/bis'
+import { FullEvent } from 'app/services/bisTypes'
 import {
   Breadcrumbs,
   Error,
@@ -11,6 +11,7 @@ import {
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
+import { useUpdateInquiries } from 'hooks/useUpdateInquiries'
 import { cloneDeep, isEqual, mergeWith } from 'lodash'
 import merge from 'lodash/merge'
 import { EventForm, InitialEventData } from 'org/components'
@@ -18,7 +19,12 @@ import { ApplicationStates } from 'org/components/EventForm/steps/ParticipantsSt
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { Optional } from 'utility-types'
-import { sortOrder, withOverwriteArray } from 'utils/helpers'
+import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
+import {
+  EVENT_CATEGORY_VOLUNTEERING_SLUG,
+  sortOrder,
+  withOverwriteArray,
+} from 'utils/helpers'
 
 export const UpdateEvent = () => {
   const params = useParams()
@@ -30,6 +36,8 @@ export const UpdateEvent = () => {
 
   // TODO maybe: add star when data are unsaved (also persistent data)
   useTitle(event ? `Upravit akci ${event.name}` : 'Upravit akci')
+
+  const { data: categories } = api.endpoints.readEventCategories.useQuery()
 
   const [updateEvent, { error: updateEventError }] =
     api.endpoints.updateEvent.useMutation()
@@ -45,6 +53,9 @@ export const UpdateEvent = () => {
     api.endpoints.updateEventQuestion.useMutation()
   const [removeEventQuestion, deleteEventQuestionStatus] =
     api.endpoints.deleteEventQuestion.useMutation()
+
+  const updateInquiries = useUpdateInquiries()
+  const inquiries = event.inquiries
 
   useShowApiErrorMessage(updateEventError, 'Nepodařilo se uložit změny')
 
@@ -88,6 +99,8 @@ export const UpdateEvent = () => {
       </>
     )
 
+  if (!categories) return <Loading>Připravujeme formulář</Loading>
+
   if (isSubmitting) return <Loading>Ukládáme změny</Loading>
 
   const { images, questions } = event
@@ -118,7 +131,7 @@ export const UpdateEvent = () => {
       }
 
       // update event
-      await updateEvent({
+      const updatedEvent = await updateEvent({
         id: eventId,
         event: merge({}, event, {
           location: locationId,
@@ -242,6 +255,35 @@ export const UpdateEvent = () => {
         showMessage({
           type: 'warning',
           message: 'Některé otázky se nepodařilo uložit',
+        })
+
+      const isVolunteering =
+        categories.results.find(({ id }) => id === updatedEvent.category)
+          ?.slug === EVENT_CATEGORY_VOLUNTEERING_SLUG
+
+      const userInquiries = inquiries
+        .filter(inquiry => !inquiry.data?.fixed)
+        .sort(sortOrder)
+      const newFixedInquiries = getRequiredFeedbackInquiries(isVolunteering)
+      const updatedFixedInquiries = newFixedInquiries.map(
+        inquiry =>
+          inquiries.find(({ slug }) => slug === inquiry.slug) ?? inquiry,
+      )
+      const updatedInquiries = updatedFixedInquiries
+        .concat(userInquiries)
+        .map((inquiry, order) => ({ ...inquiry, order }))
+
+      const inquiryOutput = await Promise.allSettled(
+        updateInquiries(eventId, updatedInquiries, inquiries),
+      )
+      if (
+        inquiryOutput.some(
+          ({ status }) => status === ApplicationStates.rejected,
+        )
+      )
+        showMessage({
+          type: 'warning',
+          message: 'Některé otázky zpětné vazby se nepodařilo uložit',
         })
 
       navigate(`/org/akce/${eventId}`)

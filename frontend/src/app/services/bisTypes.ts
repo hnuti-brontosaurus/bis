@@ -70,6 +70,7 @@ export type FullEvent = Assign<
   {
     images: EventPropagationImage[]
     questions: Question[]
+    inquiries: InquiryRead[]
   }
 >
 
