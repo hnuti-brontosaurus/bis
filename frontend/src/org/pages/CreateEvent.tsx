@@ -20,7 +20,7 @@ import { EventForm, EventSubmitShape, QualificationGuide } from 'org/components'
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
-import { toDataURL } from 'utils/helpers'
+import { EVENT_CATEGORY_VOLUNTEERING_SLUG, toDataURL } from 'utils/helpers'
 import { event2payload } from './UpdateEvent'
 
 export const CreateEvent = () => {
@@ -40,6 +40,8 @@ export const CreateEvent = () => {
     isLoading: isEventToCloneLoading,
     error: eventToCloneError,
   } = useReadFullEvent(cloneEventId)
+
+  const { data: categories } = api.endpoints.readEventCategories.useQuery()
 
   const [createEvent, createEventStatus] =
     api.endpoints.createEvent.useMutation()
@@ -90,6 +92,8 @@ export const CreateEvent = () => {
   }, [currentUser, eventToClone])
 
   if (eventToCloneError) return <Error error={eventToCloneError} />
+
+  if (!categories) return <Loading>Připravujeme formulář</Loading>
 
   if (cloneEventId > 0 && (isEventToCloneLoading || !eventToClone))
     return <Loading>Stahujeme akci ke zklonování</Loading>
@@ -160,6 +164,10 @@ export const CreateEvent = () => {
           ),
         )
 
+        const isVolunteering =
+          categories.results.find(({ id }) => id === event.category)?.slug ===
+          EVENT_CATEGORY_VOLUNTEERING_SLUG
+
         const additionalInquiries =
           eventToClone && eventToClone.inquiries
             ? eventToClone.inquiries
@@ -167,7 +175,9 @@ export const CreateEvent = () => {
                 .map(({ id, ...inquiry }) => inquiry)
             : []
         const inquiries =
-          getRequiredFeedbackInquiries(event).concat(additionalInquiries)
+          getRequiredFeedbackInquiries(isVolunteering).concat(
+            additionalInquiries,
+          )
         await Promise.all(updateInquiries(event.id, inquiries, []))
       } catch (error) {
         // when saving questions or images fails, we want to handle it differently

@@ -110,9 +110,8 @@ export const getEventCannotBeOlderThan = (): string => {
   return `${allowedYear}-01-01`
 }
 
-export const isEventVolunteering = (event: {
-  category: EventCategory
-}): boolean => event.category.slug === 'public__volunteering'
+export const EVENT_CATEGORY_VOLUNTEERING_SLUG: EventCategory['slug'] =
+  'public__volunteering'
 
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')

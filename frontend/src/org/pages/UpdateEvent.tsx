@@ -20,7 +20,11 @@ import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { Optional } from 'utility-types'
 import { getRequiredFeedbackInquiries } from 'utils/getRequiredFeedbackInquiries'
-import { sortOrder, withOverwriteArray } from 'utils/helpers'
+import {
+  EVENT_CATEGORY_VOLUNTEERING_SLUG,
+  sortOrder,
+  withOverwriteArray,
+} from 'utils/helpers'
 
 export const UpdateEvent = () => {
   const params = useParams()
@@ -32,6 +36,8 @@ export const UpdateEvent = () => {
 
   // TODO maybe: add star when data are unsaved (also persistent data)
   useTitle(event ? `Upravit akci ${event.name}` : 'Upravit akci')
+
+  const { data: categories } = api.endpoints.readEventCategories.useQuery()
 
   const [updateEvent, { error: updateEventError }] =
     api.endpoints.updateEvent.useMutation()
@@ -92,6 +98,8 @@ export const UpdateEvent = () => {
         </Error>
       </>
     )
+
+  if (!categories) return <Loading>Připravujeme formulář</Loading>
 
   if (isSubmitting) return <Loading>Ukládáme změny</Loading>
 
@@ -249,10 +257,14 @@ export const UpdateEvent = () => {
           message: 'Některé otázky se nepodařilo uložit',
         })
 
+      const isVolunteering =
+        categories.results.find(({ id }) => id === updatedEvent.category)
+          ?.slug === EVENT_CATEGORY_VOLUNTEERING_SLUG
+
       const userInquiries = inquiries
         .filter(inquiry => !inquiry.data?.fixed)
         .sort(sortOrder)
-      const newFixedInquiries = getRequiredFeedbackInquiries(updatedEvent)
+      const newFixedInquiries = getRequiredFeedbackInquiries(isVolunteering)
       const updatedFixedInquiries = newFixedInquiries.map(
         inquiry =>
           inquiries.find(({ slug }) => slug === inquiry.slug) ?? inquiry,

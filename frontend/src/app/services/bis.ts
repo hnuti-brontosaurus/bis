@@ -500,7 +500,7 @@ export const api = createApi({
     /**
      * Events
      */
-    createEvent: build.mutation<Event, EventPayload>({
+    createEvent: build.mutation<EventPayload, EventPayload>({
       query: event => ({
         url: `frontend/events/`,
         method: 'POST',
@@ -551,7 +551,7 @@ export const api = createApi({
             ],
     }),
     updateEvent: build.mutation<
-      Event,
+      EventPayload,
       { id: number; event: Partial<EventPayload> }
     >({
       query: queryArg => ({
