@@ -281,7 +281,13 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
-  const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
+  const handleSubmit = async ({
+    is_closed,
+    send_feedback,
+  }: {
+    is_closed: boolean
+    send_feedback: boolean
+  }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
     // then let's clear the redux persistent state
@@ -290,18 +296,20 @@ export const CloseEventForm = ({
     let participants: ParticipantsStepFormInnerShape =
       {} as ParticipantsStepFormInnerShape
     let feedback = {} as FeedbackStepFormShape
+
     let isValid = true
-    let evidenceErrors: FieldErrorsImpl<EvidenceStepFormShape> = {}
-    let participantsErrors: FieldErrorsImpl<ParticipantsStepFormInnerShape> = {}
-    let feedbackErrors: FieldErrorsImpl<FeedbackStepFormShape> = {}
+    const errors = {}
+
     await Promise.all([
       evidenceFormMethods.handleSubmit(
         data => {
           evidence = data
         },
-        errors => {
-          isValid = false
-          evidenceErrors = errors
+        evidenceErrors => {
+          if (is_closed) {
+            isValid = false
+            Object.assign(errors, evidenceErrors)
+          }
           evidence = evidenceFormMethods.getValues()
         },
       )(),
@@ -309,9 +317,11 @@ export const CloseEventForm = ({
         data => {
           participants = data
         },
-        errors => {
-          isValid = false
-          participantsErrors = errors
+        participantsErrors => {
+          if (is_closed) {
+            isValid = false
+            Object.assign(errors, participantsErrors)
+          }
           participants = participantsFormMethods.getValues()
         },
       )(),
@@ -319,20 +329,23 @@ export const CloseEventForm = ({
         data => {
           feedback = data
         },
-        errors => {
-          feedbackErrors = errors
+        feedbackErrors => {
+          if (send_feedback) {
+            isValid = false
+            Object.assign(errors, feedbackErrors)
+          }
           feedback = feedbackFormMethods.getValues()
         },
       )(),
     ])
 
-    if (is_closed && !isValid) {
+    if (!isValid) {
       // TODO make nicer
       showMessage({
         type: 'error',
         message: 'Opravte, prosím, chyby ve validaci',
         detail: validationErrors2Message(
-          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
+          errors,
           translations.event,
           translations.generic,
         ),
@@ -378,8 +391,15 @@ export const CloseEventForm = ({
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       actions={[
-        { name: 'uložit', props: { is_closed: false } },
-        { name: 'uložit a uzavřít', props: { is_closed: true } },
+        { name: 'uložit', props: { is_closed: false, send_feedback: false } },
+        {
+          name: 'uložit a poslat zpětnou vazbu',
+          props: { is_closed: false, send_feedback: true },
+        },
+        {
+          name: 'uložit a uzavřít',
+          props: { is_closed: true, send_feedback: false },
+        },
       ]}
     >
       <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
@@ -400,7 +420,7 @@ export const CloseEventForm = ({
           }
         />
       </Step>
-      <Step name="zpětná vazba">
+      <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
         <FeedbackStep
           eventId={event.id}
           methods={feedbackFormMethods}
