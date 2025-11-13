@@ -27,6 +27,7 @@ import { Assign, Optional } from 'utility-types'
 import {
   EVENT_CATEGORY_VOLUNTEERING_SLUG,
   hasFormError,
+  toDateString,
   withOverwriteArray,
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
@@ -357,6 +358,9 @@ export const CloseEventForm = ({
         participants,
         feedback,
         { is_closed },
+        send_feedback
+          ? { feedback_form: { sent_at: toDateString(new Date()) } }
+          : {},
         {
           photos: evidence?.photos?.filter(photo => photo.photo) || [],
           pages: evidence?.pages?.filter(page => page.page) || [],

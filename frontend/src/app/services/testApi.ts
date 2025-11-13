@@ -3034,6 +3034,7 @@ export type EventContact = {
 export type FeedbackForm = {
   introduction?: string
   after_submit_text?: string
+  sent_at?: string
 }
 export type Record = {
   total_hours_worked?: number | null

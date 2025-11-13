@@ -1,4 +1,5 @@
 import type { Address, EventCategory } from 'app/services/bisTypes'
+import dayjs from 'dayjs'
 import { cloneDeep, mapValues } from 'lodash'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
@@ -213,6 +214,13 @@ export const formatDateTime = (date: string, time?: string): string => {
     })
     return dateTimeFormat.format(new Date(date))
   }
+}
+
+/**
+ * Formats date to datestring format used in forms and on backend.
+ */
+export const toDateString = (date: Date): string => {
+  return dayjs(date).format('YYYY-MM-DD')
 }
 
 /**
