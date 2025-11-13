@@ -307,7 +307,7 @@ export const CloseEventForm = ({
           evidence = data
         },
         evidenceErrors => {
-          if (is_closed) {
+          if (is_closed || event.is_closed) {
             isValid = false
             Object.assign(errors, evidenceErrors)
           }
@@ -319,7 +319,7 @@ export const CloseEventForm = ({
           participants = data
         },
         participantsErrors => {
-          if (is_closed) {
+          if (is_closed || event.is_closed) {
             isValid = false
             Object.assign(errors, participantsErrors)
           }
@@ -331,7 +331,7 @@ export const CloseEventForm = ({
           feedback = data
         },
         feedbackErrors => {
-          if (send_feedback) {
+          if (send_feedback || event.feedback_form?.sent_at) {
             isValid = false
             Object.assign(errors, feedbackErrors)
           }
