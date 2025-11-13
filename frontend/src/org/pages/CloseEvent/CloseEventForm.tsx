@@ -21,7 +21,8 @@ import {
 import { cloneDeep, mergeWith, omit } from 'lodash'
 import merge from 'lodash/merge'
 import pick from 'lodash/pick'
-import { FieldErrorsImpl, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
 import {
@@ -32,6 +33,7 @@ import {
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
+import { useSubmitConfirmation } from '../../../hooks/useSubmitConfirmation'
 import { EvidenceStep } from './EvidenceStep'
 import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
@@ -236,6 +238,10 @@ export const CloseEventForm = ({
     savedData,
   )
 
+  const navigate = useNavigate()
+  const [requireSubmitConfirmation, ConfirmationDialog] =
+    useSubmitConfirmation()
+
   const evidenceFormMethods = useForm<EvidenceStepFormShape>({
     defaultValues: pickEvidenceData(initialAndSavedData),
   })
@@ -376,6 +382,11 @@ export const CloseEventForm = ({
       )
         delete data.record.total_hours_worked
 
+      if (send_feedback) {
+        if (!(await requireSubmitConfirmation())) {
+          return
+        }
+      }
       await onSubmit(formData2payload(data))
       clearPersist()
     }
@@ -391,46 +402,57 @@ export const CloseEventForm = ({
   }
 
   return (
-    <Steps
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      actions={[
-        { name: 'uložit', props: { is_closed: false, send_feedback: false } },
-        {
-          name: 'uložit a poslat zpětnou vazbu',
-          props: { is_closed: false, send_feedback: true },
-        },
-        {
-          name: 'uložit a uzavřít',
-          props: { is_closed: true, send_feedback: false },
-        },
-      ]}
-    >
-      <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
-        <ParticipantsStep
-          areParticipantsRequired={areParticipantsRequired}
-          methods={participantsFormMethods}
-          event={event}
-        />
-      </Step>
-      <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
-        <EvidenceStep
-          eventId={event.id}
-          isVolunteering={isVolunteering}
-          methods={evidenceFormMethods}
-          firstIndex={countEvidenceFirstStep()}
-          multipleSubevents={
-            !!event.number_of_sub_events && event.number_of_sub_events > 1
-          }
-        />
-      </Step>
-      <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
-        <FeedbackStep
-          eventId={event.id}
-          methods={feedbackFormMethods}
-          firstIndex={countEvidenceFirstStep() + 6}
-        />
-      </Step>
-    </Steps>
+    <>
+      <Steps
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        actions={[
+          { name: 'uložit', props: { is_closed: false, send_feedback: false } },
+          {
+            name: 'uložit a poslat zpětnou vazbu',
+            props: { is_closed: false, send_feedback: true },
+          },
+          {
+            name: 'uložit a uzavřít',
+            props: { is_closed: true, send_feedback: false },
+          },
+        ]}
+      >
+        <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
+          <ParticipantsStep
+            areParticipantsRequired={areParticipantsRequired}
+            methods={participantsFormMethods}
+            event={event}
+          />
+        </Step>
+        <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
+          <EvidenceStep
+            eventId={event.id}
+            isVolunteering={isVolunteering}
+            methods={evidenceFormMethods}
+            firstIndex={countEvidenceFirstStep()}
+            multipleSubevents={
+              !!event.number_of_sub_events && event.number_of_sub_events > 1
+            }
+          />
+        </Step>
+        <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
+          <FeedbackStep
+            eventId={event.id}
+            methods={feedbackFormMethods}
+            firstIndex={countEvidenceFirstStep() + 6}
+          />
+        </Step>
+      </Steps>
+      <ConfirmationDialog
+        title="Odešle se zpětná vazba"
+        cancelTitle="Upravit otázky"
+        confirmTitle="Uložit a odeslat"
+        onCancel={() => navigate({ search: '?krok=3' })}
+      >
+        Účastníkům se odešle formulář zpětné vazby. V základu obsahuje otázky,
+        které zajímají ústředí HB, další otázky můžeš přidat ty.
+      </ConfirmationDialog>
+    </>
   )
 }
