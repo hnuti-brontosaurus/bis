@@ -38,7 +38,7 @@ import { ParticipantsStep } from './ParticipantsStep'
 
 export type CloseEventPayload = DeepPick<
   PatchedEvent,
-  'is_closed' | 'record' | 'finance.bank_account_number'
+  'is_closed' | 'record' | 'finance.bank_account_number' | 'feedback_form'
 > & {
   photos: EventPhotoPayload[]
   pages: AttendanceListPagePayload[]

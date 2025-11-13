@@ -6,13 +6,12 @@ import {
   useShowMessage,
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
-import { isEqual } from 'lodash'
+import { useUpdateInquiries } from 'hooks/useUpdateInquiries'
+import { defaultsDeep, omit } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { sortOrder } from 'utils/helpers'
-import { useUpdateInquiries } from '../../../hooks/useUpdateInquiries'
 import { CloseEventForm, CloseEventPayload } from './CloseEventForm'
-import { defaultsDeep } from 'lodash'
 
 export const CloseEvent = () => {
   const params = useParams()
@@ -72,7 +71,7 @@ export const CloseEvent = () => {
     record: defaultsDeep(event.record, {
       is_event_closed_email_enabled: true,
     }),
-    feedback_form: event.feedback_form,
+    feedback_form: omit(event.feedback_form, ['sent_at']),
     photos: photos.results.map(({ photo, ...rest }) => ({
       photo: photo.original,
       thumbnail: photo.small,
@@ -243,14 +242,22 @@ export const CloseEvent = () => {
         updateInquiries(eventId, inquiries, defaultValues.inquiries),
       )
 
+      const needsClosing = !evidence.is_closed && !event.is_closed
+      const message = `Evidence akce byla úspěšně uložena${
+        evidence.is_closed
+          ? ' a uzavřena'
+          : evidence.feedback_form?.sent_at
+          ? ' a zpětná vazba byla odeslána'
+          : ''
+      }.`
       showMessage({
-        type: evidence.is_closed ? 'success' : 'warning',
+        type: needsClosing ? 'warning' : 'success',
         message:
-          'Evidence akce byla úspěšně uložena' +
-          (evidence.is_closed
-            ? ' a uzavřena'
-            : '. Nezapomeň akci ještě uzavřít! Akci uzavřeš kliknutím na tlačítko "uložit a uzavřít" do 20 dnů od skončení akce.'),
-        timeout: evidence.is_closed ? 5000 : 10_000,
+          message +
+          (needsClosing
+            ? ' Nezapomeň akci ještě uzavřít! Akci uzavřeš kliknutím na tlačítko "uložit a uzavřít" do 20 dnů od skončení akce.'
+            : ''),
+        timeout: event.is_closed ? 5000 : 10_000,
       })
 
       navigate(`/org/akce/${eventId}`)

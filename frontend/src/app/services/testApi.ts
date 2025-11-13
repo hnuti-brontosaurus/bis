@@ -3487,6 +3487,7 @@ export type PatchedEvent = {
   vip_propagation?: VipPropagation | null
   registration?: Registration | null
   record?: Record | null
+  feedback_form?: FeedbackForm | null
 }
 export type LocationPatron = {
   first_name: string
