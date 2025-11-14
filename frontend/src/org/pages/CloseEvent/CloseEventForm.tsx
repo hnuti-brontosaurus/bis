@@ -28,6 +28,7 @@ import { Assign, Optional } from 'utility-types'
 import {
   EVENT_CATEGORY_VOLUNTEERING_SLUG,
   hasFormError,
+  isFeedbackRequired,
   toDateString,
   withOverwriteArray,
 } from 'utils/helpers'
@@ -288,6 +289,8 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
+  const feedbackRequired = isFeedbackRequired(event)
+
   const handleSubmit = async ({
     is_closed,
     send_feedback,
@@ -358,6 +361,15 @@ export const CloseEventForm = ({
         ),
       })
     } else {
+      if (feedbackRequired && is_closed && !event.feedback_form?.sent_at) {
+        showMessage({
+          type: 'error',
+          message:
+            'Před uzavřením akce je třeba účastníkům poslat zpětnou vazbu',
+        })
+        return
+      }
+
       const data = mergeWith(
         {},
         evidence,
@@ -443,13 +455,14 @@ export const CloseEventForm = ({
             eventId={event.id}
             methods={feedbackFormMethods}
             firstIndex={countEvidenceFirstStep() + 6}
+            feedbackRequired={feedbackRequired}
           />
         </Step>
       </Steps>
       <ConfirmationDialog
         title="Odešle se zpětná vazba"
         cancelTitle="Upravit otázky"
-        confirmTitle="Uložit a odeslat"
+        confirmTitle="Odeslat"
         onCancel={() => navigate({ search: '?krok=3' })}
       >
         Účastníkům se odešle formulář zpětné vazby. V základu obsahuje otázky,

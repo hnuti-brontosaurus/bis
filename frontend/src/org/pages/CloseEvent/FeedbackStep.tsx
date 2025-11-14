@@ -19,8 +19,14 @@ interface Props {
   eventId: number
   firstIndex?: number
   methods: UseFormReturn<FeedbackStepFormShape, any>
+  feedbackRequired: boolean
 }
-export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
+export const FeedbackStep: FC<Props> = ({
+  firstIndex,
+  methods,
+  eventId,
+  feedbackRequired,
+}) => (
   <FormProvider {...methods}>
     <form>
       <FormSectionGroup startIndex={firstIndex}>
@@ -56,11 +62,23 @@ export const FeedbackStep: FC<Props> = ({ firstIndex, methods, eventId }) => (
           <InquiriesFormSection />
         </FormSection>
         <InfoBox>
-          Formulář zpětné vazby můžeš poslat účastníkům přes tlačítko "poslat
-          zpětnou vazbu" a nebo můžeš použít tento odkaz:{' '}
-          <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
-            {window.location.origin}/akce/{eventId}/zpetna_vazba
-          </ButtonLink>
+          {feedbackRequired ? (
+            <>
+              Formulář zpětné akce je k nahlédnutí{' '}
+              <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+                zde
+              </ButtonLink>{' '}
+              (změny je potřeba uložit, aby se projevily).
+            </>
+          ) : (
+            <>
+              Formulář zpětné vazby můžeš poslat účastníkům přes tlačítko
+              "poslat zpětnou vazbu" a nebo můžeš použít tento odkaz:{' '}
+              <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
+                {window.location.origin}/akce/{eventId}/zpetna_vazba
+              </ButtonLink>
+            </>
+          )}
         </InfoBox>
       </FormSectionGroup>
     </form>
