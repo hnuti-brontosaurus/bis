@@ -6,7 +6,6 @@ import {
   Button,
   ButtonLink,
   ExternalButtonLink,
-  InfoBox,
   Loading,
 } from 'components'
 import { sanitize } from 'dompurify'

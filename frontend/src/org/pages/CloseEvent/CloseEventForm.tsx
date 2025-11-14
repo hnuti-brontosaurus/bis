@@ -409,11 +409,11 @@ export const CloseEventForm = ({
         actions={[
           { name: 'uložit', props: { is_closed: false, send_feedback: false } },
           {
-            name: 'uložit a poslat zpětnou vazbu',
+            name: 'poslat zpětnou vazbu',
             props: { is_closed: false, send_feedback: true },
           },
           {
-            name: 'uložit a uzavřít',
+            name: 'uzavřít',
             props: { is_closed: true, send_feedback: false },
           },
         ]}
