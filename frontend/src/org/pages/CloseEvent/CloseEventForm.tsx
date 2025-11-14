@@ -401,23 +401,25 @@ export const CloseEventForm = ({
     onCancel()
   }
 
+  const actions = [
+    { name: 'uložit', props: { is_closed: false, send_feedback: false } },
+  ]
+  if (!event.feedback_form?.sent_at) {
+    actions.push({
+      name: 'poslat zpětnou vazbu',
+      props: { is_closed: false, send_feedback: true },
+    })
+  }
+  if (!event.is_closed) {
+    actions.push({
+      name: 'uzavřít',
+      props: { is_closed: true, send_feedback: false },
+    })
+  }
+
   return (
     <>
-      <Steps
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        actions={[
-          { name: 'uložit', props: { is_closed: false, send_feedback: false } },
-          {
-            name: 'poslat zpětnou vazbu',
-            props: { is_closed: false, send_feedback: true },
-          },
-          {
-            name: 'uzavřít',
-            props: { is_closed: true, send_feedback: false },
-          },
-        ]}
-      >
+      <Steps onSubmit={handleSubmit} onCancel={handleCancel} actions={actions}>
         <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
           <ParticipantsStep
             areParticipantsRequired={areParticipantsRequired}
