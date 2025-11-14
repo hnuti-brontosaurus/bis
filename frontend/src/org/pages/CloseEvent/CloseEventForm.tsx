@@ -21,23 +21,27 @@ import {
 import { cloneDeep, mergeWith, omit } from 'lodash'
 import merge from 'lodash/merge'
 import pick from 'lodash/pick'
-import { FieldErrorsImpl, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import type { DeepPick } from 'ts-deep-pick'
 import { Assign, Optional } from 'utility-types'
 import {
   EVENT_CATEGORY_VOLUNTEERING_SLUG,
   hasFormError,
+  isFeedbackRequired,
+  toDateString,
   withOverwriteArray,
 } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
+import { useSubmitConfirmation } from '../../../hooks/useSubmitConfirmation'
 import { EvidenceStep } from './EvidenceStep'
 import { FeedbackStep } from './FeedbackStep'
 import { ParticipantsStep } from './ParticipantsStep'
 
 export type CloseEventPayload = DeepPick<
   PatchedEvent,
-  'is_closed' | 'record' | 'finance.bank_account_number'
+  'is_closed' | 'record' | 'finance.bank_account_number' | 'feedback_form'
 > & {
   photos: EventPhotoPayload[]
   pages: AttendanceListPagePayload[]
@@ -235,6 +239,10 @@ export const CloseEventForm = ({
     savedData,
   )
 
+  const navigate = useNavigate()
+  const [requireSubmitConfirmation, ConfirmationDialog] =
+    useSubmitConfirmation()
+
   const evidenceFormMethods = useForm<EvidenceStepFormShape>({
     defaultValues: pickEvidenceData(initialAndSavedData),
   })
@@ -281,7 +289,15 @@ export const CloseEventForm = ({
   // but we actually have a field that keeps this info
   // const areParticipantsRequired = event.is_attendance_list_required ?? false
 
-  const handleSubmit = async ({ is_closed }: { is_closed: boolean }) => {
+  const feedbackRequired = isFeedbackRequired(event)
+
+  const handleSubmit = async ({
+    is_closed,
+    send_feedback,
+  }: {
+    is_closed: boolean
+    send_feedback: boolean
+  }) => {
     // let's validate both forms and get data from them
     // then let's send the data to API
     // then let's clear the redux persistent state
@@ -290,18 +306,20 @@ export const CloseEventForm = ({
     let participants: ParticipantsStepFormInnerShape =
       {} as ParticipantsStepFormInnerShape
     let feedback = {} as FeedbackStepFormShape
+
     let isValid = true
-    let evidenceErrors: FieldErrorsImpl<EvidenceStepFormShape> = {}
-    let participantsErrors: FieldErrorsImpl<ParticipantsStepFormInnerShape> = {}
-    let feedbackErrors: FieldErrorsImpl<FeedbackStepFormShape> = {}
+    const errors = {}
+
     await Promise.all([
       evidenceFormMethods.handleSubmit(
         data => {
           evidence = data
         },
-        errors => {
-          isValid = false
-          evidenceErrors = errors
+        evidenceErrors => {
+          if (is_closed || event.is_closed) {
+            isValid = false
+            Object.assign(errors, evidenceErrors)
+          }
           evidence = evidenceFormMethods.getValues()
         },
       )(),
@@ -309,9 +327,11 @@ export const CloseEventForm = ({
         data => {
           participants = data
         },
-        errors => {
-          isValid = false
-          participantsErrors = errors
+        participantsErrors => {
+          if (is_closed || event.is_closed) {
+            isValid = false
+            Object.assign(errors, participantsErrors)
+          }
           participants = participantsFormMethods.getValues()
         },
       )(),
@@ -319,31 +339,46 @@ export const CloseEventForm = ({
         data => {
           feedback = data
         },
-        errors => {
-          feedbackErrors = errors
+        feedbackErrors => {
+          if (send_feedback || event.feedback_form?.sent_at) {
+            isValid = false
+            Object.assign(errors, feedbackErrors)
+          }
           feedback = feedbackFormMethods.getValues()
         },
       )(),
     ])
 
-    if (is_closed && !isValid) {
+    if (!isValid) {
       // TODO make nicer
       showMessage({
         type: 'error',
         message: 'Opravte, prosím, chyby ve validaci',
         detail: validationErrors2Message(
-          merge({}, evidenceErrors, participantsErrors) as FieldErrorsImpl,
+          errors,
           translations.event,
           translations.generic,
         ),
       })
     } else {
+      if (feedbackRequired && is_closed && !event.feedback_form?.sent_at) {
+        showMessage({
+          type: 'error',
+          message:
+            'Před uzavřením akce je třeba účastníkům poslat zpětnou vazbu',
+        })
+        return
+      }
+
       const data = mergeWith(
         {},
         evidence,
         participants,
         feedback,
         { is_closed },
+        send_feedback
+          ? { feedback_form: { sent_at: toDateString(new Date()) } }
+          : {},
         {
           photos: evidence?.photos?.filter(photo => photo.photo) || [],
           pages: evidence?.pages?.filter(page => page.page) || [],
@@ -359,6 +394,11 @@ export const CloseEventForm = ({
       )
         delete data.record.total_hours_worked
 
+      if (send_feedback) {
+        if (!(await requireSubmitConfirmation())) {
+          return
+        }
+      }
       await onSubmit(formData2payload(data))
       clearPersist()
     }
@@ -373,40 +413,61 @@ export const CloseEventForm = ({
     onCancel()
   }
 
+  const actions = [
+    { name: 'uložit', props: { is_closed: false, send_feedback: false } },
+  ]
+  if (!event.feedback_form?.sent_at) {
+    actions.push({
+      name: 'poslat zpětnou vazbu',
+      props: { is_closed: false, send_feedback: true },
+    })
+  }
+  if (!event.is_closed) {
+    actions.push({
+      name: 'uzavřít',
+      props: { is_closed: true, send_feedback: false },
+    })
+  }
+
   return (
-    <Steps
-      onSubmit={handleSubmit}
-      onCancel={handleCancel}
-      actions={[
-        { name: 'uložit', props: { is_closed: false } },
-        { name: 'uložit a uzavřít', props: { is_closed: true } },
-      ]}
-    >
-      <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
-        <ParticipantsStep
-          areParticipantsRequired={areParticipantsRequired}
-          methods={participantsFormMethods}
-          event={event}
-        />
-      </Step>
-      <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
-        <EvidenceStep
-          eventId={event.id}
-          isVolunteering={isVolunteering}
-          methods={evidenceFormMethods}
-          firstIndex={countEvidenceFirstStep()}
-          multipleSubevents={
-            !!event.number_of_sub_events && event.number_of_sub_events > 1
-          }
-        />
-      </Step>
-      <Step name="zpětná vazba">
-        <FeedbackStep
-          eventId={event.id}
-          methods={feedbackFormMethods}
-          firstIndex={countEvidenceFirstStep() + 6}
-        />
-      </Step>
-    </Steps>
+    <>
+      <Steps onSubmit={handleSubmit} onCancel={handleCancel} actions={actions}>
+        <Step name="účastníci" hasError={hasFormError(participantsFormMethods)}>
+          <ParticipantsStep
+            areParticipantsRequired={areParticipantsRequired}
+            methods={participantsFormMethods}
+            event={event}
+          />
+        </Step>
+        <Step name="práce a další" hasError={hasFormError(evidenceFormMethods)}>
+          <EvidenceStep
+            eventId={event.id}
+            isVolunteering={isVolunteering}
+            methods={evidenceFormMethods}
+            firstIndex={countEvidenceFirstStep()}
+            multipleSubevents={
+              !!event.number_of_sub_events && event.number_of_sub_events > 1
+            }
+          />
+        </Step>
+        <Step name="zpětná vazba" hasError={hasFormError(feedbackFormMethods)}>
+          <FeedbackStep
+            eventId={event.id}
+            methods={feedbackFormMethods}
+            firstIndex={countEvidenceFirstStep() + 6}
+            feedbackRequired={feedbackRequired}
+          />
+        </Step>
+      </Steps>
+      <ConfirmationDialog
+        title="Odešle se zpětná vazba"
+        cancelTitle="Upravit otázky"
+        confirmTitle="Odeslat"
+        onCancel={() => navigate({ search: '?krok=3' })}
+      >
+        Účastníkům se odešle formulář zpětné vazby. V základu obsahuje otázky,
+        které zajímají ústředí HB, další otázky můžeš přidat ty.
+      </ConfirmationDialog>
+    </>
   )
 }

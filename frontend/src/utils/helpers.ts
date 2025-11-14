@@ -1,4 +1,5 @@
-import type { Address, EventCategory } from 'app/services/bisTypes'
+import type { Address, EventCategory, FullEvent } from 'app/services/bisTypes'
+import dayjs from 'dayjs'
 import { cloneDeep, mapValues } from 'lodash'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
@@ -113,6 +114,16 @@ export const getEventCannotBeOlderThan = (): string => {
 export const EVENT_CATEGORY_VOLUNTEERING_SLUG: EventCategory['slug'] =
   'public__volunteering'
 
+export const isFeedbackRequired = (event: FullEvent): boolean =>
+  ['camp', 'weekend_event'].includes(event.group.slug) &&
+  [
+    'nature',
+    'monuments',
+    'holidays_with_brontosaurus',
+    'education',
+    'none',
+  ].includes(event.program.slug)
+
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')
   const d = new Date(datetime)
@@ -213,6 +224,13 @@ export const formatDateTime = (date: string, time?: string): string => {
     })
     return dateTimeFormat.format(new Date(date))
   }
+}
+
+/**
+ * Formats date to datestring format used in forms and on backend.
+ */
+export const toDateString = (date: Date): string => {
+  return dayjs(date).format('YYYY-MM-DD')
 }
 
 /**

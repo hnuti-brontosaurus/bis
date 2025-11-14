@@ -3034,6 +3034,7 @@ export type EventContact = {
 export type FeedbackForm = {
   introduction?: string
   after_submit_text?: string
+  sent_at?: string
 }
 export type Record = {
   total_hours_worked?: number | null
@@ -3486,6 +3487,7 @@ export type PatchedEvent = {
   vip_propagation?: VipPropagation | null
   registration?: Registration | null
   record?: Record | null
+  feedback_form?: FeedbackForm | null
 }
 export type LocationPatron = {
   first_name: string

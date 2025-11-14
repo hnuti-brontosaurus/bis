@@ -88,6 +88,9 @@ export const CreateEvent = () => {
       'is_closed',
       'is_archived',
     ])
+    eventToCloneFixed.feedback_form = omit(eventToCloneFixed.feedback_form, [
+      'sent_at',
+    ])
     return event2payload(eventToCloneFixed)
   }, [currentUser, eventToClone])
 

@@ -222,6 +222,10 @@ export const event = {
   other_organizers: 'Další organizátoři',
   is_attendance_list_required: 'Je prezenční listina vyžadována?',
   vip_propagation: 'Je akce propagována v rámci VIP propagace?',
+  feedback_form: {
+    introduction: 'Úvod k dotazníku',
+    after_submit_text: 'Text po odeslání',
+  },
 } as const
 
 export const eventFinance = {

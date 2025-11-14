@@ -6,7 +6,6 @@ import {
   Button,
   ButtonLink,
   ExternalButtonLink,
-  InfoBox,
   Loading,
 } from 'components'
 import { sanitize } from 'dompurify'
@@ -265,15 +264,6 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
               </>
             )}
           </Actions>
-        )}
-
-        {event.feedback_form && !event.is_archived && (
-          <InfoBox className={styles.feedbackLink}>
-            Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
-            <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
-              {window.location.origin}/akce/{eventId}/zpetna_vazba
-            </ButtonLink>
-          </InfoBox>
         )}
 
         <div className={styles.infoBoxDetail}>
