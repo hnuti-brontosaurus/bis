@@ -1,6 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from bis.admin import export_emails
-from bis.admin_filters import EventStatsDateFilter
+from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats
@@ -226,6 +226,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "is_canceled",
         "is_closed",
         "is_archived",
+        HasFeedbackFilter,
         "registration__is_registration_required",
         "registration__is_event_full",
         "is_attendance_list_required",

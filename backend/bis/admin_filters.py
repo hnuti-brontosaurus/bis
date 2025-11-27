@@ -264,3 +264,9 @@ class UserStatsDateFilter(CustomDateRangeFilter):
     custom_title = "Datum pro statistiku věku"
     single_date_only = True
     cache_name = "users_stats_date_cache"
+
+
+class HasFeedbackFilter(YesNoFilter):
+    title = "Má ZV"
+    parameter_name = "has_feedback"
+    query = {"feedbacks__isnull": False}
