@@ -416,12 +416,14 @@ export const CloseEventForm = ({
   const actions = [
     { name: 'uložit', props: { is_closed: false, send_feedback: false } },
   ]
+  /*
   if (!event.feedback_form?.sent_at) {
     actions.push({
       name: 'poslat zpětnou vazbu',
       props: { is_closed: false, send_feedback: true },
     })
   }
+  */
   if (!event.is_closed) {
     actions.push({
       name: 'uzavřít',
