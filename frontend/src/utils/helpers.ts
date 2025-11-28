@@ -114,7 +114,7 @@ export const getEventCannotBeOlderThan = (): string => {
 export const EVENT_CATEGORY_VOLUNTEERING_SLUG: EventCategory['slug'] =
   'public__volunteering'
 
-export const isFeedbackRequired = (event: FullEvent): boolean =>
+export const isFeedbackRequired = (event: FullEvent): boolean => false /*
   ['camp', 'weekend_event'].includes(event.group.slug) &&
   [
     'nature',
@@ -123,6 +123,7 @@ export const isFeedbackRequired = (event: FullEvent): boolean =>
     'education',
     'none',
   ].includes(event.program.slug)
+  */
 
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')
