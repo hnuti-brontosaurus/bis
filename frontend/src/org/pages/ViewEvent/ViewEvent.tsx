@@ -1,21 +1,19 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
 import { ALL_USERS, api } from 'app/services/bis'
-import type { FullEvent } from 'app/services/bisTypes'
 import {
   Actions,
   Breadcrumbs,
   Button,
   ButtonLink,
   ExternalButtonLink,
-  InfoBox,
   Loading,
 } from 'components'
 import { sanitize } from 'dompurify'
+import type { FullEvent } from 'app/services/bisTypes'
 import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
 import { useCancelEvent, useRestoreCanceledEvent } from 'hooks/useCancelEvent'
 import { mergeWith } from 'lodash'
-import { ExportFilesButton } from 'org/components'
 import { getRegistrationMethodBeforeFull } from 'org/components/EventForm/EventForm'
 import { AiOutlineStop } from 'react-icons/ai'
 import {
@@ -37,6 +35,7 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
+import { ExportFilesButton } from 'org/components'
 import { ExportParticipantsButton } from 'org/components/ExportParticipantsButton'
 import styles from './ViewEvent.module.scss'
 
@@ -274,13 +273,6 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
             )}
           </Actions>
         )}
-
-        <InfoBox className={styles.feedbackLink}>
-          Odkaz na formulář zpětné vazby, který můžeš poslat účastníkům:{' '}
-          <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
-            {window.location.origin}/akce/{eventId}/zpetna_vazba
-          </ButtonLink>
-        </InfoBox>
 
         <div className={styles.infoBoxDetail}>
           <div className={styles.imageWrapper}>
