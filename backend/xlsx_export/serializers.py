@@ -57,6 +57,7 @@ class UserExportSerializer(ModelSerializer):
     memberships = StringRelatedField(label="Členství", many=True)
     eyca_card = StringRelatedField(label="EYCA")
     close_person = ClosePersonExportSerializer()
+    is_donor = SerializerMethodField(label="Je dárce?")
 
     @staticmethod
     def get_related(queryset):
@@ -68,6 +69,7 @@ class UserExportSerializer(ModelSerializer):
             "pronoun",
             "eyca_card",
             "close_person",
+            "donor",
         ).prefetch_related(
             "roles",
             "all_emails",
@@ -108,7 +110,11 @@ class UserExportSerializer(ModelSerializer):
             "pronoun",
             "close_person",
             "offers",
+            "is_donor",
         )
+
+    def get_is_donor(self, instance):
+        return hasattr(instance, "donor")
 
 
 class DonorExportSerializer(ModelSerializer):

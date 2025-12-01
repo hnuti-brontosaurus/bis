@@ -6,6 +6,7 @@ from bis.admin_filters import (
     EventsWhereWasAsMainOrganizerCountFilter,
     EventsWhereWasOrganizerCountFilter,
     FirstParticipatedInEventRangeFilter,
+    HasDonorFilter,
     MainOrganizerOfEventOfAdministrationUnitFilter,
     MainOrganizerOfEventRangeFilter,
     MemberDuringYearsFilter,
@@ -449,6 +450,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
         NoLoginFilter,
+        HasDonorFilter,
         UserExportFilter,
     ]
 
