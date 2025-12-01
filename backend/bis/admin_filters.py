@@ -270,3 +270,4 @@ class HasFeedbackFilter(YesNoFilter):
     title = "Má ZV"
     parameter_name = "has_feedback"
     query = {"feedbacks__isnull": False}
+    distinct = True

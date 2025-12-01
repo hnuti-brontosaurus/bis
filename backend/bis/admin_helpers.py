@@ -30,6 +30,7 @@ def get_admin_list_url(klass, text, params=None, title=""):
 
 class YesNoFilter(SimpleListFilter):
     query = None
+    distinct = False
 
     def lookups(self, request, model_admin):
         return (
@@ -42,6 +43,8 @@ class YesNoFilter(SimpleListFilter):
             queryset = queryset.filter(**self.query)
         if self.value() == "no":
             queryset = queryset.exclude(**self.query)
+        if self.distinct:
+            queryset = queryset.distinct()
         return queryset
 
 
