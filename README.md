@@ -33,4 +33,9 @@ token = f"Token {User.objects.get(email='asdf').auth_token.key}"
 
 `PGPASSWORD=$DB_PASSWORD pg_dump -U $DB_USERNAME -h $DB_HOST -d $DB_NAME -F t -f /app/media/mydb.dump`
 
-`PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --no-owner -F t /home/lamanchy/laman/Downloads/mydb.dump`
+```bash
+docker stop bis-backend
+PGPASSWORD=123 dropdb -U postgres -h localhost postgres
+PGPASSWORD=123 createdb -U postgres -h localhost postgres
+PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --no-owner -F t /home/lamanchy/laman/Downloads/mydb.dump
+```
