@@ -16,8 +16,10 @@ def migrate(apps, schema_editor):
 
         elif reply.inquiry.data["type"] == "scale":
             value = reply.data.get("rating", reply.reply)
-            if value is not None:
+            try:
                 reply.value = int(value)
+            except (TypeError, ValueError):
+                pass
 
         replies.append(reply)
 
