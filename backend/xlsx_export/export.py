@@ -120,11 +120,17 @@ class XLSXWriter:
 
     @staticmethod
     def format_stats(stats):
-        for key, stat in stats.items():
+        extra = {}
+        for key, stat in list(stats.items()):
             if "sum" in stat:
                 stats[key] = stat["sum"] / stat["count"]
             else:
-                stats[key] = [f"{key}: {value}x" for key, value in stat.items()]
+                stats[key] = [f"{k}: {v}x" for k, v in stat.items()]
+                for k, v in stat.items():
+                    stats[f"{key}__{k}"] = v
+                    extra[f"{key}__{k}"] = k
+
+        return extra
 
     def write_stats(self, model, header):
         stats_header = {
@@ -135,18 +141,35 @@ class XLSXWriter:
 
         if model is EventFeedback:
             self.add_worksheet("Dle akce")
-            self.write_header({"event": header["event"]} | stats_header)
+
+            extra = {}
             for event, stats in self.stats["Dle akce"].items():
-                self.format_stats(stats)
+                extra |= self.format_stats(stats)
+
+            extra_header = {"event": header["event"]}
+            self.get_extra_header(extra, extra_header, stats_header)
+
+            self.write_header(extra_header)
+            for event, stats in self.stats["Dle akce"].items():
                 self.write_row({"event": event} | stats)
             self.set_column_widths()
 
             self.add_worksheet("Dohromady")
-            self.write_header(stats_header)
             stats = self.stats["Dohromady"]["All"]
-            self.format_stats(stats)
+            extra = self.format_stats(stats)
+
+            extra_header = {}
+            self.get_extra_header(extra, extra_header, stats_header)
+            self.write_header(extra_header)
             self.write_row(stats)
             self.set_column_widths()
+
+    def get_extra_header(self, extra, extra_header, stats_header):
+        for key, value in stats_header.items():
+            extra_header[key] = value
+            for k, v in extra.items():
+                if k.startswith(key + "__"):
+                    extra_header[k] = v
 
     def add_stats(self, model, item):
         if model is EventFeedback:
