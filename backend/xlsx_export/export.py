@@ -151,12 +151,7 @@ class XLSXWriter:
                 "event_participants": "Počet účastníků",
                 "event_feedbacks": "Počet ZV",
             }
-            self.get_extra_header(
-                extra,
-                extra_header,
-                stats_header,
-                {_ for stats in self.stats["Dle akce"].values() for _ in stats},
-            )
+            self.get_extra_header(extra, extra_header, stats_header)
 
             self.write_header(extra_header)
             events = Event.objects.filter(id__in=self.stats["Dle akce"])
@@ -180,15 +175,13 @@ class XLSXWriter:
             extra = self.format_stats(stats)
 
             extra_header = {}
-            self.get_extra_header(extra, extra_header, stats_header, stats)
+            self.get_extra_header(extra, extra_header, stats_header)
             self.write_header(extra_header)
             self.write_row(stats)
             self.set_column_widths()
 
-    def get_extra_header(self, extra, extra_header, stats_header, stats):
+    def get_extra_header(self, extra, extra_header, stats_header):
         for key, value in stats_header.items():
-            if key not in stats:
-                continue
             extra_header[key] = value
             for k, v in extra.items():
                 if k.startswith(key + "__"):

@@ -520,12 +520,17 @@ class EventFeedbackExportSerializer(ModelSerializer):
 
     @staticmethod
     def get_related(queryset):
-        return queryset.prefetch_related("replies").order_by("event", "id")
+        return (
+            queryset.select_related("event")
+            .prefetch_related("replies")
+            .order_by("event", "id")
+        )
 
     class Meta:
         model = EventFeedback
         fields = (
             "event_id",
+            "event",
             "name",
             "email",
             "created_at",
