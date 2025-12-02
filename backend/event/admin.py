@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect
 from django.utils.datetime_safe import date
 from event.models import *
 from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
+from feedback.models import EventFeedback
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
@@ -191,11 +192,17 @@ def mark_as_archived(model_admin, request, queryset):
     queryset.update(is_archived=True)
 
 
+@admin.action(description="Export ZV")
+def export_feedbacks(model_admin, request, queryset):
+    feedbacks = EventFeedback.objects.filter(event__in=queryset)
+    return export_to_xlsx(model_admin, request, feedbacks)
+
+
 @admin.register(Event)
 class EventAdmin(PermissionMixin, NestedModelAdmin):
     change_form_template = "bis/event_change_form.html"
 
-    actions = [mark_as_archived, export_to_xlsx]
+    actions = [mark_as_archived, export_to_xlsx, export_feedbacks]
     inlines = (
         EventFinanceAdmin,
         EventPropagationAdmin,

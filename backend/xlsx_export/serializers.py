@@ -516,29 +516,49 @@ class EventApplicationExportSerializer(ModelSerializer):
 
 
 class EventFeedbackExportSerializer(ModelSerializer):
+    event = StringRelatedField(label="Akce")
+
     @staticmethod
     def get_related(queryset):
-        return queryset.prefetch_related("replies")
+        return (
+            queryset.select_related("event")
+            .prefetch_related("replies")
+            .order_by("event", "id")
+        )
 
     class Meta:
         model = EventFeedback
         fields = (
+            "event",
             "name",
             "email",
             "created_at",
             "note",
         )
 
+    @staticmethod
+    def inquiry_key(inquiry):
+        return inquiry.slug or inquiry.id
+
     def to_representation(self, instance):
         result = super().to_representation(instance)
         for reply in instance.replies.all():
-            result[str(reply.inquiry.id)] = reply.reply
+            key = self.inquiry_key(reply.inquiry)
+            result[f"{key}"] = reply.reply
+            result[f"{key}__stat"] = reply.value
         return result
 
     def get_extra_fields(self, queryset):
-        inquiries = Inquiry.objects.filter(feedback_form=queryset.first())
+        inquiries = Inquiry.objects.filter(
+            feedback_form__event__feedbacks__in=queryset
+        ).distinct()
+        keys = set()
         for inquiry in inquiries:
-            yield str(inquiry.id), inquiry.inquiry
+            key = self.inquiry_key(inquiry)
+            if key not in keys:
+                keys.add(key)
+                yield f"{key}", inquiry.inquiry
+                yield f"{key}__stat", f"Hodnota"
 
 
 class LocationExportSerializer(ModelSerializer):

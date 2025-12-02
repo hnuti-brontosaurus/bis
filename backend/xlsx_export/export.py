@@ -1,7 +1,7 @@
 import logging
 import os
 from base64 import b64encode
-from collections import Counter
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from datetime import date
@@ -30,6 +30,7 @@ from django.db.models import Count
 from django.http import FileResponse
 from django.utils.formats import date_format
 from event.models import Event
+from feedback.models import EventFeedback
 from other.models import SavedFile
 from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
@@ -76,6 +77,7 @@ class XLSXWriter:
         self.format.bold = self.writer.add_format()
         self.format.bold.set_shrink()
         self.format.bold.set_bold()
+        self.stats = defaultdict(lambda: defaultdict(lambda: defaultdict(Counter)))
 
     def get_file(self):
         self.writer.close()
@@ -96,17 +98,70 @@ class XLSXWriter:
         self.add_worksheet(name)
 
         queryset = serializer_class.get_related(queryset)
+        header = None
 
         for page in Paginator(queryset, 100):
             print_progress("exporting xlsx", page.number, page.paginator.num_pages)
             serializer = serializer_class(page.object_list, many=True)
             for item in serializer.data:
                 if not self.row:
-                    self.write_header(self.get_fields(serializer, queryset))
-                self.write_row(item)
+                    header = self.get_fields(serializer, queryset)
+                    self.write_header(header)
 
+                self.write_row(item)
+                self.add_stats(queryset.model, item)
+
+        self.set_column_widths()
+        self.write_stats(queryset.model, header)
+
+    def set_column_widths(self):
         for i, key in enumerate(self.header_keys):
             self.worksheet.set_column(i, i, width=self.widths[key])
+
+    @staticmethod
+    def format_stats(stats):
+        for key, stat in stats.items():
+            if "sum" in stat:
+                stats[key] = stat["sum"] / stat["count"]
+            else:
+                stats[key] = [f"{key}: {value}x" for key, value in stat.items()]
+
+    def write_stats(self, model, header):
+        stats_header = {
+            key: header[key[:-6]]
+            for key, value in header.items()
+            if key.endswith("__stat")
+        }
+
+        if model is EventFeedback:
+            self.add_worksheet("Dle akce")
+            self.write_header({"event": header["event"]} | stats_header)
+            for event, stats in self.stats["Dle akce"].items():
+                self.format_stats(stats)
+                self.write_row({"event": event} | stats)
+            self.set_column_widths()
+
+            self.add_worksheet("Dohromady")
+            self.write_header(stats_header)
+            stats = self.stats["Dohromady"]["All"]
+            self.format_stats(stats)
+            self.write_row(stats)
+            self.set_column_widths()
+
+    def add_stats(self, model, item):
+        if model is EventFeedback:
+            for key, value in item.items():
+                if not key.endswith("__stat") or value is None:
+                    continue
+
+                if isinstance(value, int):
+                    stat = {"count": 1, "sum": value}
+                else:
+                    stat = value
+
+                stat = Counter(stat)
+                self.stats["Dle akce"][item["event"]][key] += stat
+                self.stats["Dohromady"]["All"][key] += stat
 
     def get_fields(self, serializer, queryset):
         fields = serializer.child.get_fields()
@@ -131,7 +186,7 @@ class XLSXWriter:
                 value = str(value)
             self.widths.setdefault(key, 0)
             self.widths[key] = max(
-                self.widths[key], max(len(row) for row in str(value).split("\n"))
+                self.widths[key], max(len(row) for row in str(value).split("\n")) / 1.5
             )
             height = max(height, str(value).count("\n"))
             row_format = self.row and self.format.text_wrap or self.format.bold
