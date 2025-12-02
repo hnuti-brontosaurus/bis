@@ -143,29 +143,52 @@ class XLSXWriter:
             self.add_worksheet("Dle akce")
 
             extra = {}
-            for event, stats in self.stats["Dle akce"].items():
+            for stats in self.stats["Dle akce"].values():
                 extra |= self.format_stats(stats)
 
-            extra_header = {"event": header["event"]}
-            self.get_extra_header(extra, extra_header, stats_header)
+            extra_header = {
+                "event": header["event"],
+                "event_participants": "Počet účastníků",
+                "event_feedbacks": "Počet ZV",
+            }
+            self.get_extra_header(
+                extra,
+                extra_header,
+                stats_header,
+                {_ for stats in self.stats["Dle akce"].values() for _ in stats},
+            )
 
             self.write_header(extra_header)
-            for event, stats in self.stats["Dle akce"].items():
-                self.write_row({"event": event} | stats)
-            self.set_column_widths()
+            events = Event.objects.filter(id__in=self.stats["Dle akce"])
+            events = {event.id: event for event in events}
+            for event_id, stats in self.stats["Dle akce"].items():
+                event = events[event_id]
+                self.write_row(
+                    {
+                        "event": event.name,
+                        "event_participants": hasattr(event, "record")
+                        and event.record.get_participants_count()
+                        or 0,
+                        "event_feedbacks": event.feedbacks.count(),
+                    }
+                    | stats
+                )
+                self.set_column_widths()
 
             self.add_worksheet("Dohromady")
             stats = self.stats["Dohromady"]["All"]
             extra = self.format_stats(stats)
 
             extra_header = {}
-            self.get_extra_header(extra, extra_header, stats_header)
+            self.get_extra_header(extra, extra_header, stats_header, stats)
             self.write_header(extra_header)
             self.write_row(stats)
             self.set_column_widths()
 
-    def get_extra_header(self, extra, extra_header, stats_header):
+    def get_extra_header(self, extra, extra_header, stats_header, stats):
         for key, value in stats_header.items():
+            if key not in stats:
+                continue
             extra_header[key] = value
             for k, v in extra.items():
                 if k.startswith(key + "__"):
@@ -183,13 +206,15 @@ class XLSXWriter:
                     stat = value
 
                 stat = Counter(stat)
-                self.stats["Dle akce"][item["event"]][key] += stat
+                self.stats["Dle akce"][item["event_id"]][key] += stat
                 self.stats["Dohromady"]["All"][key] += stat
 
     def get_fields(self, serializer, queryset):
         fields = serializer.child.get_fields()
         if fn := getattr(serializer.child, "get_extra_fields", None):
             fields.update(fn(queryset))
+        if queryset.model is EventFeedback:
+            fields.pop("event_id")
         return fields
 
     def write_values(self, values):
