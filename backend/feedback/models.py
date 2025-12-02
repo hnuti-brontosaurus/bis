@@ -81,6 +81,7 @@ class Reply(Model):
     inquiry = ForeignKey(Inquiry, on_delete=CASCADE, related_name="replies")
     feedback = ForeignKey(EventFeedback, on_delete=CASCADE, related_name="replies")
     reply = TextField()
+    value = JSONField(default=None, null=True)
     data = JSONField(default=dict)
 
     class Meta:
