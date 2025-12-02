@@ -91,6 +91,7 @@ class UserExportSerializer(ModelSerializer):
             "last_name",
             "get_name",
             "nickname",
+            "vokativ",
             "birthday",
             "address",
             "contact_address",
