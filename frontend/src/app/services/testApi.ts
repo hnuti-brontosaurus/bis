@@ -3288,8 +3288,9 @@ export type PatchedInquiryRead = {
   order?: number
 }
 export type Reply = {
-  inquiry: Inquiry
+  inquiry: number
   reply: string
+  value?: any
   data?: {
     [key: string]: any
   }

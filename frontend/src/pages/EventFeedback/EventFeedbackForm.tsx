@@ -16,32 +16,50 @@ import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
 import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { Assign } from 'utility-types'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
 
-const form2payload = ({ replies, ...data }: EventFeedback): EventFeedback => ({
+const form2payload = (
+  { replies, ...data }: EventFeedback,
+  inquiries: InquiryRead[],
+): EventFeedback => ({
   replies: replies
     .filter(reply => !!reply)
-    .map(mapReply)
+    .map(reply => mapReply(reply, inquiries))
     .filter(reply => !!reply.reply),
   ...data,
 })
 
-const mapReply = (reply: Reply): Reply => {
-  if (Array.isArray(reply.reply)) {
-    // checkboxes
-    return { ...reply, reply: reply.reply.join(', ') }
-  } else if (reply.data?.comment) {
-    // scales
-    return {
-      ...reply,
-      reply: `${reply.reply} ${reply.data.comment}`,
-      data: {
-        ...reply.data,
-        rating: reply.reply,
-      },
+const mapReply = (reply: Reply, inquiries: InquiryRead[]): Reply => {
+  const inquiry = inquiries.find(inquiry => reply.inquiry === inquiry.id)
+
+  if (inquiry) {
+    switch (inquiry.data?.type) {
+      case 'checkbox':
+        if (Array.isArray(reply.reply)) {
+          return { ...reply, reply: reply.reply.join(', '), value: reply.reply }
+        } else {
+          return { ...reply, reply: reply.reply, value: [reply.reply] }
+        }
+      case 'radio':
+        return { ...reply, value: [reply.reply] }
+      case 'scale':
+        return {
+          ...reply,
+          reply: reply.data?.comment
+            ? `${reply.reply} ${reply.data.comment}`
+            : reply.reply,
+          value: reply.reply,
+          data: {
+            ...reply.data,
+            rating: reply.reply,
+          },
+        }
+      default:
+        return reply
     }
   } else {
     return reply
@@ -100,7 +118,9 @@ export const EventFeedbackForm: FC<{
 
   const showMessage = useShowMessage()
   const handleSubmit = methods.handleSubmit(
-    data => onSubmit(form2payload(data)),
+    data => (
+      console.log(data), onSubmit(form2payload(data, feedbackForm.inquiries))
+    ),
     errors =>
       showMessage({
         type: 'error',
