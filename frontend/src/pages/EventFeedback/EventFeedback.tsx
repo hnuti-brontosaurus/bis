@@ -1,12 +1,21 @@
 import { api } from 'app/services/bis'
 import { EventFeedback as EventFeedbackShape } from 'app/services/testApi'
-import { Actions, Button, Error, Loading, PageHeader } from 'components'
+import {
+  Actions,
+  Button,
+  Error,
+  ExternalButtonLink,
+  InfoBox,
+  Loading,
+  PageHeader,
+} from 'components'
 import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
 import { FC } from 'react'
 import { FaRegCalendarAlt } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
+import { HiExternalLink } from 'react-icons/hi'
 import { useParams } from 'react-router-dom'
 import { formatDateRange } from 'utils/helpers'
 import {
@@ -86,6 +95,19 @@ export const EventFeedback: FC = () => {
       {formValues?.step === 'finished' ? (
         <div>
           <MessageBox>{event.feedback_form?.after_submit_text}</MessageBox>
+          <InfoBox>
+            Chceš práci Hnutí Brontosaurus finančním darem? Moc si toho vážíme.
+            Můžeš přispět na{' '}
+            <ExternalButtonLink
+              tertiary
+              target="__blank"
+              rel="noopener noreferrer"
+              href="https://www.darujme.cz/projekt/525"
+            >
+              náš projekt na Darujme <HiExternalLink />
+            </ExternalButtonLink>
+            . Děkujeme.
+          </InfoBox>
           <Actions>
             <Button primary onClick={clearForm}>
               Další zpětná vazba
