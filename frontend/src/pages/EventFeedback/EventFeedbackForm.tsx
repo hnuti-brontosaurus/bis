@@ -4,9 +4,11 @@ import { EventFeedback, Reply } from 'app/services/testApi'
 import {
   Actions,
   Button,
+  ExternalButtonLink,
   FormInputError,
   FormSection,
   FormSectionGroup,
+  InfoBox,
   InlineSection,
   Label,
 } from 'components'
@@ -16,6 +18,7 @@ import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
 import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { HiExternalLink } from 'react-icons/hi'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
@@ -143,6 +146,19 @@ export const EventFeedbackForm: FC<{
               ),
             )}
           </FormSectionGroup>
+          <InfoBox>
+            Chceš práci Hnutí Brontosaurus finančním darem? Moc si toho vážíme.
+            Můžeš přispět na{' '}
+            <ExternalButtonLink
+              tertiary
+              target="__blank"
+              rel="noopener noreferrer"
+              href="https://www.darujme.cz/projekt/525"
+            >
+              náš projekt na Darujme <HiExternalLink />
+            </ExternalButtonLink>
+            . Děkujeme.
+          </InfoBox>
           <Actions>
             <Button secondary type="reset">
               Zrušit
