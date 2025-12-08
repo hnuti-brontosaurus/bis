@@ -736,6 +736,11 @@ class EventSerializer(ModelSerializer):
                     )
 
         is_closing = not instance.is_closed and validated_data.get("is_closed")
+        should_send_feedback = (
+            hasattr(instance, "feedback_form")
+            and not instance.feedback_form.sent_at
+            and validated_data.get("feedback_form", {}).get("sent_at")
+        )
         had_attendance = EventAttendanceListPage.objects.filter(
             record__event=instance
         ).exists()
@@ -746,6 +751,9 @@ class EventSerializer(ModelSerializer):
         instance = super().update(instance, validated_data)
         if is_closing:
             emails.event_end_participants_notification(instance)
+
+        if should_send_feedback:
+            emails.send_feedback_request(instance)
 
         has_attendance = EventAttendanceListPage.objects.filter(
             record__event=instance

@@ -473,3 +473,22 @@ def feedback_created(feedback):
             "event_feedbacks_link": f"{settings.FULL_HOSTNAME}/org/akce/{event.id}/zpetna_vazba",
         },
     )
+
+
+def send_feedback_request(event):
+    if not hasattr(event, "record"):
+        return
+
+    for participant in event.record.participants.all():
+        ecomail.send_email(
+            emails["bis"],
+            "ZV",
+            "305",
+            [participant.email],
+            variables={
+                "event_name": event.name,
+                "event_date": event.get_date(),
+                "vokativ": participant.vokativ,
+                "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
+            },
+        )
