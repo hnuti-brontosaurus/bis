@@ -193,7 +193,7 @@ export const qualification = {
 export const event = {
   _name: 'Akce',
   _name_plural: 'Akce',
-  group: 'Druh',
+  group: 'Délka',
   category: 'Typ',
   internal_note: 'Privátní poznámka',
   program: 'Program',
@@ -449,8 +449,8 @@ export const membershipCategory = {
 } as const
 
 export const eventGroupCategory = {
-  _name: 'Druh akce',
-  _name_plural: 'Druh akce',
+  _name: 'Délka akce',
+  _name_plural: 'Délka akce',
 } as const
 
 export const eventCategory = {

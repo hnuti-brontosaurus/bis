@@ -26,7 +26,7 @@ export const EventGroupStep = ({
       <FormProvider {...methods}>
         <form>
           <FormSectionGroup startIndex={1}>
-            <FormSection header="Jaký je druh nové akce?">
+            <FormSection header="Jaká je délka nové akce?">
               <FormInputError>
                 <Controller
                   name="group"

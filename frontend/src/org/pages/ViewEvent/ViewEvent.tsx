@@ -344,7 +344,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
             <table className={styles.table}>
               <tbody>
                 <tr>
-                  <th>Druh</th>
+                  <th>Délka</th>
                   <td>{event.group.name}</td>
                 </tr>
                 <tr>
