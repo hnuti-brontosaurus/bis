@@ -12,7 +12,8 @@ from django.apps import apps
 from django.contrib import admin
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.exceptions import ValidationError
-from django.db.models import Max, Min, OuterRef, Q, Subquery, Sum
+from django.db.models import Max, Min, OuterRef, Q, Subquery, Sum, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.timezone import now
 from more_admin_filters import MultiSelectRelatedDropdownFilter
@@ -82,13 +83,11 @@ class NoLoginFilter(YesNoFilter):
 class FirstDonorsDonationFilter(CustomDateRangeFilter):
     custom_title = "Dle prvního daru"
     custom_field_path = "first_donation"
-    annotate_fn = Min("donations__donated_at")
 
 
 class LastDonorsDonationFilter(CustomDateRangeFilter):
     custom_title = "Dle posledního daru"
     custom_field_path = "last_donation"
-    annotate_fn = Max("donations__donated_at")
 
 
 class RecurringDonorWhoStoppedFilter(admin.SimpleListFilter):
@@ -110,23 +109,24 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
     custom_field_path = "donated_at"
     custom_title = "Suma darů z rozmezí"
 
-    def annotate(self, request, queryset):
-        annotate_with = Sum("donations__amount")
-
+    def annotate(self, request, queryset, annotate_filter):
         if self.form.is_valid():
             validated_data = dict(self.form.cleaned_data.items())
             if validated_data:
                 query = self._make_query_filter(request, validated_data)
-                query["donor"] = OuterRef("pk")
-                donations = (
-                    apps.get_model("donations", "Donation")
-                    .objects.filter(**query)
-                    .values("donor")
-                )
-                donations_sum = donations.annotate(total=Sum("amount")).values("total")
-                annotate_with = Subquery(donations_sum)
 
-        return queryset.annotate(donations_sum=annotate_with)
+                for key, value in query.items():
+                    q = Q(**{f"donations__{key}": value})
+                    if annotate_filter:
+                        annotate_filter &= q
+                    else:
+                        annotate_filter = q
+
+        return queryset.annotate(
+            donations_sum=Coalesce(
+                Sum("donations__amount", filter=annotate_filter), Value(0)
+            )
+        )
 
     def queryset(self, request, queryset):
         return queryset

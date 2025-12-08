@@ -11,7 +11,15 @@ from event.models import (
 from feedback.models import EventFeedback, Inquiry
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
-from rest_framework.fields import IntegerField, ReadOnlyField, SerializerMethodField
+from rest_framework.fields import (
+    CharField,
+    DateField,
+    DateTimeField,
+    IntegerField,
+    ListField,
+    ReadOnlyField,
+    SerializerMethodField,
+)
 from rest_framework.relations import StringRelatedField
 from rest_framework.serializers import ModelSerializer
 
@@ -124,6 +132,9 @@ class DonorExportSerializer(ModelSerializer):
     regional_center_support = StringRelatedField()
     basic_section_support = StringRelatedField()
     donations_sum = IntegerField()
+    first_donation = DateField()
+    last_donation = DateField()
+    donation_sources = ListField()
 
     @staticmethod
     def get_related(queryset):
@@ -162,6 +173,9 @@ class DonorExportSerializer(ModelSerializer):
             "basic_section_support",
             "variable_symbols",
             "donations_sum",
+            "first_donation",
+            "last_donation",
+            "donation_sources",
         )
 
 
