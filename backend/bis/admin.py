@@ -283,22 +283,28 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
         return actions
 
-    readonly_fields = (
-        "is_superuser",
-        "last_login",
-        "date_joined",
-        "get_all_emails",
-        "get_events_where_was_organizer",
-        "get_participated_in_events",
-        "roles",
-        "get_donor",
-        "get_board_member_of",
-        "get_token",
-        "last_after_event_email",
-        "is_contact_information_verified",
-        "get_membership_actions",
-        "create_membership",
-    )
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = (
+            "is_superuser",
+            "last_login",
+            "date_joined",
+            "get_all_emails",
+            "get_events_where_was_organizer",
+            "get_participated_in_events",
+            "roles",
+            "get_donor",
+            "get_board_member_of",
+            "get_token",
+            "last_after_event_email",
+            "is_contact_information_verified",
+            "get_membership_actions",
+            "create_membership",
+        )
+        if not request.user.is_superuser and not request.user.is_office_worker:
+            readonly_fields += ("behaviour_issues",)
+
+        return readonly_fields
+
     exclude = "groups", "user_permissions", "password", "is_superuser", "_str"
 
     fieldsets = (
