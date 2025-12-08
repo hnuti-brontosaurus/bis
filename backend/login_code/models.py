@@ -21,17 +21,18 @@ class ThrottleLog(models.Model):
 
     @classmethod
     def check_throttled(cls, prefix, key, max_count, timedelta_hours):
-        key = f"{prefix}_{key}"
-
         if (
             cls.objects.filter(
-                key=key, created__gte=now() - timedelta(hours=timedelta_hours)
+                key=f"{prefix}_{key}",
+                created__gte=now() - timedelta(hours=timedelta_hours),
             ).count()
             > max_count
         ):
             raise Throttled(timedelta_hours * 3600)
 
-        cls.objects.create(key=key)
+    @classmethod
+    def add(cls, prefix, key):
+        cls.objects.create(key=f"{prefix}_{key}")
 
 
 class LoginCode(models.Model):
@@ -44,8 +45,13 @@ class LoginCode(models.Model):
         ThrottleLog.check_throttled("login_code", user.email, 10, 1)
 
     @classmethod
+    def add_throttled(cls, user):
+        ThrottleLog.add("login_code", user.email)
+
+    @classmethod
     def make(cls, user):
         cls.check_throttled(user)
+        cls.add_throttled(user)
         return cls.objects.create(user=user)
 
     @classmethod
@@ -61,4 +67,5 @@ class LoginCode(models.Model):
         ).first()
 
         if login_code is None:
+            cls.add_throttled(user)
             raise AuthenticationFailed()

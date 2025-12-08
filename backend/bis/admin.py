@@ -682,6 +682,7 @@ class MembershipAdminAddForm(forms.ModelForm):
                         raise ValidationError(str(e))
 
                     if cleaned_data["birthday"] != cleaned_data["user"].birthday:
+                        ThrottleLog.add("guess_birthday", key)
                         raise ValidationError(
                             {
                                 "birthday": "Uživatel v BISu existuje, ale jeho datum narození se neshoduje se "

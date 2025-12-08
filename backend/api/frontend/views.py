@@ -367,6 +367,7 @@ def get_unknown_user(request, data):
     user = User.objects.filter(**data).first()
 
     if not user:
+        ThrottleLog.add("get_unknown_user", key)
         raise NotFound()
 
     return Response(UserSerializer(instance=user, context={"request": request}).data)
