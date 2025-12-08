@@ -193,7 +193,7 @@ export const qualification = {
 export const event = {
   _name: 'Akce',
   _name_plural: 'Akce',
-  group: 'Druh',
+  group: 'Délka',
   category: 'Typ',
   internal_note: 'Privátní poznámka',
   program: 'Program',
