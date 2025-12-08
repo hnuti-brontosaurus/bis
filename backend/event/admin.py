@@ -239,6 +239,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "is_attendance_list_required",
         ("location__region", MultiSelectRelatedDropdownFilter),
         ("main_organizer__birthday", EventStatsDateFilter),
+        ("administration_units", MultiSelectRelatedDropdownFilter),
     ]
 
     def get_actions(self, request):
