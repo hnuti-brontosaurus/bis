@@ -110,7 +110,7 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
     custom_field_path = "donated_at"
     custom_title = "Suma darů z rozmezí"
 
-    def queryset(self, request, queryset):
+    def annotate(self, request, queryset):
         annotate_with = Sum("donations__amount")
 
         if self.form.is_valid():
@@ -126,7 +126,9 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
                 donations_sum = donations.annotate(total=Sum("amount")).values("total")
                 annotate_with = Subquery(donations_sum)
 
-        queryset = queryset.annotate(donations_sum=annotate_with)
+        return queryset.annotate(donations_sum=annotate_with)
+
+    def queryset(self, request, queryset):
         return queryset
 
 

@@ -158,13 +158,22 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         super().save_formset(request, form, formset, change)
 
     def get_queryset(self, request):
-        return (
+        queryset = (
             super().get_queryset(request).prefetch_related("donations__donation_source")
         )
+        donations_sum_filter = DonationSumRangeFilter(
+            field=Donation.donated_at,
+            request=request,
+            params=dict(request.GET.items()),
+            model=self.model,
+            model_admin=self,
+            field_path="donations__donated_at",
+        )
+        return donations_sum_filter.annotate(request, queryset)
 
     @admin.display(description="Suma darů")
     def get_donations_sum(self, obj):
-        return sum([donation.amount for donation in obj.donations.all()])
+        return obj.donations_sum
 
     @admin.display(description="Poslední dar")
     def get_last_donation(self, obj):
