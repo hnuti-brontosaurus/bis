@@ -142,7 +142,6 @@ AdministrationSubUnit:
     instagram: Instagram
     main_leader: Hlavní vedoucí
     sub_leaders: Oddíloví vedoucí
-    is_active: Je aktivní?
 
 AdministrationSubUnitAddress:
   name: Adresa
