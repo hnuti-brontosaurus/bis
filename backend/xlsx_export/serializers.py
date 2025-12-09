@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
+from django.db.models import Count, F, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor
 from event.models import (
     Event,
@@ -534,13 +538,56 @@ class EventApplicationExportSerializer(ModelSerializer):
 
 class EventFeedbackExportSerializer(ModelSerializer):
     event = StringRelatedField(label="Akce")
+    event_count_till_this__stat = IntegerField(label="Kolikátá má akce?")
+    event_count_past_year__stat = IntegerField(
+        label="Kolikátá má akce za poslední rok?"
+    )
+    user_region__stat = CharField(label="Kraj účastníka")
 
     @staticmethod
     def get_related(queryset):
+        event_count_till_this = (
+            Event.objects.filter(
+                record__participants__all_emails__email=OuterRef("email"),
+                end__lte=OuterRef("event__end"),
+            )
+            .values("record__participants__id")
+            .annotate(count=Count("id"))
+            .values("count")
+        )
+        event_count_past_year = (
+            Event.objects.filter(
+                record__participants__all_emails__email=OuterRef("email"),
+                end__lte=OuterRef("event__end"),
+                end__gte=OuterRef("event__end") - timedelta(days=365),
+            )
+            .values("record__participants__id")
+            .annotate(count=Count("id"))
+            .values("count")
+        )
         return (
-            queryset.select_related("event")
-            .prefetch_related("replies")
-            .order_by("event", "id")
+            (
+                queryset.select_related("event")
+                .prefetch_related("replies")
+                .order_by("event", "id")
+            )
+            .annotate(
+                event_count_till_this__stat=Coalesce(
+                    Subquery(event_count_till_this), Value(0)
+                )
+            )
+            .annotate(
+                event_count_past_year__stat=Coalesce(
+                    Subquery(event_count_past_year), Value(0)
+                )
+            )
+            .annotate(
+                user_region__stat=Subquery(
+                    User.objects.filter(all_emails__email=OuterRef("email")).values(
+                        "address__region__name"
+                    )
+                )
+            )
         )
 
     class Meta:
@@ -548,6 +595,9 @@ class EventFeedbackExportSerializer(ModelSerializer):
         fields = (
             "event_id",
             "event",
+            "event_count_till_this__stat",
+            "event_count_past_year__stat",
+            "user_region__stat",
             "name",
             "email",
             "created_at",
