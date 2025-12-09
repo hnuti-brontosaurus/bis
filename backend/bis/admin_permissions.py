@@ -46,6 +46,28 @@ class PermissionMixin:
 
         return 0
 
+    @staticmethod
+    def saving_raw(request):
+        return request.method == "POST" and "_save_raw" in request.POST
+
+    def set_no_validation_if_raw_saving(self, request, kwargs):
+        if self.saving_raw(request):
+
+            class NoValidationForm(self.form):
+                def full_clean(_self):
+                    super(NoValidationForm, _self).full_clean()
+                    _self._errors = {}
+
+            kwargs["form"] = NoValidationForm
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        self.set_no_validation_if_raw_saving(request, kwargs)
+        return super().get_form(request, obj, change, **kwargs)
+
+    def get_formset(self, request, obj=None, **kwargs):
+        self.set_no_validation_if_raw_saving(request, kwargs)
+        return super().get_formset(request, obj, **kwargs)
+
 
 class ReadonlyMixin:
     def has_add_permission(self, request, obj=None):
