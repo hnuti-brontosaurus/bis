@@ -127,6 +127,7 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
 
     list_filter = (
         "program",
+        "is_traditional",
         "for_beginners",
         "is_full",
         "is_unexplored",
