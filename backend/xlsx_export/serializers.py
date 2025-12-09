@@ -11,6 +11,7 @@ from event.models import (
     EventPropagation,
     EventRecord,
     EventRegistration,
+    VIPEventPropagation,
 )
 from feedback.models import EventFeedback, Inquiry
 from opportunities.models import OfferedHelp
@@ -262,6 +263,17 @@ class PropagationExportSerializer(ModelSerializer):
         )
 
 
+class VIPPropagationExportSerializer(ModelSerializer):
+    class Meta:
+        model = VIPEventPropagation
+        fields = (
+            "goals_of_event",
+            "program",
+            "short_invitation_text",
+            "rover_propagation",
+        )
+
+
 class RegistrationExportSerializer(ModelSerializer):
     class Meta:
         model = EventRegistration
@@ -315,6 +327,7 @@ class EventExportSerializer(ModelSerializer):
     location = EventLocationExportSerializer()
     finance = FinanceExportSerializer()
     propagation = PropagationExportSerializer()
+    vip_propagation = VIPPropagationExportSerializer()
     registration = RegistrationExportSerializer()
     record = RecordExportSerializer()
     location_name = SerializerMethodField(label="Místo konání")
@@ -334,6 +347,7 @@ class EventExportSerializer(ModelSerializer):
             "finance",
             "finance__grant_category",
             "propagation",
+            "vip_propagation",
             "intended_for",
             "registration",
             "record",
@@ -375,6 +389,7 @@ class EventExportSerializer(ModelSerializer):
             "internal_note",
             "finance",
             "propagation",
+            "vip_propagation",
             "registration",
         )
 
