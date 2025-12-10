@@ -966,8 +966,12 @@ class Qualification(Model):
 
     @classmethod
     def get_expiring_qualifications(cls, to_date, extra_filter=None):
-        extra_filter = extra_filter or {}
-        for qualification in cls.objects.filter(valid_till=to_date, **extra_filter):
+        if extra_filter:
+            filtered_objects = cls.objects.filter(**extra_filter)
+        else:
+            filtered_objects = cls.objects.filter(valid_till=to_date)
+
+        for qualification in filtered_objects:
             if not cls.user_has_required_qualification(
                 qualification.user,
                 [qualification.category.slug],
