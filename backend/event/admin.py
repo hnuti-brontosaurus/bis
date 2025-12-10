@@ -263,12 +263,12 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "get_young_percentage",
         "get_total_hours_worked",
         "program",
-        "category",
-        "get_tags",
-        "intended_for",
         "is_shown_on_web",
         "is_canceled",
         "is_closed",
+        "category",
+        "get_tags",
+        "intended_for",
     )
     list_select_related = (
         "location",
