@@ -304,6 +304,7 @@ def qualification_about_to_end():
             "consultant",
             "instructor",
             "consultant_for_kids",
+            "organizer_without_education",
         ]:
             continue
 
@@ -326,6 +327,7 @@ def qualification_ended():
             "consultant",
             "instructor",
             "consultant_for_kids",
+            "organizer_without_education",
         ]:
             continue
 

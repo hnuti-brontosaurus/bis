@@ -50,11 +50,13 @@ from bis.models import (
     UserEmail,
 )
 from bis.permissions import Permissions
-from categories.models import MembershipCategory, PronounCategory
+from categories.models import MembershipCategory, PronounCategory, QualificationCategory
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, action
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
 from django.contrib.auth.models import Group
 from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
@@ -266,6 +268,7 @@ def export_emails(view, request, queryset):
 
 @admin.register(User)
 class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin):
+    change_form_template = "bis/user_change_form.html"
     actions = [
         export_to_xlsx,
         export_emails,
@@ -534,6 +537,21 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         return form
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if object_id and "_add_access" in request.POST:
+            to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+            obj = self.get_object(request, unquote(object_id), to_field)
+            Qualification.objects.get_or_create(
+                user=obj,
+                category=QualificationCategory.objects.get(
+                    slug="organizer_without_education"
+                ),
+                defaults=dict(
+                    valid_since=today(),
+                    approved_by=request.user,
+                ),
+            )
+            self.message_user(request, "Přístup přidán")
+            return HttpResponseRedirect(".")
         if response := Membership.process_action(request):
             return response
         return super().changeform_view(request, object_id, form_url, extra_context)

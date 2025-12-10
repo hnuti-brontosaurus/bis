@@ -936,7 +936,8 @@ class Qualification(Model):
             category.slug for category in self.category.can_be_approved_with.all()
         ]
         if not (
-            self.approved_by.is_office_worker
+            self.category.slug == "organizer_without_education"
+            or self.approved_by.is_office_worker
             or self.approved_by.is_superuser
             or Qualification.user_has_required_qualification(
                 self.approved_by, approved_with
