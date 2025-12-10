@@ -69,6 +69,9 @@ class Command(BaseCommand):
         if day_of_year == (27, 10):
             try_to_run(emails.fill_memberships, call=2)
 
+        if day_of_year == (31, 1):
+            try_to_run(emails.qualification_ends_this_year)
+
         if day_of_year in [
             (15, 1),
             (15, 3),
