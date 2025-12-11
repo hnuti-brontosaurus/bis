@@ -2760,6 +2760,8 @@ export type EventCategory = {
   id: number
   name: string
   slug: string
+  is_active: boolean
+  description: string
 }
 export type PaginatedEventCategoryList = {
   count?: number

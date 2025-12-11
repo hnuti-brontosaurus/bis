@@ -140,11 +140,13 @@ export const BasicInfoStep = ({
                 <select {...register('category', { required })} defaultValue="">
                   <option disabled value="" />
                   {categories &&
-                    categories.results!.map(category => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
+                    categories
+                      .results!.filter(category => category.is_active)
+                      .map(category => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
                 </select>
               </FormInputError>
             </FullSizeElement>
