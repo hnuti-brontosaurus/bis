@@ -2,13 +2,12 @@ from base64 import b64encode
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import make_a, make_br, make_ul
+from bis.helpers import make_a, make_ul
 from bis.models import Qualification
 from categories.models import EventProgramCategory, PronounCategory
 from common.helpers import get_date_range
 from dateutil.utils import today
 from django.conf import settings
-from django.utils.formats import date_format
 from ecomail import ecomail
 from event.models import Event
 from opportunities.models import Opportunity
@@ -319,6 +318,56 @@ def qualification_about_to_end():
                 **get_consultants(),
             },
         )
+
+
+def qualification_ends_this_year() -> None:
+    """
+    Send mail to education with lists of consultants, instructors and BRĎO consultants
+    whose qualifications end this year.
+    (email 8a)
+    """
+    year = date.today().year
+    start = date(year, 1, 1)
+    end = date(year, 12, 31)
+
+    qualifications = Qualification.get_expiring_qualifications(
+        to_date=end,
+        extra_filter={
+            "valid_till__gte": start,
+            "valid_till__lte": end,
+            "category_id__in": [
+                1,
+                2,
+                5,
+            ],  # the numbers come from the table categories_qualificationoncategory
+        },
+    )
+
+    categories = {"consultants": [], "kids_consultants": [], "instructors": []}
+    for qualification in qualifications:
+        category_id = qualification.category_id
+        if category_id == 1:
+            categories["consultants"].append(qualification.user)
+        elif category_id == 2:
+            categories["instructors"].append(qualification.user)
+        elif category_id == 5:
+            categories["kids_consultants"].append(qualification.user)
+
+    formatted_lists = {}
+    for category_name, people in categories.items():
+        list_items = "".join(
+            f"<li>{person.get_name(show_nickname=False)}, {person.email}</li>"
+            for person in people
+        )
+        formatted_lists[category_name] = f"<ul>{list_items}</ul>"
+
+    ecomail.send_email(
+        emails["bis"],
+        "Seznam konzultantů, BRĎO konzultantů a instruktorů, kterým vyprší tento rok kvalifikace",
+        "255",
+        [emails["education"]],
+        variables={"year": year, **formatted_lists},
+    )
 
 
 def qualification_ended():
