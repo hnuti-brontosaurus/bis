@@ -67,7 +67,7 @@ def send_email(
     sender: tuple[str, str],
     subject: str,
     template_id: str,
-    recipients: list[tuple[str, str]],
+    recipients: list[str],
     *,
     reply_to=None,
     variables=None,

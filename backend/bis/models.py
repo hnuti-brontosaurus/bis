@@ -965,13 +965,11 @@ class Qualification(Model):
                     return True
 
     @classmethod
-    def get_expiring_qualifications(cls, to_date, extra_filter=None):
-        if extra_filter:
-            filtered_objects = cls.objects.filter(**extra_filter)
-        else:
-            filtered_objects = cls.objects.filter(valid_till=to_date)
+    def get_expiring_qualifications(cls, to_date, queryset=None):
+        if queryset is None:
+            queryset = cls.objects.all()
 
-        for qualification in filtered_objects:
+        for qualification in queryset:
             if not cls.user_has_required_qualification(
                 qualification.user,
                 [qualification.category.slug],
