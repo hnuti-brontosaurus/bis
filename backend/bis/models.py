@@ -562,6 +562,10 @@ class User(SearchMixin, AbstractBaseUser):
     def get_short_name(self):  # for admin
         return self.get_name()
 
+    def get_proper_name(self):
+        """Get a nicely looking and identifiable name"""
+        return f"{self.get_name(show_nickname=False)}, {self.email}"
+
     @admin.display(description="E-mailové adresy")
     def get_all_emails(self):
         emails = [e.email for e in self.all_emails.all()]
