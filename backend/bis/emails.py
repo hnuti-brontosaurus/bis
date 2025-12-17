@@ -32,7 +32,7 @@ def text(recipients, subject, content, reply_to=None, attachments=None):
     ecomail.send_email(
         emails["bis"],
         subject,
-        "111",
+        111,
         recipients,
         reply_to=reply_to,
         variables={"content": content},
@@ -44,7 +44,7 @@ def password_reset_link(user, email, login_code):
     ecomail.send_email(
         emails["bis"],
         "Obnova hesla",
-        "151",
+        151,
         [email],
         variables={
             "link": f"{settings.FULL_HOSTNAME}/reset_password"
@@ -59,12 +59,12 @@ def application_created(application):
     event = application.event_registration.event
     variables = {"event_name": event.name, "event_date": event.get_date()}
     if application.is_child_application:
-        template = "182"
+        template = 182
         email = application.close_person.email
         variables["child_name"] = application.first_name
 
     else:
-        template = "147"
+        template = 147
         email = application.email
         if application.user:
             variables |= {
@@ -88,7 +88,7 @@ def application_created(application):
     ecomail.send_email(
         emails["bis"],
         "Nová přihláška!",
-        "148",
+        148,
         [email],
         variables={
             "participant_name": application.nickname
@@ -103,7 +103,7 @@ def event_created(event):
     ecomail.send_email(
         emails["bis"],
         "Akce je zadána v BIS",
-        "142",
+        142,
         [event.main_organizer.email],
         variables={
             "created_by": event.created_by.get_name(),
@@ -121,7 +121,7 @@ def event_created(event):
     ecomail.send_email(
         emails["bis"],
         "Informace, že někdo založil akci pod mým ZČ",
-        "150",
+        150,
         recipients,
         variables={
             "event_name": event.name,
@@ -171,7 +171,7 @@ def events_summary():
         ecomail.send_email(
             emails["bis"],
             "Seznam zadaných akcí koordinátorovi",
-            "153",
+            153,
             [program.email],
             variables={
                 "new_events": events_to_list(new_events),
@@ -189,7 +189,7 @@ def event_not_closed_10_days():
         ecomail.send_email(
             emails["bis"],
             "Blížící se termín uzavření akce",
-            "209",
+            209,
             [organizer.email for organizer in organizers if organizer.email],
             variables={
                 "vokativs": ", ".join(organizer.vokativ for organizer in organizers),
@@ -218,7 +218,7 @@ def event_not_closed_20_days():
         ecomail.send_email(
             emails["bis"],
             "Akce je po termínu pro její uzavření",
-            "163",
+            163,
             [event.main_organizer.email],
             variables={
                 **PronounCategory.get_variables(event.main_organizer),
@@ -246,7 +246,7 @@ def event_end_participants_notification(event):
         ecomail.send_email(
             emails["movement"],
             "Děkujeme za účast na akci Hnutí",
-            "169",
+            169,
             [participant.email],
             variables={
                 "vokativ": participant.vokativ,
@@ -260,7 +260,7 @@ def event_attendance_or_photos_notification(event):
     ecomail.send_email(
         emails["bis"],
         "Nahrány fotky (či prezenčka) k akci",
-        "225",
+        225,
         [event.program.email],
         variables={"event": event.name},
     )
@@ -310,7 +310,7 @@ def qualification_about_to_end():
         ecomail.send_email(
             emails["education"],
             "Blíží se konec platnosti kvalifikace",
-            "155",
+            155,
             [qualification.user.email],
             variables={
                 "vokativ": qualification.user.vokativ,
@@ -355,7 +355,7 @@ def qualification_ends_this_year() -> None:
     ecomail.send_email(
         emails["bis"],
         "Seznam konzultantů, BRĎO konzultantů a instruktorů, kterým vyprší tento rok kvalifikace",
-        "255",
+        255,
         [emails["education"][1]],
         variables={"year": year, **formatted_lists},
     )
@@ -373,7 +373,7 @@ def qualification_ended():
         ecomail.send_email(
             emails["education"],
             "Konec platnosti kvalifikace",
-            "156",
+            156,
             [qualification.user.email],
             variables={
                 "vokativ": qualification.user.vokativ,
@@ -387,7 +387,7 @@ def qualification_created(qualification: Qualification):
     ecomail.send_email(
         emails["education"],
         "Udělení nové kvalifikace",
-        "157",
+        157,
         [qualification.user.email],
         variables={
             "consultant": qualification.approved_by.get_name(),
@@ -404,7 +404,7 @@ def opportunity_created(opportunity: Opportunity):
     ecomail.send_email(
         emails["volunteering"],
         "Příležitost je zadána v BISu",
-        "145",
+        145,
         [email],
         variables={
             "created_by": opportunity.contact_person.get_name(),
@@ -425,7 +425,7 @@ def opportunities_created_summary():
     ecomail.send_email(
         emails["bis"],
         "Seznam zadaných příležitostí",
-        "146",
+        146,
         [emails["volunteering"][1]],
         variables={"opportunities": f"<ul>{opportunities}</ul>"},
     )
@@ -433,8 +433,8 @@ def opportunities_created_summary():
 
 def fill_memberships(call):
     template_ids = {
-        1: "159",
-        2: "160",
+        1: 159,
+        2: 160,
     }
     subjects = {
         1: "Blížící se termín zadání členů HB do BIS",
@@ -461,7 +461,7 @@ def donation_confirmation(donor, confirmation, year):
     ecomail.send_email(
         emails["adoption"],
         "Poděkování a potvrzení o daru HB",
-        "167",
+        167,
         [donor.user.email],
         variables={
             "formal_vokativ": donor.formal_vokativ,
@@ -494,7 +494,7 @@ def send_opportunities_summary():
     ecomail.send_email(
         emails["education"],
         "Příležitosti",
-        "201",
+        201,
         # ["organizatori@brontosaurus.cz"],
         ["lamanchy@gmail.com"],
         variables={"opportunities": opportunities},
@@ -506,7 +506,7 @@ def feedback_created(feedback):
     ecomail.send_email(
         emails["bis"],
         "Nová zpětná vazba!",
-        "248",
+        248,
         [event.main_organizer.email],
         variables={
             "participant_name": feedback.name or "neznámý účastník",

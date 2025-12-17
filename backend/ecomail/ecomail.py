@@ -66,7 +66,7 @@ from ecomail.serializers import SendEmailSerializer
 def send_email(
     sender: tuple[str, str],
     subject: str,
-    template_id: str,
+    template_id: int,
     recipients: list[str],
     *,
     reply_to=None,
