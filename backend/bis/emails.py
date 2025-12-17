@@ -1,4 +1,5 @@
 from base64 import b64encode
+from collections import defaultdict
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
@@ -329,42 +330,33 @@ def qualification_ends_this_year() -> None:
     start = date(year, 1, 1)
     end = date(year, 12, 31)
 
-    qualifications = Qualification.get_expiring_qualifications(
-        to_date=end,
-        extra_filter={
-            "valid_till__gte": start,
-            "valid_till__lte": end,
-            "category_id__in": [
-                1,
-                2,
-                5,
-            ],  # the numbers come from the table categories_qualificationoncategory
-        },
-    )
+    filters = {
+        "valid_till__gte": start,
+        "valid_till__lte": end,
+        "category__slug__in": ["consultant", "consultant_for_kids", "instructor"],
+    }
 
-    categories = {"consultants": [], "kids_consultants": [], "instructors": []}
+    filtered = Qualification.objects.filter(**filters)
+    qualifications = Qualification.get_expiring_qualifications(end, filtered)
+
+    categories = defaultdict(list)
     for qualification in qualifications:
-        category_id = qualification.category_id
-        if category_id == 1:
-            categories["consultants"].append(qualification.user)
-        elif category_id == 2:
-            categories["instructors"].append(qualification.user)
-        elif category_id == 5:
-            categories["kids_consultants"].append(qualification.user)
+        categories[qualification.category.slug].append(qualification.user)
 
     formatted_lists = {}
     for category_name, people in categories.items():
-        list_items = "".join(
-            f"<li>{person.get_name(show_nickname=False)}, {person.email}</li>"
-            for person in people
+        formatted_lists[category_name] = make_ul(
+            [
+                f"{person.get_name(show_nickname=False)}, {person.email}"
+                for person in people
+            ]
         )
-        formatted_lists[category_name] = f"<ul>{list_items}</ul>"
 
     ecomail.send_email(
         emails["bis"],
         "Seznam konzultantů, BRĎO konzultantů a instruktorů, kterým vyprší tento rok kvalifikace",
         "255",
-        [emails["education"]],
+        [emails["education"][1]],
         variables={"year": year, **formatted_lists},
     )
 
