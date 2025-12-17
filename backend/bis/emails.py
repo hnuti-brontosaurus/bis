@@ -271,34 +271,19 @@ def get_consultants():
         valid_since__lte=date.today(),
         valid_till__gte=date.today(),
     )
-
-    consultants = [
-        qualification.user
-        for qualification in valid_qualifications.filter(category__slug="consultant")
-    ]
-    kids_consultants = [
-        qualification.user
-        for qualification in valid_qualifications.filter(
-            category__slug="consultant_for_kids"
-        )
-    ]
-
-    consultants = make_ul(
-        [
-            f"{consultant.get_name(show_nickname=False)}, {consultant.email}"
-            for consultant in consultants
-        ]
-    )
-    kids_consultants = make_ul(
-        [
-            f"{consultant.get_name(show_nickname=False)}, {consultant.email}"
-            for consultant in kids_consultants
-        ]
-    )
-
     return {
-        "consultants": f"{consultants}",
-        "kids_consultants": f"{kids_consultants}",
+        "consultants": make_ul(
+            qualification.user.get_proper_name()
+            for qualification in valid_qualifications.filter(
+                category__slug="consultant"
+            )
+        ),
+        "kids_consultants": make_ul(
+            qualification.user.get_proper_name()
+            for qualification in valid_qualifications.filter(
+                category__slug="consultant_for_kids"
+            )
+        ),
     }
 
 
@@ -336,33 +321,27 @@ def qualification_ends_this_year() -> None:
     start = date(year, 1, 1)
     end = date(year, 12, 31)
 
-    filters = {
-        "valid_till__gte": start,
-        "valid_till__lte": end,
-        "category__slug__in": ["consultant", "consultant_for_kids", "instructor"],
-    }
-
-    filtered = Qualification.objects.filter(**filters)
+    qualifications = Qualification.objects.filter(
+        valid_till__gte=start,
+        valid_till__lte=end,
+        category__slug__in=["consultant", "consultant_for_kids", "instructor"],
+    )
 
     categories = defaultdict(list)
-    for qualification in Qualification.get_expiring_qualifications(end, filtered):
+    for qualification in Qualification.get_expiring_qualifications(end, qualifications):
         categories[qualification.category.slug].append(qualification.user)
 
-    formatted_lists = {}
-    for category_name, people in categories.items():
-        formatted_lists[category_name] = make_ul(
-            [
-                f"{person.get_name(show_nickname=False)}, {person.email}"
-                for person in people
-            ]
-        )
+    categories = {
+        slug: make_ul(user.get_proper_name() for user in users)
+        for slug, users in categories.items()
+    }
 
     ecomail.send_email(
         emails["bis"],
         "Seznam konzultantů, BRĎO konzultantů a instruktorů, kterým vyprší tento rok kvalifikace",
         255,
         [emails["education"][1]],
-        variables={"year": year, **formatted_lists},
+        variables={"year": year, **categories},
     )
 
 
