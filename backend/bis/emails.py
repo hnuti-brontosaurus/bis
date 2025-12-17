@@ -271,6 +271,7 @@ def get_consultants():
         valid_since__lte=date.today(),
         valid_till__gte=date.today(),
     )
+
     consultants = [
         qualification.user
         for qualification in valid_qualifications.filter(category__slug="consultant")
@@ -281,18 +282,23 @@ def get_consultants():
             category__slug="consultant_for_kids"
         )
     ]
-    consultants = "".join(
-        f"<li>{consultant.get_name(show_nickname=False)}, {consultant.email}</li>"
-        for consultant in consultants
+
+    consultants = make_ul(
+        [
+            f"{consultant.get_name(show_nickname=False)}, {consultant.email}"
+            for consultant in consultants
+        ]
     )
-    kids_consultants = "".join(
-        f"<li>{consultant.get_name(show_nickname=False)}, {consultant.email}</li>"
-        for consultant in kids_consultants
+    kids_consultants = make_ul(
+        [
+            f"{consultant.get_name(show_nickname=False)}, {consultant.email}"
+            for consultant in kids_consultants
+        ]
     )
 
     return {
-        "consultants": f"<ul>{consultants}</ul>",
-        "kids_consultants": f"<ul>{kids_consultants}</ul>",
+        "consultants": f"{consultants}",
+        "kids_consultants": f"{kids_consultants}",
     }
 
 
@@ -338,10 +344,9 @@ def qualification_ends_this_year() -> None:
     }
 
     filtered = Qualification.objects.filter(**filters)
-    qualifications = Qualification.get_expiring_qualifications(end, filtered)
 
     categories = defaultdict(list)
-    for qualification in qualifications:
+    for qualification in Qualification.get_expiring_qualifications(end, filtered):
         categories[qualification.category.slug].append(qualification.user)
 
     formatted_lists = {}

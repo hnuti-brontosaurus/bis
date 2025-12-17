@@ -300,6 +300,9 @@ def make_a(content, link):
 
 
 def make_ul(data):
+    if not data:
+        return ""
+
     data = "".join(f"<li>{item}</li>" for item in data)
     return mark_safe(f"<ul>{data}</ul>")
 
