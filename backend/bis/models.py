@@ -347,6 +347,14 @@ class User(SearchMixin, AbstractBaseUser):
         return not self.roles.exclude(slug="any").exists()
 
     @cached_property
+    def is_chef(self):
+        return hasattr(self, "chef")
+
+    @cached_property
+    def is_editor(self):
+        return self.is_chef and self.chef.is_editor
+
+    @cached_property
     def can_see_all(self):
         return (
             self.is_superuser

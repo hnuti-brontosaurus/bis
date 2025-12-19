@@ -71,6 +71,9 @@ class Permissions:
     def is_game_book(self):
         return self.model._meta.app_label in ["game_book", "game_book_categories"]
 
+    def is_cookbook(self):
+        return self.model._meta.app_label in ["cookbook"]
+
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():
             return queryset
@@ -81,16 +84,14 @@ class Permissions:
         ]:
             return queryset
 
-        queryset = self.model.filter_queryset(queryset, self)
-
-        return queryset
+        return self.model.filter_queryset(queryset, self)
 
     def has_view_permission(self, obj=None):
         # individual objects are filtered using get_queryset,
         # this is used only for disabling whole admin model
         if self.source == "frontend":
             return True
-        if self.is_game_book():
+        if self.is_game_book() or self.is_cookbook():
             return False
 
         if self.model in [

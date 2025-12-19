@@ -21,6 +21,7 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
+from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from django.core.management.base import BaseCommand
 from game_book_categories.models import (
     GameLengthCategory,
@@ -61,6 +62,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.create_bis_categories()
         self.create_game_book_categories()
+        self.create_cookbook_categories()
 
     def create_bis_categories(self):
         DietCategory.objects.update_or_create(
@@ -1020,3 +1022,25 @@ class Command(BaseCommand):
                 description="Velké množství či velmi specifický materiál",
             ),
         )
+
+    def create_cookbook_categories(self):
+        difficulties = [
+            ("trivial", "triviální"),
+            ("simple", "jednoduchá"),
+            ("medium", "střední"),
+            ("hard", "složitá"),
+        ]
+        for i, (slug, name) in enumerate(difficulties):
+            RecipeDifficulty.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )
+
+        tags = [
+            ("one_pot", "Kotlíková"),
+            ("gluten_free", "Bez lepku"),
+            ("sweets", "Cukroví"),
+        ]
+        for i, (slug, name) in enumerate(tags):
+            RecipeTag.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )

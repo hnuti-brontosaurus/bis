@@ -36,6 +36,8 @@ generic:
   sent_at: Odesláno
   data: Data
   is_active: Je aktivní?
+  is_public: Zveřejněno?
+
 
 admin:
   header: BIS - Brontosauří informační systém

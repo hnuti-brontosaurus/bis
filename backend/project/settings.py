@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "game_book",
     "game_book_categories",
+    "cookbook",
     "django_bootstrap5",
     "django_cleanup.apps.CleanupConfig",  # needs to be last
 ]

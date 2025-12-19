@@ -783,3 +783,84 @@ MaterialRequirementCategory:
 OrganizersNumberCategory:
   name: Kategorie početu orgů pro uvedení
 
+# --------------------------------------------------------------------------------
+
+RecipeDifficulty:
+  name: Kategorie obtížnosti receptů
+RecipeTag:
+  name: Tag
+  name_plural: Tagy
+Chef:
+  name: Kuchařstvo
+  fields:
+    is_editor: Editor?
+Unit:
+  name: Jednotka
+  name_plural: Jednotky
+  fields:
+    of: Čeho
+Ingredient:
+  name: Ingredience
+  fields:
+    g_per_liter: gramy na litr
+    g_per_piece: gramy na kus
+    state: Konzistence
+Recipe:
+  name: Recept
+  name_plural: Recepty
+  fields:
+    chef: Kuchařstvo
+    difficulty: Náročnost
+    intro: Úvod
+    sources: Zdroje
+    tags: Tagy
+
+
+
+RecipeIngredient:
+  name: Ingredience receptu
+  fields:
+    amount: Množství
+    ingredient: Ingredience
+    is_optional: Volitelné?
+    recipe: Recept
+    unit: Jednotka
+RecipeStep:
+  name: Krok receptu
+  name_plural: Kroky receptu
+  fields:
+    recipe: Recept
+    is_optional: Volitelný?
+RecipeTip:
+  name: Tip k receptu
+  name_plural: Tipy k receptu
+  fields:
+    recipe: Recept
+RecipeComment:
+  name: Komentář receptu
+  name_plural: Komentáře receptu
+  fields:
+    recipe: Recept
+Menu:
+  name: Jídelníček
+  name_plural: Jídelníčky
+  fields:
+    is_shared: Sdíleno?
+    is_starred: Ohvězdičkováno?
+
+MenuRecipe:
+  name: Recept jídelníčku
+  name_plural: Recepty jídelníčku
+  fields:
+    menu: Jídelníček
+    original: Originální recept
+    served_at: Servírováno
+
+MenuRecipeIngredient:
+  name: Ingredience receptu jídelníčku
+  fields:
+    amount: Množství
+    ingredient: Ingredience
+    is_used: Použito?
+    menu_recipe: Recept
+    unit: Jednotka
