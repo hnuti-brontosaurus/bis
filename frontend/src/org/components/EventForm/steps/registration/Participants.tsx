@@ -21,12 +21,12 @@ import { FC, useState } from 'react'
 import { FaTrash as Bin, FaUserEdit as EditUser } from 'react-icons/fa'
 import colors from 'styles/colors.module.scss'
 import { formatAddress, formatDateTime } from 'utils/helpers'
+import { ExportParticipantsButton } from 'org/components/ExportParticipantsButton'
 import { ApplicationStates } from '../ParticipantsStep'
 import styles from '../ParticipantsStep.module.scss'
 import { BehaviourIssuesTooltip } from './BehaviourIssuesTooltip'
 import { ShowApplicationModal } from './ShowApplicationModal'
 import { EmailListModal } from './EmailListModal'
-import { useExportParticipantsList } from './useExportParticipantsList'
 import type * as original from 'app/services/testApi'
 
 export const Participants: FC<{
@@ -83,9 +83,6 @@ export const Participants: FC<{
   const [highLightedRow, setHighlightedRow] = useState<string>()
 
   useShowApiErrorMessage(patchEventStatus.error)
-
-  const [exportParticipantsList, { isLoading: isExportLoading }] =
-    useExportParticipantsList()
 
   const addParticipant = async (newParticipantId: string) => {
     let newParticipants: string[] = []
@@ -280,32 +277,16 @@ export const Participants: FC<{
 
       <h2>Účastníci</h2>
       <div className={styles.buttonsContainer}>
-        <Button
-          secondary
-          small
-          type="button"
-          onClick={() => {
-            exportParticipantsList({ eventId, format: 'xlsx' })
-          }}
-          isLoading={isExportLoading}
-        >
+        <ExportParticipantsButton eventId={eventId} format="xlsx">
           Exportovat do excelu
-        </Button>
+        </ExportParticipantsButton>
         {/* TODO It would be awesome if import and export use excel in the same format */}
         {/* <div className={styles.excelButtons}>
           <ImportParticipants onConfirm={handleSaveImportedParticipants} />
         </div> */}
-        <Button
-          secondary
-          small
-          type="button"
-          onClick={() => {
-            exportParticipantsList({ eventId, format: 'pdf' })
-          }}
-          isLoading={isExportLoading}
-        >
+        <ExportParticipantsButton eventId={eventId} format="pdf">
           Tisknout prezenční listinu
-        </Button>
+        </ExportParticipantsButton>
         {participants && participants?.results?.length > 0 && (
           <Button
             secondary
