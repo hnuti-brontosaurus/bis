@@ -37,6 +37,7 @@ import {
   sortOrder,
   withOverwriteArray,
 } from 'utils/helpers'
+import { ExportParticipantsButton } from 'org/components/ExportParticipantsButton'
 import styles from './ViewEvent.module.scss'
 
 export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
@@ -237,14 +238,21 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 )}
               </>
             )}
+            {event.is_archived && (
+              <ExportParticipantsButton eventId={eventId} format="xlsx">
+                Exportovat účastníky
+              </ExportParticipantsButton>
+            )}
             {event.feedback_form && (
               <>
                 <ButtonLink secondary to={`/org/akce/${eventId}/zpetna_vazba`}>
                   <FaThumbsUp /> zpětné vazby
                 </ButtonLink>
-                <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
-                  <FaRegEye /> zpětná vazba
-                </ButtonLink>
+                {!event.is_archived && (
+                  <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
+                    <FaRegEye /> zpětná vazba
+                  </ButtonLink>
+                )}
               </>
             )}
             {!event.is_archived && (
