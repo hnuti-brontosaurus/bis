@@ -242,9 +242,11 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <ButtonLink secondary to={`/org/akce/${eventId}/zpetna_vazba`}>
                   <FaThumbsUp /> zpětné vazby
                 </ButtonLink>
-                <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
-                  <FaRegEye /> zpětná vazba
-                </ButtonLink>
+                {!event.is_archived && (
+                  <ButtonLink secondary to={`/akce/${eventId}/zpetna_vazba`}>
+                    <FaRegEye /> zpětná vazba
+                  </ButtonLink>
+                )}
               </>
             )}
             {!event.is_archived && (
