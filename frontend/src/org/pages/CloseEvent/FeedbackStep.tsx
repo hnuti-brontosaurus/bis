@@ -48,7 +48,6 @@ export const FeedbackStep: FC<Props> = ({
             </FullSizeElement>
           </FormSubsection>
           <FormSubsection header="Text po odeslání" required>
-            <InfoBox>{formTexts.feedback_form.after_submit_text.help}</InfoBox>
             <FullSizeElement>
               <FormInputError>
                 <textarea
