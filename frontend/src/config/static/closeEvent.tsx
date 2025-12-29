@@ -15,7 +15,7 @@ export const form = {
     },
     after_submit_text: {
       initial:
-        'Moc děkujeme za vyplnění.\nNa akci můžeš zavzpomínat s fotkami (VLOŽ ODKAZ NA FOTKY) a těšíme se na viděnou na další akci Hnutí Brontosaurus!\nTvoji organizátoři',
+        'Moc děkujeme za vyplnění. Tvoje zpětná vazba nám pomůže dělat stále lepší akce. Těšíme se na viděnou na další akci Hnutí Brontosaurus!\nTvoji organizátoři',
       help: 'Tento text dojde účastníkům po vyplnění zpětné vazby. Doporučujeme jako odměnu přidat např. odkaz na fotky z akce, adresář či jiné drobnosti.',
     },
   },
