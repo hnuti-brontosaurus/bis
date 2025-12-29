@@ -119,9 +119,7 @@ export const EventFeedbackForm: FC<{
 
   const showMessage = useShowMessage()
   const handleSubmit = methods.handleSubmit(
-    data => (
-      console.log(data), onSubmit(form2payload(data, feedbackForm.inquiries))
-    ),
+    data => onSubmit(form2payload(data, feedbackForm.inquiries)),
     errors =>
       showMessage({
         type: 'error',
