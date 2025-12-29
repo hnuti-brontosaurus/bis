@@ -7,6 +7,7 @@ import {
   FormInputError,
   FormSection,
   FormSectionGroup,
+  InfoBox,
   InlineSection,
   Label,
 } from 'components'
@@ -140,6 +141,10 @@ export const EventFeedbackForm: FC<{
         <form onSubmit={handleSubmit} onReset={onCancel}>
           <FormSectionGroup>
             <FormSection header="Osobní údaje">
+              <InfoBox>
+                Chceš-li zůstat anonymní, smaž jméno a e-mail. Bez nich tě ale
+                nemůžeme zpětně kontaktovat (např. kvůli dalšímu zapojení).
+              </InfoBox>
               <InlineSection>
                 <Label>Jméno</Label>
                 <FormInputError>
