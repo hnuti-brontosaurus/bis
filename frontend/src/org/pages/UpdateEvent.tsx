@@ -314,7 +314,13 @@ export const UpdateEvent = () => {
 export const event2payload = (
   event: Optional<
     FullEvent,
-    'id' | 'start' | 'start_time' | 'end' | 'record' | 'is_canceled'
+    | 'id'
+    | 'start'
+    | 'start_time'
+    | 'end'
+    | 'record'
+    | 'is_canceled'
+    | 'category'
   >,
 ): Partial<InitialEventData> => {
   const [main_image, ...otherImages] = event.images

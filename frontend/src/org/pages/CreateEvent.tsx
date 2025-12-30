@@ -91,7 +91,11 @@ export const CreateEvent = () => {
     eventToCloneFixed.feedback_form = omit(eventToCloneFixed.feedback_form, [
       'sent_at',
     ])
-    return event2payload(eventToCloneFixed)
+    return event2payload(
+      eventToCloneFixed.category.is_active
+        ? eventToCloneFixed
+        : omit(eventToCloneFixed, 'category'),
+    )
   }, [currentUser, eventToClone])
 
   if (eventToCloneError) return <Error error={eventToCloneError} />
