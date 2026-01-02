@@ -117,6 +117,8 @@ export const EventFeedbackForm: FC<{
 
   usePersistForm('feedback', String(id), watch)
 
+  console.log(feedbackForm.inquiries)
+
   const showMessage = useShowMessage()
   const handleSubmit = methods.handleSubmit(
     data => onSubmit(form2payload(data, feedbackForm.inquiries)),
@@ -124,7 +126,16 @@ export const EventFeedbackForm: FC<{
       showMessage({
         type: 'error',
         message: 'Opravte, prosím, chyby ve formuláři.',
-        detail: validationErrors2Message(errors, {}, translations.generic),
+        detail: validationErrors2Message(
+          errors,
+          Object.fromEntries(
+            feedbackForm.inquiries.map(inquiry => [
+              `replies.${inquiry.id}.reply`,
+              inquiry.inquiry,
+            ]),
+          ),
+          translations.generic,
+        ),
       }),
   )
 
