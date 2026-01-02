@@ -21,6 +21,7 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
+from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from django.core.management.base import BaseCommand
 from game_book_categories.models import (
     GameLengthCategory,
@@ -52,7 +53,8 @@ class Command(BaseCommand):
             name = name_prefix + _(f"event_categories.{slug}")
             if isinstance(value, int):
                 EventCategory.objects.update_or_create(
-                    slug=slug, defaults=dict(name=name, order=value)
+                    slug=slug,
+                    defaults=dict(name=name, order=value + 100, is_active=True),
                 )
             else:
                 self.create_event_categories(value, slug, name)
@@ -60,6 +62,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.create_bis_categories()
         self.create_game_book_categories()
+        self.create_cookbook_categories()
 
     def create_bis_categories(self):
         DietCategory.objects.update_or_create(
@@ -257,6 +260,54 @@ class Command(BaseCommand):
         }
 
         self.create_event_categories(event_categories)
+
+        event_categories = {
+            "volunteering": {
+                "name": "dobrovolnická akce",
+                "description": "akce, kde byla dobrovolnická činnost bez ohledu na její rozsah",
+            },
+            "section_meeting": {
+                "name": "oddílová schůzka",
+                "description": "pravidelná dětská oddílová činnost BRĎO",
+            },
+            "section_event": {
+                "name": "oddílová akce",
+                "description": "BRĎO výpravy, výlety, dětské tábory",
+            },
+            "internal": {
+                "name": "interní akce",
+                "description": "plánovačky, valné hromady článků",
+            },
+            "experiential": {
+                "name": "zážitková akce",
+                "description": "akce zcela bez dobrovolnické činnosti",
+            },
+            "public_educational": {
+                "name": "vzdělávací pro veřejnost",
+                "description": "včetně vzdělávacích klubů např. klubové přednášky, workshopy, promítání na envirotémata… Vzdělávání Akce příroda např. semináře typu OSF",
+            },
+            "internal_educational": {
+                "name": "vzdělávací pro organizátory HB",
+                "description": "OHB, Cestičky, malá OHB, BRĎO kurzy, vzdělávání pro ústředí",
+            },
+            "evp": {
+                "name": "výukový program (EVP)",
+                "description": "pouze Environmentální vzdělávací přednášky EVP",
+            },
+            "presentation": {
+                "name": "prezentační akce",
+                "description": "Ekostany, výstavy pro veřejnost",
+            },
+        }
+        for i, (slug, defaults) in enumerate(event_categories.items()):
+            EventCategory.objects.update_or_create(
+                slug=slug,
+                defaults={
+                    **defaults,
+                    "order": i,
+                    "is_active": False,
+                },
+            )
 
         EventTag.objects.update_or_create(
             slug="retro_event",
@@ -971,3 +1022,25 @@ class Command(BaseCommand):
                 description="Velké množství či velmi specifický materiál",
             ),
         )
+
+    def create_cookbook_categories(self):
+        difficulties = [
+            ("trivial", "triviální"),
+            ("simple", "jednoduchá"),
+            ("medium", "střední"),
+            ("hard", "složitá"),
+        ]
+        for i, (slug, name) in enumerate(difficulties):
+            RecipeDifficulty.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )
+
+        tags = [
+            ("one_pot", "Kotlíková"),
+            ("gluten_free", "Bez lepku"),
+            ("sweets", "Cukroví"),
+        ]
+        for i, (slug, name) in enumerate(tags):
+            RecipeTag.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )

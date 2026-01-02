@@ -1,9 +1,11 @@
+from contextlib import nullcontext
+
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
-from bis.helpers import AgeStats
+from bis.helpers import AgeStats, paused_validation
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
@@ -41,6 +43,9 @@ class EventPropagationImageAdmin(
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
+
+        if self.saving_raw(request):
+            return formset
 
         class New1(formset):
             def clean(_self):
@@ -239,6 +244,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "is_attendance_list_required",
         ("location__region", MultiSelectRelatedDropdownFilter),
         ("main_organizer__birthday", EventStatsDateFilter),
+        ("administration_units", MultiSelectRelatedDropdownFilter),
     ]
 
     def get_actions(self, request):
@@ -257,12 +263,12 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "get_young_percentage",
         "get_total_hours_worked",
         "program",
-        "category",
-        "get_tags",
-        "intended_for",
         "is_shown_on_web",
         "is_canceled",
         "is_closed",
+        "category",
+        "get_tags",
+        "intended_for",
     )
     list_select_related = (
         "location",
@@ -374,8 +380,14 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         return F1
 
     def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
-        form.instance.save()
+        if request.method == "POST" and "_save_raw" in request.POST:
+            guard = paused_validation
+        else:
+            guard = nullcontext
+
+        with guard():
+            super().save_related(request, form, formsets, change)
+            form.instance.save()
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if object_id:
@@ -408,3 +420,10 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 return export_files(obj)
 
         return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def response_change(self, request, obj):
+        if self.saving_raw(request):
+            self.message_user(request, "Uloženo bez validace")
+            return HttpResponseRedirect(".")
+
+        return super().response_change(request, obj)

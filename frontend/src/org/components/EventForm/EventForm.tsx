@@ -519,7 +519,7 @@ export const EventForm: FC<{
         },
       ]}
     >
-      <Step name="druh akce" hasError={hasFormError(methods.group)}>
+      <Step name="délka akce" hasError={hasFormError(methods.group)}>
         <EventGroupStep methods={methods.group} />
       </Step>
       <Step name="základní info" hasError={hasFormError(methods.basicInfo)}>

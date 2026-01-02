@@ -64,10 +64,10 @@ from ecomail.serializers import SendEmailSerializer
 
 
 def send_email(
-    sender,
-    subject,
-    template_id,
-    recipients,
+    sender: tuple[str, str],
+    subject: str,
+    template_id: int,
+    recipients: list[str],
     *,
     reply_to=None,
     variables=None,

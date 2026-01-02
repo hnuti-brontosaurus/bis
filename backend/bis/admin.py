@@ -50,11 +50,13 @@ from bis.models import (
     UserEmail,
 )
 from bis.permissions import Permissions
-from categories.models import MembershipCategory, PronounCategory
+from categories.models import MembershipCategory, PronounCategory, QualificationCategory
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, action
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
 from django.contrib.auth.models import Group
 from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
@@ -127,6 +129,7 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
 
     list_filter = (
         "program",
+        "is_traditional",
         "for_beginners",
         "is_full",
         "is_unexplored",
@@ -265,6 +268,7 @@ def export_emails(view, request, queryset):
 
 @admin.register(User)
 class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin):
+    change_form_template = "bis/user_change_form.html"
     actions = [
         export_to_xlsx,
         export_emails,
@@ -283,22 +287,28 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
         return actions
 
-    readonly_fields = (
-        "is_superuser",
-        "last_login",
-        "date_joined",
-        "get_all_emails",
-        "get_events_where_was_organizer",
-        "get_participated_in_events",
-        "roles",
-        "get_donor",
-        "get_board_member_of",
-        "get_token",
-        "last_after_event_email",
-        "is_contact_information_verified",
-        "get_membership_actions",
-        "create_membership",
-    )
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = (
+            "is_superuser",
+            "last_login",
+            "date_joined",
+            "get_all_emails",
+            "get_events_where_was_organizer",
+            "get_participated_in_events",
+            "roles",
+            "get_donor",
+            "get_board_member_of",
+            "get_token",
+            "last_after_event_email",
+            "is_contact_information_verified",
+            "get_membership_actions",
+            "create_membership",
+        )
+        if not request.user.is_superuser and not request.user.is_office_worker:
+            readonly_fields += ("behaviour_issues",)
+
+        return readonly_fields
+
     exclude = "groups", "user_permissions", "password", "is_superuser", "_str"
 
     fieldsets = (
@@ -527,6 +537,21 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         return form
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if object_id and "_add_access" in request.POST:
+            to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+            obj = self.get_object(request, unquote(object_id), to_field)
+            Qualification.objects.get_or_create(
+                user=obj,
+                category=QualificationCategory.objects.get(
+                    slug="organizer_without_education"
+                ),
+                defaults=dict(
+                    valid_since=today(),
+                    approved_by=request.user,
+                ),
+            )
+            self.message_user(request, "Přístup přidán")
+            return HttpResponseRedirect(".")
         if response := Membership.process_action(request):
             return response
         return super().changeform_view(request, object_id, form_url, extra_context)
@@ -676,6 +701,7 @@ class MembershipAdminAddForm(forms.ModelForm):
                         raise ValidationError(str(e))
 
                     if cleaned_data["birthday"] != cleaned_data["user"].birthday:
+                        ThrottleLog.add("guess_birthday", key)
                         raise ValidationError(
                             {
                                 "birthday": "Uživatel v BISu existuje, ale jeho datum narození se neshoduje se "

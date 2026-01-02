@@ -131,8 +131,10 @@ class EventGroupCategory(Model):
 @translate_model
 class EventCategory(Model):
     name = CharField(max_length=63)
+    description = TextField(blank=True)
     slug = SlugField(unique=True)
     order = PositiveSmallIntegerField(default=0)
+    is_active = BooleanField(default=True)
 
     class Meta:
         ordering = ("order",)

@@ -117,7 +117,6 @@ class RawRangeNumericFilter(ListFilter):
 class CustomDateRangeFilter(DateRangeFilter):
     custom_field_path = None
     custom_title = None
-    annotate_fn = None
     cache_name = None
     single_date_only = False
 
@@ -127,12 +126,6 @@ class CustomDateRangeFilter(DateRangeFilter):
         super().__init__(field, request, params, model, model_admin, field_path)
         if self.custom_title:
             self.title = self.custom_title
-
-    def queryset(self, request, queryset):
-        if self.annotate_fn:
-            queryset = queryset.annotate(**{self.custom_field_path: self.annotate_fn})
-
-        return super(CustomDateRangeFilter, self).queryset(request, queryset)
 
     def _make_query_filter(self, request, validated_data):
         query_filter = super()._make_query_filter(request, validated_data)
@@ -236,6 +229,14 @@ def list_filter_extra_title(custom_title):
 def list_filter_extra_text(custom_title):
     class Filter(TextOnlyFilter):
         template = "admin/text_filter.html"
+        title = custom_title
+
+    return Filter
+
+
+def list_filter_extra_note(custom_title):
+    class Filter(TextOnlyFilter):
+        template = "admin/note_filter.html"
         title = custom_title
 
     return Filter

@@ -8,6 +8,7 @@ from bis.admin_filters import (
     LastDonorsDonationFilter,
     RecurringDonorWhoStoppedFilter,
 )
+from bis.admin_helpers import list_filter_extra_note, list_filter_extra_title
 from bis.admin_permissions import PermissionMixin
 from bis.emails import donation_confirmation
 from bis.permissions import Permissions
@@ -16,6 +17,7 @@ from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse
 from donations.helpers import upload_bank_records
@@ -134,11 +136,23 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         "has_recurrent_donation",
         AutocompleteFilterFactory("Podporující RC", "regional_center_support"),
         AutocompleteFilterFactory("Podporující ZČ", "basic_section_support"),
+        list_filter_extra_title("Dary"),
         ("donations__donation_source", MultiSelectRelatedDropdownFilter),
+        list_filter_extra_note("Dary jen z vybraných zdrojů"),
         ("donations__donated_at", FirstDonorsDonationFilter),
+        list_filter_extra_note("První dan dárce (z vybraných zdrojů) z daného období"),
         ("donations__donated_at", LastDonorsDonationFilter),
+        list_filter_extra_note(
+            "Poslední dan dárce (z vybraných zdrojů) z daného období"
+        ),
         ("donations__donated_at", DonationSumRangeFilter),
+        list_filter_extra_note(
+            "Dary pro celkovou sumu (z vybraných zdrojů) jen z daného období"
+        ),
         ("donations__amount", DonationSumAmountFilter),
+        list_filter_extra_note(
+            "Suma darů (z vybraných zdrojů) (z vybraného období) z daného rozmezí"
+        ),
         RecurringDonorWhoStoppedFilter,
     )
 
@@ -158,18 +172,52 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         super().save_formset(request, form, formset, change)
 
     def get_queryset(self, request):
-        return (
+        queryset = (
             super().get_queryset(request).prefetch_related("donations__donation_source")
         )
+        donations_source_filter = MultiSelectRelatedDropdownFilter(
+            field=Donation.donation_source.field,
+            request=request,
+            params=dict(request.GET.items()),
+            model=self.model,
+            model_admin=self,
+            field_path="donations__donation_source",
+        )
+        annotate_filter = None
+        if source_ids := donations_source_filter.used_parameters.values():
+            source_ids = list(source_ids)[0]
+            annotate_filter = Q(donations__donation_source_id__in=source_ids)
+
+        queryset = queryset.annotate(
+            first_donation=Min("donations__donated_at", filter=annotate_filter)
+        )
+        queryset = queryset.annotate(
+            last_donation=Max("donations__donated_at", filter=annotate_filter)
+        )
+        queryset = queryset.annotate(
+            donation_sources=ArrayAgg(
+                "donations__donation_source__name",
+                distinct=True,
+                filter=annotate_filter,
+            )
+        )
+        donations_sum_filter = DonationSumRangeFilter(
+            field=Donation.donated_at,
+            request=request,
+            params=dict(request.GET.items()),
+            model=self.model,
+            model_admin=self,
+            field_path="donations__donated_at",
+        )
+        return donations_sum_filter.annotate(request, queryset, annotate_filter)
 
     @admin.display(description="Suma darů")
     def get_donations_sum(self, obj):
-        return sum([donation.amount for donation in obj.donations.all()])
+        return obj.donations_sum
 
     @admin.display(description="Poslední dar")
     def get_last_donation(self, obj):
-        if obj.donations.all():
-            return list(obj.donations.all())[-1].donated_at
+        return obj.last_donation
 
     @admin.display(description="E-mail")
     def get_user_email(self, obj):
@@ -185,7 +233,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
 
     @admin.display(description="Darovací kampaně")
     def get_donations_sources(self, obj):
-        return list(set(donation.donation_source for donation in obj.donations.all()))
+        return obj.donation_sources
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if object_id:

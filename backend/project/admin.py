@@ -20,10 +20,11 @@ class MyAdminSite(admin.AdminSite):
             "bis",
             "opportunities",
             "donations",
-            "game_book",
             "other",
             "categories",
             "regions",
+            "cookbook",
+            "game_book",
             "game_book_categories",
         ]
         list.sort(key=lambda value: order.index(value["app_label"]))

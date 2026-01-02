@@ -1,0 +1,15 @@
+@import "base.css";
+
+
+
+/*.centered-menu .v-overflow {*/
+/*  justify-content: center !important;*/
+/*}*/
+
+.n-page-header {
+    align-items: baseline;
+}
+
+/*[data-col-key="__n_expand__"] {*/
+/*  padding: 5px !important;*/
+/*}*/

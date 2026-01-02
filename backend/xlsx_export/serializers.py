@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
+from django.db.models import Count, F, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor
 from event.models import (
     Event,
@@ -7,11 +11,20 @@ from event.models import (
     EventPropagation,
     EventRecord,
     EventRegistration,
+    VIPEventPropagation,
 )
 from feedback.models import EventFeedback, Inquiry
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
-from rest_framework.fields import ReadOnlyField, SerializerMethodField
+from rest_framework.fields import (
+    CharField,
+    DateField,
+    DateTimeField,
+    IntegerField,
+    ListField,
+    ReadOnlyField,
+    SerializerMethodField,
+)
 from rest_framework.relations import StringRelatedField
 from rest_framework.serializers import ModelSerializer
 
@@ -123,6 +136,10 @@ class DonorExportSerializer(ModelSerializer):
     variable_symbols = StringRelatedField(many=True)
     regional_center_support = StringRelatedField()
     basic_section_support = StringRelatedField()
+    donations_sum = IntegerField()
+    first_donation = DateField()
+    last_donation = DateField()
+    donation_sources = ListField()
 
     @staticmethod
     def get_related(queryset):
@@ -160,6 +177,10 @@ class DonorExportSerializer(ModelSerializer):
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
+            "donations_sum",
+            "first_donation",
+            "last_donation",
+            "donation_sources",
         )
 
 
@@ -242,6 +263,17 @@ class PropagationExportSerializer(ModelSerializer):
         )
 
 
+class VIPPropagationExportSerializer(ModelSerializer):
+    class Meta:
+        model = VIPEventPropagation
+        fields = (
+            "goals_of_event",
+            "program",
+            "short_invitation_text",
+            "rover_propagation",
+        )
+
+
 class RegistrationExportSerializer(ModelSerializer):
     class Meta:
         model = EventRegistration
@@ -295,6 +327,7 @@ class EventExportSerializer(ModelSerializer):
     location = EventLocationExportSerializer()
     finance = FinanceExportSerializer()
     propagation = PropagationExportSerializer()
+    vip_propagation = VIPPropagationExportSerializer()
     registration = RegistrationExportSerializer()
     record = RecordExportSerializer()
     location_name = SerializerMethodField(label="Místo konání")
@@ -314,6 +347,7 @@ class EventExportSerializer(ModelSerializer):
             "finance",
             "finance__grant_category",
             "propagation",
+            "vip_propagation",
             "intended_for",
             "registration",
             "record",
@@ -355,6 +389,7 @@ class EventExportSerializer(ModelSerializer):
             "internal_note",
             "finance",
             "propagation",
+            "vip_propagation",
             "registration",
         )
 
@@ -518,13 +553,56 @@ class EventApplicationExportSerializer(ModelSerializer):
 
 class EventFeedbackExportSerializer(ModelSerializer):
     event = StringRelatedField(label="Akce")
+    event_count_till_this__stat = IntegerField(label="Kolikátá má akce?")
+    event_count_past_year__stat = IntegerField(
+        label="Kolikátá má akce za poslední rok?"
+    )
+    user_region__stat = CharField(label="Kraj účastníka")
 
     @staticmethod
     def get_related(queryset):
+        event_count_till_this = (
+            Event.objects.filter(
+                record__participants__all_emails__email=OuterRef("email"),
+                end__lte=OuterRef("event__end"),
+            )
+            .values("record__participants__id")
+            .annotate(count=Count("id"))
+            .values("count")
+        )
+        event_count_past_year = (
+            Event.objects.filter(
+                record__participants__all_emails__email=OuterRef("email"),
+                end__lte=OuterRef("event__end"),
+                end__gte=OuterRef("event__end") - timedelta(days=365),
+            )
+            .values("record__participants__id")
+            .annotate(count=Count("id"))
+            .values("count")
+        )
         return (
-            queryset.select_related("event")
-            .prefetch_related("replies")
-            .order_by("event", "id")
+            (
+                queryset.select_related("event")
+                .prefetch_related("replies")
+                .order_by("event", "id")
+            )
+            .annotate(
+                event_count_till_this__stat=Coalesce(
+                    Subquery(event_count_till_this), Value(0)
+                )
+            )
+            .annotate(
+                event_count_past_year__stat=Coalesce(
+                    Subquery(event_count_past_year), Value(0)
+                )
+            )
+            .annotate(
+                user_region__stat=Subquery(
+                    User.objects.filter(all_emails__email=OuterRef("email")).values(
+                        "address__region__name"
+                    )
+                )
+            )
         )
 
     class Meta:
@@ -532,6 +610,9 @@ class EventFeedbackExportSerializer(ModelSerializer):
         fields = (
             "event_id",
             "event",
+            "event_count_till_this__stat",
+            "event_count_past_year__stat",
+            "user_region__stat",
             "name",
             "email",
             "created_at",

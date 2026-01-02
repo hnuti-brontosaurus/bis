@@ -12,6 +12,9 @@ local_settings.py
 /frontend/public/application.*
 /frontend/public/index.html
 /frontend/test/public
+/cookbook/.env.local
+/cookbook/dist
+/cookbook/node_modules
 dj_static
 /docker-compose/dev_exported_config.yaml
 
@@ -20,14 +23,14 @@ dj_static
 /venv
 /.dockerignore
 __pycache__
-package.json
-yarn.lock
+/package.json
+/yarn.lock
 
 /cypress/videos
 /cypress/screenshots
 
 /postgresqldata_test
-.env
+/.env
 
 /.idea
 /node_modules

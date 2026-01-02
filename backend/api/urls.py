@@ -5,6 +5,7 @@ urlpatterns = [
     path(f"auth/", include("api.auth.urls")),
     path(f"web/", include("api.web.urls")),
     path(f"categories/", include("api.categories.urls")),
+    path(f"cookbook/", include("api.cookbook.urls")),
     path(f"frontend/", include("api.frontend.urls")),
     path(f"manage/", include("api.manage.urls")),
     path(f"schema/", SpectacularAPIView.as_view(), name="schema"),

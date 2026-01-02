@@ -87,8 +87,11 @@ class AdministrationUnit(SearchMixin, Model):
         super().save(force_insert, force_update, using, update_fields)
 
     class Meta:
-        ordering = ("abbreviation",)
-        indexes = [Index(fields=["abbreviation"])]
+        ordering = (
+            "-existed_till",
+            "abbreviation",
+        )
+        indexes = [Index(fields=["-existed_till", "abbreviation"])]
 
     def __str__(self):
         return self.abbreviation

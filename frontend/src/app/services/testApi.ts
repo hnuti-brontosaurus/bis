@@ -2760,6 +2760,8 @@ export type EventCategory = {
   id: number
   name: string
   slug: string
+  is_active: boolean
+  description: string
 }
 export type PaginatedEventCategoryList = {
   count?: number
@@ -3288,8 +3290,9 @@ export type PatchedInquiryRead = {
   order?: number
 }
 export type Reply = {
-  inquiry: Inquiry
+  inquiry: number
   reply: string
+  value?: any
   data?: {
     [key: string]: any
   }

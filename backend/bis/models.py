@@ -347,6 +347,14 @@ class User(SearchMixin, AbstractBaseUser):
         return not self.roles.exclude(slug="any").exists()
 
     @cached_property
+    def is_chef(self):
+        return hasattr(self, "chef")
+
+    @cached_property
+    def is_editor(self):
+        return self.is_chef and self.chef.is_editor
+
+    @cached_property
     def can_see_all(self):
         return (
             self.is_superuser
@@ -561,6 +569,10 @@ class User(SearchMixin, AbstractBaseUser):
 
     def get_short_name(self):  # for admin
         return self.get_name()
+
+    def get_proper_name(self):
+        """Get a nicely looking and identifiable name"""
+        return f"{self.get_name(show_nickname=False)}, {self.email}"
 
     @admin.display(description="E-mailové adresy")
     def get_all_emails(self):
@@ -936,7 +948,8 @@ class Qualification(Model):
             category.slug for category in self.category.can_be_approved_with.all()
         ]
         if not (
-            self.approved_by.is_staff
+            self.category.slug == "organizer_without_education"
+            or self.approved_by.is_office_worker
             or self.approved_by.is_superuser
             or Qualification.user_has_required_qualification(
                 self.approved_by, approved_with
@@ -964,9 +977,11 @@ class Qualification(Model):
                     return True
 
     @classmethod
-    def get_expiring_qualifications(cls, to_date, extra_filter=None):
-        extra_filter = extra_filter or {}
-        for qualification in cls.objects.filter(valid_till=to_date, **extra_filter):
+    def get_expiring_qualifications(cls, to_date, queryset=None):
+        if queryset is None:
+            queryset = cls.objects.all()
+
+        for qualification in queryset:
             if not cls.user_has_required_qualification(
                 qualification.user,
                 [qualification.category.slug],

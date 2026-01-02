@@ -134,7 +134,7 @@ class XLSXWriter:
 
     def write_stats(self, model, header):
         stats_header = {
-            key: header[key[:-6]]
+            key: header.get(key[:-6], value)
             for key, value in header.items()
             if key.endswith("__stat")
         }
@@ -148,6 +148,8 @@ class XLSXWriter:
 
             extra_header = {
                 "event": header["event"],
+                "event_group": "Druh akce",
+                "event_category": "Typ akce",
                 "event_participants": "Počet účastníků",
                 "event_feedbacks": "Počet ZV",
             }
@@ -161,6 +163,8 @@ class XLSXWriter:
                 self.write_row(
                     {
                         "event": event.name,
+                        "event_group": event.group,
+                        "event_category": event.category,
                         "event_participants": hasattr(event, "record")
                         and event.record.get_participants_count()
                         or 0,
@@ -196,11 +200,13 @@ class XLSXWriter:
                 if isinstance(value, int):
                     stat = {"count": 1, "sum": value}
                 else:
+                    if not isinstance(value, list):
+                        value = [value]
                     stat = value
 
                 stat = Counter(stat)
-                self.stats["Dle akce"][item["event_id"]][key] += stat
-                self.stats["Dohromady"]["All"][key] += stat
+                self.stats["Dle akce"][item["event_id"]][key].update(stat)
+                self.stats["Dohromady"]["All"][key].update(stat)
 
     def get_fields(self, serializer, queryset):
         fields = serializer.child.get_fields()

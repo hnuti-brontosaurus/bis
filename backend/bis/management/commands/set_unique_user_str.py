@@ -1,32 +1,27 @@
+from collections import defaultdict
+
 from bis.models import User
 from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        data = {"": list(User.objects.all().select_related("address"))}
-        new_data = {}
-
-        f1 = lambda _: _.get_name()
-        f2 = lambda _: _.get_extended_name()
-
-        for f in [f1, f2]:
-            for key, value in data.items():
-                if len(value) > 1:
-                    for user in value:
-                        new_data.setdefault(f(user), []).append(user)
-
-                else:
-                    new_data[key] = value
-
-            new_data, data = data, new_data
-            new_data.clear()
-
         to_update = []
-        for key, value in data.items():
-            for user in value:
-                if user._str != key:
-                    user._str = key
+        data = defaultdict(list)
+
+        for user in User.objects.all().select_related("address"):
+            data[user.get_name(show_nickname=False)].append(user)
+
+        for users in data.values():
+            if len(users) == 1:
+                fn = lambda _: _.get_name()
+            else:
+                fn = lambda _: _.get_extended_name()
+
+            for user in users:
+                _str = fn(user)
+                if user._str != _str:
+                    user._str = _str
                     to_update.append(user)
 
         if to_update:

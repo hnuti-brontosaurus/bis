@@ -27,3 +27,15 @@ services:
       HOST: 0.0.0.0
       DEBUG: 1
       NODE_ENV: 'development'
+
+
+  cookbook:
+    restart: always
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    ports:
+      - 3001:3001
+    profiles:
+      - frontend
+      - dev
+    environment:
+      HOST: 0.0.0.0
