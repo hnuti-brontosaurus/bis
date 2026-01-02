@@ -49,11 +49,12 @@ class RecipeIngredientSerializer(ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = (
+            "id",
             "order",
             "ingredient",
             "unit",
             "amount",
-            "is_optional",
+            "is_required",
             "comment",
         )
 
@@ -62,9 +63,10 @@ class RecipeStepSerializer(ModelSerializer):
     class Meta:
         model = RecipeStep
         fields = (
+            "id",
             "name",
             "order",
-            "is_optional",
+            "is_required",
             "description",
             "photo",
         )
@@ -73,13 +75,13 @@ class RecipeStepSerializer(ModelSerializer):
 class RecipeTipSerializer(ModelSerializer):
     class Meta:
         model = RecipeTip
-        fields = ("name", "description")
+        fields = ("id", "name", "description")
 
 
 class RecipeCommentSerializer(ModelSerializer):
     class Meta:
         model = RecipeComment
-        fields = ("user_id", "created_at", "comment")
+        fields = ("id", "user_id", "created_at", "comment")
         read_only_fields = ("created_at",)
 
 
@@ -125,6 +127,7 @@ class MenuRecipeIngredientSerializer(ModelSerializer):
     class Meta:
         model = MenuRecipeIngredient
         fields = (
+            "id",
             "ingredient",
             "unit",
             "amount",
@@ -140,6 +143,7 @@ class MenuRecipeSerializer(ModelSerializer):
     class Meta:
         model = MenuRecipe
         fields = (
+            "id",
             "name",
             "original",
             "note",

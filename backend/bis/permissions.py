@@ -92,7 +92,7 @@ class Permissions:
         if self.source == "frontend":
             return True
         if self.is_game_book() or self.is_cookbook():
-            return False
+            return self.user.is_superuser
 
         if self.model in [
             BrontosaurusMovement,

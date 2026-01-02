@@ -29,11 +29,14 @@ class RecipeIngredient(BaseModel):
     )
     unit = ForeignKey(Unit, related_name="recipe_ingredients", on_delete=PROTECT)
     amount = DecimalField(max_digits=10, decimal_places=1)
-    is_optional = BooleanField(default=False)
+    is_required = BooleanField(default=True)
     comment = TextField(blank=True)
 
     def __str__(self):
         return f"{self.ingredient.name} ({self.amount} {self.unit})"
+
+    class Meta:
+        ordering = ("order",)
 
 
 @translate_model
@@ -41,9 +44,12 @@ class RecipeStep(BaseModel):
     recipe = ForeignKey(Recipe, related_name="steps", on_delete=PROTECT)
     name = CharField(max_length=63)
     order = PositiveSmallIntegerField()
-    is_optional = BooleanField(default=False)
+    is_required = BooleanField(default=True)
     description = TextField(blank=True)
     photo = ThumbnailImageField(upload_to="recipe_steps", blank=True, null=True)
+
+    class Meta:
+        ordering = ("order",)
 
 
 @translate_model

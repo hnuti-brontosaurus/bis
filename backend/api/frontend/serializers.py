@@ -114,7 +114,8 @@ class ModelSerializer(DRFModelSerializer):
             has_through_model,
             reverse,
         ) = relation_info
-        self.only_null_doesnt_mean_it_is_not_required(model_field, field_kwargs)
+        if model_field:
+            self.only_null_doesnt_mean_it_is_not_required(model_field, field_kwargs)
         return field_class, field_kwargs
 
     def save(self, **kwargs):
