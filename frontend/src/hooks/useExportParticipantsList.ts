@@ -1,6 +1,6 @@
 import { useExport } from 'hooks/useExport'
 
-interface Props {
+export interface Props {
   eventId: number
   format: 'pdf' | 'xlsx'
 }
