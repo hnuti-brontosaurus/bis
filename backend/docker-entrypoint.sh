@@ -38,6 +38,7 @@ case "$1" in
         echo "Run migrations and collect static files"
         python manage.py collectstatic --no-input
         python manage.py migrate
+        python manage.py create_categories
 
         # Gunicorn
         echo "Running Supervisorded Gunicorn..."

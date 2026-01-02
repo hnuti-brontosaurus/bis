@@ -24,6 +24,7 @@ class MyAdminSite(admin.AdminSite):
             "categories",
             "regions",
             "cookbook",
+            "cookbook_categories",
             "game_book",
             "game_book_categories",
         ]

@@ -1,5 +1,4 @@
 from api.frontend.serializers import ModelSerializer
-from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from cookbook.models.chefs import Chef
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
 from cookbook.models.recipies import (
@@ -10,18 +9,10 @@ from cookbook.models.recipies import (
     RecipeTip,
 )
 from cookbook.models.units import Ingredient, Unit
-
-
-class RecipeDifficultySerializer(ModelSerializer):
-    class Meta:
-        model = RecipeDifficulty
-        fields = ("id", "name", "slug", "order")
-
-
-class RecipeTagSerializer(ModelSerializer):
-    class Meta:
-        model = RecipeTag
-        fields = ("id", "name", "slug", "order")
+from cookbook_categories.serializers import (
+    RecipeDifficultySerializer,
+    RecipeTagSerializer,
+)
 
 
 class ChefSerializer(ModelSerializer):

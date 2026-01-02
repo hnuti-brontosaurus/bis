@@ -72,7 +72,7 @@ class Permissions:
         return self.model._meta.app_label in ["game_book", "game_book_categories"]
 
     def is_cookbook(self):
-        return self.model._meta.app_label in ["cookbook"]
+        return self.model._meta.app_label in ["cookbook", "cookbook_categories"]
 
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():
@@ -131,7 +131,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book():
+        if self.is_game_book() or self.is_cookbook():
             return False
 
         if self.user.is_office_worker:
@@ -210,7 +210,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book():
+        if self.is_game_book() or self.is_cookbook():
             return False
 
         if self.user.is_office_worker:
@@ -279,7 +279,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book():
+        if self.is_game_book() or self.is_cookbook():
             return False
 
         if self.user.is_office_worker:

@@ -785,11 +785,6 @@ OrganizersNumberCategory:
 
 # --------------------------------------------------------------------------------
 
-RecipeDifficulty:
-  name: Kategorie obtížnosti receptů
-RecipeTag:
-  name: Tag
-  name_plural: Tagy
 Chef:
   name: Kuchařstvo
   fields:
@@ -864,3 +859,22 @@ MenuRecipeIngredient:
     is_used: Použito?
     menu_recipe: Recept
     unit: Jednotka
+
+RecipeDifficulty:
+  name: Kategorie obtížnosti receptů
+RecipeTag:
+  name: Tag
+  name_plural: Tagy
+RecipeTimeRequired:
+  name: Časová náročnost receptu
+  name_plural: Časové náročnosti receptů
+RecipeDietRestriction:
+  name: Zdravotní omezení
+RecipeCourse:
+  name: Chod
+  name_plural: Chody
+RecipeType:
+  name: Typ receptu
+  name_plural: Typy receptů
+  fields:
+    group: Zařazení

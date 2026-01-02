@@ -1,5 +1,4 @@
 from bis.admin_permissions import PermissionMixin
-from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from cookbook.models.chefs import Chef
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
 from cookbook.models.recipies import (
@@ -16,16 +15,6 @@ from nested_admin.nested import (
     NestedStackedInline,
     NestedTabularInline,
 )
-
-
-@admin.register(RecipeDifficulty)
-class RecipeDifficultyAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
-
-
-@admin.register(RecipeTag)
-class RecipeTagAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
 
 
 @admin.register(Chef)

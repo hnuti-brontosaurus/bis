@@ -21,7 +21,14 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
-from cookbook.models.categories import RecipeDifficulty, RecipeTag
+from cookbook_categories.models import (
+    RecipeCourse,
+    RecipeDietRestriction,
+    RecipeDifficulty,
+    RecipeTag,
+    RecipeTimeRequired,
+    RecipeType,
+)
 from django.core.management.base import BaseCommand
 from game_book_categories.models import (
     GameLengthCategory,
@@ -1035,12 +1042,67 @@ class Command(BaseCommand):
                 slug=slug, defaults=dict(order=i, name=name)
             )
 
+        recipe_times = [
+            ("instant", "instantní"),
+            ("fast", "rychlé"),
+            ("normal", "normální"),
+            ("long", "maraton"),
+        ]
+        for i, (slug, name) in enumerate(recipe_times):
+            RecipeTimeRequired.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )
+
+        diets = [
+            ("gluten_free", "bez lepku"),
+            ("low_legumes", "málo luštěnin"),
+            ("dia", "dia"),
+            ("no_soya", "bez sóji"),
+            # ("no_nuts", "bez ořechů"),
+        ]
+        for i, (slug, name) in enumerate(diets):
+            RecipeDietRestriction.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )
+
         tags = [
-            ("one_pot", "Kotlíková"),
-            ("gluten_free", "Bez lepku"),
-            ("sweets", "Cukroví"),
+            ("on_hike", "na čundr"),
+            ("one_pot", "v jednom hrnci"),
+            ("czech", "tradiční české"),
         ]
         for i, (slug, name) in enumerate(tags):
             RecipeTag.objects.update_or_create(
                 slug=slug, defaults=dict(order=i, name=name)
+            )
+
+        courses = [
+            ("breakfast", "snídaně"),
+            ("main_dish", "hlavní jídlo"),
+            ("snack", "svačina"),
+            ("to_taste", "na chuť"),
+        ]
+        for i, (slug, name) in enumerate(courses):
+            RecipeCourse.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )
+
+        types = [
+            ("main_dish", "hlavní jídlo", ""),
+            ("soup", "polévka", ""),
+            ("side", "příloha", ""),
+            ("spread", "pomazánka", ""),
+            ("pastry", "pečivo", ""),
+            ("burger", "burger", ""),
+            ("salad", "salát", ""),
+            ("porridge", "kaše", ""),
+            ("drink", "nápoj", ""),
+            ("snack", "snack", ""),
+            ("dip", "dip", ""),
+            ("cake", "dort", "dezert"),
+            ("bun", "buchta", "dezert"),
+            ("candy", "cukroví", "dezert"),
+        ]
+        for i, (slug, name, group) in enumerate(types):
+            RecipeType.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name, group=group)
             )

@@ -4,12 +4,9 @@ from api.cookbook.serializers import (
     ChefSerializer,
     IngredientSerializer,
     MenuSerializer,
-    RecipeDifficultySerializer,
     RecipeSerializer,
-    RecipeTagSerializer,
     UnitSerializer,
 )
-from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from cookbook.models.chefs import Chef
 from cookbook.models.menus import Menu
 from cookbook.models.recipies import Recipe
@@ -56,22 +53,6 @@ class MenuViewSet(ModelViewSet):
         )
         .all()
     )
-
-
-class RecipeDifficultyViewSet(ModelViewSet):
-    lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
-    search_fields = ["name"]
-    serializer_class = RecipeDifficultySerializer
-    queryset = RecipeDifficulty.objects.all()
-
-
-class RecipeTagViewSet(ModelViewSet):
-    lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
-    search_fields = ["name"]
-    serializer_class = RecipeTagSerializer
-    queryset = RecipeTag.objects.all()
 
 
 class ChefViewSet(ModelViewSet):

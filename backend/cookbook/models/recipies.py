@@ -1,9 +1,9 @@
 from bis.models import User
 from common.thumbnails import ThumbnailImageField
 from cookbook.models.base import BaseModel
-from cookbook.models.categories import RecipeDifficulty, RecipeTag
 from cookbook.models.chefs import Chef
 from cookbook.models.units import Ingredient, Unit
+from cookbook_categories.models import RecipeDifficulty, RecipeTag
 from django.db.models import *
 from translation.translate import translate_model
 
