@@ -39,6 +39,12 @@ jobs:
       - name: Copy frontend static files to backend
         run: cp -r frontend/build/* backend/frontend_static/
 
+      - name: Build cookbook
+        run: make build_cookbook
+
+      - name: Copy frontend static files to backend
+        run: cp -r cookbook/dist/* backend/cookbook_static/
+
       - name: Build image to copy FE into it
         run: make
 

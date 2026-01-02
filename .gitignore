@@ -9,6 +9,7 @@ local_settings.py
 /backend/media
 /backend/backend_static
 /backend/frontend_static
+/backend/cookbook_static
 /frontend/public/application.*
 /frontend/public/index.html
 /frontend/test/public
