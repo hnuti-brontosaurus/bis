@@ -31,7 +31,7 @@ export const FeedbackStepInfo: FC = () => {
           </p>
           <header>
             Stručný návod
-            <ExternalHeaderLink href="https://drive.google.com/file/d/119C-T4vovVu_AW7X-t8C5GqDaVuH7EhX/view">
+            <ExternalHeaderLink href="https://drive.google.com/file/d/1XA5fQkgpHtuWd2LX499CJuH9k1YzI41y/view">
               podrobný návod
             </ExternalHeaderLink>
             <ExternalHeaderLink href="https://drive.google.com/file/d/1KlSNJW9kYDRoGWAqAPsOH8XOf8hFZin-/view">
