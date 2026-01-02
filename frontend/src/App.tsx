@@ -19,6 +19,7 @@ import { UpdateOpportunity } from 'org/pages/UpdateOpportunity'
 import { ViewEvent } from 'org/pages/ViewEvent'
 import { ViewOpportunity } from 'org/pages/ViewOpportunity'
 import { AdminRedirect } from 'pages/AdminRedirect'
+import { CookbookRedirect } from 'pages/CookbookRedirect'
 import { EventRegistration } from 'pages/EventRegistration/EventRegistration'
 import { Home } from 'pages/Home'
 import { Login } from 'pages/Login'
@@ -88,6 +89,10 @@ export const App = () => {
         <Route path="admin" element={<AdminOutlet />}>
           <Route index element={<AdminRedirect />} />
           <Route path="/admin/*" element={<AdminRedirect />} />
+        </Route>
+        <Route path="cookbook">
+          <Route index element={<CookbookRedirect />} />
+          <Route path="/cookbook/*" element={<CookbookRedirect />} />
         </Route>
         {/* Routes for organizers */}
         <Route path="org" element={<OrganizerOutlet />}>
