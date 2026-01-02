@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+yarn install --frozen-lockfile
+
+# Commands available using `docker-compose run frontend [COMMAND]`
+case "$3" in
+    node)
+        node
+    ;;
+    test)
+        yarn test
+    ;;
+    dev)
+        echo "Running Server..."
+        yarn dev
+    ;;
+    *)
+        yarn build
+    ;;
+esac

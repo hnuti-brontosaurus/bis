@@ -1,0 +1,34 @@
+{
+  "name": "cookbook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "yarn && yarn run format && yarn run lint",
+    "dev": "vite --config vite.config.js",
+    "build": "vite --config vite.config.js build",
+    "lint": "eslint -c .eslintrc.cjs ./src --ext .vue,.js,.jsx,.cjs,.mjs --fix",
+    "format": "prettier --config .prettierrc.json --write src"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-brands-svg-icons": "^7.1.0",
+    "@fortawesome/free-regular-svg-icons": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
+    "@vueuse/core": "^14.1.0",
+    "axios": "^1.6.8",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.3.3",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^10.6.2",
+    "naive-ui": "^2.38.1",
+    "prettier": "^3.0.3",
+    "vite": "^7.3.0"
+  }
+}

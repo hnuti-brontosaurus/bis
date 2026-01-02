@@ -1,0 +1,216 @@
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Light.eot');
+    src: local('Delm Light'), local('Delm-Light'),
+        url('Delm-Light.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Light.woff2') format('woff2'),
+        url('Delm-Light.woff') format('woff'),
+        url('Delm-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-LightItalic.eot');
+    src: local('Delm Light Italic'), local('Delm-LightItalic'),
+        url('Delm-LightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-LightItalic.woff2') format('woff2'),
+        url('Delm-LightItalic.woff') format('woff'),
+        url('Delm-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-ThinItalic.eot');
+    src: local('Delm Thin Italic'), local('Delm-ThinItalic'),
+        url('Delm-ThinItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-ThinItalic.woff2') format('woff2'),
+        url('Delm-ThinItalic.woff') format('woff'),
+        url('Delm-ThinItalic.ttf') format('truetype');
+    font-weight: 100;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm SemiLight';
+    src: url('Delm-SemiLightItalic.eot');
+    src: local('Delm SemiLight Italic'), local('Delm-SemiLightItalic'),
+        url('Delm-SemiLightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-SemiLightItalic.woff2') format('woff2'),
+        url('Delm-SemiLightItalic.woff') format('woff'),
+        url('Delm-SemiLightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Black.eot');
+    src: local('Delm Black'), local('Delm-Black'),
+        url('Delm-Black.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Black.woff2') format('woff2'),
+        url('Delm-Black.woff') format('woff'),
+        url('Delm-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-MediumItalic.eot');
+    src: local('Delm Medium Italic'), local('Delm-MediumItalic'),
+        url('Delm-MediumItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-MediumItalic.woff2') format('woff2'),
+        url('Delm-MediumItalic.woff') format('woff'),
+        url('Delm-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-BoldItalic.eot');
+    src: local('Delm Bold Italic'), local('Delm-BoldItalic'),
+        url('Delm-BoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-BoldItalic.woff2') format('woff2'),
+        url('Delm-BoldItalic.woff') format('woff'),
+        url('Delm-BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-ExtraBold.eot');
+    src: local('Delm ExtraBold'), local('Delm-ExtraBold'),
+        url('Delm-ExtraBold.eot?#iefix') format('embedded-opentype'),
+        url('Delm-ExtraBold.woff2') format('woff2'),
+        url('Delm-ExtraBold.woff') format('woff'),
+        url('Delm-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Bold.eot');
+    src: local('Delm Bold'), local('Delm-Bold'),
+        url('Delm-Bold.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Bold.woff2') format('woff2'),
+        url('Delm-Bold.woff') format('woff'),
+        url('Delm-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-BlackItalic.eot');
+    src: local('Delm Black Italic'), local('Delm-BlackItalic'),
+        url('Delm-BlackItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-BlackItalic.woff2') format('woff2'),
+        url('Delm-BlackItalic.woff') format('woff'),
+        url('Delm-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Italic.eot');
+    src: local('Delm Italic'), local('Delm-Italic'),
+        url('Delm-Italic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Italic.woff2') format('woff2'),
+        url('Delm-Italic.woff') format('woff'),
+        url('Delm-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Regular.eot');
+    src: local('Delm'), local('Delm-Regular'),
+        url('Delm-Regular.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Regular.woff2') format('woff2'),
+        url('Delm-Regular.woff') format('woff'),
+        url('Delm-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm SemiLight';
+    src: url('Delm-SemiLight.eot');
+    src: local('Delm SemiLight'), local('Delm-SemiLight'),
+        url('Delm-SemiLight.eot?#iefix') format('embedded-opentype'),
+        url('Delm-SemiLight.woff2') format('woff2'),
+        url('Delm-SemiLight.woff') format('woff'),
+        url('Delm-SemiLight.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-ExtraBoldItalic.eot');
+    src: local('Delm ExtraBold Italic'), local('Delm-ExtraBoldItalic'),
+        url('Delm-ExtraBoldItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-ExtraBoldItalic.woff2') format('woff2'),
+        url('Delm-ExtraBoldItalic.woff') format('woff'),
+        url('Delm-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-ExtraLight.eot');
+    src: local('Delm ExtraLight'), local('Delm-ExtraLight'),
+        url('Delm-ExtraLight.eot?#iefix') format('embedded-opentype'),
+        url('Delm-ExtraLight.woff2') format('woff2'),
+        url('Delm-ExtraLight.woff') format('woff'),
+        url('Delm-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Thin.eot');
+    src: local('Delm Thin'), local('Delm-Thin'),
+        url('Delm-Thin.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Thin.woff2') format('woff2'),
+        url('Delm-Thin.woff') format('woff'),
+        url('Delm-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-Medium.eot');
+    src: local('Delm Medium'), local('Delm-Medium'),
+        url('Delm-Medium.eot?#iefix') format('embedded-opentype'),
+        url('Delm-Medium.woff2') format('woff2'),
+        url('Delm-Medium.woff') format('woff'),
+        url('Delm-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Delm';
+    src: url('Delm-ExtraLightItalic.eot');
+    src: local('Delm ExtraLight Italic'), local('Delm-ExtraLightItalic'),
+        url('Delm-ExtraLightItalic.eot?#iefix') format('embedded-opentype'),
+        url('Delm-ExtraLightItalic.woff2') format('woff2'),
+        url('Delm-ExtraLightItalic.woff') format('woff'),
+        url('Delm-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+

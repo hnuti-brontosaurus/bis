@@ -77,6 +77,9 @@ run:
 build_frontend:
 	docker compose run frontend sh docker-entrypoint.sh build
 
+build_cookbook:
+	docker compose run cookbook sh docker-entrypoint.sh build
+
 dev:
 	$(call compose_with_trap,                                                              \
 		--profile dev                                                                   \
