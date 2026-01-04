@@ -57,7 +57,12 @@ def password_reset_link(user, email, login_code):
 
 def application_created(application):
     event = application.event_registration.event
-    variables = {"event_name": event.name, "event_date": event.get_date()}
+    contact_email = event.propagation.contact_email or event.main_organizer.email
+    variables = {
+        "event_name": event.name,
+        "event_date": event.get_date(),
+        "contact_email": contact_email,
+    }
     if application.is_child_application:
         template = 182
         email = application.close_person.email
@@ -84,12 +89,12 @@ def application_created(application):
         [email],
         variables=variables,
     )
-    email = event.propagation.contact_email or event.main_organizer.email
+
     ecomail.send_email(
         emails["bis"],
         "Nová přihláška!",
         148,
-        [email],
+        [contact_email],
         variables={
             "participant_name": application.nickname
             or f"{application.first_name} {application.last_name}",
