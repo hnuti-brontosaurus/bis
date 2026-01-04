@@ -11,6 +11,7 @@ from dateutil.utils import today
 from django.conf import settings
 from ecomail import ecomail
 from event.models import Event
+from feedback.models import Reply
 from opportunities.models import Opportunity
 from vokativ import vokativ
 
@@ -509,7 +510,7 @@ def send_feedback_request(event):
         ecomail.send_email(
             emails["bis"],
             "ZV",
-            "305",
+            305,
             [participant.email],
             variables={
                 "event_name": event.name,
@@ -518,3 +519,36 @@ def send_feedback_request(event):
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
             },
         )
+
+
+def expressed_engagement_in_feedback():
+    """
+    Email hnuti with info about people who filled in the feedback form that they want to participate more in HB
+    (in the last week).
+    We skip feedbacks without a name.
+    (email 36)
+    """
+    variables = []
+    replies = Reply.objects.filter(
+        feedback__created_at__gte=date.today() - timedelta(days=7),
+        inquiry__slug="involvement_means",
+    )
+    for reply in replies:
+        if reply.feedback.name and "nechci" not in reply.reply:
+            variables.append(
+                [
+                    reply.feedback.name,
+                    reply.feedback.email or 'email nevyplněn',
+                    reply.feedback.event.name,
+                    reply.reply
+                ]
+        )
+    variables = sorted(variables, key=lambda x: x[0])
+
+    ecomail.send_email(
+        emails["bis"],
+        "Lidé, kteří vyplnili ve ZV, že se chtějí dále zapojit",
+        312,
+        [emails["movement"][1]],
+            variables={"variables": make_ul(variables)},
+    )
