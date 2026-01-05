@@ -728,7 +728,10 @@ class MembershipAdminAddForm(forms.ModelForm):
         )
 
         cleaned_data["year"] = cleaned_data["year"] or today().year
-        if cleaned_data["year"] != today().year:
+        allowed_years = [today().year]
+        if today().month == 1:
+            allowed_years.append(today().year - 1)
+        if cleaned_data["year"] not in allowed_years:
             if not (
                 self.request.user.is_superuser or self.request.user.is_office_worker
             ):
