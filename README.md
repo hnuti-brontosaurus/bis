@@ -39,3 +39,4 @@ PGPASSWORD=123 dropdb -U postgres -h localhost postgres
 PGPASSWORD=123 createdb -U postgres -h localhost postgres
 PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --no-owner -F t /home/lamanchy/laman/Downloads/mydb.dump
 ```
+## DEPLOY
