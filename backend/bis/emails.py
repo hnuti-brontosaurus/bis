@@ -87,6 +87,7 @@ def application_created(application):
         "Potvrzení přihlášení na akci",
         template,
         [email],
+        reply_to=contact_email,
         variables=variables,
     )
 
@@ -391,16 +392,18 @@ def qualification_created(qualification: Qualification):
 
 
 def opportunity_created(opportunity: Opportunity):
-    email = opportunity.contact_email or opportunity.contact_person.email
+    recipient_email = opportunity.contact_email or opportunity.contact_person.email
+    created_by_email = opportunity.contact_person.email
     ecomail.send_email(
         emails["volunteering"],
         "Příležitost je zadána v BISu",
         145,
-        [email],
+        [recipient_email],
+        reply_to=created_by_email,
         variables={
             "created_by": opportunity.contact_person.get_name(),
             "opportunity": opportunity.name,
-            "created_by_email": opportunity.contact_person.email,
+            "created_by_email": created_by_email,
         },
     )
 
@@ -441,6 +444,7 @@ def fill_memberships(call):
             subjects[call],
             template_ids[call],
             [administration_unit.chairman.email],
+            reply_to=emails["movement"][1],
             variables={
                 "vokativ": administration_unit.chairman.vokativ,
                 "administration_unit": administration_unit.abbreviation,
