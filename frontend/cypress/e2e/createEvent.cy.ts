@@ -741,7 +741,7 @@ describe('create event', () => {
         .should('contain', 'Nemůžeš vytvářet události v minulosti')
     })
 
-    it.only('after 03/01 allow saving event which continues into this year', () => {
+    it('after 03/01 allow saving event which continues into this year', () => {
       cy.setClock('2023-03-01')
       cy.visit('/org/akce/vytvorit?klonovat=1000')
       next()

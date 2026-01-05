@@ -6,77 +6,92 @@
     {
       "id": 1,
       "name": "Interní - Valná hromada",
-      "slug": "internal__general_meeting"
+      "slug": "internal__general_meeting",
+      "is_active": true
     },
     {
       "id": 2,
       "name": "Interní - Schůzka dobrovolníků, týmovka",
-      "slug": "internal__volunteer_meeting"
+      "slug": "internal__volunteer_meeting",
+      "is_active": true
     },
     {
       "id": 3,
       "name": "Interní - Oddílová, družinová schůzka",
-      "slug": "internal__section_meeting"
+      "slug": "internal__section_meeting",
+      "is_active": true
     },
     {
       "id": 4,
       "name": "Veřejná - Dobrovolnická",
-      "slug": "public__volunteering"
+      "slug": "public__volunteering",
+      "is_active": true
     },
     {
       "id": 5,
       "name": "Veřejná - Čistě zážitková",
-      "slug": "public__only_experiential"
+      "slug": "public__only_experiential",
+      "is_active": true
     },
     {
       "id": 6,
       "name": "Veřejná - Vzdělávací - Přednáška",
-      "slug": "public__educational__lecture"
+      "slug": "public__educational__lecture",
+      "is_active": true
     },
     {
       "id": 7,
       "name": "Veřejná - Vzdělávací - Kurz, školení, exkurze",
-      "slug": "public__educational__course"
+      "slug": "public__educational__course",
+      "is_active": true
     },
     {
       "id": 8,
       "name": "Veřejná - Vzdělávací - OHB",
-      "slug": "public__educational__ohb"
+      "slug": "public__educational__ohb",
+      "is_active": true
     },
     {
       "id": 9,
       "name": "Veřejná - Vzdělávací - Výukový program",
-      "slug": "public__educational__educational"
+      "slug": "public__educational__educational",
+      "is_active": true
     },
     {
       "id": 10,
       "name": "Veřejná - Vzdělávací - Pobytový výukový program",
-      "slug": "public__educational__educational_with_stay"
+      "slug": "public__educational__educational_with_stay",
+      "is_active": true
     },
     {
       "id": 11,
       "name": "Veřejná - Klub - Přednáška",
-      "slug": "public__club__lecture"
+      "slug": "public__club__lecture",
+      "is_active": true
     },
     {
       "id": 12,
       "name": "Veřejná - Klub - Setkání",
-      "slug": "public__club__meeting"
+      "slug": "public__club__meeting",
+      "is_active": true
     },
     {
       "id": 13,
       "name": "Veřejná - Ostatní - Akce pro veřejnost",
-      "slug": "public__other__for_public"
+      "slug": "public__other__for_public",
+      "is_active": true
     },
     {
       "id": 14,
       "name": "Veřejná - Ostatní - Výstava",
-      "slug": "public__other__exhibition"
+      "slug": "public__other__exhibition",
+      "is_active": true
     },
     {
       "id": 15,
       "name": "Veřejná - Ostatní - Ekostan",
-      "slug": "public__other__eco_tent"
+      "slug": "public__other__eco_tent",
+      "is_active": true
     }
   ]
 }
