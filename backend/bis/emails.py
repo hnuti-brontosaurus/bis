@@ -544,7 +544,7 @@ def expressed_engagement_in_feedback():
             )
         )
         for reply in replies
-        if "nechci" not in (reply.reply or "")
+        if "nechci" not in reply.reply
     )
 
     ecomail.send_email(
@@ -552,5 +552,5 @@ def expressed_engagement_in_feedback():
         "Lidé, kteří vyplnili ve ZV, že se chtějí dále zapojit",
         312,
         [emails["movement"][1]],
-        variables={"variables": make_ul(items)},
+        variables={"replies": make_ul(items)},
     )

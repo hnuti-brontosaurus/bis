@@ -2,7 +2,6 @@ import logging
 import shutil
 from datetime import date
 
-from bis.emails import expressed_engagement_in_feedback
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from other.models import SavedFile
@@ -58,7 +57,7 @@ class Command(BaseCommand):
             try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
             try_to_run(check_disk_space)
-            try_to_run(expressed_engagement_in_feedback)
+            try_to_run(emails.expressed_engagement_in_feedback)
 
         # monthly
         if today.day == 1:
