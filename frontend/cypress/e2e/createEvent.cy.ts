@@ -907,7 +907,7 @@ const fillForm = () => {
 
   cy.get('#react-select-7-input')
     .should('be.visible')
-    .click()
+    .click({ force: true }) // TODO covered by "previous step" arrow
     .type('displayname2')
     .wait(2000)
     .type('{downArrow}{downArrow}{downArrow}{enter}')
