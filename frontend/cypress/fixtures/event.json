@@ -14,7 +14,8 @@
   "category": {
     "id": 4,
     "name": "Veřejná - Dobrovolnická",
-    "slug": "public__volunteering"
+    "slug": "public__volunteering",
+    "is_active": true
   },
   "tags": [
     {"id": 1, "name": "Retro akce", "slug": "retro_event", "description": "Retro akce k oslavám 50 let HB"},

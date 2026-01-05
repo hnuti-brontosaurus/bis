@@ -11,7 +11,10 @@
   "location": 100,
   "online_link": "",
   "group": 3,
-  "category": 5,
+  "category": {
+    "id": 5,
+    "is_active": true
+  },
   "tags": [],
   "program": 2,
   "intended_for": 1,

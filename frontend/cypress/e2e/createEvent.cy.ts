@@ -187,6 +187,7 @@ describe('create event', () => {
 
     cy.intercept('POST', '/api/frontend/events/1/propagation/images/', {})
     cy.intercept('POST', '/api/frontend/events/1/questionnaire/questions/', {})
+    cy.intercept('POST', '/api/frontend/events/1/feedback_form/inquiries', {})
 
     submit()
 
@@ -741,7 +742,7 @@ describe('create event', () => {
         .should('contain', 'Nemůžeš vytvářet události v minulosti')
     })
 
-    it.only('after 03/01 allow saving event which continues into this year', () => {
+    it('after 03/01 allow saving event which continues into this year', () => {
       cy.setClock('2023-03-01')
       cy.visit('/org/akce/vytvorit?klonovat=1000')
       next()
@@ -906,7 +907,7 @@ const fillForm = () => {
 
   cy.get('#react-select-7-input')
     .should('be.visible')
-    .click()
+    .click({ force: true }) // TODO covered by "previous step" arrow
     .type('displayname2')
     .wait(2000)
     .type('{downArrow}{downArrow}{downArrow}{enter}')

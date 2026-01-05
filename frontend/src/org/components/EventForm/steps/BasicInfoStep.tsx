@@ -51,6 +51,12 @@ export const BasicInfoStep = ({
   if (!(administrationUnits && categories && programs && currentUser))
     return <Loading>Připravujeme formulář</Loading>
 
+  const currentCategory = categories.results.find(
+    category => category.id == watch('category'),
+  )
+  const canChooseCategory =
+    typeof currentCategory === 'undefined' || currentCategory.is_active
+
   return (
     <FormProvider {...methods}>
       <form>
@@ -137,16 +143,23 @@ export const BasicInfoStep = ({
           <FormSection header="Typ akce" required>
             <FullSizeElement>
               <FormInputError>
-                <select {...register('category', { required })} defaultValue="">
+                <select
+                  {...register('category', { required })}
+                  disabled={!canChooseCategory}
+                  defaultValue=""
+                >
                   <option disabled value="" />
-                  {categories &&
-                    categories
-                      .results!.filter(category => category.is_active)
-                      .map(category => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
+                  {categories
+                    .results!.filter(category =>
+                      canChooseCategory
+                        ? category.is_active
+                        : watch('category') == category.id,
+                    )
+                    .map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                 </select>
               </FormInputError>
             </FullSizeElement>
