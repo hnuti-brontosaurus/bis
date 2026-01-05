@@ -386,7 +386,8 @@ def get_unknown_user(request, data):
 @parse_request_data(GetAttendanceListRequestSerializer, "query_params")
 def get_attendance_list(request, data, event_id):
     event = get_object_or_404(Event, id=event_id)
-    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+    events = Event.objects.filter(id=event_id)
+    if not Permissions(request.user, Event, "frontend").filter_queryset(events):
         return HttpResponseForbidden()
     return export.get_attendance_list(event, data["formatting"])
 
@@ -404,7 +405,8 @@ def get_attendance_list(request, data, event_id):
 @parse_request_data(GetParticipantsListRequestSerializer, "query_params")
 def get_participants_list(request, data, event_id):
     event = get_object_or_404(Event, id=event_id)
-    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+    events = Event.objects.filter(id=event_id)
+    if not Permissions(request.user, Event, "frontend").filter_queryset(events):
         return HttpResponseForbidden()
 
     return export.get_attendance_list(event, data["formatting"], True)
@@ -421,7 +423,8 @@ def get_participants_list(request, data, event_id):
 @permission_classes([IsAuthenticated])
 def get_feedbacks(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+    events = Event.objects.filter(id=event_id)
+    if not Permissions(request.user, Event, "frontend").filter_queryset(events):
         return HttpResponseForbidden()
 
     feedbacks = EventFeedback.objects.filter(event=event)
@@ -439,7 +442,8 @@ def get_feedbacks(request, event_id):
 @permission_classes([IsAuthenticated])
 def export_files(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    if not Permissions(request.user, Event, "frontend").has_change_permission(event):
+    events = Event.objects.filter(id=event_id)
+    if not Permissions(request.user, Event, "frontend").filter_queryset(events):
         return HttpResponseForbidden()
 
     return export.export_files(event)
