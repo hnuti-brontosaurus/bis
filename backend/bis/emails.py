@@ -523,32 +523,34 @@ def send_feedback_request(event):
 
 def expressed_engagement_in_feedback():
     """
-    Email hnuti with info about people who filled in the feedback form that they want to participate more in HB
-    (in the last week).
-    We skip feedbacks without a name.
+    Email hnuti with info about people who filled in the feedback form
+    that they want to participate more in HB (in the 7 days).
+    - Missing name/email are replaced with defaults.
+    - Email is sent even if it is empty.
     (email 36)
     """
-    variables = []
-    replies = Reply.objects.filter(
+    replies = Reply.objects.select_related("feedback", "feedback__event").filter(
         feedback__created_at__gte=date.today() - timedelta(days=7),
         inquiry__slug="involvement_means",
     )
-    for reply in replies:
-        if reply.feedback.name and "nechci" not in reply.reply:
-            variables.append(
-                [
-                    reply.feedback.name,
-                    reply.feedback.email or 'email nevyplněn',
-                    reply.feedback.event.name,
-                    reply.reply
-                ]
+
+    items = (
+        ", ".join(
+            (
+                reply.feedback.name or "jméno nevyplněno",
+                f"email: {reply.feedback.email or 'email nevyplněn'}",
+                f"akce: {reply.feedback.event.name}",
+                f"jak se chce zapojit: {reply.reply}",
+            )
         )
-    variables = sorted(variables, key=lambda x: x[0])
+        for reply in replies
+        if "nechci" not in (reply.reply or "")
+    )
 
     ecomail.send_email(
         emails["bis"],
         "Lidé, kteří vyplnili ve ZV, že se chtějí dále zapojit",
         312,
         [emails["movement"][1]],
-            variables={"variables": make_ul(variables)},
+        variables={"variables": make_ul(items)},
     )
