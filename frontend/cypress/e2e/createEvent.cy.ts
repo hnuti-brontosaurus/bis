@@ -187,6 +187,7 @@ describe('create event', () => {
 
     cy.intercept('POST', '/api/frontend/events/1/propagation/images/', {})
     cy.intercept('POST', '/api/frontend/events/1/questionnaire/questions/', {})
+    cy.intercept('POST', '/api/frontend/events/1/feedback_form/inquiries', {})
 
     submit()
 
