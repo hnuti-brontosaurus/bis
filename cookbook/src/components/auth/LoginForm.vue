@@ -26,7 +26,7 @@ import { useDarkTheme } from "@/composables/settings.js"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 
-const user = ref({ email: "sd@sd.ds" })
+const user = ref({})
 const emailProps = ref({})
 const emailExists = ref()
 const hcaptcha = ref()
@@ -94,7 +94,7 @@ const login = async () => {
     await form.value.validate()
     const { data } = await axios.post("/auth/login/", { ...user.value })
     me.value = data
-    await router.back()
+    if (me.value.is_chef) router.back()
   } catch (e) {
     handleAxiosError(_.value.login.login_error)(e)
   } finally {

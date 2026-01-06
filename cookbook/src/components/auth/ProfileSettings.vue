@@ -53,7 +53,7 @@ const save = async () => {
     await chefs.upsert(me.value.chef)
     await auth.whoami()
     message.info("Uloženo")
-    await router.back()
+    router.back()
   } catch (e) {
     handleAxiosError(_.value.profile.error_saving)(e)
   } finally {

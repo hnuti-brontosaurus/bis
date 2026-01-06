@@ -189,7 +189,6 @@ const save = async () => {
     <template #actions>
       <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
     </template>
-    {{ recipe }}
     <n-form ref="form" :model="recipe" @keydown.enter="save">
       <GenericForm v-model:data="recipe" :inputs="inputs" group="Recipe" />
     </n-form>
