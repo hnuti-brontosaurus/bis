@@ -1,32 +1,14 @@
-import { useLocalStorage } from "@vueuse/core"
+import { useLocalStorage, usePreferredDark } from "@vueuse/core"
+import { computed } from "vue"
 
-const settings = useLocalStorage(
+export const settings = useLocalStorage(
   "settings",
   {
-    darkTheme: true,
-    sidebarCollapsed: false,
+    darkTheme: null,
   },
   { mergeDefaults: true },
 )
 
-const segmentations = useLocalStorage(
-  "segmentationsSettings",
-  {
-    pageSize: 5,
-  },
-  { mergeDefaults: true },
+export const useDarkTheme = computed(
+  () => settings.value.darkTheme ?? usePreferredDark().value,
 )
-const actions = useLocalStorage(
-  "actionsSettings",
-  {
-    pageSize: 5,
-    expanded: [],
-    showLabels: true,
-    minColumnWidth: 350,
-  },
-  { mergeDefaults: true },
-)
-
-export function useSettings() {
-  return { settings, segmentations, actions }
-}

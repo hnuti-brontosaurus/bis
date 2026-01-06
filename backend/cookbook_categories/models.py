@@ -1,8 +1,10 @@
+from cookbook.models.base import BaseModel
 from django.db.models import *
+from django.db.models import CharField, SlugField
 from translation.translate import translate_model
 
 
-class BaseCategory(Model):
+class BaseCategory(BaseModel):
     name = CharField(max_length=31)
     slug = SlugField()
     order = PositiveSmallIntegerField()
@@ -11,9 +13,6 @@ class BaseCategory(Model):
         ordering = ("order",)
         abstract = True
 
-    def __str__(self):
-        return getattr(self, "name", super().__str__())
-
 
 @translate_model
 class RecipeDifficulty(BaseCategory):
@@ -21,26 +20,26 @@ class RecipeDifficulty(BaseCategory):
 
 
 @translate_model
-class RecipeTimeRequired(BaseCategory):
-    pass
-
-
-@translate_model
-class RecipeDietRestriction(BaseCategory):
-    pass
-
-
-@translate_model
-class RecipeCourse(BaseCategory):
-    pass
-
-
-@translate_model
-class RecipeType(BaseCategory):
-    group = CharField(max_length=31, blank=True)
+class RecipeRequiredTime(BaseCategory):
     pass
 
 
 @translate_model
 class RecipeTag(BaseCategory):
-    pass
+    group = CharField(max_length=31)
+
+
+@translate_model
+class Unit(BaseCategory):
+    name2 = CharField(max_length=31)
+    name5 = CharField(max_length=31)
+    abbreviation = CharField(max_length=7, blank=True)
+    of = CharField(
+        max_length=15,
+        choices=[
+            ("weight", "Váha"),
+            ("volume", "Objem"),
+            ("pieces", "Kus"),
+            ("servings", "Porce"),
+        ],
+    )

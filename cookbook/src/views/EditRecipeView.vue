@@ -23,171 +23,176 @@ import {
   NDataTable,
   useThemeVars,
 } from "naive-ui"
-import {rand} from "@vueuse/core";
-import {useConnector} from "@/composables/connector.js";
-import {useRoute} from "vue-router";
-import {computed, onMounted, ref} from "vue";
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue";
-import RecipeSteps from "@/components/recipe/RecipeSteps.vue";
-import {useServings} from "@/composables/servings.js";
-import CollapseList from "@/contrib/components/CollapseList.vue";
-import {useRender} from "@/contrib/composables/render.js";
-import {faCartPlus} from "@fortawesome/free-solid-svg-icons";
-import AppPage from "@/components/app/AppPage.vue";
-import {useHelpers} from "@/contrib/composables/helpers.js";
+import { rand, refDefault, toRefs } from "@vueuse/core"
+import {
+  chefs,
+  dataIdMapping,
+  dataOptions,
+  recipe_difficulties,
+  recipe_required_times,
+  recipe_tags,
+  recipes,
+  useConnector,
+} from "@/composables/connector.js"
+import { useRoute, useRouter } from "vue-router"
+import { computed, onMounted, ref, toRef } from "vue"
+import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import RecipeSteps from "@/components/recipe/RecipeSteps.vue"
+import { servings } from "@/composables/servings.js"
+import CollapseList from "@/contrib/components/CollapseList.vue"
+import { useRender } from "@/contrib/composables/render.js"
+import { faCartPlus } from "@fortawesome/free-solid-svg-icons"
+import AppPage from "@/components/app/AppPage.vue"
+import { propertyRef } from "@/contrib/composables/helpers.js"
+import GenericForm from "@/contrib/components/GenericForm.vue"
+import { me } from "@/composables/auth.js"
+import { _ } from "@/composables/translations.js"
+import { handleAxiosError } from "@/contrib/composables/setup.js"
 
-const route = useRoute();
-const {icon} = useRender()
-const {mapping} = useHelpers()
-
-const {recipes, refresh} = useConnector("recipes");
-const {recipe_difficulties} = useConnector("recipe_difficulties");
-const {chefs} = useConnector("chefs")
+const route = useRoute()
+const router = useRouter()
+const { icon } = useRender()
+const form = ref()
 
 const recipe_id = route.params.id
-onMounted(() => recipe_id ? refresh(recipe_id) : null)
 
-const recipe = recipe_id ? computed(() => recipes.value[recipe_id]) : ref({})
+if (recipe_id) useConnector("recipes", route.params.id)
+useConnector("recipe_difficulties")
+useConnector("recipe_required_times")
+useConnector("recipe_tags")
+useConnector("chefs")
+useConnector("units")
+useConnector("ingredients")
+const connector = useConnector("recipes", false)
 
-const getIngredientTitle = (ingredient) => `${ingredient.amount * servings.count.value} ${ingredient.unit.name} ${ingredient.ingredient.name}`
+const recipe = recipe_id
+  ? propertyRef(recipes, recipe_id)
+  : ref({
+      tags: [],
+    })
 
-const servings = useServings()
-const vars = useThemeVars()
+const tagIds = computed(() => recipe.value.tags.map(_ => _.id))
+const tagGroups = computed(() => [
+  ...new Set(
+    Object.values(recipe_tags.value)
+      .sort((a, b) => a.order - b.order)
+      .map(tag => tag.group),
+  ),
+])
+const inputs = computed(() => [
+  { type: "text", key: "name", required: true },
+  {
+    type: "select",
+    key: "chef",
+    required: "object",
+    options: dataOptions(chefs),
+    value: dataIdMapping(chefs, propertyRef(recipe, "chef")),
+  },
+  {
+    type: "select",
+    key: "difficulty",
+    required: "object",
+    options: dataOptions(recipe_difficulties),
+    value: dataIdMapping(recipe_difficulties, propertyRef(recipe, "difficulty")),
+  },
+  {
+    type: "select",
+    key: "required_time",
+    required: "object",
+    options: dataOptions(recipe_required_times),
+    value: dataIdMapping(recipe_required_times, propertyRef(recipe, "required_time")),
+  },
+  {
+    type: "image",
+    key: "photo",
+    required: true,
+  },
+  {
+    type: "checkboxes",
+    checkboxes: [
+      {
+        key: "is_public",
+        label: _.value.Recipe.is_public,
+      },
+    ],
+  },
+  ...tagGroups.value.map(group => ({
+    type: "checkboxes",
+    vertical: true,
+    title: group,
+    checkboxes: Object.values(recipe_tags.value)
+      .filter(tag => tag.group === group)
+      .map(tag => ({
+        key: tag.id,
+        label: tag.name,
+        value: computed({
+          get: () => tagIds.value.includes(tag.id),
+          set: value => {
+            if (value && !tagIds.value.includes(tag.id)) recipe.value.tags.push(tag)
+            if (!value)
+              recipe.value.tags = recipe.value.tags.filter(_ => _.id !== tag.id)
+          },
+        }),
+      })),
+  })),
+  {
+    type: "text",
+    key: "intro",
+    required: true,
+    new_line: true,
+    extra: { type: "textarea" },
+  },
+  {
+    type: "text",
+    key: "sources",
+    required: true,
+    extra: { type: "textarea" },
+  },
+  {
+    title: _.value.Recipe.ingredients,
+    hide_label: true,
+    type: "section",
+    key: "ingredients",
+    span: 2,
+  },
+  {
+    title: _.value.Recipe.steps,
+    hide_label: true,
+    type: "section",
+    key: "steps",
+    span: 2,
+  },
+  {
+    title: _.value.Recipe.tips,
+    hide_label: true,
+    type: "section",
+    key: "tips",
+    span: 2,
+  },
+])
 
-const authors = computed(() => Object.values(chefs.value).map(chef => ({label: chef.name, value: chef.id})))
-const difficulties = computed(() => Object.values(recipe_difficulties.value).map(_ => ({label: _.name, value: _.id})))
-
-const chefId = mapping(
-  () => recipe.value.chef?.id,
-  value => recipe.value.chef = chefs.value[value]
-)
-
-const difficultyId = mapping(
-  () => recipe.value.difficulty?.id,
-  value => recipe.value.difficulty = recipe_difficulties.value[value]
-)
-
+const save = async () => {
+  try {
+    await form.value.validate()
+    const response = await connector.upsert(recipe.value)
+    await connector.refresh(response.id)
+    router.push({ name: "recipe", params: { id: response.id } })
+  } catch (e) {
+    console.log(e)
+    handleAxiosError(_.value.edit_recipe.save_error)(e)
+  }
+}
 </script>
 
 <template>
   <AppPage :title="recipe_id ? 'Úprava receptu' : 'Nový recept'">
-    <n-form>
-      <n-form-item label="Název">
-        <n-input v-model:value="recipe.name"/>
-      </n-form-item>
-      <n-form-item label="Autor">
-        <n-select :options="authors" v-model:value="chefId">
-
-        </n-select>
-      </n-form-item>
-      <n-form-item label="Obtížnost">
-        <n-select :options="difficulties" v-model:value="difficultyId">
-
-        </n-select>
-      </n-form-item>
-
-
-    </n-form>
-
+    <template #actions>
+      <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
+    </template>
     {{ recipe }}
-
-    name
-    chef
-    difficulty
-    tags
-    photo
-    intro
-    sources
-    ingredients
-    steps
-    tips
-    comments
-    is_public
-<!--    <template #actions>-->
-<!--      <n-button>upravit</n-button>-->
-<!--    </template>-->
-
-<!--    <template #extra>-->
-<!--      <n-flex>-->
-<!--        <n-image :src="recipe.photo.large" :alt="recipe.name" height="300"/>-->
-<!--        <n-list>-->
-<!--          <n-list-item>-->
-<!--            <template #prefix>Autorstvo:</template>{{recipe.chef.name}}-->
-<!--          </n-list-item>-->
-<!--          <n-list-item>-->
-<!--            <template #prefix>Obtížnost:</template>{{recipe.difficulty.name}}-->
-<!--          </n-list-item>-->
-<!--          <n-list-item>-->
-<!--            <template #prefix>Tagy:</template>-->
-<!--            <n-tag v-for="tag in recipe.tags" :key="id" round>-->
-<!--              {{tag.name}}-->
-<!--            </n-tag>-->
-<!--          </n-list-item>-->
-<!--        </n-list>-->
-<!--      </n-flex>-->
-<!--    </template>-->
-
-<!--    <n-text v-if="recipe.intro">-->
-<!--      {{ recipe.intro }}-->
-<!--    </n-text>-->
-
-<!--    <n-grid cols="1 m:2" responsive="screen" x-gap="32" y-gap="32">-->
-<!--      <n-grid-item>-->
-<!--        <n-flex align="end" justify="space-between" :style="{'margin-bottom': '30px'}">-->
-<!--          <n-h2 style="margin-bottom: 0">Ingredience</n-h2>-->
-<!--          <n-flex align="baseline" :wrap="false">-->
-<!--            <n-text>Porcí:</n-text>-->
-<!--            <n-input-group>-->
-<!--              <n-input-number size="small" style="width: 110px" v-model:value="servings.count.value" min="1"-->
-<!--                              :precision="0"/>-->
-<!--              <n-button :render-icon="icon(faCartPlus)" size="small"></n-button>-->
-<!--            </n-input-group>-->
-<!--          </n-flex>-->
-
-<!--        </n-flex>-->
-<!--        <CollapseList :data="recipe.ingredients" checked-key="is_required">-->
-<!--          <template #header="{item, i}">-->
-<!--            {{ item.amount * servings.count.value }} {{ item.unit.name }} {{ item.ingredient.name }}-->
-<!--          </template>-->
-<!--          <template #default="{item}">-->
-<!--            <n-text v-if="item.comment">{{ item.comment }}</n-text>-->
-<!--          </template>-->
-<!--        </CollapseList>-->
-<!--      </n-grid-item>-->
-<!--      <n-grid-item>-->
-<!--        <n-h2>Postup</n-h2>-->
-<!--        <CollapseList :data="recipe.steps" checked-key="done">-->
-<!--          <template #header="{item, i}">-->
-<!--            {{ i + 1 }}. {{ item.name }}-->
-<!--          </template>-->
-<!--          <template #default="{item}">-->
-<!--            <n-flex v-if="item.description || item.photo">-->
-<!--              <n-text v-if="item.description">{{ item.description }}</n-text>-->
-<!--              <n-image v-if="item.photo" :preview-src="item.photo.large" :src="item.photo.medium" style="width: 100%"-->
-<!--                       width="100%"></n-image>-->
-<!--            </n-flex>-->
-
-<!--          </template>-->
-<!--        </CollapseList>-->
-<!--      </n-grid-item>-->
-<!--      <n-grid-item v-if="recipe.tips.length">-->
-<!--        <n-h2>Tipy a triky</n-h2>-->
-<!--        <CollapseList :data="recipe.tips">-->
-<!--          <template #default="{item}">-->
-<!--            {{ item.description }}-->
-<!--          </template>-->
-<!--        </CollapseList>-->
-<!--      </n-grid-item>-->
-<!--      <n-grid-item v-if="recipe.comments.length">-->
-<!--        <n-h2>Komentáře</n-h2>-->
-<!--        <CollapseList :data="recipe.comments"/>-->
-<!--      </n-grid-item>-->
-<!--      <n-grid-item span="2">-->
-<!--        <n-h2>Zdroje</n-h2>-->
-<!--        <n-text>{{ recipe.sources }}</n-text>-->
-<!--      </n-grid-item>-->
-<!--    </n-grid>-->
-
+    <n-form ref="form" :model="recipe" @keydown.enter="save">
+      <GenericForm v-model:data="recipe" :inputs="inputs" group="Recipe" />
+    </n-form>
   </AppPage>
 </template>
 

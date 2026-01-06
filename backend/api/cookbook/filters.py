@@ -1,6 +1,6 @@
 import django_filters
 from cookbook.models.menus import Menu
-from cookbook.models.recipies import Recipe
+from cookbook.models.recipes import Recipe
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):

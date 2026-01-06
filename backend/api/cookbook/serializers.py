@@ -1,30 +1,33 @@
-from api.frontend.serializers import ModelSerializer
+from api.frontend.serializers import (
+    ModelSerializer,
+    SmartUpdatableListSerializer,
+    UpdatableListSerializer,
+)
 from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
-from cookbook.models.recipies import (
+from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
     RecipeIngredient,
     RecipeStep,
     RecipeTip,
 )
-from cookbook.models.units import Ingredient, Unit
 from cookbook_categories.serializers import (
     RecipeDifficultySerializer,
+    RecipeRequiredTimeSerializer,
     RecipeTagSerializer,
+    UnitSerializer,
 )
+from rest_framework.fields import CharField, FloatField
 
 
 class ChefSerializer(ModelSerializer):
+    user_id = CharField()
+
     class Meta:
         model = Chef
         fields = ("id", "user_id", "name", "email", "photo", "is_editor")
-
-
-class UnitSerializer(ModelSerializer):
-    class Meta:
-        model = Unit
-        fields = ("id", "name", "of")
 
 
 class IngredientSerializer(ModelSerializer):
@@ -36,8 +39,10 @@ class IngredientSerializer(ModelSerializer):
 class RecipeIngredientSerializer(ModelSerializer):
     ingredient = IngredientSerializer()
     unit = UnitSerializer()
+    amount = FloatField()
 
     class Meta:
+        nested = True
         model = RecipeIngredient
         fields = (
             "id",
@@ -48,25 +53,29 @@ class RecipeIngredientSerializer(ModelSerializer):
             "is_required",
             "comment",
         )
+        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeStepSerializer(ModelSerializer):
     class Meta:
+        nested = True
         model = RecipeStep
         fields = (
             "id",
             "name",
             "order",
-            "is_required",
             "description",
             "photo",
         )
+        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeTipSerializer(ModelSerializer):
     class Meta:
+        nested = True
         model = RecipeTip
         fields = ("id", "name", "description")
+        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeCommentSerializer(ModelSerializer):
@@ -79,6 +88,7 @@ class RecipeCommentSerializer(ModelSerializer):
 class RecipeSerializer(ModelSerializer):
     chef = ChefSerializer()
     difficulty = RecipeDifficultySerializer()
+    required_time = RecipeRequiredTimeSerializer()
     tags = RecipeTagSerializer(many=True, required=False)
 
     ingredients = RecipeIngredientSerializer(many=True, required=False)
@@ -88,11 +98,13 @@ class RecipeSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
+        read_only_fields = ("comments",)
         fields = (
             "id",
             "name",
             "chef",
             "difficulty",
+            "required_time",
             "tags",
             "photo",
             "intro",

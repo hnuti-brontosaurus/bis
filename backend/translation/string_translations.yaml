@@ -37,6 +37,8 @@ generic:
   data: Data
   is_active: Je aktivní?
   is_public: Zveřejněno?
+  updated_at: Aktualizováno
+  updated_by: Aktualizováno
 
 
 admin:
@@ -70,3 +72,71 @@ event_categories:
   public__other__for_public: Akce pro veřejnost
   public__other__exhibition: Výstava
   public__other__eco_tent: Ekostan
+
+cookbook:
+  common:
+    back: Zpět
+    filters: filtry
+    edit: upravit
+    cookbook: Kuchařka
+    recipes: Recepty
+    menus: Jídleníčky
+    chefs: Kuchařstvo
+    ingredients: Přísady
+    required: Toto pole je povinné
+    save: Uložit
+    save_error: Chyba při uložení
+
+  menu:
+    vegan: Proč vegan?
+    manifest: Manifest? :D
+    how_to: Jak začít
+    risks: Zdravotní rizika
+    where_to_go: Kam dál?
+    tips: Tipy a triky
+    faq: FAQ
+    bronto: Vaření na Bronto akci
+    dumpster_diving: Jak na dumpsterdiving
+    zero_waste: Zero waste
+    join_us: Přidej se
+    login: Přihlášení
+    logout: Odhlásit se
+    create_profile: Vytvoření profilu
+    register: Registrace
+    my_recipes: Moje recepty
+    settings: Nastevení
+
+  login:
+    unknown_email: Tento e-mail v BISu neexistuje, zaregistrujte se prosím
+    title: Přihlášení / Registrace
+    bad_email: Špatný formát e-mailu
+    email: E-mail pro přihlášení do BISu
+    first_name: Křestní jméno
+    last_name: Příjmení
+    password: Heslo
+    password2: Heslo znovu
+    register: Registrovat
+    login: Přihlásit se
+    passwords_not_same: Zadaná hesla nejsou stejná
+    registration_error: Chyba při registraci
+    login_error: Chyba při přihlášení
+
+  profile:
+    new: Vytvoření profilu
+    title: Můj profil
+    error_saving: Chyba při ukládání profilu
+
+  recipes:
+    create: nový recept
+
+  edit_recipe:
+
+
+
+  section:
+    tips: iip
+    steps: krok
+    ingredients: přísada
+
+  ingredients:
+    new: Nová přísada

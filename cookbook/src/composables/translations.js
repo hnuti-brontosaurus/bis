@@ -1,53 +1,79 @@
-import {computed, toRef} from "vue";
-import {useErrorHandler} from "@/contrib/composables/errorHandler.js";
-import {useMessage} from "naive-ui";
-import {toRefs, useLocalStorage, useThrottleFn} from "@vueuse/core";
-import axios from "axios";
+import { computed, onMounted, ref, toRef } from "vue"
+import { useMessage } from "naive-ui"
+import {
+  createSharedComposable,
+  toRefs,
+  useLocalStorage,
+  useStorage,
+  useThrottleFn,
+} from "@vueuse/core"
+import axios from "axios"
+import { handleAxiosError } from "@/contrib/composables/setup.js"
 
-const storage = useLocalStorage(
-    "stranslations",
-    {
-        string_translations: {},
-        model_translations: {},
+const translations = useLocalStorage(
+  "translations",
+  {
+    string_translations: {
+      generic: {},
+      cookbook: {
+        common: {},
+      },
     },
-    {mergeDefaults: true},
+    model_translations: {},
+  },
+  { mergeDefaults: true },
 )
 
+export const _ = computed(() => {
+  const data = {}
 
-export const useConnector = (name) => {
-    const {handleAxiosError} = useErrorHandler()
-    const message = useMessage()
-    const local_data = toRefs(storage)[name]
+  Object.entries(translations.value.model_translations).forEach(
+    ([model_name, model_data]) => {
+      model_data.fields ??= {}
+      model_data.fields.class = model_data.name
+      model_data.fields.plural = model_data.name_plural || model_data.name
+      data[model_name] = new Proxy(
+        {},
+        {
+          get: (_, key) =>
+            model_data.fields[key] ||
+            translations.value.string_translations.cookbook.common[key] ||
+            translations.value.string_translations.generic[key] ||
+            `${model_name}.${key}`,
+        },
+      )
+    },
+  )
+  Object.entries(translations.value.string_translations.cookbook ?? {}).forEach(
+    ([group, items]) => {
+      data[group] = new Proxy(
+        {},
+        {
+          get: (_, key) =>
+            items?.[key] ||
+            translations.value.string_translations.cookbook.common[key] ||
+            translations.value.string_translations.generic[key] ||
+            `${group}.${key}`,
+        },
+      )
+    },
+  )
 
-    const do_fetch = (name, url, ids = []) => {
-        axios.get(url).then(({data}) => {
-            let results = data.results
-            if (!Array.isArray(results)) {
-                local_data.value[data.id] = data
-                return
-            }
-            results.forEach(row => storage.value[name][row.id] = row)
-            ids = ids.concat(results.map(row => row.id))
-            if (data.next) {
-                do_fetch(name, data.next, ids)
-            } else {
-                ids = new Set(ids.map(id => id.toString()))
-                for (const key of Object.keys(local_data.value)) {
-                    if (!ids.has(key)){
-                        delete local_data.value[key];
-                    }
-                }
-            }
-        }).catch(handleAxiosError(`Error fetching ${name}`))
-    }
+  return new Proxy(data, {
+    get: (_, key) =>
+      data[key] || new Proxy({}, { get: (_, subkey) => `${key}.${subkey}` }),
+  })
+})
 
-    const fetch = useThrottleFn(() => {
-        do_fetch(name, `/${name}`)
-    }, 1000)
+export const useTranslations = createSharedComposable(() => {
+  axios
+    .get("/extras/translations/")
+    .then(({ data }) => (translations.value = data))
+    .catch(handleAxiosError("Failed to fetch translations"))
+})
 
-    const refresh = (id) => {
-        do_fetch(name, `/${name}/${id}`)
-    }
-
-    return {fetch, [name]: local_data, data: local_data, refresh}
-}
+export const translatedKey =
+  (prefix = "common") =>
+  key => {
+    return { key, label: _.value[prefix][key] }
+  }

@@ -789,17 +789,27 @@ Chef:
   name: Kuchařstvo
   fields:
     is_editor: Editor?
+    name: Zobrazené jméno / přezdívka
+    email: Zobrazený e-mail
+    photo: Avatar
 Unit:
   name: Jednotka
   name_plural: Jednotky
   fields:
     of: Čeho
+    name2: Dva až čtyři
+    name5: Pět a víc
+    abbreviation: Zkratka
 Ingredient:
-  name: Ingredience
+  name: Přísada
+  name_plural: Přísady
   fields:
     g_per_liter: gramy na litr
     g_per_piece: gramy na kus
+    g_per_serving: gramy na typickou porci
     state: Konzistence
+    reasoning: Popis
+
 Recipe:
   name: Recept
   name_plural: Recepty
@@ -809,14 +819,15 @@ Recipe:
     intro: Úvod
     sources: Zdroje
     tags: Tagy
-
-
+    required_time: Časová náročnost
+    steps: Postup
+    tips: Tipy
 
 RecipeIngredient:
-  name: Ingredience receptu
+  name: Přísada receptu
   fields:
     amount: Množství
-    ingredient: Ingredience
+    ingredient: Přísada
     is_required: Nutné?
     recipe: Recept
     unit: Jednotka
@@ -852,10 +863,10 @@ MenuRecipe:
     served_at: Servírováno
 
 MenuRecipeIngredient:
-  name: Ingredience receptu jídelníčku
+  name: Přísada receptu jídelníčku
   fields:
     amount: Množství
-    ingredient: Ingredience
+    ingredient: Přísada
     is_used: Použito?
     menu_recipe: Recept
     unit: Jednotka
@@ -865,16 +876,8 @@ RecipeDifficulty:
 RecipeTag:
   name: Tag
   name_plural: Tagy
-RecipeTimeRequired:
-  name: Časová náročnost receptu
-  name_plural: Časové náročnosti receptů
-RecipeDietRestriction:
-  name: Zdravotní omezení
-RecipeCourse:
-  name: Chod
-  name_plural: Chody
-RecipeType:
-  name: Typ receptu
-  name_plural: Typy receptů
   fields:
     group: Zařazení
+RecipeRequiredTime:
+  name: Časová náročnost receptu
+  name_plural: Časové náročnosti receptů

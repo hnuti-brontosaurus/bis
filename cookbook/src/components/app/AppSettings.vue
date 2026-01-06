@@ -2,10 +2,8 @@
 import { NButton, NDropdown, useMessage } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
 import { faGear } from "@fortawesome/free-solid-svg-icons"
-import { useAppSettings } from "@/composables/app_settings.js"
 
 const { icon } = useRender()
-const { settings } = useAppSettings()
 const message = useMessage()
 
 const options = [

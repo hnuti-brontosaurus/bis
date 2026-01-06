@@ -10,23 +10,20 @@ import {
   NGrid,
   NCard,
   NDataTable,
-  useThemeVars
+  useThemeVars,
 } from "naive-ui"
-import {rand} from "@vueuse/core";
-import {useConnector} from "@/composables/connector.js";
-import {useRoute} from "vue-router";
-import {computed, onMounted, ref, useSlots} from "vue";
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue";
-import {useServings} from "@/composables/servings.js";
-import {useHelpers} from "@/contrib/composables/helpers.js";
-
-const {isEmptyVNode} = useHelpers()
+import { rand } from "@vueuse/core"
+import { useConnector } from "@/composables/connector.js"
+import { useRoute } from "vue-router"
+import { computed, onMounted, ref, useSlots } from "vue"
+import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import { isEmptyVNode } from "@/contrib/composables/helpers.js"
 
 const props = defineProps({
   data: {},
   columns: {},
-  getKey: {default: () => item => item.id},
-  checkedKey: {}
+  getKey: { default: () => item => item.id },
+  checkedKey: {},
 })
 
 const slots = useSlots()
@@ -36,14 +33,11 @@ const hasNoContent = item => {
   } catch (e) {
     return true
   }
-
 }
-
-const vars = useThemeVars()
 </script>
 
 <template>
-<!--  <n-collapse display-directive="show" :default-expanded-names="data.map(getKey)">-->
+  <!--  <n-collapse display-directive="show" :default-expanded-names="data.map(getKey)">-->
   <n-collapse display-directive="show">
     <n-collapse-item v-for="(item, i) in data" :key="getKey(item)" :name="getKey(item)">
       <template #header>
@@ -54,11 +48,11 @@ const vars = useThemeVars()
       <slot name="default" :item="item" :i="i">
         <div :style="`margin-top: -16px`"></div>
       </slot>
-      <template #arrow v-if="hasNoContent({item, i})">
+      <template #arrow v-if="hasNoContent({ item, i })">
         <i class="n-base-icon"></i>
       </template>
       <template #header-extra v-if="checkedKey">
-        <n-checkbox @click.stop v-model:checked="item[checkedKey]"  size="small"/>
+        <n-checkbox @click.stop v-model:checked="item[checkedKey]" size="small" />
       </template>
     </n-collapse-item>
   </n-collapse>

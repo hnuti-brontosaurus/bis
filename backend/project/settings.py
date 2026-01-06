@@ -283,6 +283,9 @@ ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
 DARUJME_API_KEY = environ["DARUJME_API_KEY"]
 DARUJME_SECRET = environ["DARUJME_SECRET"]
 
+HCAPTCHA_SECRET = environ["HCAPTCHA_SECRET"]
+GROQ_API_KEY = environ["GROQ_API_KEY"]
+
 if DEBUG:
     import socket  # only if you haven't already imported this
 

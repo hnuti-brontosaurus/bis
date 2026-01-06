@@ -1,13 +1,14 @@
 from bis.models import User
-from cookbook.models.base import BaseModel
-from cookbook.models.recipies import Recipe
-from cookbook.models.units import Ingredient, Unit
+from cookbook.models.base import BaseModel, ChangeMixin
+from cookbook.models.ingredients import Ingredient
+from cookbook.models.recipes import Recipe
+from cookbook_categories.models import Unit
 from django.db.models import *
 from translation.translate import translate_model
 
 
 @translate_model
-class Menu(BaseModel):
+class Menu(ChangeMixin, BaseModel):
     name = CharField(max_length=31)
     description = TextField(blank=True)
     user = ForeignKey(User, related_name="menus", on_delete=PROTECT)

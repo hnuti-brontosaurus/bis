@@ -22,12 +22,10 @@ from categories.models import (
     TeamRoleCategory,
 )
 from cookbook_categories.models import (
-    RecipeCourse,
-    RecipeDietRestriction,
     RecipeDifficulty,
+    RecipeRequiredTime,
     RecipeTag,
-    RecipeTimeRequired,
-    RecipeType,
+    Unit,
 )
 from django.core.management.base import BaseCommand
 from game_book_categories.models import (
@@ -1049,60 +1047,84 @@ class Command(BaseCommand):
             ("long", "maraton"),
         ]
         for i, (slug, name) in enumerate(recipe_times):
-            RecipeTimeRequired.objects.update_or_create(
+            RecipeRequiredTime.objects.update_or_create(
                 slug=slug, defaults=dict(order=i, name=name)
             )
 
-        diets = [
-            ("gluten_free", "bez lepku"),
-            ("low_legumes", "málo luštěnin"),
-            ("dia", "dia"),
-            ("no_soya", "bez sóji"),
-            # ("no_nuts", "bez ořechů"),
-        ]
-        for i, (slug, name) in enumerate(diets):
-            RecipeDietRestriction.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
+        tags = {
+            "Chody": [
+                ("breakfast", "snídaně"),
+                ("soup", "polévka"),
+                ("main_dish", "hlavní jídlo"),
+                ("side", "příloha"),
+                ("snack", "svačina"),
+                ("to_taste", "na chuť"),
+                ("drink", "nápoj"),
+            ],
+            "Typy": [
+                ("spread", "pomazánka"),
+                ("pastry", "pečivo"),
+                ("burger", "burger"),
+                ("salad", "salát"),
+                ("porridge", "kaše"),
+                ("snack", "snack"),
+                ("dip", "dip"),
+                ("sandwiches", "sendviče"),
+            ],
+            "Dezerty": [
+                ("cake", "dort"),
+                ("bun", "buchta"),
+                ("candy", "cukroví"),
+            ],
+            "Speciální": [
+                ("on_hike", "na čundr"),
+                ("one_pot", "v jednom hrnci"),
+            ],
+            "Zdravotní omezení": [
+                ("gluten_free", "bez lepku"),
+                ("low_legumes", "málo luštěnin"),
+                ("dia", "dia"),
+                ("no_soya", "bez sóji"),
+            ],
+            "Dle složení": [
+                ("with_meat", "s masem*"),
+                ("dairy", "mléčné*"),
+                ("cheese", "sýrové*"),
+                ("egg", "vaječné*"),
+                ("vegetables", "zeleninové"),
+                ("potato", "bramborové"),
+                ("legumes", "luštěninové"),
+                ("cereals", "obilninové"),
+                ("fruit", "ovocné"),
+                ("rice", "rýžové"),
+                ("pasta", "těstovinové"),
+            ],
+            "Kuchyně": [
+                ("czech", "česká"),
+                ("indi", "indická"),
+            ],
+        }
+        i = 0
+        for group, items in tags.items():
+            for slug, name in items:
+                RecipeTag.objects.update_or_create(
+                    slug=slug, defaults=dict(order=i, name=name, group=group)
+                )
+                i += 1
 
-        tags = [
-            ("on_hike", "na čundr"),
-            ("one_pot", "v jednom hrnci"),
-            ("czech", "tradiční české"),
+        units = [
+            ("grams", "g", "gram", "gramy", "gramů", "weight"),
+            ("kilograms", "kg", "kilogram", "kilogramy", "kilogramů", "weight"),
+            ("milliliter", "ml", "mililitr", "mililitry", "mililitrů", "volume"),
+            ("liter", "l", "litr", "litry", "litrů", "volume"),
+            ("pinch", "", "špetka", "špetky", "špetek", "volume"),
+            ("teaspoon", "", "lžička", "lžičky", "lžiček", "volume"),
+            ("tablespoon", "", "lžíce", "lžíce", "lžic", "volume"),
+            ("handful", "", "hrst", "hrsti", "hrstí", "volume"),
+            ("cup", "", "hrnek", "hrnky", "hrnků", "volume"),
+            ("serving", "", "porce", "porce", "porcí", "servings"),
+            ("piece", "ks", "kus", "kusy", "kusů", "pieces"),
+            # ("bread", "", "šumava", "šumavy", "šumav", "weight"),
         ]
-        for i, (slug, name) in enumerate(tags):
-            RecipeTag.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
-
-        courses = [
-            ("breakfast", "snídaně"),
-            ("main_dish", "hlavní jídlo"),
-            ("snack", "svačina"),
-            ("to_taste", "na chuť"),
-        ]
-        for i, (slug, name) in enumerate(courses):
-            RecipeCourse.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
-
-        types = [
-            ("main_dish", "hlavní jídlo", ""),
-            ("soup", "polévka", ""),
-            ("side", "příloha", ""),
-            ("spread", "pomazánka", ""),
-            ("pastry", "pečivo", ""),
-            ("burger", "burger", ""),
-            ("salad", "salát", ""),
-            ("porridge", "kaše", ""),
-            ("drink", "nápoj", ""),
-            ("snack", "snack", ""),
-            ("dip", "dip", ""),
-            ("cake", "dort", "dezert"),
-            ("bun", "buchta", "dezert"),
-            ("candy", "cukroví", "dezert"),
-        ]
-        for i, (slug, name, group) in enumerate(types):
-            RecipeType.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name, group=group)
-            )
+        for i, (slug, abbreviation, name, name2, name5, of) in enumerate(units):
+            Unit.objects.update_or_create(slug=slug, defaults=dict(order=i, name=name))

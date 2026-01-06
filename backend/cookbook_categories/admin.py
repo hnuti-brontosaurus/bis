@@ -1,21 +1,19 @@
 from bis.admin_permissions import PermissionMixin
 from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
-from cookbook.models.recipies import (
+from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
     RecipeIngredient,
     RecipeStep,
     RecipeTip,
 )
-from cookbook.models.units import Ingredient, Unit
 from cookbook_categories.models import (
-    RecipeCourse,
-    RecipeDietRestriction,
     RecipeDifficulty,
+    RecipeRequiredTime,
     RecipeTag,
-    RecipeTimeRequired,
-    RecipeType,
+    Unit,
 )
 from django.contrib import admin
 from nested_admin.nested import (
@@ -30,26 +28,16 @@ class RecipeDifficultyAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = ["name"]
 
 
-@admin.register(RecipeTimeRequired)
-class RecipeTimeRequiredAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
-
-
-@admin.register(RecipeDietRestriction)
-class RecipeDietRestrictionAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
-
-
-@admin.register(RecipeCourse)
-class RecipeCourseAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
-
-
-@admin.register(RecipeType)
-class RecipeTypeAdmin(PermissionMixin, NestedModelAdmin):
+@admin.register(RecipeRequiredTime)
+class RecipeRequiredTimeAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = ["name"]
 
 
 @admin.register(RecipeTag)
 class RecipeTagAdmin(PermissionMixin, NestedModelAdmin):
+    search_fields = ["name"]
+
+
+@admin.register(Unit)
+class UnitAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = ["name"]

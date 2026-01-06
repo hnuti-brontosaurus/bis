@@ -11,7 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
 from PIL import Image
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import FileField, ImageField
+from rest_framework.fields import FileField, ImageField, SkipField
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import ModelSerializer
 
@@ -46,6 +46,9 @@ class Base64FieldMixin:
     EMPTY_VALUES = None, "", [], (), {}
 
     def to_internal_value(self, base64_data):
+        if isinstance(base64_data, dict):
+            raise SkipField()
+
         try:
             assert isinstance(base64_data, str), "Expects base64 string"
             assert ";base64," in base64_data, '";base64," not in data'

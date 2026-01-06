@@ -174,7 +174,9 @@ class ModelSerializer(DRFModelSerializer):
     def is_serializer_with_id(field):
         if isinstance(field, ListSerializer):
             field = field.child
-        return isinstance(field, DRFModelSerializer) and "id" in field.get_fields()
+        return isinstance(field, DRFModelSerializer) and (
+            "id" in field.get_fields() and not getattr(field.Meta, "nested", False)
+        )
 
     def get_fields(self):
         fields = super().get_fields()
@@ -600,6 +602,43 @@ class UpdatableListSerializer(ListSerializer):
     def update(self, instance, validated_data):
         instance.all().delete()
         return self.create(validated_data)
+
+
+class SmartUpdatableListSerializer(ListSerializer):
+    def update(self, instance, validated_data):
+        # Get a mapping of the existing objects by their IDs
+        # Convert RelatedManager to a queryset if needed
+        instance_queryset = instance.all() if hasattr(instance, "all") else instance
+        instance_mapping = {obj.id: obj for obj in instance_queryset}
+
+        # Track which objects we've processed
+        processed_ids = set()
+
+        ret = []
+        for initial_item, item_data in zip(self.initial_data, validated_data):
+            # Get ID from initial_data if it exists
+            item_id = initial_item.get("id") if isinstance(initial_item, dict) else None
+
+            # If no ID in initial_data, check validated_data
+            if item_id is None:
+                item_id = item_data.get("id")
+
+            if item_id and item_id in instance_mapping:
+                # Update existing instance
+                processed_ids.add(item_id)
+                obj = instance_mapping[item_id]
+                print(obj, item_id)
+                ret.append(self.child.update(obj, item_data))
+            else:
+                # Create new instance
+                ret.append(self.child.create(item_data))
+
+        # Delete any instances that weren't in the validated data
+        for obj_id, obj in instance_mapping.items():
+            if obj_id not in processed_ids:
+                obj.delete()
+
+        return ret
 
 
 class EventContactSerializer(BaseContactSerializer):

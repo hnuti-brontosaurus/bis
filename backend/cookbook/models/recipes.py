@@ -1,18 +1,26 @@
 from bis.models import User
 from common.thumbnails import ThumbnailImageField
-from cookbook.models.base import BaseModel
+from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook.models.chefs import Chef
-from cookbook.models.units import Ingredient, Unit
-from cookbook_categories.models import RecipeDifficulty, RecipeTag
+from cookbook.models.ingredients import Ingredient
+from cookbook_categories.models import (
+    RecipeDifficulty,
+    RecipeRequiredTime,
+    RecipeTag,
+    Unit,
+)
 from django.db.models import *
 from translation.translate import translate_model
 
 
 @translate_model
-class Recipe(BaseModel):
+class Recipe(ChangeMixin, BaseModel):
     name = CharField(max_length=31)
     chef = ForeignKey(Chef, related_name="recipes", on_delete=PROTECT)
     difficulty = ForeignKey(RecipeDifficulty, related_name="recipes", on_delete=PROTECT)
+    required_time = ForeignKey(
+        RecipeRequiredTime, related_name="recipes", on_delete=PROTECT
+    )
     tags = ManyToManyField(RecipeTag, related_name="recipes", blank=True)
     photo = ThumbnailImageField(upload_to="recipes")
     intro = TextField()
@@ -44,7 +52,6 @@ class RecipeStep(BaseModel):
     recipe = ForeignKey(Recipe, related_name="steps", on_delete=PROTECT)
     name = CharField(max_length=63)
     order = PositiveSmallIntegerField()
-    is_required = BooleanField(default=True)
     description = TextField(blank=True)
     photo = ThumbnailImageField(upload_to="recipe_steps", blank=True, null=True)
 

@@ -73,6 +73,8 @@ services:
       DARUJME_API_KEY: ${DARUJME_API_KEY}
       DARUJME_SECRET: ${DARUJME_SECRET}
       PROD_API_TOKEN: ${PROD_API_TOKEN}
+      HCAPTCHA_SECRET: ${HCAPTCHA_SECRET}
+      GROQ_API_KEY: ${GROQ_API_KEY}
 
   postgres:
     container_name: bis-postgres

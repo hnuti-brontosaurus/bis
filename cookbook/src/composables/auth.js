@@ -1,19 +1,17 @@
-import { useStorage } from "@vueuse/core"
+import { createSharedComposable, useStorage } from "@vueuse/core"
 import axios from "axios"
-import { useErrorHandler } from "@/contrib/composables/errorHandler.js"
+import { handleAxiosError } from "@/contrib/composables/setup.js"
 
-const auth = useStorage("auth", {})
+export const me = useStorage("auth", {})
 
-let initialized = false
-
-export function useAuth() {
-  const { handleAxiosError } = useErrorHandler()
-  if (!initialized)
+export const useAuth = createSharedComposable(() => {
+  const whoami = () =>
     axios
-      .get("/auth/whoami")
-      .then(({ data }) => (auth.value = data))
+      .get("/auth/whoami/")
+      .then(({ data }) => (me.value = data))
       .catch(handleAxiosError("Failed to fetch auth whoami"))
 
-  initialized = true
-  return { auth }
-}
+  whoami()
+
+  return { whoami }
+})

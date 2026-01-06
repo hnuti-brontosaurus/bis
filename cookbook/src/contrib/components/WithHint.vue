@@ -8,13 +8,9 @@ defineProps(["label", "hint", "placement"])
 </script>
 
 <template>
-  <n-tooltip
-    v-if="hint"
-    :style="{ maxWidth: `${width / 3}px` }"
-    :placement="placement ?? 'top-end'"
-  >
+  <n-tooltip v-if="hint" :width="width / 3" :placement="placement ?? 'top-end'">
     <template #trigger>
-      <n-badge :offset="[3, 3]" color="transparent">
+      <n-badge :offset="[5, 2]" color="transparent" style="font-family: unset">
         <template #value>
           <n-text depth="3">?</n-text>
         </template>

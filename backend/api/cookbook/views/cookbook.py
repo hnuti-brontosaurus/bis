@@ -5,16 +5,24 @@ from api.cookbook.serializers import (
     IngredientSerializer,
     MenuSerializer,
     RecipeSerializer,
-    UnitSerializer,
 )
 from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipies import Recipe
-from cookbook.models.units import Ingredient, Unit
+from cookbook.models.recipes import Recipe
 from rest_framework.viewsets import ModelViewSet
 
 
-class RecipeViewSet(ModelViewSet):
+class ChangeViewSetMixin:
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        print(serializer)
+        serializer.save(updated_by=self.request.user)
+
+
+class RecipeViewSet(ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
     permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
@@ -36,7 +44,7 @@ class RecipeViewSet(ModelViewSet):
     )
 
 
-class MenuViewSet(ModelViewSet):
+class MenuViewSet(ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
     permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
@@ -55,7 +63,7 @@ class MenuViewSet(ModelViewSet):
     )
 
 
-class ChefViewSet(ModelViewSet):
+class ChefViewSet(ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
     permission_classes = [CookbookAccessPermission]
     search_fields = ["name", "user__first_name", "user__last_name"]
@@ -63,15 +71,7 @@ class ChefViewSet(ModelViewSet):
     queryset = Chef.objects.select_related("user").all()
 
 
-class UnitViewSet(ModelViewSet):
-    lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
-    search_fields = ["name"]
-    serializer_class = UnitSerializer
-    queryset = Unit.objects.all()
-
-
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
     permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]

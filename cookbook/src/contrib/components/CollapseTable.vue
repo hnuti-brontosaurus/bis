@@ -1,14 +1,12 @@
 <script setup>
-import {NDataTable, useThemeVars} from "naive-ui"
-import {computed, useSlots} from "vue";
-import {useHelpers} from "@/contrib/composables/helpers.js";
-
-const {isEmptyVNode} = useHelpers()
+import { NDataTable, useThemeVars } from "naive-ui"
+import { computed, useSlots } from "vue"
+import { isEmptyVNode } from "@/contrib/composables/helpers.js"
 
 const props = defineProps({
   data: {},
   columns: {},
-  expandable: {default: true}
+  expandable: { default: true },
 })
 
 const slots = useSlots()
@@ -18,7 +16,6 @@ const hasNoContent = item => {
   } catch (e) {
     return true
   }
-
 }
 
 const tableColumns = computed(() => {
@@ -28,18 +25,15 @@ const tableColumns = computed(() => {
 
   return [
     {
-      type: 'expand',
+      type: "expand",
       expandable: row => row.expandable,
       renderExpand: row => row.renderExpand,
     },
-    ...props.columns
+    ...props.columns,
   ]
 })
-
-const vars = useThemeVars()
 </script>
 
-<template>
-</template>
+<template></template>
 
 <style scoped></style>

@@ -1,35 +1,48 @@
+from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipies import Recipe
-from cookbook.models.units import Ingredient
+from cookbook.models.recipes import Recipe
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class CookbookAccessPermission(BasePermission):
+    @staticmethod
+    def match_id(request, obj, key, match):
+        if obj:
+            return str(getattr(obj, key)) == str(match)
+        if key := request.data.get(key):
+            return str(key) == str(match)
+        return True
+
     def has_cookbook_permission(self, request, view, obj=None):
+        model = view.serializer_class.Meta.model
+        user = request.user
+
         if request.method in SAFE_METHODS:
             return True
-        if not request.user or not request.user.is_authenticated:
+
+        if view.action == "destroy":
             return False
 
-        model = view.serializer_class.Meta.model
+        if not user or not user.is_authenticated:
+            return False
 
-        if request.user.is_editor:
-            return model in [Ingredient, Recipe, Menu]
+        if user.is_editor:
+            if model in [Ingredient, Recipe, Menu]:
+                return True
+
+        if model is Chef:
+            print(request.data, obj, user.id)
+            return self.match_id(request, obj, "user_id", user.id)
+
+        if not user.is_chef:
+            return False
 
         if model is Ingredient:
-            return request.user.is_chef
+            return True
 
         if model is Recipe:
-            if not request.user.is_chef:
-                return False
-            if obj is None and request.method in ["POST", "PUT", "PATCH"]:
-                return str(request.data.get("chef")) == str(request.user.chef.id)
-            return obj is not None and obj.chef_id == request.user.chef.id
-
-        if model is Menu:
-            if obj is None and request.method in ["POST", "PUT", "PATCH"]:
-                return str(request.data.get("user_id")) == str(request.user.id)
-            return obj is not None and obj.user_id == request.user.id
+            return self.match_id(request, obj, "chef_id", user.chef.id)
 
         return False
 

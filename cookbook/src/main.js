@@ -5,7 +5,6 @@ import { createApp } from "vue"
 import App from "@/AppProviders.vue"
 import router from "@/router.js"
 
-
 const app = createApp(App)
 
 app.use(router)

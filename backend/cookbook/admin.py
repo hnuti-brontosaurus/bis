@@ -1,14 +1,15 @@
 from bis.admin_permissions import PermissionMixin
+from cookbook.models.base import ChangeMixin
 from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
-from cookbook.models.recipies import (
+from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
     RecipeIngredient,
     RecipeStep,
     RecipeTip,
 )
-from cookbook.models.units import Ingredient, Unit
 from django.contrib import admin
 from nested_admin.nested import (
     NestedModelAdmin,
@@ -19,6 +20,7 @@ from nested_admin.nested import (
 
 @admin.register(Chef)
 class ChefAdmin(PermissionMixin, NestedModelAdmin):
+    readonly_fields = ChangeMixin.fields
     autocomplete_fields = ["user"]
     search_fields = ["name"]
 
@@ -36,6 +38,7 @@ class MenuRecipeAdmin(PermissionMixin, NestedStackedInline):
 
 @admin.register(Menu)
 class MenuAdmin(PermissionMixin, NestedModelAdmin):
+    readonly_fields = ChangeMixin.fields
     inlines = [MenuRecipeAdmin]
     autocomplete_fields = ["user"]
 
@@ -62,6 +65,7 @@ class RecipeCommentAdmin(PermissionMixin, NestedTabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(PermissionMixin, NestedModelAdmin):
+    readonly_fields = ChangeMixin.fields
     inlines = [
         RecipeIngredientAdmin,
         RecipeStepAdmin,
@@ -72,11 +76,7 @@ class RecipeAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = ["name"]
 
 
-@admin.register(Unit)
-class UnitAdmin(PermissionMixin, NestedModelAdmin):
-    search_fields = ["name"]
-
-
 @admin.register(Ingredient)
 class IngredientAdmin(PermissionMixin, NestedModelAdmin):
+    readonly_fields = ChangeMixin.fields
     search_fields = ["name"]
