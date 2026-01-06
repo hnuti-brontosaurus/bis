@@ -30,7 +30,7 @@ class Recipe(ChangeMixin, BaseModel):
 
 @translate_model
 class RecipeIngredient(BaseModel):
-    recipe = ForeignKey(Recipe, related_name="ingredients", on_delete=PROTECT)
+    recipe = ForeignKey(Recipe, related_name="ingredients", on_delete=CASCADE)
     order = PositiveSmallIntegerField()
     ingredient = ForeignKey(
         Ingredient, related_name="recipe_ingredients", on_delete=PROTECT
@@ -49,7 +49,7 @@ class RecipeIngredient(BaseModel):
 
 @translate_model
 class RecipeStep(BaseModel):
-    recipe = ForeignKey(Recipe, related_name="steps", on_delete=PROTECT)
+    recipe = ForeignKey(Recipe, related_name="steps", on_delete=CASCADE)
     name = CharField(max_length=63)
     order = PositiveSmallIntegerField()
     description = TextField(blank=True)
@@ -61,14 +61,14 @@ class RecipeStep(BaseModel):
 
 @translate_model
 class RecipeTip(BaseModel):
-    recipe = ForeignKey(Recipe, related_name="tips", on_delete=PROTECT)
+    recipe = ForeignKey(Recipe, related_name="tips", on_delete=CASCADE)
     name = CharField(max_length=31)
     description = TextField()
 
 
 @translate_model
 class RecipeComment(BaseModel):
-    recipe = ForeignKey(Recipe, related_name="comments", on_delete=PROTECT)
-    user = ForeignKey(User, related_name="recipe_comments", on_delete=PROTECT)
+    recipe = ForeignKey(Recipe, related_name="comments", on_delete=CASCADE)
+    user = ForeignKey(User, related_name="recipe_comments", on_delete=CASCADE)
     created_at = DateTimeField(auto_now_add=True)
     comment = TextField()
