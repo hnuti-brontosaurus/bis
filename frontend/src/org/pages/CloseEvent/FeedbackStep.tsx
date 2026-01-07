@@ -71,7 +71,8 @@ export const FeedbackStep: FC<Props> = ({
             </>
           ) : (
             <>
-              Formulář zpětné vazby můžeš poslat účastníkům přes tento odkaz:{' '}
+              Formulář zpětné vazby můžeš poslat účastníkům přes tlačítko
+              "poslat zpětnou vazbu" a nebo můžeš použít tento odkaz:{' '}
               <ButtonLink to={`/akce/${eventId}/zpetna_vazba`} tertiary>
                 {window.location.origin}/akce/{eventId}/zpetna_vazba
               </ButtonLink>
