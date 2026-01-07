@@ -288,8 +288,9 @@ def get_consultants():
 
 
 def qualification_about_to_end():
+    to_date = date.today() + timedelta(days=90)
     for qualification in Qualification.get_expiring_qualifications(
-        date.today() + timedelta(days=90)
+        to_date, Qualification.objects.filter(valid_till=to_date)
     ):
         if qualification.category.slug in [
             "consultant",
@@ -347,7 +348,9 @@ def qualification_ends_this_year() -> None:
 
 
 def qualification_ended():
-    for qualification in Qualification.get_expiring_qualifications(date.today()):
+    for qualification in Qualification.get_expiring_qualifications(
+        date.today(), Qualification.objects.filter(valid_till=date.today())
+    ):
         if qualification.category.slug in [
             "consultant",
             "instructor",
@@ -509,7 +512,7 @@ def send_feedback_request(event):
         ecomail.send_email(
             emails["bis"],
             "ZV",
-            "305",
+            305,
             [participant.email],
             variables={
                 "event_name": event.name,
