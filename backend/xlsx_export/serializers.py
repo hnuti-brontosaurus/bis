@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
-from django.db.models import Count, F, OuterRef, Subquery, Value
+from django.db.models import Count, Exists, F, Min, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor
 from event.models import (
@@ -131,15 +131,11 @@ class UserExportSerializer(ModelSerializer):
         return hasattr(instance, "donor")
 
 
-class DonorExportSerializer(ModelSerializer):
+class BaseDonorExportSerializer(ModelSerializer):
     user = UserExportSerializer()
     variable_symbols = StringRelatedField(many=True)
     regional_center_support = StringRelatedField()
     basic_section_support = StringRelatedField()
-    donations_sum = IntegerField()
-    first_donation = DateField()
-    last_donation = DateField()
-    donation_sources = ListField()
 
     @staticmethod
     def get_related(queryset):
@@ -177,6 +173,18 @@ class DonorExportSerializer(ModelSerializer):
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
+        )
+
+
+class DonorExportSerializer(BaseDonorExportSerializer):
+    donations_sum = IntegerField()
+    first_donation = DateField()
+    last_donation = DateField()
+    donation_sources = ListField()
+
+    class Meta(BaseDonorExportSerializer.Meta):
+        model = Donor
+        fields = BaseDonorExportSerializer.Meta.fields + (
             "donations_sum",
             "first_donation",
             "last_donation",
@@ -331,31 +339,38 @@ class EventExportSerializer(ModelSerializer):
     registration = RegistrationExportSerializer()
     record = RecordExportSerializer()
     location_name = SerializerMethodField(label="Místo konání")
+    has_feedback = SerializerMethodField(label="Má zpětnou vazbu")
 
     @staticmethod
     def get_related(queryset):
-        return queryset.select_related(
-            "location",
-            "location__program",
-            "location__accessibility_from_prague",
-            "location__accessibility_from_brno",
-            "location__region",
-            "group",
-            "category",
-            "program",
-            "main_organizer",
-            "finance",
-            "finance__grant_category",
-            "propagation",
-            "vip_propagation",
-            "intended_for",
-            "registration",
-            "record",
-        ).prefetch_related(
-            "administration_units",
-            "other_organizers",
-            "propagation__diets",
-            "tags",
+        return (
+            queryset.select_related(
+                "location",
+                "location__program",
+                "location__accessibility_from_prague",
+                "location__accessibility_from_brno",
+                "location__region",
+                "group",
+                "category",
+                "program",
+                "main_organizer",
+                "finance",
+                "finance__grant_category",
+                "propagation",
+                "vip_propagation",
+                "intended_for",
+                "registration",
+                "record",
+            )
+            .prefetch_related(
+                "administration_units",
+                "other_organizers",
+                "propagation__diets",
+                "tags",
+            )
+            .annotate(
+                _has_feedback=Exists(EventFeedback.objects.filter(event=OuterRef("pk")))
+            )
         )
 
     class Meta:
@@ -391,14 +406,18 @@ class EventExportSerializer(ModelSerializer):
             "propagation",
             "vip_propagation",
             "registration",
+            "has_feedback",
         )
 
     def get_location_name(self, instance):
         return instance.location.name
 
+    def get_has_feedback(self, instance):
+        return instance._has_feedback
+
 
 class DonationExportSerializer(ModelSerializer):
-    donor = DonorExportSerializer()
+    donor = BaseDonorExportSerializer()
     donation_source = StringRelatedField()
 
     @staticmethod
