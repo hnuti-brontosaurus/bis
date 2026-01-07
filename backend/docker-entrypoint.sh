@@ -18,7 +18,6 @@ case "$1" in
         python manage.py shell
     ;;
     test)
-        python manage.py migrate
         python -m pytest --durations=3
     ;;
     dev)

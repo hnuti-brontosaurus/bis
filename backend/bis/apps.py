@@ -20,17 +20,21 @@ class BISConfig(AppConfig):
         self.setup_schedules()
 
     def setup_schedules(self):
+        from django.db import ProgrammingError
         from django_q.models import Schedule
 
-        Schedule.objects.update_or_create(
-            name="daily_command",
-            defaults={
-                "func": "django.core.management.call_command",
-                "args": "'daily'",
-                "schedule_type": Schedule.CRON,
-                "cron": "0 7 * * *",
-            },
-        )
+        try:
+            Schedule.objects.update_or_create(
+                name="daily_command",
+                defaults={
+                    "func": "django.core.management.call_command",
+                    "args": "'daily'",
+                    "schedule_type": Schedule.CRON,
+                    "cron": "0 7 * * *",
+                },
+            )
+        except ProgrammingError:
+            pass  # Table doesn't exist yet (e.g., during migrations or tests)
 
     class Meta:
         verbose_name_plural = "Základní informace"
