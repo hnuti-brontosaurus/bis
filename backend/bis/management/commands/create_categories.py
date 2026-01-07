@@ -1067,7 +1067,6 @@ class Command(BaseCommand):
                 ("burger", "burger"),
                 ("salad", "salát"),
                 ("porridge", "kaše"),
-                ("snack", "snack"),
                 ("dip", "dip"),
                 ("sandwiches", "sendviče"),
             ],
