@@ -1079,7 +1079,7 @@ class Command(BaseCommand):
                 ("on_hike", "na čundr"),
                 ("one_pot", "v jednom hrnci"),
             ],
-            "Zdravotní omezení": [
+            "Postižení": [
                 ("gluten_free", "bez lepku"),
                 ("low_legumes", "málo luštěnin"),
                 ("dia", "dia"),
