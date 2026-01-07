@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     "cookbook",
     "cookbook_categories",
     "django_bootstrap5",
+    "django_q",
     "django_cleanup.apps.CleanupConfig",  # needs to be last
 ]
 
@@ -320,3 +321,12 @@ BOOTSTRAP5 = {
     },
 }
 LOGIN_URL = "/logout"
+
+Q_CLUSTER = {
+    "name": "DjangoDB",
+    "workers": 1,
+    "timeout": 3600,
+    "retry": 3600,
+    "orm": "default",
+    "max_attempts": 1,
+}

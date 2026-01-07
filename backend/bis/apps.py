@@ -17,5 +17,20 @@ class BISConfig(AppConfig):
 
         autoreload_started.connect(watch_directories)
 
+        self.setup_schedules()
+
+    def setup_schedules(self):
+        from django_q.models import Schedule
+
+        Schedule.objects.update_or_create(
+            name="daily_command",
+            defaults={
+                "func": "django.core.management.call_command",
+                "args": "'daily'",
+                "schedule_type": Schedule.CRON,
+                "cron": "0 7 * * *",
+            },
+        )
+
     class Meta:
         verbose_name_plural = "Základní informace"

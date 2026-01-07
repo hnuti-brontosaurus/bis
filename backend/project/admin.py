@@ -13,7 +13,9 @@ class MyAdminSite(admin.AdminSite):
     empty_value_display = "Nevyplněno"
 
     def get_app_list(self, request, app_label=None):
-        list = super().get_app_list(request, app_label)
+        apps = super().get_app_list(request, app_label)
+        if not request.user.is_superuser:
+            apps = [_ for _ in apps if _["app_label"] != "django_q"]
 
         order = [
             "administration_units",
@@ -27,6 +29,7 @@ class MyAdminSite(admin.AdminSite):
             "cookbook_categories",
             "game_book",
             "game_book_categories",
+            "django_q",
         ]
-        list.sort(key=lambda value: order.index(value["app_label"]))
-        return list
+        apps.sort(key=lambda value: order.index(value["app_label"]))
+        return apps

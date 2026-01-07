@@ -354,4 +354,4 @@ class SavedFile(Model):
 
     @classmethod
     def remove_old(cls):
-        SavedFile.objects.delete(created_at__lte=today() - timedelta(days=14))
+        SavedFile.objects.filter(created_at__lte=today() - timedelta(days=14)).delete()
