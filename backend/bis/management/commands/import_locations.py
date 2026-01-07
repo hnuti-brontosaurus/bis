@@ -89,7 +89,7 @@ class Command(BaseCommand):
 
     def parse_attribute(self, attr):
         if attr["attribute"]["id"] == 2259:
-            return dict(is_full=attr["value"][0] == "nrrx")
+            return dict(is_full=bool(attr["value"] and attr["value"][0] == "nrrx"))
         if attr["attribute"]["id"] == 2260:
             return dict(description=attr["value"])
         if attr["attribute"]["id"] == 2261:
@@ -129,12 +129,16 @@ class Command(BaseCommand):
         if attr["attribute"]["id"] == 2266:
             return dict(web=attr["value"])
         if attr["attribute"]["id"] == 8118:
+            if not attr["value"]:
+                return dict()
             return dict(
                 accessibility_from_brno=self.location_accessibility_map[
                     attr["value"][0]
                 ]
             )
         if attr["attribute"]["id"] == 8119:
+            if not attr["value"]:
+                return dict()
             return dict(
                 accessibility_from_prague=self.location_accessibility_map[
                     attr["value"][0]
