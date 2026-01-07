@@ -133,6 +133,9 @@ class XLSXWriter:
         return extra
 
     def write_stats(self, model, header):
+        if not header:
+            return
+
         stats_header = {
             key: header.get(key[:-6], value)
             for key, value in header.items()
