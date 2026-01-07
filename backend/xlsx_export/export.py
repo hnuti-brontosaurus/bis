@@ -28,6 +28,7 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import FileResponse
+from django.template import Context, Template
 from django.utils.formats import date_format
 from event.models import Event
 from feedback.models import EventFeedback
@@ -35,8 +36,9 @@ from other.models import SavedFile
 from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
 from questionnaire.models import EventApplication
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import CharField, ModelSerializer, Serializer
 from translation.translate import _
+from weasyprint import HTML
 from xlsx2html import xlsx2html
 from xlsx_export.helpers import text_into_lines
 from xlsx_export.serializers import (
@@ -415,18 +417,19 @@ def get_attendance_list_data(event, use_participants):
         address = getattr(item, "address", "")
         if not address and (applications_user := getattr(item, "user", None)):
             address = getattr(applications_user, "address", "")
-        yield (
-            item.first_name + " " + item.last_name,
-            item.birthday and item.birthday.strftime("%d. %m. %Y"),
-            address and f"{address.street}, {address.city}",
-            address and address.zip_code,
-            item.email,
-            str(item.phone),
-            item in organizers,
-        )
+
+        yield {
+            "name": item.first_name + " " + item.last_name,
+            "birthday": item.birthday and item.birthday.strftime("%d. %m. %Y"),
+            "address": address and f"{address.street}, {address.city}",
+            "zip_code": address and address.zip_code,
+            "email": item.email,
+            "phone": str(item.phone),
+            "is_organizer": item in organizers,
+        }
 
     for i in range(max(10, len(rows) // 10)):
-        yield 7 * ("",)
+        yield {}
 
 
 def get_attendance_list_rows(ws):
@@ -474,50 +477,29 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
         return export_to_xlsx_response(queryset)
 
     assert formatting == "pdf"
-    wb = openpyxl.load_workbook(
-        join(BASE_DIR, "xlsx_export", "fixtures", "attendance_list_template.xlsx")
-    )
-    ws = wb.active
+    data = {
+        "event": event.name,
+        "location": event.location.name,
+        "date": event.get_date(),
+        "administration_unit": ", ".join(
+            au.abbreviation for au in event.administration_units.all()
+        ),
+        "main_organizer": event.main_organizer.get_name(False),
+        "data": list(get_attendance_list_data(event, use_participants)),
+    }
 
-    ws["C2"] = event.name
-    ws["C3"] = event.get_date()
-    ws["C4"] = event.location.name
-    ws["C5"] = ", ".join(au.abbreviation for au in event.administration_units.all())
-
-    rows = get_attendance_list_rows(ws)
-    data_rows = get_attendance_list_data(event, use_participants)
-    for row, data in zip(rows, data_rows):
-        for cell, value in zip("BCDEFG", data[:-1]):
-            ws[f"{cell}{row}"] = value
-        if data[-1]:
-            for cell in "BCDEFGH":
-                ws[f"{cell}{row}"].font = ws[f"{cell}{row}"].font.copy(bold=True)
-
-    tmp_xlsx = NamedTemporaryFile(
-        mode="w", suffix=".xlsx", newline="", encoding="utf8", prefix="attendance_list_"
+    template_path = (
+        Path(settings.BASE_DIR) / "xlsx_export" / "templates" / "attendance_list.html"
     )
-    tmp_html = NamedTemporaryFile(
-        mode="w", suffix=".html", newline="", encoding="utf8", prefix="attendance_list_"
-    )
+    template = Template(template_path.read_text())
+    context = Context(data)
+    html_content = template.render(context)
     tmp_pdf = NamedTemporaryFile(
         mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
     )
-
-    wb.save(tmp_xlsx.name)
-
-    xlsx2html(tmp_xlsx.name, tmp_html.name)
-
-    pdfkit.from_file(
-        tmp_html.name,
-        tmp_pdf.name,
-        {
-            "page-size": "A4",
-            "encoding": "UTF-8",
-            "orientation": "Landscape",
-            "title": "Landscape",
-        },
+    HTML(string=html_content, base_url=str(template_path.parent)).write_pdf(
+        tmp_pdf.name
     )
-
     return FileResponse(open(tmp_pdf.name, "rb"), as_attachment=True)
 
 

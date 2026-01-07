@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            line-height: 1.2;
+        }
+
+        .title {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+        }
+
+        .title img {
+            height: 100px;
+        }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 9pt;
+        }
+
+        .header-item {
+            display: flex;
+        }
+
+        .header-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .legal-text {
+            font-size: 7pt;
+            margin: 1rem 0;
+            text-align: justify;
+            line-height: 1.3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 8pt;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 1rem;
+            text-align: left;
+            min-height: 1rem;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 7pt;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+<div class="title">
+    <h1>Prezenční listina</h1>
+    <img src="logo_HB_2020_svetle_zelene_leve.png">
+</div>
+
+<div class="header-grid">
+    <div class="header-item">
+        <span class="header-label">Akce:</span>
+        <span>{{ event }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Místo:</span>
+        <span>{{ location }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Datum:</span>
+        <span>{{ date }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Základní článek, klub, RC:</span>
+        <span>{{ administration_unit }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Jméno hlavního organizátora:</span>
+        <span>{{ main_organizer }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Podpis statutárního zástupce*:</span>
+        <span></span>
+    </div>
+</div>
+
+<div class="legal-text">
+    *Vyplň, pokud je akce podpořena MV.<br><br>
+
+    „Svým podpisem uděluji Hnutí Brontosaurus a jeho organizační jednotce, která akci pořádá (dále jen Správci), souhlas
+    se zpracováním svých osobních údajů v souladu se zákonem č. 101/2000 Sb., o ochraně osobních údajů. Osobní údaje
+    jsou zpracovávány výhradně za účelem zajištění činnosti HB, evidence účastníků, jejich kontaktování za účelem
+    poskytování informací o činnosti HB a za účelem splnění povinností vyplývajících z právních předpisů a stanovených
+    podmínek pro poskytnutí finanční aj. podpory. Podrobnosti najdete na
+    http://www.brontosaurus.cz/osobni-udaje.<br><br>
+
+    Svým podpisem uděluji souhlas, že fotografie či videozáznam, na němž je zachycena má podobizna, mohou být použity za
+    účelem dokumentace a propagace činnosti Správců. Osoba, jejíž údaje Správci zpracovávají, má právo k přístupu ke
+    zpracovávaným údajům, právo na opravu údajů a právo požadovat vysvětlení a nápravu závadného stavu, které může
+    uplatnit v sídle každé ze Správců."<br><br>
+
+    Dále potvrzuji, že jsem byl/a proškolen/a o zásadách bezpečnosti při všech činnostech na akci, o hygienických a
+    protipožárních předpisech a režimu na akci a uplatňovaných provozních a organizačních zásadách. Podpisem čestně
+    prohlašuji, že mnou uvedené údaje jsou pravdivé.<br><br>
+
+    <strong>Vysvětlení ke zdravotním omezením:</strong> Uveďte, zda si jste/nejste ke dni začátku dobrovolnické akce
+    vědom(a) zdravotních omezeních souvisejících s výkonem dobrovolnické služby. Uvede-li ANO, tak zdravotní omezení
+    napište v příloze.*
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th style="width: 3%;">#</th>
+        <th style="width: 20%;">Jméno a příjmení</th>
+        <th style="width: 8%;">Datum narození</th>
+        <th style="width: 18%;">Bydliště</th>
+        <th style="width: 6%;">PSČ</th>
+        <th style="width: 15%;">Telefon</th>
+        <th style="width: 15%;">E-mail</th>
+        <th style="width: 1%;">Zdrav. omezení</th>
+        <th style="width: 10%;">Podpis</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for p in data %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.birthday }}</td>
+            <td>{{ p.address }}</td>
+            <td>{{ p.zip_code }}</td>
+            <td>{{ p.phone }}</td>
+            <td>{{ p.email }}</td>
+            <td></td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+<div class="page-break title">
+    <h1>Souhlas zákonných zástupců k výkonu krátkodobé dobrovolnické služby*</h1>
+    <img src="logo_HB_2020_svetle_zelene_leve.png"/>
+</div>
+
+
+<div class="header-grid">
+    <div class="header-item">
+        <span class="header-label">Akce:</span>
+        <span>{{ event }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Místo:</span>
+        <span>{{ location }}</span>
+    </div>
+    <div class="header-item" style="grid-column: span 2">
+        <span class="header-label">Datum:</span>
+        <span>{{ date }}</span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Jméno a příjmení účastníka:</span>
+        <span></span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Datum narození účastníka:</span>
+        <span></span>
+    </div>
+    <div class="header-item">
+        <span class="header-label">Jméno a příjmení zákonného zástupce:</span>
+        <span></span>
+    </div>
+        <div class="header-item">
+            <span class="header-label">Podpis zákonného zástupce:</span>
+            <span></span>
+        </div>
+
+</div>
+
+<div class="legal-text">
+    Svým podpisem souhlasím s výkonem dobrovolnické služby syna/dcery (mně svěřené osoby) na výše uvedené
+    dobrovolnické akci dle znění dobrovolnické smlouvy – viz příloha.<br><br>
+
+    Svým podpisem uděluji Hnutí Brontosaurus a jeho organizační jednotce, která akci pořádá (dále jen Správci),
+    souhlas se zpracováním osobních údajů syna/dcery v souladu se zákonem č. 101/2000 Sb., o ochraně osobních
+    údajů.
+    Osobní údaje jsou zpracovávány výhradně za účelem zajištění činnosti HB, evidence účastníků, jejich
+    kontaktování
+    za účelem poskytování informací o činnosti HB a za účelem splnění povinností vyplývajících z právních
+    předpisů a
+    stanovených podmínek pro poskytnutí finanční aj. podpory. Svým podpisem uděluji souhlas, že fotografie či
+    videozáznam, na němž je zachycena podobizna syna/dcery, mohou být použity za účelem dokumentace a propagace
+    činnosti Správců. Osoba nebo její zákonný zástupce, jejíž údaje Správci zpracovávají, má právo k přístupu ke
+    zpracovávaným údajům, právo na opravu údajů a právo požadovat vysvětlení a nápravu závadného stavu, které
+    může
+    uplatnit v sídle každé ze Správců."
+</div>
+
+<div class="page-break title">
+    <h1>Příloha – Zdravotní omezení*</h1>
+    <img src="logo_HB_2020_svetle_zelene_leve.png"/>
+</div>
+
+<div class="legal-text">
+    Ke dni začátku dobrovolnické akce jsem si vědom/a následujících zdravotních omezení:
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th style="width: 30%;">Jméno a příjmení</th>
+        <th style="width: 70%;">Zdravotní omezení</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for i in "123456789" %}
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
