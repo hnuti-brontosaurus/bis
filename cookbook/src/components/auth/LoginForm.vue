@@ -2,7 +2,7 @@
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
 import { faBars } from "@fortawesome/free-solid-svg-icons"
-import { useRouter } from "vue-router"
+import {useRoute, useRouter} from "vue-router"
 import { theme } from "@/composables/theme.js"
 import { _, translatedKey } from "@/composables/translations.js"
 import { me, useAuth } from "@/composables/auth.js"
@@ -33,6 +33,7 @@ const hcaptcha = ref()
 const form = ref()
 const registerLoading = ref(false)
 const router = useRouter()
+const route = useRoute()
 let controller
 
 watch(
@@ -94,7 +95,7 @@ const login = async () => {
     await form.value.validate()
     const { data } = await axios.post("/auth/login/", { ...user.value })
     me.value = data
-    if (me.value.is_chef) router.back()
+    if (me.value.is_chef && route.query.next) router.push(route.query.next)
   } catch (e) {
     handleAxiosError(_.value.login.login_error)(e)
   } finally {

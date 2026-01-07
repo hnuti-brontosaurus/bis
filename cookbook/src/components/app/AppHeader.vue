@@ -72,7 +72,8 @@ const userOptions = computed(() => {
 const select = value => {
   if (value === "logout") {
     me.value = {}
-    value = "home"
+    router.go(0)
+    return
   }
   if (["login", "register", "create_profile", "settings"].includes(value)) value = "me"
   router.push({ name: value })

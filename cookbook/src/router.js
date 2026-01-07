@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
+import { me } from "@/composables/auth.js"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,11 +27,13 @@ const router = createRouter({
     {
       path: "/recipe/:id/edit/",
       name: "edit_recipe",
+      meta: { requiresAuth: true },
       component: () => import("@/views/EditRecipeView.vue"),
     },
     {
       path: "/recipe/create/",
       name: "create_recipe",
+      meta: { requiresAuth: true },
       component: () => import("@/views/EditRecipeView.vue"),
     },
     {
@@ -49,6 +52,12 @@ const router = createRouter({
       component: () => import("@/views/TodoView.vue"),
     },
   ],
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !me.value?.is_chef) {
+    return { name: "me", query: { next: to.fullPath } }
+  }
 })
 
 export default router
