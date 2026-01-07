@@ -34,6 +34,7 @@ SECRET_KEY = environ["SECRET_KEY"]
 
 DEBUG = bool(int(environ["DEBUG"]))
 TEST = bool(int(environ["TEST"]))
+ENVIRONMENT = environ.get("ENVIRONMENT", "local")
 
 FULL_HOSTNAME = environ["FULL_HOSTNAME"]
 ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
@@ -266,6 +267,7 @@ if not DEBUG:
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
+        environment=ENVIRONMENT,
     )
 
 # app
@@ -281,8 +283,8 @@ EMAILS_ENABLED = bool(int(environ["EMAILS_ENABLED"]))
 ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
 
 # darujme
-DARUJME_API_KEY = environ["DARUJME_API_KEY"]
-DARUJME_SECRET = environ["DARUJME_SECRET"]
+DARUJME_API_KEY = environ.get("DARUJME_API_KEY")
+DARUJME_SECRET = environ.get("DARUJME_SECRET")
 
 HCAPTCHA_SECRET = environ["HCAPTCHA_SECRET"]
 GROQ_API_KEY = environ["GROQ_API_KEY"]

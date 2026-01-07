@@ -24,6 +24,9 @@ class Command(BaseCommand):
         return requests.get(url).json()
 
     def handle(self, *args, **options):
+        if not settings.DARUJME_API_KEY:
+            return
+
         url = f"{self.base_url}/organization/206/pledges-by-filter?{self.api_secrets}"
 
         data = requests.get(url).json()
