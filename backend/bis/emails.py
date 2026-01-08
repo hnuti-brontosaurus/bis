@@ -19,7 +19,7 @@ emails = {
     "movement": ("Hnutí Brontosaurus", "hnuti@brontosaurus.cz"),
     "education": ("Vzdělávání", "vzdelavani@brontosaurus.cz"),
     "volunteering": ("Dobrovolnictví", "dobrovolnictvi@brontosaurus.cz"),
-    "adoption": ("Adopce Brontosaura", "adopce@brontosaurus.cz"),
+    "donation": ("Dárcovství", "darcovstvi@brontosaurus.cz"),
 }
 
 
@@ -448,7 +448,7 @@ def fill_memberships(call):
 
 def donation_confirmation(donor, confirmation, year):
     ecomail.send_email(
-        emails["adoption"],
+        emails["donation"],
         "Poděkování a potvrzení o daru HB",
         167,
         [donor.user.email],
