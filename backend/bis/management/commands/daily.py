@@ -58,6 +58,7 @@ class Command(BaseCommand):
             try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
             try_to_run(check_disk_space)
+            try_to_run(emails.expressed_engagement_in_feedback)
 
         # monthly
         if today.day == 1:

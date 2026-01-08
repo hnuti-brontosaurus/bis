@@ -11,6 +11,7 @@ from dateutil.utils import today
 from django.conf import settings
 from ecomail import ecomail
 from event.models import Event
+from feedback.models import Reply
 from opportunities.models import Opportunity
 from vokativ import vokativ
 
@@ -530,3 +531,38 @@ def send_feedback_request(event):
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
             },
         )
+
+
+def expressed_engagement_in_feedback():
+    """
+    Email hnuti with info about people who filled in the feedback form
+    that they want to participate more in HB (in the 7 days).
+    - Missing name/email are replaced with defaults.
+    - Email is sent even if it is empty.
+    (email 36)
+    """
+    replies = Reply.objects.select_related("feedback", "feedback__event").filter(
+        feedback__created_at__gte=date.today() - timedelta(days=7),
+        inquiry__slug="involvement_means",
+    )
+
+    items = (
+        ", ".join(
+            (
+                reply.feedback.name or "jméno nevyplněno",
+                f"email: {reply.feedback.email or 'email nevyplněn'}",
+                f"akce: {reply.feedback.event.name}",
+                f"jak se chce zapojit: {reply.reply}",
+            )
+        )
+        for reply in replies
+        if "nechci" not in reply.reply
+    )
+
+    ecomail.send_email(
+        emails["bis"],
+        "Lidé, kteří vyplnili ve ZV, že se chtějí dále zapojit",
+        312,
+        [emails["movement"][1]],
+        variables={"replies": make_ul(items)},
+    )

@@ -130,5 +130,9 @@ def send_email(
             }
         },
     )
+
+    if "results" not in res:
+        raise RuntimeError(f"Ecomail API error: {res}")
+
     assert res["results"]["total_accepted_recipients"] == len(recipients)
     print("SENT EMAIL", f"{subject=},\t{from_email=},\t{from_name=},\t{recipients=}")
