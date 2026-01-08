@@ -41,7 +41,7 @@ class DonationAdmin(PermissionMixin, NestedModelAdmin):
         HasDonorFilter,
         ("donation_source", MultiSelectRelatedDropdownFilter),
     )
-    exclude = "_import_id", "_variable_symbol"
+    exclude = ("_import_id",)
 
     list_select_related = "donor__user", "donation_source"
     search_fields = User.get_search_fields(prefix="donor__user__")

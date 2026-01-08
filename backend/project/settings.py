@@ -328,7 +328,7 @@ Q_CLUSTER = {
     "name": "DjangoDB",
     "workers": 1,
     "timeout": 36000,
-    "retry": 0,
+    "retry": 36000 * 2,
     "orm": "default",
     "max_attempts": 1,
 }

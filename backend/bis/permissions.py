@@ -66,7 +66,7 @@ class Permissions:
         return self.model._meta.app_label in [
             "categories",
             "regions",
-        ] or self.model in [Donation]
+        ]
 
     def is_game_book(self):
         return self.model._meta.app_label in ["game_book", "game_book_categories"]
@@ -135,7 +135,7 @@ class Permissions:
             return False
 
         if self.user.is_office_worker:
-            if self.model not in [UserEmail]:
+            if self.model not in [UserEmail, Donation]:
                 return True
 
         # for admin
@@ -214,7 +214,7 @@ class Permissions:
             return False
 
         if self.user.is_office_worker:
-            if self.model not in [BrontosaurusMovement, UserEmail]:
+            if self.model not in [BrontosaurusMovement, UserEmail, Donation]:
                 return True
 
         if self.model is DuplicateUser and not obj:
@@ -283,7 +283,7 @@ class Permissions:
             return False
 
         if self.user.is_office_worker:
-            if self.model not in [UserEmail]:
+            if self.model not in [UserEmail, Donation]:
                 return True
 
         if self.model is DuplicateUser and not obj:
