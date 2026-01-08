@@ -57,7 +57,12 @@ def password_reset_link(user, email, login_code):
 
 def application_created(application):
     event = application.event_registration.event
-    variables = {"event_name": event.name, "event_date": event.get_date()}
+    contact_email = event.propagation.contact_email or event.main_organizer.email
+    variables = {
+        "event_name": event.name,
+        "event_date": event.get_date(),
+        "contact_email": contact_email,
+    }
     if application.is_child_application:
         template = 182
         email = application.close_person.email
@@ -82,14 +87,15 @@ def application_created(application):
         "Potvrzení přihlášení na akci",
         template,
         [email],
+        reply_to=contact_email,
         variables=variables,
     )
-    email = event.propagation.contact_email or event.main_organizer.email
+
     ecomail.send_email(
         emails["bis"],
         "Nová přihláška!",
         148,
-        [email],
+        [contact_email],
         variables={
             "participant_name": application.nickname
             or f"{application.first_name} {application.last_name}",
@@ -389,16 +395,18 @@ def qualification_created(qualification: Qualification):
 
 
 def opportunity_created(opportunity: Opportunity):
-    email = opportunity.contact_email or opportunity.contact_person.email
+    recipient_email = opportunity.contact_email or opportunity.contact_person.email
+    created_by_email = opportunity.contact_person.email
     ecomail.send_email(
         emails["volunteering"],
         "Příležitost je zadána v BISu",
         145,
-        [email],
+        [recipient_email],
+        reply_to=created_by_email,
         variables={
             "created_by": opportunity.contact_person.get_name(),
             "opportunity": opportunity.name,
-            "created_by_email": opportunity.contact_person.email,
+            "created_by_email": created_by_email,
         },
     )
 
@@ -439,6 +447,7 @@ def fill_memberships(call):
             subjects[call],
             template_ids[call],
             [administration_unit.chairman.email],
+            reply_to=emails["movement"][1],
             variables={
                 "vokativ": administration_unit.chairman.vokativ,
                 "administration_unit": administration_unit.abbreviation,
