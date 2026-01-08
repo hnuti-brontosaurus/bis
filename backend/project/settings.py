@@ -327,8 +327,8 @@ LOGIN_URL = "/logout"
 Q_CLUSTER = {
     "name": "DjangoDB",
     "workers": 1,
-    "timeout": 3600,
-    "retry": 3600,
+    "timeout": 36000,
+    "retry": 0,
     "orm": "default",
     "max_attempts": 1,
 }
