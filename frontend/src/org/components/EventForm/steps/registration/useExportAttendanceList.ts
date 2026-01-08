@@ -1,15 +1,14 @@
 import { useExport } from 'hooks/useExport'
 
+export interface Props {
+  eventId: number
+  format: 'pdf' | 'xlsx'
+}
+
 /**
  * Generate URL of export api endpoint
  */
-const getUri = ({
-  eventId,
-  format,
-}: {
-  eventId: number
-  format: 'pdf' | 'xlsx'
-}) =>
+const getUri = ({ eventId, format }: Props) =>
   `${
     process.env.REACT_APP_API_BASE_URL ?? '/api/'
   }frontend/events/${eventId}/get_attendance_list/?formatting=${format}`
@@ -17,13 +16,8 @@ const getUri = ({
 /**
  * Generate name of the exported file
  */
-const getName = ({
-  eventId,
-  format,
-}: {
-  eventId: number
-  format: 'pdf' | 'xlsx'
-}) => `prezencni_listina_${eventId}.${format}`
+const getName = ({ eventId, format }: Props) =>
+  `prezencni_listina_${eventId}.${format}`
 
 /**
  * Export attendance list from api

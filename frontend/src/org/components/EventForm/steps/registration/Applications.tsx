@@ -27,6 +27,7 @@ import styles from '../ParticipantsStep.module.scss'
 import { AddParticipantModal } from './AddParticipantModal'
 import { BehaviourIssuesTooltip } from './BehaviourIssuesTooltip'
 import { EmailListModal } from './EmailListModal'
+import { ExportAttendanceButton } from './ExportAttendanceButton'
 import { NewApplicationModal } from './NewApplicationModal'
 import { PaidForCheckbox } from './PaidForCheckbox'
 import { ShowApplicationModal } from './ShowApplicationModal'
@@ -185,55 +186,6 @@ export const Applications: FC<{
       ? administrationUnitsData.results
       : []
 
-  const getEventAdministrationUnits = (event: FullEvent) => {
-    const names: string[] = []
-    for (const id of event.administration_units) {
-      const administrationUnit = administrationUnits.find(
-        (d: AdministrationUnit) => d.id === id,
-      )
-      if (administrationUnit) {
-        names.push(administrationUnit.name)
-      }
-    }
-    return names
-  }
-
-  const removeApplicationsDuplicates = (arr: EventApplication[]) => {
-    const uniqueSet = new Set()
-    return arr.filter((obj: EventApplication) => {
-      const { first_name, last_name, email, phone } = obj
-      const uniqueKey = `${first_name}-${last_name}-${email}-${phone}`
-      if (!uniqueSet.has(uniqueKey)) {
-        uniqueSet.add(uniqueKey)
-        return true
-      }
-      return false
-    })
-  }
-
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
-
-  const generateAndSavePdf = async () => {
-    setIsGeneratingPdf(true)
-    const { generatePdf } = await import('./participantsPdf')
-    const doc = generatePdf(
-      removeApplicationsDuplicates(
-        applicationsPending.concat(applicationsAccepted),
-      ) || [],
-      {
-        ...event,
-        administration_units_names: getEventAdministrationUnits(event),
-      },
-    )
-    await doc.save(`Lidé přihlášení na akci: ${event.name}`, {
-      returnPromise: true,
-    })
-    setIsGeneratingPdf(false)
-  }
-
-  const [exportAttendanceList, { isLoading: isExportLoading }] =
-    useExportAttendanceList()
-
   const thereAreApplications = applications && applications.length !== 0
 
   const ALL_COLUMNS = 7 + event.questions.length
@@ -372,26 +324,12 @@ export const Applications: FC<{
       <div className={classNames(styles.ListContainer, className)}>
         <h2>Přihlášení</h2>
         <div className={styles.buttonsContainer}>
-          <Button
-            secondary
-            small
-            type="button"
-            onClick={() => {
-              exportAttendanceList({ eventId: event.id, format: 'xlsx' })
-            }}
-            isLoading={isExportLoading}
-          >
+          <ExportAttendanceButton eventId={event.id} format="xlsx">
             Exportovat do excelu
-          </Button>
-          <Button
-            secondary
-            small
-            type="button"
-            isLoading={isGeneratingPdf}
-            onClick={() => generateAndSavePdf()}
-          >
+          </ExportAttendanceButton>
+          <ExportAttendanceButton eventId={event.id} format="pdf">
             Tisknout prezenční listinu
-          </Button>
+          </ExportAttendanceButton>
           <Button
             secondary
             small
