@@ -151,8 +151,19 @@ export const EventFeedbackForm: FC<{
           <FormSectionGroup>
             <FormSection header="Osobní údaje">
               <InfoBox>
-                Chceš-li zůstat anonymní, smaž jméno a e-mail. Bez nich tě ale
-                nemůžeme zpětně kontaktovat (např. kvůli dalšímu zapojení).
+                {user ? (
+                  <>
+                    Chceš-li zůstat anonymní, smaž jméno a e-mail. Bez nich tě
+                    ale nemůžeme zpětně kontaktovat (např. kvůli dalšímu
+                    zapojení).
+                  </>
+                ) : (
+                  <>
+                    Zpětnou vazbu lze odeslat i anonymně. Pokud ale uvedete
+                    alespoň e-mail, budeme vás moci kontaktovat v případě zájmu
+                    o další zapojení.
+                  </>
+                )}
               </InfoBox>
               <InlineSection>
                 <Label>Jméno</Label>
