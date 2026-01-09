@@ -459,7 +459,7 @@ def fill_memberships(call):
 def donation_confirmation(donor, confirmation, year):
     ecomail.send_email(
         emails["donation"],
-        "Poděkování a potvrzení o daru HB",
+        "Hnutí Brontosaurus – poděkování a potvrzení o daru",
         167,
         [donor.user.email],
         variables={
