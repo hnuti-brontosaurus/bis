@@ -2,8 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-
-from ecomail.helpers import send
+from ecomail.helpers import get_name_from_template, send
 from ecomail.models import Contact
 from ecomail.serializers import SendEmailSerializer
 
@@ -66,15 +65,17 @@ from ecomail.serializers import SendEmailSerializer
 
 def send_email(
     sender: tuple[str, str],
-    subject: str,
     template_id: int,
     recipients: list[str],
     *,
+    subject=None,
     reply_to=None,
     variables=None,
     attachments=None,
 ):
     from_name, from_email = sender
+    if subject is None:
+        subject = get_name_from_template(template_id)
     if attachments is None:
         attachments = []
     if variables is None:

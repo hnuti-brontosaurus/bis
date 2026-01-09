@@ -1,3 +1,4 @@
+import re
 from typing import List, Union
 
 import requests
@@ -46,3 +47,31 @@ def send(contacts: Union[Contact, List[Contact]], method, uri, data=None, params
         return response.json()
     except JSONDecodeError:
         return {"response": response}
+
+
+def get_name_from_template(template_id: int) -> str:
+    """
+    For the given template ID, return the ready-to-use name of the template from the Ecomail web interface.
+
+    Examples:
+        "  31.Jaký to bylo? " -> "Jaký to bylo?"
+        "8a. Konec kvalifikace konzultantů" -> "Konec kvalifikace konzultantů"
+        "Beze změny" -> "Beze změny"
+    """
+    try:
+        template_name = (
+            requests.get(
+                f"{BASE_URI}template/{template_id}",
+                headers={"Accept": "application/json", "key": settings.ECOMAIL_API_KEY},
+            )
+            .json()
+            .get("name", None)
+        )
+    except (requests.RequestException, ValueError) as e:
+        raise RuntimeError(f"Error fetching template {template_id}: {e}") from e
+
+    if template_name is None:
+        raise ValueError(f"Template {template_id} returned no name.")
+
+    match = re.match(r"^\s*[\d\w]+\.\s*(.+)$", template_name)
+    return match.group(1).strip() if match else template_name.strip()
