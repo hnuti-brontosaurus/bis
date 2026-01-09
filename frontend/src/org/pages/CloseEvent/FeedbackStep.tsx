@@ -31,7 +31,7 @@ export const FeedbackStep: FC<Props> = ({
     <form>
       <FormSectionGroup startIndex={firstIndex}>
         <FormSection header="zpětná vazba">
-          <FeedbackStepInfo />
+          <FeedbackStepInfo feedbackRequired={feedbackRequired} />
           <FormSubsection
             header="Úvod k dotazníku"
             required
