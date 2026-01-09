@@ -465,8 +465,8 @@ export const CloseEventForm = ({
         confirmTitle="Odeslat"
         onCancel={() => navigate({ search: '?krok=3' })}
       >
-        Účastníkům se odešle formulář zpětné vazby. V základu obsahuje otázky,
-        které zajímají ústředí HB, další otázky můžeš přidat ty.
+        Chystáš se odeslat formulář zpětné vazby účastníkům. Základní otázky už
+        jsou připravené a před odesláním je můžeš doplnit o vlastní.
       </ConfirmationDialog>
     </>
   )
