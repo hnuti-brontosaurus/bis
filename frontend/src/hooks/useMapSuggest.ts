@@ -45,11 +45,16 @@ export const useMapSuggest = (
           'X-Mapy-Api-Key': process.env.REACT_APP_MAPY_CZ_API_KEY,
         } as HeadersInit,
       })
-        .then(response => response.json())
-        .then((response: ApiResponse) => {
-          setResults(response.items)
-          setLoading(false)
+        .then(response => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error('Response not OK')
+          }
         })
+        .then((response: ApiResponse) => setResults(response.items))
+        .catch(() => setResults([]))
+        .finally(() => setLoading(false))
     } else {
       setResults([])
       setLoading(false)
