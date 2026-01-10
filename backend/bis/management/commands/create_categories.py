@@ -1091,16 +1091,14 @@ class Command(BaseCommand):
                 ("cheese", "sýrové*"),
                 ("egg", "vaječné*"),
                 ("vegetables", "zeleninové"),
-                ("potato", "bramborové"),
                 ("legumes", "luštěninové"),
                 ("cereals", "obilninové"),
                 ("fruit", "ovocné"),
-                ("rice", "rýžové"),
-                ("pasta", "těstovinové"),
             ],
             "Kuchyně": [
                 ("czech", "česká"),
                 ("indi", "indická"),
+                ("asian", "asijská"),
             ],
         }
         i = 0
