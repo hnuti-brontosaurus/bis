@@ -105,7 +105,7 @@ const data = computed(() => {
           style="width: 110px"
           v-model:value="servings"
           min="1"
-          :precision="0"
+          :precision="1"
         />
         <n-button :render-icon="icon(faCartPlus)" size="small"></n-button>
       </n-input-group>
