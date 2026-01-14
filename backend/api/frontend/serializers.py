@@ -627,7 +627,6 @@ class SmartUpdatableListSerializer(ListSerializer):
                 # Update existing instance
                 processed_ids.add(item_id)
                 obj = instance_mapping[item_id]
-                print(obj, item_id)
                 ret.append(self.child.update(obj, item_data))
             else:
                 # Create new instance

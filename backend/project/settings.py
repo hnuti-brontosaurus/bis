@@ -23,9 +23,7 @@ def load_environment_variables_from_docker_compose_file():
                     environ[key] = str(value)
 
     except FileNotFoundError:
-        print(
-            "Environment file not found (that is expected, when using docker-compose)"
-        )
+        pass  # Expected when using docker-compose
 
 
 load_environment_variables_from_docker_compose_file()
@@ -96,7 +94,6 @@ INSTALLED_APPS = [
     "cookbook",
     "cookbook_categories",
     "django_bootstrap5",
-    "django_q",
     "django_cleanup.apps.CleanupConfig",  # needs to be last
 ]
 
@@ -324,11 +321,57 @@ BOOTSTRAP5 = {
 }
 LOGIN_URL = "/logout"
 
-Q_CLUSTER = {
-    "name": "DjangoDB",
-    "workers": 1,
-    "timeout": 36000,
-    "retry": 36000 * 2,
-    "orm": "default",
-    "max_attempts": 1,
+# Logging configuration
+LOG_DIR = join(BASE_DIR, "logs")
+LOG_FILE = join(LOG_DIR, "bis.log")
+
+# Create logs directory if it doesn't exist
+from pathlib import Path
+
+Path(LOG_DIR).mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_FILE,
+            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console", "file"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
 }

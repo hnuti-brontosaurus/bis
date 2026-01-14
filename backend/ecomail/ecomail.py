@@ -94,7 +94,7 @@ def send_email(
     )
 
     if settings.TEST or not settings.EMAILS_ENABLED or cache.get("emails_paused"):
-        print("Sending of emails disabled, email data:", data)
+        logging.info("Sending of emails disabled, email data: %s", data)
         return
 
     if not recipients:
@@ -135,4 +135,10 @@ def send_email(
         raise RuntimeError(f"Ecomail API error: {res}")
 
     assert res["results"]["total_accepted_recipients"] == len(recipients)
-    print("SENT EMAIL", f"{subject=},\t{from_email=},\t{from_name=},\t{recipients=}")
+    logging.info(
+        "SENT EMAIL subject=%s, from_email=%s, from_name=%s, recipients=%s",
+        subject,
+        from_email,
+        from_name,
+        recipients,
+    )

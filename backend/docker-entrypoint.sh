@@ -25,8 +25,6 @@ case "$1" in
         python manage.py collectstatic --no-input
         python manage.py migrate
 
-        python manage.py qcluster &
-
         echo "Running Dev Server..."
         PYTHONUNBUFFERED=1 python manage.py runserver ${APP_HOST}:${APP_PORT}
     ;;
@@ -41,8 +39,6 @@ case "$1" in
         python manage.py collectstatic --no-input
         python manage.py migrate
         python manage.py create_categories
-
-        python manage.py qcluster &
 
         # Gunicorn
         echo "Running Supervisorded Gunicorn..."

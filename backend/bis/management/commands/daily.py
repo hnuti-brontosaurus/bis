@@ -13,7 +13,6 @@ def try_to_run(fn, *args, **kwargs):
     try:
         fn(*args, **kwargs)
     except Exception as e:
-        print(str(fn), str(e))
         logging.exception(
             e,
             extra={

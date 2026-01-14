@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from openpyxl import load_workbook
 
@@ -21,7 +23,7 @@ def run():
         ws[f"AG{i}"] = events
 
         i += 1
-        print(i)
+        logging.info("Processing row %d", i)
 
     wb.save("file_modified.xlsx")
 

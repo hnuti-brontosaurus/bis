@@ -17,24 +17,9 @@ class BISConfig(AppConfig):
 
         autoreload_started.connect(watch_directories)
 
-        self.setup_schedules()
+        from bis.scheduler import start_scheduler
 
-    def setup_schedules(self):
-        from django.db import ProgrammingError
-        from django_q.models import Schedule
-
-        try:
-            Schedule.objects.update_or_create(
-                name="daily_command",
-                defaults={
-                    "func": "django.core.management.call_command",
-                    "args": "'daily'",
-                    "schedule_type": Schedule.CRON,
-                    "cron": "0 7 * * *",
-                },
-            )
-        except ProgrammingError:
-            pass  # Table doesn't exist yet (e.g., during migrations or tests)
+        start_scheduler()
 
     class Meta:
         verbose_name_plural = "Základní informace"

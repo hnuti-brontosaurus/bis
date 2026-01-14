@@ -7,6 +7,7 @@
 .coverage
 local_settings.py
 /backend/media
+/backend/logs
 /backend/backend_static
 /backend/frontend_static
 /backend/cookbook_static
