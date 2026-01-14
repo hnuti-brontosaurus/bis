@@ -32,7 +32,6 @@ class CookbookAccessPermission(BasePermission):
                 return True
 
         if model is Chef:
-            print(request.data, obj, user.id)
             return self.match_id(request, obj, "user_id", user.id)
 
         if not user.is_chef:

@@ -14,8 +14,6 @@ class MyAdminSite(admin.AdminSite):
 
     def get_app_list(self, request, app_label=None):
         apps = super().get_app_list(request, app_label)
-        if not request.user.is_superuser:
-            apps = [_ for _ in apps if _["app_label"] != "django_q"]
 
         order = [
             "administration_units",
@@ -29,7 +27,6 @@ class MyAdminSite(admin.AdminSite):
             "cookbook_categories",
             "game_book",
             "game_book_categories",
-            "django_q",
         ]
         apps.sort(key=lambda value: order.index(value["app_label"]))
         return apps

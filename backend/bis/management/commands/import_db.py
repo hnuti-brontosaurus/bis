@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import timedelta
 from os import mkdir
 from os.path import exists, join
@@ -260,7 +261,7 @@ class Command(BaseCommand):
 
     def load_data(self):
         if not exists(self.file_path):
-            print(self.file_path, "does not exists")
+            logging.warning("%s does not exist", self.file_path)
             return
 
         with open(self.file_path, "r", encoding="utf-8") as file:
@@ -346,7 +347,7 @@ class Command(BaseCommand):
         self.reset_cache()
 
     def import_qualifications(self, data):
-        print("importing qualifications")
+        logging.info("importing qualifications")
         for id, item in data["qal"].items():
             if not item["od"]:
                 continue
@@ -399,7 +400,7 @@ class Command(BaseCommand):
             )
 
     def import_administration_units(self, data):
-        print("importing administration units")
+        logging.info("importing administration units")
         for id, item in data["klub"].items():
             since, till = item["reg_od"], item["reg_do"]
             if since:
@@ -497,7 +498,7 @@ class Command(BaseCommand):
                 )
 
     def import_locations(self, data):
-        print("importing locations")
+        logging.info("importing locations")
         for id, item in data["lokalita"].items():
             patron = self.user_map.get(item["patron"], None)
             if patron:

@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import Counter
 from functools import wraps
@@ -42,11 +43,11 @@ def print_progress(name, i, total):
 
     obj = cache.get(key)
     if not obj:
-        print(name, flush=True)
+        logging.info("%s", name)
         cache.set(key, time())
 
     elif time() - obj >= 1:
-        print(f"{name}, progress {100 * i / total:.2f}%", flush=True)
+        logging.info("%s, progress %.2f%%", name, 100 * i / total)
         cache.set(key, time())
 
 

@@ -18,7 +18,6 @@ class ChangeViewSetMixin:
         serializer.save(created_by=self.request.user, updated_by=self.request.user)
 
     def perform_update(self, serializer):
-        print(serializer)
         serializer.save(updated_by=self.request.user)
 
 

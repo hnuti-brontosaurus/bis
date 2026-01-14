@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 from bis.models import User
@@ -24,9 +25,8 @@ class Command(BaseCommand):
         while True:
             page += 1
 
-            print(page)
+            logging.info("Fetching page %d", page)
             result = send([], "GET", "lists/28/subscribers", params=dict(page=page))
-            print(result)
             data += result["data"]
             if not result["next_page_url"]:
                 break
@@ -49,7 +49,8 @@ class Command(BaseCommand):
         data_emails = [u for u in data if "+" not in u["email"]]
         data_emails = [u for u in data_emails if u["status"] == 1]
         data_emails = set([u["email"] for u in data_emails])
-        print(
+        logging.info(
+            "BIS emails: %d, Data emails: %d, Intersection: %d, BIS only: %d, Data only: %d",
             len(bis_emails),
             len(data_emails),
             len(bis_emails.intersection(data_emails)),

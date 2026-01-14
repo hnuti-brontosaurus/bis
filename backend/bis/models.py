@@ -154,11 +154,6 @@ class Location(SearchMixin, Model):
 
                 for relation in first._meta.related_objects:
                     if relation.name in ["contact_person", "patron"]:
-                        print(
-                            relation.name,
-                            hasattr(first, relation.name),
-                            hasattr(other, relation.name),
-                        )
                         if not hasattr(first, relation.name) and hasattr(
                             other, relation.name
                         ):
