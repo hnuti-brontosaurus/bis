@@ -15,6 +15,26 @@ _scheduler_started = False
 _lock = threading.Lock()
 
 
+def get_memory_usage():
+    """Get current memory usage from cgroup (for Docker containers)."""
+    try:
+        with open("/sys/fs/cgroup/memory.current", "r") as f:
+            current_bytes = int(f.read().strip())
+
+        with open("/sys/fs/cgroup/memory.max", "r") as f:
+            max_value = f.read().strip()
+            if max_value == "max":
+                max_str = "unlimited"
+            else:
+                max_mb = int(max_value) / 1024 / 1024
+                max_str = f"{max_mb:.1f} MB"
+
+        current_mb = current_bytes / 1024 / 1024
+        return f"{current_mb:.1f} MB", max_str
+    except Exception:
+        return None, None
+
+
 def is_running_under_server():
     """Check if Django is running under gunicorn or runserver (not migrate, shell, etc.)"""
     # Check for gunicorn
@@ -55,6 +75,11 @@ def scheduler_loop():
         try:
             seconds_until_next_minute = 60 - datetime.now().second
             time.sleep(seconds_until_next_minute)
+
+            # Log memory usage
+            current, limit = get_memory_usage()
+            if current:
+                logging.info("Memory: %s / %s", current, limit)
 
             now = datetime.now(tz)
             if now.hour == 7 and now.minute == 0:
