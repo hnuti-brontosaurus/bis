@@ -32,6 +32,17 @@ def main():
     print("Fetching tags...")
     run("git fetch --tags")
 
+    # Check if HEAD is already tagged
+    existing_tag = subprocess.run(
+        "git describe --exact-match --tags HEAD",
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    if existing_tag.returncode == 0:
+        print(f"HEAD already tagged as {existing_tag.stdout.strip()}, skipping")
+        return
+
     # Get all tags
     tags_output = run("git tag")
     if not tags_output:
