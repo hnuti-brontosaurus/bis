@@ -25,9 +25,6 @@ from api.frontend.serializers import (
     UserSerializer,
 )
 from api.helpers import parse_request_data
-from bis.helpers import filter_queryset_with_multiple_or_queries
-from bis.models import Location, User
-from bis.permissions import Permissions
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseForbidden
@@ -61,6 +58,10 @@ from rest_framework.status import (
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from xlsx_export import export
 from xlsx_export.export import export_to_xlsx
+
+from bis.helpers import filter_queryset_with_multiple_or_queries
+from bis.models import Location, User
+from bis.permissions import Permissions
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 

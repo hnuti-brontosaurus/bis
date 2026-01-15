@@ -1,5 +1,4 @@
 from administration_units.models import AdministrationUnit
-from bis.models import User
 from django import forms
 from django.forms import Form, ModelForm, TextInput
 from django.forms.utils import ErrorList
@@ -18,6 +17,8 @@ from game_book_categories.models import (
     Tag,
 )
 from translation.translate import _
+
+from bis.models import User
 
 
 class CategoryChoiceMixin:

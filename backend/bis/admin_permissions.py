@@ -1,5 +1,6 @@
-from bis.permissions import Permissions
 from django.contrib.admin.options import InlineModelAdmin
+
+from bis.permissions import Permissions
 
 
 class PermissionMixin:

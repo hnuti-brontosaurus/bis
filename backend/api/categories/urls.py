@@ -1,4 +1,3 @@
-from bis.helpers import to_snake_case
 from categories.views import (
     AdministrationUnitCategoryViewSet,
     DietCategoryViewSet,
@@ -24,6 +23,8 @@ from categories.views import (
 from django.urls import include, path
 from regions.views import RegionViewSet
 from rest_framework import routers
+
+from bis.helpers import to_snake_case
 
 router = routers.DefaultRouter()
 

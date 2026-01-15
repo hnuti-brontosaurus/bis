@@ -1,8 +1,9 @@
-from bis.admin_permissions import PermissionMixin
 from event.models import *
 from nested_admin.nested import NestedModelAdmin
 from opportunities.models import Opportunity
 from rangefilter.filters import DateRangeFilter
+
+from bis.admin_permissions import PermissionMixin
 
 
 @admin.register(Opportunity)

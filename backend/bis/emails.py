@@ -3,8 +3,6 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import make_a, make_ul
-from bis.models import Qualification
 from categories.models import EventProgramCategory, PronounCategory
 from common.helpers import get_date_range
 from dateutil.utils import today
@@ -14,6 +12,9 @@ from event.models import Event
 from feedback.models import Reply
 from opportunities.models import Opportunity
 from vokativ import vokativ
+
+from bis.helpers import make_a, make_ul
+from bis.models import Qualification
 
 emails = {
     "bis": ("BIS", "bis@brontosaurus.cz"),

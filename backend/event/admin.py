@@ -1,11 +1,6 @@
 from contextlib import nullcontext
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from bis.admin import export_emails
-from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
-from bis.admin_helpers import list_filter_extra_text
-from bis.admin_permissions import PermissionMixin
-from bis.helpers import AgeStats, paused_validation
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
@@ -30,6 +25,12 @@ from xlsx_export.export import (
     export_to_xlsx_response,
     get_attendance_list,
 )
+
+from bis.admin import export_emails
+from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
+from bis.admin_helpers import list_filter_extra_text
+from bis.admin_permissions import PermissionMixin
+from bis.helpers import AgeStats, paused_validation
 
 
 class EventPropagationImageAdmin(

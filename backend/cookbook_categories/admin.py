@@ -1,4 +1,3 @@
-from bis.admin_permissions import PermissionMixin
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
@@ -21,6 +20,8 @@ from nested_admin.nested import (
     NestedStackedInline,
     NestedTabularInline,
 )
+
+from bis.admin_permissions import PermissionMixin
 
 
 @admin.register(RecipeDifficulty)

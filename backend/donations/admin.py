@@ -1,17 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from admin_numeric_filter.admin import RangeNumericFilter
-from bis.admin_filters import (
-    DonationSumAmountFilter,
-    DonationSumRangeFilter,
-    FirstDonorsDonationFilter,
-    HasDonorFilter,
-    LastDonorsDonationFilter,
-    RecurringDonorWhoStoppedFilter,
-)
-from bis.admin_helpers import list_filter_extra_note, list_filter_extra_title
-from bis.admin_permissions import PermissionMixin
-from bis.emails import donation_confirmation
-from bis.permissions import Permissions
 from categories.models import PronounCategory
 from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
@@ -28,6 +16,19 @@ from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
+
+from bis.admin_filters import (
+    DonationSumAmountFilter,
+    DonationSumRangeFilter,
+    FirstDonorsDonationFilter,
+    HasDonorFilter,
+    LastDonorsDonationFilter,
+    RecurringDonorWhoStoppedFilter,
+)
+from bis.admin_helpers import list_filter_extra_note, list_filter_extra_title
+from bis.admin_permissions import PermissionMixin
+from bis.emails import donation_confirmation
+from bis.permissions import Permissions
 
 
 @admin.register(Donation)

@@ -9,11 +9,6 @@ from administration_units.models import (
     BrontosaurusMovement,
     GeneralMeeting,
 )
-from bis.admin_filters import IsAdministrationUnitActiveFilter
-from bis.admin_helpers import LatLongWidget, get_admin_list_url
-from bis.admin_permissions import PermissionMixin
-from bis.helpers import MembershipStats, make_br
-from bis.models import Membership, User
 from common.history import show_history
 from dateutil.utils import today
 from django.contrib import admin
@@ -26,6 +21,12 @@ from nested_admin.nested import (
 )
 from solo.admin import SingletonModelAdmin
 from xlsx_export.export import export_to_xlsx
+
+from bis.admin_filters import IsAdministrationUnitActiveFilter
+from bis.admin_helpers import LatLongWidget, get_admin_list_url
+from bis.admin_permissions import PermissionMixin
+from bis.helpers import MembershipStats, make_br
+from bis.models import Membership, User
 
 
 class AdministrationUnitAddressAdmin(PermissionMixin, NestedTabularInline):

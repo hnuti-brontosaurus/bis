@@ -7,7 +7,6 @@ from administration_units.models import (
     AdministrationUnitAddress,
     BrontosaurusMovement,
 )
-from bis.models import Location, Membership, Qualification, User
 from categories.models import (
     AdministrationUnitCategory,
     EventCategory,
@@ -23,6 +22,8 @@ from django.core.management.base import BaseCommand
 from django.utils.datetime_safe import date
 from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
 from project.settings import BASE_DIR
+
+from bis.models import Location, Membership, Qualification, User
 
 
 class Command(BaseCommand):

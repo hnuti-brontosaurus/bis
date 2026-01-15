@@ -5,13 +5,6 @@ from os.path import basename
 from uuid import uuid4
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
-from bis.admin_helpers import get_admin_edit_url
-from bis.helpers import (
-    SearchMixin,
-    filter_queryset_with_multiple_or_queries,
-    paused_validation,
-    permission_cache,
-)
 from categories.models import (
     HealthInsuranceCompany,
     LocationAccessibilityCategory,
@@ -41,6 +34,14 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
 from translation.translate import translate_model
+
+from bis.admin_helpers import get_admin_edit_url
+from bis.helpers import (
+    SearchMixin,
+    filter_queryset_with_multiple_or_queries,
+    paused_validation,
+    permission_cache,
+)
 
 
 @translate_model

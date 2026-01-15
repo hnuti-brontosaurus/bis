@@ -1,11 +1,12 @@
 from administration_units.models import AdministrationUnit
-from bis.helpers import filter_queryset_with_multiple_or_queries, permission_cache
-from bis.models import User
 from categories.models import DonationSourceCategory
 from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from solo.models import SingletonModel
 from translation.translate import translate_model
+
+from bis.helpers import filter_queryset_with_multiple_or_queries, permission_cache
+from bis.models import User
 
 
 def get_today():

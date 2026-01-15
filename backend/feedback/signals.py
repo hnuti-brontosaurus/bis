@@ -1,7 +1,8 @@
-from bis.models import User
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from feedback.models import EventFeedback, FeedbackForm
+
+from bis.models import User
 
 
 @receiver(pre_save, sender=EventFeedback, dispatch_uid="set_feedback_form_user")

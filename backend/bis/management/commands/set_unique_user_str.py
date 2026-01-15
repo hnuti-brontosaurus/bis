@@ -1,7 +1,8 @@
 from collections import defaultdict
 
-from bis.models import User
 from django.core.management.base import BaseCommand
+
+from bis.models import User
 
 
 class Command(BaseCommand):

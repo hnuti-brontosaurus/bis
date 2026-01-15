@@ -13,17 +13,6 @@ from administration_units.models import (
     AdministrationUnitAddress,
     BrontosaurusMovement,
 )
-from bis.helpers import print_progress, with_paused_validation
-from bis.models import (
-    Location,
-    LocationPatron,
-    Membership,
-    Qualification,
-    User,
-    UserAddress,
-    UserContactAddress,
-    UserEmail,
-)
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -48,6 +37,18 @@ from event.models import (
     VIPEventPropagation,
 )
 from project.settings import BASE_DIR
+
+from bis.helpers import print_progress, with_paused_validation
+from bis.models import (
+    Location,
+    LocationPatron,
+    Membership,
+    Qualification,
+    User,
+    UserAddress,
+    UserContactAddress,
+    UserEmail,
+)
 
 
 def get_or_create_user(email, first_name, last_name):
