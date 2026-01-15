@@ -1,4 +1,3 @@
-from bis.models import Location
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -42,6 +41,8 @@ from game_book_categories.models import (
 )
 from other.models import DonationPointsAggregation
 from translation.translate import _
+
+from bis.models import Location
 
 
 class Command(BaseCommand):

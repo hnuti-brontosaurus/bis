@@ -1,10 +1,11 @@
 from datetime import timedelta
 from random import randint
 
-from bis.models import User
 from django.db import models
 from django.utils.timezone import now
 from rest_framework.exceptions import AuthenticationFailed, Throttled
+
+from bis.models import User
 
 
 def get_code():

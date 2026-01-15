@@ -1,5 +1,6 @@
-from bis.permissions import Permissions
 from rest_framework.permissions import BasePermission
+
+from bis.permissions import Permissions
 
 
 class BISPermissions(BasePermission):

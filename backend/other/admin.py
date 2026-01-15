@@ -1,4 +1,3 @@
-from bis.admin_permissions import PermissionMixin
 from django.contrib.messages import ERROR, INFO
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -15,6 +14,8 @@ from other.models import (
     DonationPointsSection,
     DuplicateUser,
 )
+
+from bis.admin_permissions import PermissionMixin
 
 
 @admin.register(DuplicateUser)

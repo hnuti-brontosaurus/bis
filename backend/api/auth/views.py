@@ -6,7 +6,6 @@ from api.auth.serializers import (
     UserIdResponse,
 )
 from api.helpers import parse_request_data
-from bis.models import User
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.password_validation import validate_password
@@ -26,6 +25,7 @@ from rest_framework.status import (
 )
 
 from bis import emails
+from bis.models import User
 
 
 def login_and_return_token(request, user):

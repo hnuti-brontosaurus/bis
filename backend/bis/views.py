@@ -1,6 +1,5 @@
 from urllib.parse import urlencode
 
-from bis.models import User
 from django import forms
 from django.contrib.auth import REDIRECT_FIELD_NAME, login
 from django.core.exceptions import ValidationError
@@ -13,6 +12,7 @@ from rest_framework.exceptions import AuthenticationFailed, Throttled
 from translation.translate import _
 
 from bis import emails
+from bis.models import User
 
 
 class LoginForm(Form):

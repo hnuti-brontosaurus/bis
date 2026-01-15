@@ -2,13 +2,6 @@ from os.path import basename
 
 import geopy.distance
 from administration_units.models import AdministrationUnit
-from bis.helpers import (
-    SearchMixin,
-    filter_queryset_with_multiple_or_queries,
-    permission_cache,
-    update_roles,
-)
-from bis.models import Location, Qualification, User
 from categories.models import (
     DietCategory,
     EventCategory,
@@ -32,6 +25,14 @@ from geopy.distance import distance
 from phonenumber_field.modelfields import PhoneNumberField
 from tinymce.models import HTMLField
 from translation.translate import translate_model
+
+from bis.helpers import (
+    SearchMixin,
+    filter_queryset_with_multiple_or_queries,
+    permission_cache,
+    update_roles,
+)
+from bis.models import Location, Qualification, User
 
 
 class EventDraft(Model):

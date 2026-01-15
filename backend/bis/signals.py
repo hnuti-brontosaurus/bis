@@ -1,6 +1,5 @@
 from datetime import date
 
-from bis.models import Location, Qualification, User, UserEmail
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
@@ -12,6 +11,7 @@ from unidecode import unidecode
 from vokativ import vokativ
 
 from bis import emails
+from bis.models import Location, Qualification, User, UserEmail
 
 
 @receiver(

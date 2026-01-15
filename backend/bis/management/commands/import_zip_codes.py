@@ -2,10 +2,11 @@ import csv
 from io import StringIO
 from os.path import join
 
-from bis.models import UserAddress
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from regions.models import Region, ZipCode
+
+from bis.models import UserAddress
 
 
 class Command(BaseCommand):

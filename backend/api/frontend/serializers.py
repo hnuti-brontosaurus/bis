@@ -1,20 +1,6 @@
 from datetime import date
 
 from api.helpers import catch_related_object_does_not_exist
-from bis.helpers import AgeStats, get_locked_year
-from bis.models import (
-    EYCACard,
-    Location,
-    LocationContactPerson,
-    LocationPatron,
-    Membership,
-    Qualification,
-    QualificationNote,
-    User,
-    UserAddress,
-    UserClosePerson,
-    UserContactAddress,
-)
 from categories.models import OpportunityPriority
 from categories.serializers import (
     DietCategorySerializer,
@@ -85,6 +71,20 @@ from rest_framework.serializers import Serializer
 from rest_framework.utils import model_meta
 
 from bis import emails
+from bis.helpers import AgeStats, get_locked_year
+from bis.models import (
+    EYCACard,
+    Location,
+    LocationContactPerson,
+    LocationPatron,
+    Membership,
+    Qualification,
+    QualificationNote,
+    User,
+    UserAddress,
+    UserClosePerson,
+    UserContactAddress,
+)
 
 
 class ModelSerializer(DRFModelSerializer):

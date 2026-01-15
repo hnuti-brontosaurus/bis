@@ -3,7 +3,6 @@ from time import sleep
 import requests
 from api.cookbook.serializers import ChefSerializer
 from api.helpers import parse_request_data
-from bis.models import User
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -14,6 +13,8 @@ from rest_framework.exceptions import AuthenticationFailed, NotFound, Validation
 from rest_framework.fields import CharField, EmailField, IntegerField
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
+
+from bis.models import User
 
 
 def get_user_data(user):

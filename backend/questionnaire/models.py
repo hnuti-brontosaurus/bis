@@ -1,10 +1,11 @@
-from bis.models import User
 from categories.models import PronounCategory
 from common.abstract_models import BaseAddress, BaseContact
 from django.contrib.gis.db.models import *
 from event.models import Event, EventRegistration
 from phonenumber_field.modelfields import PhoneNumberField
 from translation.translate import translate_model
+
+from bis.models import User
 
 
 @translate_model

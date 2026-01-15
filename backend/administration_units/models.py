@@ -1,4 +1,3 @@
-from bis.helpers import SearchMixin, permission_cache, update_roles
 from categories.models import AdministrationUnitCategory
 from common.abstract_models import BaseAddress
 from common.history import record_history
@@ -10,6 +9,8 @@ from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
 from solo.models import SingletonModel
 from translation.translate import _, translate_model
+
+from bis.helpers import SearchMixin, permission_cache, update_roles
 
 
 @translate_model

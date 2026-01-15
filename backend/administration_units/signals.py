@@ -1,8 +1,9 @@
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
-from bis.models import User
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 from event.models import Event
+
+from bis.models import User
 
 
 @receiver(post_save, sender=AdministrationUnit, dispatch_uid="set_board_members")

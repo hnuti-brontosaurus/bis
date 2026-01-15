@@ -18,8 +18,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import openpyxl
 import pdfkit
 import xlsxwriter
-from bis.helpers import print_progress
-from bis.models import User
 from common.thumbnails import get_thumbnail_path
 from django.conf import settings
 from django.contrib import admin, messages
@@ -54,6 +52,8 @@ from xlsx_export.serializers import (
 )
 
 from bis import emails
+from bis.helpers import print_progress
+from bis.models import User
 
 lock = Lock()
 
