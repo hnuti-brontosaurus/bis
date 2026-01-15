@@ -17,9 +17,9 @@ class BISConfig(AppConfig):
 
         autoreload_started.connect(watch_directories)
 
-        from bis.scheduler import start_scheduler
+        # from bis.scheduler import start_scheduler
 
-        start_scheduler()
+        # start_scheduler()
 
     class Meta:
         verbose_name_plural = "Základní informace"
