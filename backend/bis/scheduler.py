@@ -4,7 +4,6 @@ This replaces django-q2 with a lightweight custom solution.
 """
 
 import logging
-import os
 import sys
 import threading
 import time
@@ -42,35 +41,27 @@ def run_daily_command():
 
 
 def scheduler_loop():
-    """Main scheduler loop that checks time and runs daily tasks."""
+    """Main scheduler loop that runs daily task at exactly 7:00 AM."""
     import zoneinfo
 
     tz = zoneinfo.ZoneInfo(settings.TIME_ZONE)
-    last_run_date = None
-    target_hour = 7  # Run at 7 AM
-
     logging.info(
         "Scheduler started, will run daily command at %d:00 %s",
-        target_hour,
+        7,
         settings.TIME_ZONE,
     )
 
     while True:
         try:
+            seconds_until_next_minute = 60 - datetime.now().second
+            time.sleep(seconds_until_next_minute)
+
             now = datetime.now(tz)
-            today = now.date()
-
-            # Run if it's past target hour and we haven't run today
-            if now.hour >= target_hour and last_run_date != today:
-                last_run_date = today
+            if now.hour == 7 and now.minute == 0:
                 run_daily_command()
-
-            time.sleep(60)
 
         except Exception as e:
             logging.exception("Scheduler error: %s", e)
-            # Sleep a bit before retrying on error
-            time.sleep(60)
 
 
 def start_scheduler():
