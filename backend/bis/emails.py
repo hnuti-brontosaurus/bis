@@ -89,7 +89,7 @@ def application_created(application):
         "Potvrzení přihlášení na akci",
         template,
         [email],
-        reply_to=contact_email,
+        reply_to=[contact_email],
         variables=variables,
     )
 
@@ -404,7 +404,7 @@ def opportunity_created(opportunity: Opportunity):
         "Příležitost je zadána v BISu",
         145,
         [recipient_email],
-        reply_to=created_by_email,
+        reply_to=[created_by_email],
         variables={
             "created_by": opportunity.contact_person.get_name(),
             "opportunity": opportunity.name,
@@ -449,7 +449,7 @@ def fill_memberships(call):
             subjects[call],
             template_ids[call],
             [administration_unit.chairman.email],
-            reply_to=emails["movement"][1],
+            reply_to=[emails["movement"][1]],
             variables={
                 "vokativ": administration_unit.chairman.vokativ,
                 "administration_unit": administration_unit.abbreviation,
