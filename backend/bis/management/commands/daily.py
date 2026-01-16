@@ -4,6 +4,7 @@ from datetime import date
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import connection
 from other.models import SavedFile
 
 from bis import emails
@@ -23,6 +24,7 @@ def try_to_run(fn, *args, **kwargs):
                 },
             },
         )
+        connection.close()  # Close stale connection to force reconnect on next query
 
 
 def check_disk_space():
