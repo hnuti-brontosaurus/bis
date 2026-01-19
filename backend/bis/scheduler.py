@@ -76,12 +76,13 @@ def scheduler_loop():
             seconds_until_next_minute = 60 - datetime.now().second
             time.sleep(seconds_until_next_minute)
 
-            # Log memory usage
-            current, limit = get_memory_usage()
-            if current:
-                logging.info("Memory: %s / %s", current, limit)
-
             now = datetime.now(tz)
+
+            if now.minute == 0:
+                current, limit = get_memory_usage()
+                if current:
+                    logging.info("Memory: %s / %s", current, limit)
+
             if now.hour == 7 and now.minute == 0:
                 run_daily_command()
 
