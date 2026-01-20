@@ -4,21 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('categories', '0016_eventcategory_description_eventcategory_is_active'),
+        ("categories", "0016_eventcategory_description_eventcategory_is_active"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DonorEventCategory',
+            name="DonorEventCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.CharField(max_length=127)),
-                ('slug', models.SlugField(unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("description", models.CharField(max_length=127)),
+                ("slug", models.SlugField(unique=True)),
             ],
             options={
-                'ordering': ('id',),
+                "ordering": ("id",),
             },
         ),
     ]
