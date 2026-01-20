@@ -2,6 +2,18 @@ from datetime import timedelta
 
 from django.db.models import Count, Exists, F, Min, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
+from donations.models import Donation, Donor, Pledge
+from event.models import (
+    Event,
+    EventFinance,
+    EventPropagation,
+    EventRecord,
+    EventRegistration,
+    VIPEventPropagation,
+)
+from feedback.models import EventFeedback, Inquiry
+from opportunities.models import OfferedHelp
+from questionnaire.models import EventApplication, Question
 from rest_framework.fields import (
     CharField,
     DateField,
@@ -12,7 +24,7 @@ from rest_framework.fields import (
     SerializerMethodField,
 )
 from rest_framework.relations import StringRelatedField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import BooleanField, ModelSerializer
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
@@ -138,8 +150,16 @@ class BaseDonorExportSerializer(ModelSerializer):
     regional_center_support = StringRelatedField()
     basic_section_support = StringRelatedField()
 
+    has_recurrent_donation = SerializerMethodField(label="Pravidelný dárce")
+
     @staticmethod
     def get_related(queryset):
+        recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
+        )
+
+        queryset = queryset.annotate(has_recurrent_donation=Exists(recurrent_pledges))
+
         return queryset.select_related(
             "regional_center_support",
             "basic_section_support",
@@ -162,6 +182,13 @@ class BaseDonorExportSerializer(ModelSerializer):
             "user__offers__organizer_roles",
             "user__offers__team_roles",
         )
+
+    def get_has_recurrent_donation(self, instance):
+        if hasattr(
+            instance, "has_recurrent_donation"
+        ):  # todo fix this: teď to používá ten fall-back - metodu třídy, ne ty předpočítané anotace
+            return instance.has_recurrent_donation
+        return instance.has_active_recurrent_donation()  # fall-back
 
     class Meta:
         model = Donor
@@ -423,6 +450,14 @@ class DonationExportSerializer(ModelSerializer):
 
     @staticmethod
     def get_related(queryset):
+        recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("donor"), is_recurrent=True, recurrent_state="collecting"
+        )
+
+        queryset = queryset.annotate(
+            donor__has_recurrent_donation=Exists(recurrent_pledges)
+        )
+
         return queryset.select_related(
             "donation_source",
             "donor__regional_center_support",
