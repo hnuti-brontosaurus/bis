@@ -91,6 +91,23 @@ class LastDonorsDonationFilter(CustomDateRangeFilter):
     custom_field_path = "last_donation"
 
 
+class HasRecurrentDonationFilter(admin.SimpleListFilter):
+    title = "Je pravidelný dárce"
+    parameter_name = "has_recurrent_donation_filter"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Ano"),
+            ("no", "Ne"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(has_active_recurrent_donation=True)
+        if self.value() == "no":
+            return queryset.filter(has_active_recurrent_donation=False)
+
+
 class RecurringDonorWhoStoppedFilter(admin.SimpleListFilter):
     title = "Pravidelný dárce bez daru za poslední 2 měsíce"
     parameter_name = "reccuring_donor_who_stopped"
@@ -102,7 +119,7 @@ class RecurringDonorWhoStoppedFilter(admin.SimpleListFilter):
         if self.value() == "yes":
             queryset = queryset.exclude(
                 donations__donated_at__gte=now() - relativedelta(months=2)
-            ).filter(has_recurrent_donation=True)
+            ).filter(had_recurrent_donation=True, has_active_recurrent_donation=False)
         return queryset
 
 

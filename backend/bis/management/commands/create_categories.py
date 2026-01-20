@@ -5,6 +5,7 @@ from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
     DonationSourceCategory,
+    DonorEventCategory,
     EventCategory,
     EventGroupCategory,
     EventIntendedForCategory,
@@ -592,6 +593,21 @@ class Command(BaseCommand):
                 description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
             ),
         )
+
+        donor_event_categories = {
+            "new_recurrent_pledge": "Nový pravidelný dárce v Darujme",
+            "recurrent_stopped": "Podruhé za sebou nepřišla platba od pravidelného dárce.",
+            "pledge_1y": "Pravidelný dárce daruje již 1 rok.",
+            "pledge_3y": "Pravidelný dárce daruje již 3 roky.",
+            "pledge_5y": "Pravidelný dárce daruje již 5 let.",
+            "donor_10k_total": "Součet všech darů od jednoho dárce přesáhl 10 000 Kč.",
+            "donor_5_donations": "Ne-pravidelný dárce daroval již 5x libovolnou částku.",
+        }
+        for slug, description in donor_event_categories.items():
+            DonorEventCategory.objects.update_or_create(
+                slug=slug,
+                defaults=dict(description=description),
+            )
 
     def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/

@@ -296,3 +296,15 @@ class PronounCategory(Model):
     def get_variables(cls, user):
         slug = (user and user.pronoun and user.pronoun.slug) or "unknown"
         return {"m": slug == "man", "f": slug == "woman"}
+
+
+@translate_model
+class DonorEventCategory(Model):
+    description = CharField(max_length=127)
+    slug = SlugField(unique=True)
+
+    class Meta:
+        ordering = ("id",)
+
+    def __str__(self):
+        return self.description

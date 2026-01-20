@@ -1,3 +1,4 @@
+from categories.models import DonorEventCategory
 from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from solo.models import SingletonModel
@@ -19,7 +20,6 @@ class Donor(Model):
     formal_vokativ = CharField(max_length=63, blank=True)
     subscribed_to_newsletter = BooleanField(default=True)
     is_public = BooleanField(default=True)
-    has_recurrent_donation = BooleanField(default=False)
     internal_note = TextField(blank=True)
 
     date_joined = DateField(default=get_today)
@@ -56,7 +56,6 @@ class Donor(Model):
             elif field.name in [
                 "regional_center_support",
                 "basic_section_support",
-                "has_recurrent_donation",
                 "internal_note",
                 "formal_vokativ",
             ]:
@@ -110,6 +109,16 @@ class Donor(Model):
             or self.basic_section_support in user.administration_units.all()
         )
 
+    def has_active_recurrent_donation(self):
+        return self.pledges.filter(
+            is_recurrent=True, recurrent_state="collecting"
+        ).exists()
+
+    def had_recurrent_donation(self):
+        return self.pledges.filter(
+            is_recurrent=True, recurrent_state="stopped"
+        ).exists()
+
 
 @translate_model
 class VariableSymbol(Model):
@@ -123,9 +132,61 @@ class VariableSymbol(Model):
         ordering = ("id",)
 
 
+class RecurrentState(TextChoices):
+    UNKNOWN = "unknown"
+    ONE_TIME = "one_time"
+    STOPPED = "stopped"
+    COLLECTING = "collecting"
+
+
+@translate_model
+class Pledge(Model):
+    """Only for donations from Darujme API."""
+
+    id = PositiveIntegerField(primary_key=True)
+
+    donor = ForeignKey(Donor, on_delete=PROTECT, related_name="pledges")
+
+    donation_source = ForeignKey(
+        DonationSourceCategory,
+        on_delete=PROTECT,
+        related_name="pledges",
+    )
+
+    is_recurrent = BooleanField(default=False)
+    recurrent_state = CharField(
+        max_length=32,
+        choices=RecurrentState.choices,
+        default=RecurrentState.UNKNOWN,
+    )
+    pledged_at = DateTimeField()
+
+    class Meta:
+        ordering = ("-pledged_at",)
+
+
+@translate_model
+class DonorEvent(Model):
+    """Stores info about donor events and related emails.
+    E.g. When a donor donates 10 000 CZK with non-recurrent donations,
+    an email with thanks is sent to him and this event is created (to prevent sending the same email multiple times).
+    """
+
+    donor = ForeignKey(Donor, on_delete=CASCADE)
+    pledge = ForeignKey(Pledge, null=True, blank=True, on_delete=CASCADE)
+
+    event_type = ForeignKey(DonorEventCategory, on_delete=PROTECT)
+    email_sent_at = DateTimeField()
+
+    class Meta:
+        unique_together = ("donor", "pledge", "event_type")
+
+
 @translate_model
 class Donation(Model):
     donor = ForeignKey(Donor, on_delete=PROTECT, related_name="donations", null=True)
+    pledge = ForeignKey(Pledge, null=True, blank=True, on_delete=PROTECT)
+
     donated_at = DateField()
     amount = IntegerField()
     donation_source = ForeignKey(
