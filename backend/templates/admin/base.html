@@ -3,46 +3,44 @@
 {% block extrahead %}{{ block.super }}
     <script src="{% static 'clickable_select2.js' %}"></script>
     <style>
-        :root {
+        :root, html[data-theme="light"] {
             --primary: rgba(30, 150, 70, 0.85);
             --secondary: #377D69;
             --accent: #fffd7f;
-            --primary-fg: #fff;
-            --body-fg: #333;
-            --body-bg: #fff;
-            --body-quiet-color: #666;
-            --body-loud-color: #000;
             --header-color: rgb(255, 251, 200);
-            --header-branding-color: var(--accent);
-            --header-bg: var(--secondary);
-            --header-link-color: var(--primary-fg);
             --breadcrumbs-fg: rgb(221, 255, 234);
-            --breadcrumbs-link-fg: var(--body-bg);
             --breadcrumbs-bg: var(--primary);
             --link-fg: #009a35;
             --link-hover-color: #00802b;
             --link-selected-fg: var(--link-fg);
-            --hairline-color: #e8e8e8;
-            --border-color: #ccc;
-            --error-fg: #ba2121;
-            --message-success-bg: #dfd;
-            --message-warning-bg: #ffc;
-            --message-error-bg: #ffefef;
-            --darkened-bg: #f8f8f8;
-            --selected-bg: #e4e4e4;
             --selected-row: rgb(255, 249, 217);
-            --button-fg: #fff;
             --button-bg: var(--primary);
             --button-hover-bg: rgb(30, 150, 70);
             --default-button-bg: var(--secondary);
             --default-button-hover-bg: #307360;
             --close-button-bg: #888;
             --close-button-hover-bg: #747474;
-            --delete-button-bg: #ba2121;
-            --delete-button-hover-bg: #a41515;
-            --object-tools-fg: var(--button-fg);
-            --object-tools-bg: var(--close-button-bg);
-            --object-tools-hover-bg: var(--close-button-hover-bg);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --primary: rgba(30, 150, 70, 0.85);
+                --secondary: #377D69;
+                --accent: #d4d27a;
+                --header-color: rgba(255, 251, 200, 0.85);
+                --breadcrumbs-fg: rgb(200, 240, 215);
+                --breadcrumbs-bg: var(--primary);
+                --link-fg: #4cc470;
+                --link-hover-color: #5ed882;
+                --link-selected-fg: var(--link-fg);
+                --selected-row: rgba(60, 90, 60, 0.5);
+                --button-bg: var(--primary);
+                --button-hover-bg: rgb(50, 200, 100);
+                --default-button-bg: var(--secondary);
+                --default-button-hover-bg: #5ab698;
+                --close-button-bg: #666;
+                --close-button-hover-bg: #777;
+            }
         }
 
         .model-membership #changelist-form .field-get_membership_actions input, .model-user #user_form .field-get_membership_actions input {
@@ -101,17 +99,17 @@
         #result_list thead th,
         #result_list tbody tr:nth-child(even) td.action-checkbox,
         #result_list tbody tr:nth-child(even) td.action-checkbox + th {
-            background: #f8f8f8;
+            background: var(--darkened-bg);
         }
 
         #result_list tbody tr:nth-child(odd) td.action-checkbox,
         #result_list tbody tr:nth-child(odd) td.action-checkbox + th {
-            background: #fff;
+            background: var(--body-bg);
         }
 
         #result_list tbody tr.selected td.action-checkbox,
         #result_list tbody tr.selected td.action-checkbox + th {
-            background: rgb(255, 249, 217);
+            background: var(--selected-row);
         }
 
         #result_list th {
@@ -146,5 +144,6 @@
     <a href="/">Organizátorský BIS</a> /
     <a href="{% url 'admin:bis_user_change' request.user.id %}">Můj profil</a> /
     <a href="{% url 'admin:logout' %}">{% translate 'Log out' %}</a>
+    {% include "admin/color_theme_toggle.html" %}
 {% endblock %}
 

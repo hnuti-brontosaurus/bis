@@ -347,6 +347,10 @@ TINYMCE_DEFAULT_CONFIG = {
     "fontsize_formats": "12pt",
 }
 
+TINYMCE_EXTRA_MEDIA = {
+    "js": ["tinymce_dark_mode.js"],
+}
+
 THUMBNAIL_SIZES = {
     "small": 352,
     "medium": 720,
