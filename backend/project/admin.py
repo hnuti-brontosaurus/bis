@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+
 from translation.translate import _
 
 
@@ -14,6 +15,8 @@ class MyAdminSite(admin.AdminSite):
 
     def get_app_list(self, request, app_label=None):
         apps = super().get_app_list(request, app_label)
+
+        apps = [_ for _ in apps if _["app_label"] != "oauth2_provider"]
 
         order = [
             "administration_units",

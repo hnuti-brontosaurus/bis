@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
+from oauth_dcr.views import DynamicClientRegistrationView
 
 from bis.views import CodeView, LoginView
 
@@ -23,6 +24,12 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
     path(f"{settings.API_BASE}", include("api.urls")),
     path(f"game_book/", include("game_book.urls")),
+    # OAuth2 Provider (django-oauth-toolkit)
+    path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
+    # Dynamic Client Registration (for Claude AI)
+    path("o/register/", DynamicClientRegistrationView.as_view(), name="oauth2_dcr"),
+    # MCP Server endpoint
+    path("", include("mcp_server.urls")),
 ]
 
 if settings.DEBUG:

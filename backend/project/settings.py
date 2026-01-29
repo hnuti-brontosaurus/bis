@@ -93,6 +93,9 @@ INSTALLED_APPS = [
     "more_admin_filters",
     "regions",
     "drf_spectacular",
+    "oauth2_provider",
+    "oauth_dcr",
+    "mcp_server",
     "game_book",
     "game_book_categories",
     "cookbook",
@@ -230,6 +233,40 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 TOKEN_EXPIRE_AFTER_INACTIVITY_SECONDS = 20 * 60
+
+# OAuth2 Provider settings (django-oauth-toolkit)
+OAUTH2_PROVIDER = {
+    "SCOPES": {
+        "mcp": "MCP server access",
+    },
+    "ACCESS_TOKEN_EXPIRE_SECONDS": None,
+    "REFRESH_TOKEN_EXPIRE_SECONDS": None,
+    "ROTATE_REFRESH_TOKEN": False,
+    "ALLOWED_REDIRECT_URI_SCHEMES": ["https", "http"] if DEBUG else ["https"],
+    # PKCE is required for public clients
+    "PKCE_REQUIRED": True,
+}
+
+# Dynamic Client Registration settings (for Claude AI integration)
+OAUTH2_DCR = {
+    "OPEN_REGISTRATION": True,  # Allow clients to register without authentication
+    "DEFAULT_SCOPES": ["mcp"],
+    "ALLOWED_GRANT_TYPES": [
+        "authorization_code",
+    ],
+}
+
+# MCP Server settings
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    "name": "bis-mcp",
+    "instructions": "BIS (Brontosaurus Information System) MCP server. "
+    "Provides access to event management, user profiles, and organization data.",
+    "stateless": False,
+}
+
+DJANGO_MCP_AUTHENTICATION_CLASSES = [
+    "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+]
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "BIS API",
