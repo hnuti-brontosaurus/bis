@@ -1,4 +1,4 @@
-from django.contrib.gis.admin import OSMGeoAdmin
+from django.contrib.gis.admin import GISModelAdmin
 from nested_admin.nested import NestedModelAdmin
 
 from bis.admin_permissions import PermissionMixin
@@ -7,7 +7,7 @@ from regions.models import Region, ZipCode
 
 
 @admin.register(Region)
-class RegionAdmin(PermissionMixin, OSMGeoAdmin):
+class RegionAdmin(PermissionMixin, GISModelAdmin):
     pass
 
 
