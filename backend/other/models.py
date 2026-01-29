@@ -2,17 +2,17 @@ from datetime import date, timedelta
 from tempfile import NamedTemporaryFile
 
 import openpyxl
-from administration_units.models import AdministrationUnit
-from categories.models import RoleCategory
 from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from django.core.files import File
-from donations.models import Donation
 from tinymce.models import HTMLField
-from translation.translate import translate_model
 
+from administration_units.models import AdministrationUnit
 from bis.helpers import AgeStats, filter_queryset_with_multiple_or_queries
 from bis.models import User
+from categories.models import RoleCategory
+from donations.models import Donation
+from translation.translate import translate_model
 
 
 @translate_model
@@ -48,7 +48,12 @@ class DuplicateUser(Model):
 
     class Meta:
         ordering = ("id",)
-        unique_together = "user", "other"
+        constraints = [
+            UniqueConstraint(
+                fields=["user", "other"],
+                name="unique_duplicate_user_pair",
+            )
+        ]
 
 
 @translate_model

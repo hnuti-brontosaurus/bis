@@ -31,11 +31,41 @@ token = f"Token {User.objects.get(email='asdf').auth_token.key}"
 
 `git push -f dev master`
 
-`PGPASSWORD=$DB_PASSWORD pg_dump -U $DB_USERNAME -h $DB_HOST -d $DB_NAME -F t -f /app/media/mydb.dump`
+`PGPASSWORD=$DB_PASSWORD pg_dump -U $DB_USERNAME -h $DB_HOST -d $DB_NAME -F t -f /app/media/bis.db`
 
 ```bash
 docker stop bis-backend
 PGPASSWORD=123 dropdb -U postgres -h localhost postgres
 PGPASSWORD=123 createdb -U postgres -h localhost postgres
-PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --no-owner -F t /home/lamanchy/laman/Downloads/mydb.dump
+PGPASSWORD=123 pg_restore -U postgres -h localhost -d postgres --clean --if-exists --no-owner -F t /home/lamanchy/laman/Downloads/bis.db
+
 ```
+
+### upgrade of postgres
+```
+create dump
+PGPASSWORD=$DB_PASSWORD pg_dump -U $DB_USERNAME -h $DB_HOST -d $DB_NAME -F t -f /app/media/bis.db
+
+download dump
+https://bis.brontosaurus.cz/media/bis.db
+
+change postgres db to nginx in gitlab
+#  newName: docker.io/nginx
+#  newTag: 1.19.6-alpine
+
+remove old data in nginx container
+rm -rf /data/*
+
+set new tag and start up postgres
+newTag: 17-3.6-alpine
+
+restore dump
+PGPASSWORD=$DB_PASSWORD pg_restore -U $DB_USERNAME -h $DB_HOST -d $DB_NAME --no-owner -F t /app/media/bis.db
+
+rm dump
+rm /app/media/bis.db
+```
+
+uv
+`docker compose  run -it --rm -v ./backend/:/app backend uv lock`
+

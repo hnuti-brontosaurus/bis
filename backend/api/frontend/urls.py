@@ -1,3 +1,6 @@
+from django.urls import include, path
+from rest_framework_nested import routers
+
 from api import frontend
 from api.frontend.views import (
     AttendanceListPageViewSet,
@@ -22,8 +25,6 @@ from api.frontend.views import (
     UserViewSet,
     WhereWasOrganizerViewSet,
 )
-from django.urls import include, path
-from rest_framework_nested import routers
 
 router = routers.DefaultRouter()
 
@@ -35,25 +36,39 @@ router.register("event_drafts", EventDraftViewSet, "event_drafts")
 router.register("dashboard_items", DashboardItemViewSet, "dashboard_items")
 
 users_router = routers.NestedDefaultRouter(router, "users", lookup="user")
-users_router.register("opportunities", OpportunityViewSet)
+users_router.register("opportunities", OpportunityViewSet, "user_opportunities")
 
-users_router.register("participated_in_events", ParticipatedInViewSet)
-users_router.register("registered_in_events", RegisteredInViewSet)
-users_router.register("events_where_was_organizer", WhereWasOrganizerViewSet)
+users_router.register(
+    "participated_in_events", ParticipatedInViewSet, "participated_in_events"
+)
+users_router.register(
+    "registered_in_events", RegisteredInViewSet, "registered_in_events"
+)
+users_router.register(
+    "events_where_was_organizer", WhereWasOrganizerViewSet, "events_where_was_organizer"
+)
 
 events_router = routers.NestedDefaultRouter(router, "events", lookup="event")
-events_router.register("finance/receipts", FinanceReceiptViewSet)
-events_router.register("propagation/images", EventPropagationImageViewSet)
-events_router.register("record/photos", EventPhotoViewSet)
-events_router.register("record/attendance_list_pages", AttendanceListPageViewSet)
-events_router.register("registration/questionnaire/questions", QuestionViewSet)
-events_router.register("registration/applications", EventApplicationViewSet)
-events_router.register("feedback_form/inquiries", InquiryViewSet)
-events_router.register("feedbacks", EventFeedbackViewSet)
+events_router.register("finance/receipts", FinanceReceiptViewSet, "finance_receipts")
+events_router.register(
+    "propagation/images", EventPropagationImageViewSet, "propagation_images"
+)
+events_router.register("record/photos", EventPhotoViewSet, "record_photos")
+events_router.register(
+    "record/attendance_list_pages", AttendanceListPageViewSet, "attendance_list_pages"
+)
+events_router.register(
+    "registration/questionnaire/questions", QuestionViewSet, "questionnaire_questions"
+)
+events_router.register(
+    "registration/applications", EventApplicationViewSet, "event_applications"
+)
+events_router.register("feedback_form/inquiries", InquiryViewSet, "feedback_inquiries")
+events_router.register("feedbacks", EventFeedbackViewSet, "event_feedbacks")
 
-events_router.register("record/participants", ParticipantsViewSet)
-events_router.register("registered", RegisteredViewSet)
-events_router.register("organizers", OrganizersViewSet)
+events_router.register("record/participants", ParticipantsViewSet, "participants")
+events_router.register("registered", RegisteredViewSet, "registered")
+events_router.register("organizers", OrganizersViewSet, "organizers")
 
 urlpatterns = [
     path("", include(router.urls)),

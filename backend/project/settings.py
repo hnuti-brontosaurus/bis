@@ -45,8 +45,12 @@ ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
 # brew install gdal
 # brew install libgeoip
 try:
-    GDAL_LIBRARY_PATH = glob("/usr/lib/libgdal.so.*")[0]
-    GEOS_LIBRARY_PATH = glob("/usr/lib/libgeos_c.so.*")[0]
+    GDAL_LIBRARY_PATH = (
+        glob("/usr/lib/libgdal.so.*") + glob("/usr/lib/*/libgdal.so.*")
+    )[0]
+    GEOS_LIBRARY_PATH = (
+        glob("/usr/lib/libgeos_c.so.*") + glob("/usr/lib/*/libgeos_c.so.*")
+    )[0]
 except IndexError:
     pass
 
@@ -169,7 +173,6 @@ AUTHENTICATION_BACKENDS = ["bis.auth_backend.BISBackend"]
 LANGUAGE_CODE = "cs"
 TIME_ZONE = "Europe/Prague"
 USE_I18N = True
-USE_L10N = False
 USE_TZ = True
 DATE_FORMAT = "j. n. Y"
 SHORT_DATE_FORMAT = DATE_FORMAT

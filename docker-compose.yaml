@@ -1,9 +1,7 @@
-version: '3'
 services:
   nginx:
     container_name: bis-nginx
-    image: nginx:1.19.4-alpine
-#    image: nginx:1.29.4-alpine
+    image: nginx:1.28-alpine
     ports:
       - ${APP_PORT}:80
       - ${HTTPS_PORT}:443
@@ -79,11 +77,9 @@ services:
 
   postgres:
     container_name: bis-postgres
-    image: postgis/postgis:11-3.1-alpine
-#    image: postgis/postgis:18-3.6-alpine
+    image: postgis/postgis:17-3.6-alpine
     volumes:
       - ./postgresqldata:/var/lib/postgresql/data
-#      - ./postgresqldata:/var/lib/postgresql
     ports:
       - 127.0.0.1:5432:5432
     environment:

@@ -4,18 +4,6 @@ from functools import cached_property
 from os.path import basename
 from uuid import uuid4
 
-from administration_units.models import AdministrationUnit, BrontosaurusMovement
-from categories.models import (
-    HealthInsuranceCompany,
-    LocationAccessibilityCategory,
-    LocationProgramCategory,
-    MembershipCategory,
-    PronounCategory,
-    QualificationCategory,
-    RoleCategory,
-)
-from common.abstract_models import BaseAddress, BaseContact
-from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.apps import apps
@@ -33,8 +21,8 @@ from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from phonenumber_field.modelfields import PhoneNumberField
-from translation.translate import translate_model
 
+from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
 from bis.helpers import (
     SearchMixin,
@@ -42,6 +30,18 @@ from bis.helpers import (
     paused_validation,
     permission_cache,
 )
+from categories.models import (
+    HealthInsuranceCompany,
+    LocationAccessibilityCategory,
+    LocationProgramCategory,
+    MembershipCategory,
+    PronounCategory,
+    QualificationCategory,
+    RoleCategory,
+)
+from common.abstract_models import BaseAddress, BaseContact
+from common.thumbnails import ThumbnailImageField
+from translation.translate import translate_model
 
 
 @translate_model
@@ -402,7 +402,12 @@ class User(SearchMixin, AbstractBaseUser):
     class Meta:
         ordering = "last_name", "first_name"
         indexes = [Index(fields=["last_name", "first_name"])]
-        unique_together = "first_name", "last_name", "birthday"
+        constraints = [
+            UniqueConstraint(
+                fields=["first_name", "last_name", "birthday"],
+                name="unique_user_name_birthday",
+            )
+        ]
 
     def __str__(self):
         return self._str

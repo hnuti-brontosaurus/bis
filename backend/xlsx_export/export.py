@@ -16,9 +16,7 @@ from typing import OrderedDict
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import openpyxl
-import pdfkit
 import xlsxwriter
-from common.thumbnails import get_thumbnail_path
 from django.conf import settings
 from django.contrib import admin, messages
 from django.core.files import File
@@ -28,16 +26,21 @@ from django.db.models import Count
 from django.http import FileResponse
 from django.template import Context, Template
 from django.utils.formats import date_format
+from PIL import Image, ImageDraw, ImageFont
+from rest_framework.serializers import CharField, ModelSerializer, Serializer
+from weasyprint import HTML
+from xlsx2html import xlsx2html
+
+from bis import emails
+from bis.helpers import print_progress
+from bis.models import User
+from common.thumbnails import get_thumbnail_path
 from event.models import Event
 from feedback.models import EventFeedback
 from other.models import SavedFile
-from PIL import Image, ImageDraw, ImageFont
 from project.settings import BASE_DIR
 from questionnaire.models import EventApplication
-from rest_framework.serializers import CharField, ModelSerializer, Serializer
 from translation.translate import _
-from weasyprint import HTML
-from xlsx2html import xlsx2html
 from xlsx_export.helpers import text_into_lines
 from xlsx_export.serializers import (
     AdministrationUnitExportSerializer,
@@ -50,10 +53,6 @@ from xlsx_export.serializers import (
     MembershipExportSerializer,
     UserExportSerializer,
 )
-
-from bis import emails
-from bis.helpers import print_progress
-from bis.models import User
 
 lock = Lock()
 

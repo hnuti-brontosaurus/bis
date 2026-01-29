@@ -1,36 +1,34 @@
-FROM amancevice/pandas:1.5.3
+FROM python:3.12-slim
 
-RUN mkdir app
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+RUN mkdir -p /app /logs/backend
 WORKDIR /app
-RUN mkdir -p /logs/backend
 
-
-ENV VIRTUAL_ENV=/venv
-
-# 1 gdal
-# 2 html to pdf
-# 2 postgres
-RUN apt update \
- && apt install -y \
+# System dependencies:
+# - binutils, libproj-dev, gdal-bin: GDAL/GEOS/PROJ for PostGIS/GeoDjango
+# - postgresql-client: psql used in docker-entrypoint.sh
+# - libheif-dev, build-essential, pkg-config: building pyheif from source
+# - libpango-1.0-0, libpangoft2-1.0-0: weasyprint runtime deps
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
     binutils libproj-dev gdal-bin \
-    wkhtmltopdf \
     postgresql-client \
- && rm -rf /var/lib/apt/lists/* \
- && python3 -m venv $VIRTUAL_ENV
+    libheif-dev build-essential pkg-config git \
+    libpango-1.0-0 libpangoft2-1.0-0 \
+ && rm -rf /var/lib/apt/lists/*
 
-# this 'activates' virtual environment, since classic activate does not work
-# https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Place venv outside /app to avoid conflicts with volume mounts in dev
+ENV UV_PROJECT_ENVIRONMENT=/venv
+ENV PATH="/venv/bin:$PATH"
 
-COPY requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt
-
+# Install dependencies (cached Docker layer - only re-runs when deps change)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project
 
 WORKDIR /app
-# Copy files
 COPY . .
 
-# default value 8000, can be overwritten in docker-compose build: args: APP_PORT: ...
 ARG APP_PORT=8000
 EXPOSE ${APP_PORT}
 
