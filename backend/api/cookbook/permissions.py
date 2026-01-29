@@ -1,8 +1,9 @@
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
-from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class CookbookAccessPermission(BasePermission):

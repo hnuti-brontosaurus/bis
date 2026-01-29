@@ -1,11 +1,11 @@
+from django.db.models import *
+
+from bis.models import User
 from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.recipes import Recipe
 from cookbook_categories.models import Unit
-from django.db.models import *
 from translation.translate import translate_model
-
-from bis.models import User
 
 
 @translate_model

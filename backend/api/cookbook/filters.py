@@ -1,4 +1,5 @@
 import django_filters
+
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
 

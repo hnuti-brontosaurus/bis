@@ -4,14 +4,14 @@ from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
-from project import settings
-from regions.models import Region
 from rest_framework.authtoken.models import Token
 from unidecode import unidecode
 from vokativ import vokativ
 
 from bis import emails
 from bis.models import Location, Qualification, User, UserEmail
+from project import settings
+from regions.models import Region
 
 
 @receiver(

@@ -1,3 +1,22 @@
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import ListModelMixin
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_429_TOO_MANY_REQUESTS,
+)
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
 from api.frontend.filters import EventFilter, LocationFilter, UserFilter
 from api.frontend.permissions import BISPermissions
 from api.frontend.serializers import (
@@ -25,11 +44,9 @@ from api.frontend.serializers import (
     UserSerializer,
 )
 from api.helpers import parse_request_data
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.http import HttpResponseForbidden
-from django.views.decorators.csrf import csrf_exempt
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from bis.helpers import filter_queryset_with_multiple_or_queries
+from bis.models import Location, User
+from bis.permissions import Permissions
 from event.models import (
     Event,
     EventAttendanceListPage,
@@ -43,25 +60,8 @@ from login_code.models import ThrottleLog
 from opportunities.models import Opportunity
 from other.models import DashboardItem
 from questionnaire.models import EventApplication, Question
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import NotFound
-from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import ListModelMixin
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_200_OK,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-    HTTP_429_TOO_MANY_REQUESTS,
-)
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from xlsx_export import export
 from xlsx_export.export import export_to_xlsx
-
-from bis.helpers import filter_queryset_with_multiple_or_queries
-from bis.models import Location, User
-from bis.permissions import Permissions
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 

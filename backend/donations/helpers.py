@@ -1,8 +1,9 @@
 import csv
 from io import StringIO
 
-from categories.models import DonationSourceCategory
 from django.utils.datetime_safe import date
+
+from categories.models import DonationSourceCategory
 from donations.models import Donation, Donor
 
 

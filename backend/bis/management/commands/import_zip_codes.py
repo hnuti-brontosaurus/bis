@@ -4,9 +4,9 @@ from os.path import join
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from regions.models import Region, ZipCode
 
 from bis.models import UserAddress
+from regions.models import Region, ZipCode
 
 
 class Command(BaseCommand):

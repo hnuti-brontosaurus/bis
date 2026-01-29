@@ -5,6 +5,7 @@ import yaml
 from django.db.models.fields.related_descriptors import ManyToManyDescriptor
 from django.db.models.query_utils import DeferredAttribute
 from phonenumber_field.modelfields import PhoneNumberDescriptor
+
 from project.settings import BASE_DIR
 
 with open(join(BASE_DIR, "translation", "model_translations.yaml"), "r") as f:

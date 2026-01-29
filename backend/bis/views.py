@@ -7,12 +7,12 @@ from django.forms import EmailField, Form, NumberInput, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import FormView
-from login_code.models import LoginCode
 from rest_framework.exceptions import AuthenticationFailed, Throttled
-from translation.translate import _
 
 from bis import emails
 from bis.models import User
+from login_code.models import LoginCode
+from translation.translate import _
 
 
 class LoginForm(Form):

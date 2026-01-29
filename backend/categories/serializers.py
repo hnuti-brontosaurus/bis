@@ -1,3 +1,5 @@
+from rest_framework.serializers import ModelSerializer
+
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -20,7 +22,6 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
-from rest_framework.serializers import ModelSerializer
 
 
 class GrantCategorySerializer(ModelSerializer):

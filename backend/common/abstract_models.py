@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import PROTECT, CharField, EmailField, ForeignKey, Model
 from django.db.models.functions import Length
 from phonenumber_field.modelfields import PhoneNumberField
+
 from translation.translate import translate_model
 
 CharField.register_lookup(Length)

@@ -1,3 +1,6 @@
+from django.db.models import *
+
+from bis.models import User
 from common.thumbnails import ThumbnailImageField
 from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook.models.chefs import Chef
@@ -8,10 +11,7 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
-from django.db.models import *
 from translation.translate import translate_model
-
-from bis.models import User
 
 
 @translate_model

@@ -1,3 +1,6 @@
+from django.urls import include, path
+from rest_framework import routers
+
 import api.cookbook.views.auth
 import api.cookbook.views.extras
 from api.cookbook.views.categories import (
@@ -12,8 +15,6 @@ from api.cookbook.views.cookbook import (
     MenuViewSet,
     RecipeViewSet,
 )
-from django.urls import include, path
-from rest_framework import routers
 
 router = routers.DefaultRouter()
 

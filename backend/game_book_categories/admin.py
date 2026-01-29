@@ -1,8 +1,8 @@
 from django.contrib import admin
-from game_book_categories.models import *
 from nested_admin.nested import NestedModelAdmin
 
 from bis.admin_permissions import PermissionMixin
+from game_book_categories.models import *
 
 
 @admin.register(Tag)

@@ -3,6 +3,7 @@ from os.path import join
 from django.conf import settings
 from django.contrib.gis.gdal import DataSource
 from django.core.management.base import BaseCommand
+
 from regions.models import Region
 
 

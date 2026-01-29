@@ -1,4 +1,10 @@
+from phonenumber_field.serializerfields import PhoneNumberField
+from rest_framework.fields import SerializerMethodField
+from rest_framework.relations import SlugRelatedField, StringRelatedField
+from rest_framework.serializers import ModelSerializer
+
 from administration_units.models import AdministrationSubUnit, AdministrationUnit
+from bis.models import Location, LocationPhoto, User
 from categories.serializers import (
     AdministrationUnitCategorySerializer,
     DietCategorySerializer,
@@ -21,13 +27,7 @@ from event.models import (
 )
 from feedback.models import FeedbackForm, Inquiry
 from opportunities.models import Opportunity
-from phonenumber_field.serializerfields import PhoneNumberField
 from questionnaire.models import Question, Questionnaire
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import SlugRelatedField, StringRelatedField
-from rest_framework.serializers import ModelSerializer
-
-from bis.models import Location, LocationPhoto, User
 
 
 class UserSerializer(ModelSerializer):

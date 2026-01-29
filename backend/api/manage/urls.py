@@ -1,5 +1,6 @@
-import api.manage.views
 from django.urls import path
+
+import api.manage.views
 
 urlpatterns = [
     path("command/<str:command>/", api.manage.views.manage),

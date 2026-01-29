@@ -1,3 +1,11 @@
+from django.contrib import admin
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
+
+from bis.admin_permissions import PermissionMixin
 from cookbook.models.base import ChangeMixin
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
@@ -9,14 +17,6 @@ from cookbook.models.recipes import (
     RecipeStep,
     RecipeTip,
 )
-from django.contrib import admin
-from nested_admin.nested import (
-    NestedModelAdmin,
-    NestedStackedInline,
-    NestedTabularInline,
-)
-
-from bis.admin_permissions import PermissionMixin
 
 
 @admin.register(Chef)

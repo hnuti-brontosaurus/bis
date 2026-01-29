@@ -1,16 +1,16 @@
-from categories.models import AdministrationUnitCategory
-from common.abstract_models import BaseAddress
-from common.history import record_history
-from common.thumbnails import ThumbnailImageField
 from django.contrib.admin import display
 from django.contrib.gis.db.models import *
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
 from solo.models import SingletonModel
-from translation.translate import _, translate_model
 
 from bis.helpers import SearchMixin, permission_cache, update_roles
+from categories.models import AdministrationUnitCategory
+from common.abstract_models import BaseAddress
+from common.history import record_history
+from common.thumbnails import ThumbnailImageField
+from translation.translate import _, translate_model
 
 
 @translate_model

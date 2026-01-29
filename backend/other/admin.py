@@ -1,12 +1,14 @@
 from django.contrib.messages import ERROR, INFO
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from event.models import *
 from nested_admin.nested import (
     NestedModelAdmin,
     NestedStackedInline,
     NestedTabularInline,
 )
+
+from bis.admin_permissions import PermissionMixin
+from event.models import *
 from other.models import (
     DashboardItem,
     DonationPoints,
@@ -14,8 +16,6 @@ from other.models import (
     DonationPointsSection,
     DuplicateUser,
 )
-
-from bis.admin_permissions import PermissionMixin
 
 
 @admin.register(DuplicateUser)

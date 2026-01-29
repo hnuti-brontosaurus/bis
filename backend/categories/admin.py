@@ -1,7 +1,7 @@
-from categories.models import *
 from django.contrib import admin
 
 from bis.admin_permissions import PermissionMixin
+from categories.models import *
 
 
 @admin.register(GrantCategory)

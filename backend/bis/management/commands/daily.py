@@ -5,9 +5,9 @@ from datetime import date
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection
-from other.models import SavedFile
 
 from bis import emails
+from other.models import SavedFile
 
 
 def try_to_run(fn, *args, **kwargs):

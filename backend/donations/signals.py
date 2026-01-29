@@ -1,7 +1,8 @@
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
-from donations.models import Donation, Donor, VariableSymbol
 from vokativ import vokativ
+
+from donations.models import Donation, Donor, VariableSymbol
 
 
 @receiver(post_save, sender=VariableSymbol, dispatch_uid="assign_donations_to_donors")

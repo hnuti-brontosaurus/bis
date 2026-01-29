@@ -1,16 +1,16 @@
-from administration_units.models import AdministrationUnit
 from django import template
 from django.contrib.admin.templatetags.admin_list import date_hierarchy
 from django.contrib.admin.templatetags.base import InclusionAdminNode
 from django.utils.datetime_safe import date
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
-from event.models import Event
-from other.models import DashboardItem
 
+from administration_units.models import AdministrationUnit
 from bis.admin_filters import EventStatsDateFilter, UserStatsDateFilter
 from bis.helpers import AgeStats, MembershipStats
 from bis.models import Membership, User
+from event.models import Event
+from other.models import DashboardItem
 
 register = template.Library()
 

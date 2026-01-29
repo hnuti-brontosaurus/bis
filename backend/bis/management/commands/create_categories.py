@@ -1,3 +1,6 @@
+from django.core.management.base import BaseCommand
+
+from bis.models import Location
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -26,7 +29,6 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
-from django.core.management.base import BaseCommand
 from game_book_categories.models import (
     GameLengthCategory,
     LocationCategory,
@@ -41,8 +43,6 @@ from game_book_categories.models import (
 )
 from other.models import DonationPointsAggregation
 from translation.translate import _
-
-from bis.models import Location
 
 
 class Command(BaseCommand):

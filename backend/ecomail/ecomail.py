@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+
 from ecomail.helpers import send
 from ecomail.models import Contact
 from ecomail.serializers import SendEmailSerializer

@@ -1,5 +1,6 @@
-from categories.serializers import *
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from categories.serializers import *
 
 
 class GrantCategoryViewSet(ReadOnlyModelViewSet):

@@ -1,8 +1,8 @@
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import NestedStackedInline, NestedTabularInline
-from questionnaire.models import *
 
 from bis.admin_permissions import PermissionMixin, ReadonlyMixin
+from questionnaire.models import *
 
 
 class QuestionAdmin(ReadonlyMixin, NestedTabularInline):

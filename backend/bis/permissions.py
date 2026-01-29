@@ -7,20 +7,6 @@ from administration_units.models import (
     BrontosaurusMovement,
     GeneralMeeting,
 )
-from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
-from event.models import Event, EventDraft
-from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
-from opportunities.models import OfferedHelp, Opportunity
-from other.models import DashboardItem, DonationPoints, DuplicateUser
-from questionnaire.models import (
-    Answer,
-    EventApplication,
-    EventApplicationAddress,
-    EventApplicationClosePerson,
-    Question,
-    Questionnaire,
-)
-
 from bis.models import (
     EYCACard,
     Location,
@@ -35,6 +21,19 @@ from bis.models import (
     UserClosePerson,
     UserContactAddress,
     UserEmail,
+)
+from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
+from event.models import Event, EventDraft
+from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
+from opportunities.models import OfferedHelp, Opportunity
+from other.models import DashboardItem, DonationPoints, DuplicateUser
+from questionnaire.models import (
+    Answer,
+    EventApplication,
+    EventApplicationAddress,
+    EventApplicationClosePerson,
+    Question,
+    Questionnaire,
 )
 
 

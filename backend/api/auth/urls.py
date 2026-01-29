@@ -1,5 +1,6 @@
-import api.auth.views
 from django.urls import path
+
+import api.auth.views
 
 urlpatterns = [
     path("whoami/", api.auth.views.whoami),

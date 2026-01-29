@@ -5,7 +5,6 @@ from urllib import request
 from urllib.request import urlretrieve
 
 import requests
-from categories.models import LocationAccessibilityCategory, LocationProgramCategory
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
@@ -19,6 +18,7 @@ from bis.models import (
     LocationPhoto,
     User,
 )
+from categories.models import LocationAccessibilityCategory, LocationProgramCategory
 
 
 class Command(BaseCommand):

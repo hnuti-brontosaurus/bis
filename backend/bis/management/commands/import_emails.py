@@ -3,11 +3,11 @@ import logging
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
+
+from bis.models import User
 from ecomail.helpers import send
 from xlsx_export.export import XLSXWriter
 from xlsx_export.serializers import UserExportSerializer
-
-from bis.models import User
 
 
 class Command(BaseCommand):

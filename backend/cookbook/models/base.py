@@ -1,8 +1,8 @@
-from common.thumbnails import ThumbnailImageField
 from django.db.models import *
-from translation.translate import translate_model
 
 from bis.models import User
+from common.thumbnails import ThumbnailImageField
+from translation.translate import translate_model
 
 
 class ChangeMixin(Model):

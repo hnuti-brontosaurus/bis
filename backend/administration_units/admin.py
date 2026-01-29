@@ -1,15 +1,5 @@
 from datetime import date
 
-from administration_units.models import (
-    AdministrationSubUnit,
-    AdministrationSubUnitAddress,
-    AdministrationUnit,
-    AdministrationUnitAddress,
-    AdministrationUnitContactAddress,
-    BrontosaurusMovement,
-    GeneralMeeting,
-)
-from common.history import show_history
 from dateutil.utils import today
 from django.contrib import admin
 from django.contrib.gis.db.models import PointField
@@ -20,13 +10,23 @@ from nested_admin.nested import (
     NestedTabularInline,
 )
 from solo.admin import SingletonModelAdmin
-from xlsx_export.export import export_to_xlsx
 
+from administration_units.models import (
+    AdministrationSubUnit,
+    AdministrationSubUnitAddress,
+    AdministrationUnit,
+    AdministrationUnitAddress,
+    AdministrationUnitContactAddress,
+    BrontosaurusMovement,
+    GeneralMeeting,
+)
 from bis.admin_filters import IsAdministrationUnitActiveFilter
 from bis.admin_helpers import LatLongWidget, get_admin_list_url
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats, make_br
 from bis.models import Membership, User
+from common.history import show_history
+from xlsx_export.export import export_to_xlsx
 
 
 class AdministrationUnitAddressAdmin(PermissionMixin, NestedTabularInline):

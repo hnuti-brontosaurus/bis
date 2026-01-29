@@ -1,7 +1,7 @@
 import django_filters
-from event.models import Event
 
 from bis.models import Location, User
+from event.models import Event
 
 
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):

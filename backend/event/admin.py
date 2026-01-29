@@ -5,9 +5,6 @@ from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
 from django.utils.datetime_safe import date
-from event.models import *
-from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
-from feedback.models import EventFeedback
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
@@ -15,8 +12,17 @@ from nested_admin.nested import (
     NestedStackedInline,
     NestedTabularInline,
 )
-from questionnaire.admin import EventApplicationAdmin, QuestionnaireAdmin
 from rangefilter.filters import DateRangeFilter
+
+from bis.admin import export_emails
+from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
+from bis.admin_helpers import list_filter_extra_text
+from bis.admin_permissions import PermissionMixin
+from bis.helpers import AgeStats, paused_validation
+from event.models import *
+from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
+from feedback.models import EventFeedback
+from questionnaire.admin import EventApplicationAdmin, QuestionnaireAdmin
 from translation.translate import _
 from xlsx_export.export import (
     do_export_to_xlsx,
@@ -25,12 +31,6 @@ from xlsx_export.export import (
     export_to_xlsx_response,
     get_attendance_list,
 )
-
-from bis.admin import export_emails
-from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
-from bis.admin_helpers import list_filter_extra_text
-from bis.admin_permissions import PermissionMixin
-from bis.helpers import AgeStats, paused_validation
 
 
 class EventPropagationImageAdmin(

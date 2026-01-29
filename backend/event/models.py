@@ -1,7 +1,25 @@
 from os.path import basename
 
 import geopy.distance
+from dateutil.relativedelta import relativedelta
+from django.contrib import admin
+from django.contrib.gis.db.models import *
+from django.contrib.gis.geos import Point
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.utils.safestring import mark_safe
+from geopy.distance import distance
+from phonenumber_field.modelfields import PhoneNumberField
+from tinymce.models import HTMLField
+
 from administration_units.models import AdministrationUnit
+from bis.helpers import (
+    SearchMixin,
+    filter_queryset_with_multiple_or_queries,
+    permission_cache,
+    update_roles,
+)
+from bis.models import Location, Qualification, User
 from categories.models import (
     DietCategory,
     EventCategory,
@@ -14,25 +32,7 @@ from categories.models import (
 from common.abstract_models import BaseContact
 from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
-from dateutil.relativedelta import relativedelta
-from django.contrib import admin
-from django.contrib.gis.db.models import *
-from django.contrib.gis.geos import Point
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.utils.safestring import mark_safe
-from geopy.distance import distance
-from phonenumber_field.modelfields import PhoneNumberField
-from tinymce.models import HTMLField
 from translation.translate import translate_model
-
-from bis.helpers import (
-    SearchMixin,
-    filter_queryset_with_multiple_or_queries,
-    permission_cache,
-    update_roles,
-)
-from bis.models import Location, Qualification, User
 
 
 class EventDraft(Model):

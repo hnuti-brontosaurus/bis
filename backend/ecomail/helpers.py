@@ -2,11 +2,12 @@ from typing import List, Union
 
 import requests
 from django.conf import settings
-from ecomail.models import Contact, ContactLog
 from requests.adapters import HTTPAdapter
 from rest_framework.utils import json
 from simplejson import JSONDecodeError
 from urllib3.util import Retry
+
+from ecomail.models import Contact, ContactLog
 
 BASE_URI = "https://api2.ecomailapp.cz/"
 

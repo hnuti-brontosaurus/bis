@@ -8,10 +8,24 @@ from urllib.parse import quote
 from urllib.request import urlretrieve
 from zoneinfo import ZoneInfo
 
+from django.core.management.base import BaseCommand
+from django.utils.datetime_safe import date, datetime
+
 from administration_units.models import (
     AdministrationUnit,
     AdministrationUnitAddress,
     BrontosaurusMovement,
+)
+from bis.helpers import print_progress, with_paused_validation
+from bis.models import (
+    Location,
+    LocationPatron,
+    Membership,
+    Qualification,
+    User,
+    UserAddress,
+    UserContactAddress,
+    UserEmail,
 )
 from categories.models import (
     AdministrationUnitCategory,
@@ -24,8 +38,6 @@ from categories.models import (
     MembershipCategory,
     QualificationCategory,
 )
-from django.core.management.base import BaseCommand
-from django.utils.datetime_safe import date, datetime
 from donations.models import Donor, VariableSymbol
 from event.models import (
     Event,
@@ -37,18 +49,6 @@ from event.models import (
     VIPEventPropagation,
 )
 from project.settings import BASE_DIR
-
-from bis.helpers import print_progress, with_paused_validation
-from bis.models import (
-    Location,
-    LocationPatron,
-    Membership,
-    Qualification,
-    User,
-    UserAddress,
-    UserContactAddress,
-    UserEmail,
-)
 
 
 def get_or_create_user(email, first_name, last_name):

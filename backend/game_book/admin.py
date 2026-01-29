@@ -1,11 +1,11 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 from django.contrib.admin import EmptyFieldListFilter
-from game_book.models import *
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
 from bis.admin_permissions import PermissionMixin
+from game_book.models import *
 
 
 class CommentFileAdmin(PermissionMixin, NestedTabularInline):

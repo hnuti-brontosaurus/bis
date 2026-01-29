@@ -3,13 +3,14 @@
 import datetime
 import uuid
 
-import common.thumbnails
 import django.contrib.auth.models
 import django.contrib.gis.db.models.fields
 import django.db.models.deletion
 import phonenumber_field.modelfields
 from django.conf import settings
 from django.db import migrations, models
+
+import common.thumbnails
 
 
 class Migration(migrations.Migration):

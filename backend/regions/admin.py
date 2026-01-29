@@ -1,9 +1,9 @@
 from django.contrib.gis.admin import OSMGeoAdmin
-from event.models import *
 from nested_admin.nested import NestedModelAdmin
-from regions.models import Region, ZipCode
 
 from bis.admin_permissions import PermissionMixin
+from event.models import *
+from regions.models import Region, ZipCode
 
 
 @admin.register(Region)

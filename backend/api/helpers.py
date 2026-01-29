@@ -5,7 +5,6 @@ import re
 from typing import TypedDict
 
 import pyheif
-from common.thumbnails import ThumbnailImageField, get_thumbnail_path
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
@@ -14,6 +13,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.fields import FileField, ImageField, SkipField
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.serializers import ModelSerializer
+
+from common.thumbnails import ThumbnailImageField, get_thumbnail_path
 
 
 class Pagination(PageNumberPagination):

@@ -1,7 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from admin_numeric_filter.admin import NumericFilterModelAdmin, RangeNumericFilter
-from administration_units.models import AdministrationUnit
-from categories.models import MembershipCategory, PronounCategory, QualificationCategory
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
@@ -16,7 +14,6 @@ from django.db import ProgrammingError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from login_code.models import ThrottleLog
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
@@ -25,14 +22,11 @@ from nested_admin.nested import (
     NestedStackedInline,
     NestedTabularInline,
 )
-from opportunities.models import OfferedHelp
-from other.models import DuplicateUser
 from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
 from rest_framework.exceptions import Throttled
-from translation.translate import _
-from xlsx_export.export import export_to_xlsx
 
+from administration_units.models import AdministrationUnit
 from bis.admin_filters import (
     AgeFilter,
     EventsWhereWasAsMainOrganizerCountFilter,
@@ -82,6 +76,12 @@ from bis.models import (
     UserEmail,
 )
 from bis.permissions import Permissions
+from categories.models import MembershipCategory, PronounCategory, QualificationCategory
+from login_code.models import ThrottleLog
+from opportunities.models import OfferedHelp
+from other.models import DuplicateUser
+from translation.translate import _
+from xlsx_export.export import export_to_xlsx
 
 admin.site.unregister(TokenProxy)
 admin.site.unregister(Group)

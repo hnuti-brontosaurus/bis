@@ -1,20 +1,20 @@
 from time import sleep
 
 import requests
-from api.cookbook.serializers import ChefSerializer
-from api.helpers import parse_request_data
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema
-from login_code.models import ThrottleLog
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ValidationError
 from rest_framework.fields import CharField, EmailField, IntegerField
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from api.cookbook.serializers import ChefSerializer
+from api.helpers import parse_request_data
 from bis.models import User
+from login_code.models import ThrottleLog
 
 
 def get_user_data(user):

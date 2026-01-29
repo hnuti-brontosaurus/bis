@@ -1,9 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.core.management import BaseCommand
-from other.models import DuplicateUser
 
 from bis.helpers import print_progress
 from bis.models import User
+from other.models import DuplicateUser
 
 
 class Command(BaseCommand):

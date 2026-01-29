@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
-from event.models import Event
 
 from bis.helpers import get_locked_year, with_paused_validation
+from event.models import Event
 
 
 class Command(BaseCommand):

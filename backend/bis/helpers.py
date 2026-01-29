@@ -4,13 +4,14 @@ from collections import Counter
 from functools import wraps
 from time import time
 
-from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.core.cache import cache
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from unidecode import unidecode
+
+from categories.models import MembershipCategory
 
 
 class SearchMixin:

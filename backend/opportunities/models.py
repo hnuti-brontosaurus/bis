@@ -1,3 +1,12 @@
+from django.conf import settings
+from django.contrib.gis.db.models import *
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from phonenumber_field.modelfields import PhoneNumberField
+from tinymce.models import HTMLField
+
+from bis.helpers import SearchMixin
+from bis.models import Location, User
 from categories.models import (
     EventProgramCategory,
     OpportunityCategory,
@@ -6,16 +15,7 @@ from categories.models import (
     TeamRoleCategory,
 )
 from common.thumbnails import ThumbnailImageField
-from django.conf import settings
-from django.contrib.gis.db.models import *
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from phonenumber_field.modelfields import PhoneNumberField
-from tinymce.models import HTMLField
 from translation.translate import translate_model
-
-from bis.helpers import SearchMixin
-from bis.models import Location, User
 
 
 @translate_model

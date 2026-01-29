@@ -1,6 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from admin_numeric_filter.admin import RangeNumericFilter
-from categories.models import PronounCategory
 from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
@@ -8,14 +7,10 @@ from django.contrib.messages import ERROR, INFO
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse
-from donations.helpers import upload_bank_records
-from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
-from event.models import *
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
-from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 from bis.admin_filters import (
     DonationSumAmountFilter,
@@ -29,6 +24,11 @@ from bis.admin_helpers import list_filter_extra_note, list_filter_extra_title
 from bis.admin_permissions import PermissionMixin
 from bis.emails import donation_confirmation
 from bis.permissions import Permissions
+from categories.models import PronounCategory
+from donations.helpers import upload_bank_records
+from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
+from event.models import *
+from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 
 @admin.register(Donation)

@@ -1,3 +1,8 @@
+from django.http import Http404
+from django.utils.timezone import now
+from rest_framework.generics import get_object_or_404
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from administration_units.models import AdministrationUnit
 from api.web.filters import AdministrationUnitFilter, EventFilter, OpportunityFilter
 from api.web.serializers import (
@@ -5,12 +10,8 @@ from api.web.serializers import (
     EventSerializer,
     OpportunitySerializer,
 )
-from django.http import Http404
-from django.utils.timezone import now
 from event.models import Event
 from opportunities.models import Opportunity
-from rest_framework.generics import get_object_or_404
-from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
 class EventViewSet(ReadOnlyModelViewSet):
