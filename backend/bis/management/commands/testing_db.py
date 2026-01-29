@@ -1,10 +1,9 @@
 import typing as t
-from datetime import timedelta
+from datetime import date, timedelta
 from os.path import join
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.utils.datetime_safe import date
 
 from administration_units.models import (
     AdministrationUnit,

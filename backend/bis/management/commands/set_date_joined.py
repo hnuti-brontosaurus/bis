@@ -1,6 +1,7 @@
+from datetime import date
+
 from django.core.management.base import BaseCommand
 from django.core.paginator import Paginator
-from django.utils.datetime_safe import date
 
 from bis.helpers import print_progress
 from bis.models import User

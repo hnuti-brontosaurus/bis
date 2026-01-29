@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from os import mkdir
 from os.path import exists, join
 from urllib.error import HTTPError
@@ -9,7 +9,6 @@ from urllib.request import urlretrieve
 from zoneinfo import ZoneInfo
 
 from django.core.management.base import BaseCommand
-from django.utils.datetime_safe import date, datetime
 
 from administration_units.models import (
     AdministrationUnit,

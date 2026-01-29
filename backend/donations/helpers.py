@@ -1,7 +1,6 @@
 import csv
+from datetime import date
 from io import StringIO
-
-from django.utils.datetime_safe import date
 
 from categories.models import DonationSourceCategory
 from donations.models import Donation, Donor

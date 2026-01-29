@@ -1,7 +1,8 @@
+from datetime import date
+
 from django import template
 from django.contrib.admin.templatetags.admin_list import date_hierarchy
 from django.contrib.admin.templatetags.base import InclusionAdminNode
-from django.utils.datetime_safe import date
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 
