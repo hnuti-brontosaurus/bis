@@ -1,10 +1,10 @@
 from contextlib import nullcontext
+from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
-from django.utils.datetime_safe import date
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
