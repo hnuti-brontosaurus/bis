@@ -75,6 +75,7 @@ dependencies = [
     { name = "django-bootstrap5" },
     { name = "django-cleanup" },
     { name = "django-cors-headers" },
+    { name = "django-debug-toolbar" },
     { name = "django-filter" },
     { name = "django-mcp-server" },
     { name = "django-more-admin-filters" },
@@ -128,6 +129,7 @@ requires-dist = [
     { name = "django-bootstrap5", specifier = ">=23.1" },
     { name = "django-cleanup", specifier = ">=7.0" },
     { name = "django-cors-headers", specifier = ">=3.14" },
+    { name = "django-debug-toolbar", specifier = ">=4.0" },
     { name = "django-filter", specifier = ">=23.2" },
     { name = "django-mcp-server", specifier = ">=0.5" },
     { name = "django-more-admin-filters", specifier = ">=1.15" },
@@ -528,6 +530,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/21/39/55822b15b7ec87410f34cd16ce04065ff390e50f9e29f31d6d116fc80456/django_cors_headers-4.9.0.tar.gz", hash = "sha256:fe5d7cb59fdc2c8c646ce84b727ac2bca8912a247e6e68e1fb507372178e59e8", size = 21458, upload-time = "2025-09-18T10:40:52.326Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/d8/19ed1e47badf477d17fb177c1c19b5a21da0fd2d9f093f23be3fb86c5fab/django_cors_headers-4.9.0-py3-none-any.whl", hash = "sha256:15c7f20727f90044dcee2216a9fd7303741a864865f0c3657e28b7056f61b449", size = 12809, upload-time = "2025-09-18T10:40:50.843Z" },
+]
+
+[[package]]
+name = "django-debug-toolbar"
+version = "6.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "sqlparse" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f1/4d/6acf660500d3d581bfc19460d9605cdf14c275640f35825da1329eaafafa/django_debug_toolbar-6.2.0.tar.gz", hash = "sha256:dc1c174d8fb0ea01435e02d9ceef735cf62daf37c1a6a5692d33b4127327679b", size = 313779, upload-time = "2026-01-20T12:38:25.268Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/04/e24611299a5ee0d4edfacf935b09cfb7d5d9cb653bd7b7883c3b43a6f90d/django_debug_toolbar-6.2.0-py3-none-any.whl", hash = "sha256:1575461954e6befa720e999dec13fe4f1cc8baf40b6c3ac2aec5f340c0f9c85f", size = 271354, upload-time = "2026-01-20T12:38:23.608Z" },
 ]
 
 [[package]]

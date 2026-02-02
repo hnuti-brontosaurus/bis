@@ -161,12 +161,16 @@ def on_save(fn, when="always"):
 class AgeStats:
     def __init__(self, header, queryset, date):
         self.date = date
-        self.total = queryset.count()
         self.header = header
 
-        birthdays = queryset.filter(birthday__isnull=False).values_list(
-            "birthday", flat=True
-        )
+        if isinstance(queryset, list):
+            self.total = len(queryset)
+            birthdays = [p.birthday for p in queryset if p.birthday is not None]
+        else:
+            self.total = queryset.count()
+            birthdays = queryset.filter(birthday__isnull=False).values_list(
+                "birthday", flat=True
+            )
         ages = [relativedelta(date, birthday).years for birthday in birthdays]
         self.without_birthday = self.total - len(ages)
         self.unborn = len([age for age in ages if age < 0])

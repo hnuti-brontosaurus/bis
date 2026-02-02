@@ -213,10 +213,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         EventFinanceAdmin,
         EventPropagationAdmin,
         EventVIPPropagationAdmin,
-        EventRegistrationAdmin,
         EventRecordAdmin,
-        FeedbackFormAdmin,
-        EventFeedbackAdmin,
     )
     filter_horizontal = ("other_organizers",)
 
@@ -302,12 +299,14 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
     def get_participants_count(self, obj):
         if not hasattr(obj, "record"):
             return None
+        obj.record.event = obj
         return obj.record.get_participants_count()
 
     @admin.display(description="% do 26 let")
     def get_young_percentage(self, obj):
         if not hasattr(obj, "record"):
             return None
+        obj.record.event = obj
         return obj.record.get_young_percentage()
 
     @admin.display(description="Odpracováno hodin")
@@ -322,18 +321,27 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
             return False
         return obj.propagation.is_shown_on_web
 
+    def changelist_view(self, request, extra_context=None):
+        request._is_changelist = True
+        return super().changelist_view(request, extra_context)
+
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .prefetch_related(
+        qs = super().get_queryset(request)
+        if getattr(request, "_is_changelist", False):
+            qs = qs.prefetch_related(
+                "administration_units",
+                "other_organizers",
+                "record__participants",
+                "tags",
+            )
+        else:
+            qs = qs.prefetch_related(
                 "administration_units",
                 "record__participants",
                 "record__photos",
                 "finance__receipts",
-                "tags",
             )
-        )
+        return qs
 
     date_hierarchy = "start"
     search_fields = Event.get_search_fields()

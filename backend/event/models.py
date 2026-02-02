@@ -368,10 +368,17 @@ class EventRecord(Model):
         return f"{int(self.get_young_participants_count() / participants_count * 100)}%"
 
     def get_all_participants(self):
-        all_participants = self.participants.all().union(
-            self.event.other_organizers.all()
-        )
-        return User.objects.filter(id__in=all_participants.values_list("id"))
+        if not hasattr(self, "_all_participants_cache"):
+            seen = set()
+            result = []
+            for user in list(self.participants.all()) + list(
+                self.event.other_organizers.all()
+            ):
+                if user.id not in seen:
+                    seen.add(user.id)
+                    result.append(user)
+            self._all_participants_cache = result
+        return self._all_participants_cache
 
 
 @translate_model

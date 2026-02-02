@@ -133,6 +133,10 @@
             margin: 0 15px 15px;
         }
 
+        .submit-row {
+            justify-content: flex-end;
+        }
+
 
 
 
@@ -143,7 +147,10 @@
     <a href="https://brontosaurus.cz">Web</a> /
     <a href="/">Organizátorský BIS</a> /
     <a href="{% url 'admin:bis_user_change' request.user.id %}">Můj profil</a> /
-    <a href="{% url 'admin:logout' %}">{% translate 'Log out' %}</a>
+    <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <button type="submit">{% translate 'Log out' %}</button>
+    </form>
     {% include "admin/color_theme_toggle.html" %}
 {% endblock %}
 
