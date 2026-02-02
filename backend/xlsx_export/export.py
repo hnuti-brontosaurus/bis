@@ -12,7 +12,6 @@ from shutil import copy2, make_archive
 from tempfile import TemporaryDirectory
 from threading import Lock
 from time import sleep
-from typing import OrderedDict
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import openpyxl
@@ -269,10 +268,11 @@ class XLSXWriter:
         if key_prefix:
             key_prefix += "_"
         for key, value in item.items():
-            if isinstance(value, OrderedDict):
-                yield from self.get_row_values(value, key_prefix + key)
+            full_key = key_prefix + key
+            if isinstance(value, dict) and full_key not in self.header_keys:
+                yield from self.get_row_values(value, full_key)
             else:
-                yield key_prefix + key, value
+                yield full_key, value
 
     def write_row(self, item):
         self.write_values(self.get_row_values(item))
