@@ -15,6 +15,7 @@ from bis.admin_helpers import (
     CustomDateRangeFilter,
     RawRangeNumericFilter,
     YesNoFilter,
+    _unwrap_list_params,
     event_of_administration_unit_filter_factory,
 )
 from bis.models import Qualification
@@ -136,6 +137,7 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
 class DonationSumAmountFilter(RangeNumericFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
         field_path = "donations_sum"
+        _unwrap_list_params(params)
         super().__init__(field, request, params, model, model_admin, field_path)
         self.title = "Dle sumy darů"
 
@@ -237,6 +239,8 @@ class QualificationCategoryFilter(MultiSelectRelatedDropdownFilter):
         params = Q()
         for lookup_arg, value in self.used_parameters.items():
             lookup_arg = lookup_arg.replace("qualifications__", "")
+            if isinstance(value, list):
+                value = value[0] if value else None
             query = {lookup_arg: value}
             query.update(date_filter)
             params |= Q(**query)

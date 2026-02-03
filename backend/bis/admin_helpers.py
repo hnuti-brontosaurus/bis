@@ -14,6 +14,18 @@ from django.utils.safestring import mark_safe
 from rangefilter.filters import DateRangeFilter
 
 
+def _unwrap_list_parameters(filter_instance):
+    for key, value in filter_instance.used_parameters.items():
+        if isinstance(value, list):
+            filter_instance.used_parameters[key] = value[0] if value else None
+
+
+def _unwrap_list_params(params):
+    for key, value in params.items():
+        if isinstance(value, list):
+            params[key] = value[0] if value else ""
+
+
 def get_admin_edit_url(obj):
     url = reverse(
         f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change", args=[obj.id]
@@ -60,10 +72,14 @@ class RawRangeNumericFilter(ListFilter):
 
         if self.parameter_name + "_from" in params:
             value = params.pop(self.parameter_name + "_from")
+            if isinstance(value, list):
+                value = value[0] if value else None
             self.used_parameters[self.parameter_name + "_from"] = value
 
         if self.parameter_name + "_to" in params:
             value = params.pop(self.parameter_name + "_to")
+            if isinstance(value, list):
+                value = value[0] if value else None
             self.used_parameters[self.parameter_name + "_to"] = value
 
     def queryset(self, request, queryset):
@@ -252,6 +268,7 @@ class CacheRangeNumericFilter(RangeNumericFilter):
     custom_title = None
 
     def __init__(self, field, request, params, model, model_admin, field_path):
+        _unwrap_list_params(params)
         super().__init__(field, request, params, model, model_admin, field_path)
         if self.custom_title:
             self.title = self.custom_title
@@ -261,25 +278,11 @@ class CacheRangeNumericFilter(RangeNumericFilter):
 
         value_from = self.used_parameters.get(self.parameter_name + "_from", None)
         if value_from is not None and value_from != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__gte": self.used_parameters.get(
-                        self.parameter_name + "_from", None
-                    ),
-                }
-            )
+            filters[self.parameter_name + "__gte"] = value_from
 
         value_to = self.used_parameters.get(self.parameter_name + "_to", None)
         if value_to is not None and value_to != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__lte": self.used_parameters.get(
-                        self.parameter_name + "_to", None
-                    ),
-                }
-            )
+            filters[self.parameter_name + "__lte"] = value_to
 
         setattr(request, self.cache_name, filters)
         return queryset
@@ -331,6 +334,10 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
 
 
 class MembershipYearFilter(RangeNumericFilter):
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        _unwrap_list_params(params)
+        super().__init__(field, request, params, model, model_admin, field_path)
+
     def queryset(self, request, queryset):
         queryset = super().queryset(request, queryset)
 

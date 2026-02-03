@@ -341,17 +341,30 @@ class EventRecord(Model):
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
 
+    def _get_all_participants_list(self):
+        if not hasattr(self, "_all_participants_list_cache"):
+            seen = set()
+            result = []
+            for user in list(self.participants.all()) + list(
+                self.event.other_organizers.all()
+            ):
+                if user.id not in seen:
+                    seen.add(user.id)
+                    result.append(user)
+            self._all_participants_list_cache = result
+        return self._all_participants_list_cache
+
     def get_participants_count(self):
         return (
             self.number_of_participants
-            or len(self.get_all_participants()) * self.event.number_of_sub_events
+            or len(self._get_all_participants_list()) * self.event.number_of_sub_events
         )
 
     def get_young_participants_count(self):
         under_26 = len(
             [
                 p
-                for p in self.get_all_participants()
+                for p in self._get_all_participants_list()
                 if p.birthday
                 and relativedelta(self.event.start, p.birthday).years <= 26
             ]
@@ -368,17 +381,9 @@ class EventRecord(Model):
         return f"{int(self.get_young_participants_count() / participants_count * 100)}%"
 
     def get_all_participants(self):
-        if not hasattr(self, "_all_participants_cache"):
-            seen = set()
-            result = []
-            for user in list(self.participants.all()) + list(
-                self.event.other_organizers.all()
-            ):
-                if user.id not in seen:
-                    seen.add(user.id)
-                    result.append(user)
-            self._all_participants_cache = result
-        return self._all_participants_cache
+        return User.objects.filter(
+            id__in=[p.id for p in self._get_all_participants_list()]
+        )
 
 
 @translate_model
