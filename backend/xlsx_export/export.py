@@ -607,7 +607,7 @@ def get_donation_confirmation(donor):
     text = text_into_lines(draw, font, text, 4000)
     draw.text((176 * 3, 600 * 3 - 1), text, **text_params)
 
-    page = page.resize((page.width // 3, page.height // 3), Image.ANTIALIAS)
+    page = page.resize((page.width // 3, page.height // 3), Image.LANCZOS)
     tmp_pdf = NamedTemporaryFile(
         mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
     )
