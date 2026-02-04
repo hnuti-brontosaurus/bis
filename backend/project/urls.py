@@ -3,6 +3,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
+from mcp_server.views import MCPServerStreamableHttpView
+from oauth2_provider.contrib.rest_framework import OAuth2Authentication
+from rest_framework.permissions import BasePermission
 
 from bis.views import (
     CodeView,
@@ -10,6 +13,12 @@ from bis.views import (
     MCPClientRegistrationView,
     OAuthAuthorizationServerMetadataView,
 )
+
+
+class IsSuperUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_superuser
+
 
 urlpatterns = [
     # custom authentication
@@ -38,8 +47,15 @@ urlpatterns = [
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     # Dynamic Client Registration (for MCP clients like Claude AI)
     path("o/register/", MCPClientRegistrationView.as_view(), name="oauth2_dcr"),
-    # MCP Server endpoint
-    path("", include("mcp_server.urls")),
+    # MCP Server endpoint (superusers only)
+    path(
+        "mcp",
+        MCPServerStreamableHttpView.as_view(
+            permission_classes=[IsSuperUser],
+            authentication_classes=[OAuth2Authentication],
+        ),
+        name="mcp_server_streamable_http_endpoint",
+    ),
 ]
 
 if settings.DEBUG:
