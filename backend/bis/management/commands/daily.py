@@ -49,6 +49,7 @@ class Command(BaseCommand):
         try_to_run(call_command, "set_date_joined")
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
+        try_to_run(emails.send_automatic_feedback)
         try_to_run(emails.qualification_about_to_end)
         try_to_run(emails.qualification_ended)
         try_to_run(SavedFile.remove_old)

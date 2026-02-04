@@ -1,6 +1,6 @@
 from base64 import b64encode
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 
 from dateutil.utils import today
 from django.conf import settings
@@ -202,16 +202,8 @@ def event_not_closed_10_days():
 
 
 def event_not_closed_20_days():
-    for event in (
-        get_unclosed_events()
-        .filter(
-            end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
-        )
-        .filter(
-            end__gte=date(
-                2023, 11, 1
-            )  # remove notification for old events, can be removed after 3.1.2024
-        )
+    for event in get_unclosed_events().filter(
+        end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
         if not event.main_organizer:
             continue
@@ -507,6 +499,25 @@ def send_feedback_request(event):
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
             },
         )
+
+
+def send_automatic_feedback():
+    for event in Event.objects.filter(
+        end=date.today() - timedelta(days=20),
+        feedback_form__sent_at__isnull=True,
+        feedback_form__isnull=False,
+        program__slug__in=[
+            "nature",
+            "monuments",
+            "holidays_with_brontosaurus",
+            "education",
+            "none",
+        ],
+        group__slug__in=["camp", "weekend_event"],
+    ):
+        send_feedback_request(event)
+        event.feedback_form.sent_at = timezone.now()
+        event.feedback_form.save()
 
 
 def expressed_engagement_in_feedback():
