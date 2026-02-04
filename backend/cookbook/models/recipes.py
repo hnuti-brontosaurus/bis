@@ -37,7 +37,7 @@ class RecipeIngredient(BaseModel):
         Ingredient, related_name="recipe_ingredients", on_delete=PROTECT
     )
     unit = ForeignKey(Unit, related_name="recipe_ingredients", on_delete=PROTECT)
-    amount = DecimalField(max_digits=10, decimal_places=1)
+    amount = FloatField()
     is_required = BooleanField(default=True)
     comment = TextField(blank=True)
 

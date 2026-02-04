@@ -51,7 +51,7 @@ const columns = computed(() => {
       ),
     },
     { key: "ingredient.name" },
-    { key: "amount", render: row => `${row.amount * servings.value} ${row.unit.name}` },
+    { key: "amount", render: row => `${Math.round(row.amount * servings.value * 100) / 100} ${row.unit.name}` },
     // {key: "selected", render: row => h(NCheckbox, {checked: row.is_required, 'onUpdate:checked': (val) => {
     //     recipe.value.ingredients.find(_ => _.id === row.id).is_required = val
     //     }})},
