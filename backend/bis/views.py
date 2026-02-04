@@ -19,14 +19,14 @@ from translation.translate import _
 
 
 class MCPClientRegistrationView(DynamicClientRegistrationView):
-    """DCR override that defaults to public clients (PKCE).
+    """DCR override that forces public clients (PKCE).
 
     MCP clients like Claude.ai are public clients using PKCE,
-    so token_endpoint_auth_method should default to "none".
+    so token_endpoint_auth_method must be "none".
     """
 
     def _validate_client_metadata(self, metadata):
-        metadata.setdefault("token_endpoint_auth_method", "none")
+        metadata["token_endpoint_auth_method"] = "none"
         return super()._validate_client_metadata(metadata)
 
 
