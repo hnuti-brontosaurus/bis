@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from dateutil.parser import isoparse
 from django.conf import settings
@@ -85,10 +87,18 @@ class Command(BaseCommand):
                     basic_section_support = "Brďo Draci"
                 if basic_section_support == "BRĎO Gingo":
                     basic_section_support = "1.BRĎO Tišnov GINGO"
+                if basic_section_support == "Čachrovníci":
+                    basic_section_support = "Brďo Čachrovníci"
 
-                basic_section_support = AdministrationUnit.objects.get(
-                    abbreviation=basic_section_support
-                )
+                try:
+                    basic_section_support = AdministrationUnit.objects.get(
+                        abbreviation=basic_section_support
+                    )
+                except AdministrationUnit.DoesNotExist:
+                    logging.error(
+                        f"Didn't find administration unit for {basic_section_support}"
+                    )
+                    basic_section_support = None
 
             regional_center_support = custom.get(
                 "Brontosaurus_adopce_RC"

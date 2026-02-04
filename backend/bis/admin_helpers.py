@@ -56,7 +56,7 @@ class YesNoFilter(SimpleListFilter):
         if self.value() == "no":
             queryset = queryset.exclude(**self.query)
         if self.distinct:
-            queryset = queryset.distinct()
+            queryset = queryset.model.objects.filter(pk__in=queryset.values_list("pk"))
         return queryset
 
 

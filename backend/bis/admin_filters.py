@@ -250,9 +250,11 @@ class QualificationCategoryFilter(MultiSelectRelatedDropdownFilter):
 
         if params:
             try:
-                return queryset.filter(
-                    qualifications__in=Qualification.objects.filter(params)
-                ).distinct()
+                return queryset.model.objects.filter(
+                    pk__in=queryset.filter(
+                        qualifications__in=Qualification.objects.filter(params)
+                    ).values_list("pk")
+                )
             except (ValueError, ValidationError) as e:
                 # Fields may raise a ValueError or ValidationError when converting
                 # the parameters to the correct type.
