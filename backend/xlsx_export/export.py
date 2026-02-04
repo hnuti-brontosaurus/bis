@@ -74,10 +74,25 @@ class XLSXWriter:
         self.format.shrink.set_shrink()
         self.format.text_wrap = self.writer.add_format()
         self.format.text_wrap.set_text_wrap()
+        self.format.text_wrap_alt = self.writer.add_format()
+        self.format.text_wrap_alt.set_text_wrap()
+        self.format.text_wrap_alt.set_bg_color("#f2f2f2")
         self.format.bold = self.writer.add_format()
         self.format.bold.set_shrink()
         self.format.bold.set_bold()
+        self.format.bold.set_bg_color("#d9e1f2")
+        self.format.header = self.writer.add_format()
+        self.format.header.set_shrink()
+        self.format.header.set_bold()
+        self.format.header.set_border()
+        self.format.header.set_bg_color("#d9e1f2")
         self.stats = defaultdict(lambda: defaultdict(lambda: defaultdict(Counter)))
+
+        self.worksheet = None
+        self.row = 0
+        self.header_keys = []
+        self.header_height = 0
+        self.widths = {}
 
     def get_file(self):
         self.writer.close()
@@ -89,6 +104,7 @@ class XLSXWriter:
         self.worksheet = self.writer.add_worksheet(name)
         self.row = 0
         self.header_keys = []
+        self.header_height = 0
         self.widths = {}
 
     def from_queryset(self, queryset, serializer_class, name=None):
@@ -116,14 +132,22 @@ class XLSXWriter:
 
     def set_column_widths(self):
         for i, key in enumerate(self.header_keys):
-            self.worksheet.set_column(i, i, width=self.widths[key])
+            width = min(50, self.widths[key])
+            self.worksheet.set_column(i, i, width=width)
+        if self.header_height and self.header_keys:
+            self.worksheet.autofilter(
+                self.header_height - 1,
+                0,
+                max(self.row - 1, self.header_height),
+                len(self.header_keys) - 1,
+            )
 
     @staticmethod
     def format_stats(stats):
         extra = {}
         for key, stat in list(stats.items()):
             if "sum" in stat:
-                stats[key] = stat["sum"] / stat["count"]
+                stats[key] = round(stat["sum"] / stat["count"], 1)
             else:
                 stats[key] = [f"{k}: {v}x" for k, v in stat.items()]
                 for k, v in stat.items():
@@ -189,10 +213,15 @@ class XLSXWriter:
 
     def get_extra_header(self, extra, extra_header, stats_header):
         for key, value in stats_header.items():
-            extra_header[key] = value
-            for k, v in extra.items():
-                if k.startswith(key + "__"):
-                    extra_header[k] = v
+            label = getattr(value, "label", value) or key
+            has_children = any(k.startswith(key + "__") for k in extra)
+            if has_children:
+                extra_header[key] = [label, label]
+                for k, v in extra.items():
+                    if k.startswith(key + "__"):
+                        extra_header[k] = [label, v]
+            else:
+                extra_header[key] = value
 
     def add_stats(self, model, item):
         if model is EventFeedback:
@@ -239,30 +268,71 @@ class XLSXWriter:
                 self.widths[key], max(len(row) for row in str(value).split("\n")) / 1.5
             )
             height = max(height, str(value).count("\n"))
-            row_format = self.row and self.format.text_wrap or self.format.bold
+            if self.row < self.header_height:
+                row_format = self.format.bold
+            elif (self.row - self.header_height) % 2 == 1:
+                row_format = self.format.text_wrap_alt
+            else:
+                row_format = self.format.text_wrap
             self.worksheet.write(self.row, i, value, row_format)
 
         self.worksheet.set_row(self.row, 16 + height * 12)
         self.row += 1
 
-    def get_header_values(self, fields, prefix="", key_prefix=""):
-        if prefix:
-            prefix += " - "
+    def get_header_values(self, fields, prefix=None, key_prefix=""):
+        if prefix is None:
+            prefix = []
         if key_prefix:
             key_prefix += "_"
         for key, value in fields.items():
             if isinstance(value, ModelSerializer):
                 yield from self.get_header_values(
                     value.get_fields(),
-                    prefix + value.Meta.model._meta.verbose_name,
+                    [*prefix, value.Meta.model._meta.verbose_name],
                     key_prefix + key,
                 )
+            elif isinstance(value, list):
+                self.header_keys.append(key_prefix + key)
+                yield key_prefix + key, [*prefix, *value]
             else:
                 self.header_keys.append(key_prefix + key)
-                yield key_prefix + key, prefix + (getattr(value, "label", value) or key)
+                yield key_prefix + key, [*prefix, getattr(value, "label", value) or key]
 
     def write_header(self, fields):
-        self.write_values(list(self.get_header_values(fields)))
+        values = list(self.get_header_values(fields))
+        self.header_height = max(len(prefixes) for _, prefixes in values)
+        for i in range(self.header_height):
+            row_data = [
+                (
+                    key,
+                    (
+                        prefixes[-self.header_height + i]
+                        if len(prefixes) >= self.header_height - i
+                        else ""
+                    ),
+                )
+                for key, prefixes in values
+            ]
+            self.write_values(row_data)
+            # Merge consecutive header cells with the same non-empty value
+            header_row = self.row - 1
+            groups = []
+            for col, (_, value) in enumerate(row_data):
+                if groups and groups[-1][2] == value and value != "":
+                    groups[-1] = (groups[-1][0], col, value)
+                else:
+                    groups.append((col, col, value))
+            for start_col, end_col, value in groups:
+                if start_col != end_col and value:
+                    self.worksheet.merge_range(
+                        header_row,
+                        start_col,
+                        header_row,
+                        end_col,
+                        value,
+                        self.format.header,
+                    )
+        self.worksheet.freeze_panes(self.row, 0)
 
     def get_row_values(self, item, key_prefix=""):
         if key_prefix:
