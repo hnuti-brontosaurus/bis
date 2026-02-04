@@ -9,12 +9,25 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.views.generic import FormView
+from oauth_dcr.views import DynamicClientRegistrationView
 from rest_framework.exceptions import AuthenticationFailed, Throttled
 
 from bis import emails
 from bis.models import User
 from login_code.models import LoginCode
 from translation.translate import _
+
+
+class MCPClientRegistrationView(DynamicClientRegistrationView):
+    """DCR override that defaults to public clients (PKCE).
+
+    MCP clients like Claude.ai are public clients using PKCE,
+    so token_endpoint_auth_method should default to "none".
+    """
+
+    def _validate_client_metadata(self, metadata):
+        metadata.setdefault("token_endpoint_auth_method", "none")
+        return super()._validate_client_metadata(metadata)
 
 
 class OAuthAuthorizationServerMetadataView(View):
@@ -38,11 +51,7 @@ class OAuthAuthorizationServerMetadataView(View):
                 "response_types_supported": ["code"],
                 "grant_types_supported": ["authorization_code"],
                 "code_challenge_methods_supported": ["S256"],
-                "token_endpoint_auth_methods_supported": [
-                    "none",
-                    "client_secret_basic",
-                    "client_secret_post",
-                ],
+                "token_endpoint_auth_methods_supported": ["none"],
             },
             headers={"Access-Control-Allow-Origin": "*"},
         )
