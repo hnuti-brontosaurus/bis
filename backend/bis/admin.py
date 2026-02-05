@@ -10,7 +10,6 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
-from django.db import ProgrammingError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -236,7 +235,7 @@ def get_member_action(membership_category, administration_unit):
     return action
 
 
-def get_add_members_actions():
+def get_add_members_actions(administration_units):
     translate = {
         "family": "Nastav první rodinné členství",
         "family_member": "Nastav další rodinné členství",
@@ -244,19 +243,14 @@ def get_add_members_actions():
         "member_elsewhere": "Nastav, že platil členství v jiném ZČ",
         "extend": "Prodluž členství",
     }
-    try:
-        return [
-            admin.action(
-                description=f"{translate[membership_category]} "
-                f"pro aktuální rok pod {administration_unit.abbreviation}"
-            )(get_member_action(membership_category, administration_unit))
-            for administration_unit in AdministrationUnit.objects.filter(
-                existed_till__isnull=True
-            )
-            for membership_category in translate.keys()
-        ]
-    except ProgrammingError:
-        return []
+    return [
+        admin.action(
+            description=f"{translate[membership_category]} "
+            f"pro aktuální rok pod {administration_unit.abbreviation}"
+        )(get_member_action(membership_category, administration_unit))
+        for administration_unit in administration_units
+        for membership_category in translate.keys()
+    ]
 
 
 @action(description="Vypiš e-maily")
@@ -275,16 +269,15 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         export_emails,
         mark_as_woman,
         mark_as_man,
-    ] + get_add_members_actions()
+    ]
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        user_administration_units = request.user.administration_units.all()
-        for key in list(actions.keys()):
-            if "add_member" in key and not any(
-                [key.endswith(f"_{au.id}") for au in user_administration_units]
-            ):
-                del actions[key]
+
+        administration_units = request.user.administration_units.all()
+        for action_func in get_add_members_actions(administration_units):
+            name = action_func.__name__
+            actions[name] = (action_func, name, action_func.short_description)
 
         return actions
 
