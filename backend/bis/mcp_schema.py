@@ -70,6 +70,7 @@ class EventTagType:
         "gps_location",
         "image",
         "custom_statues",
+        "phone",
         "_import_id",
         "_history",
         "_search_field",
@@ -89,12 +90,12 @@ class LocationType:
 
 @strawberry_django.type(FeedbackForm, fields="__all__")
 class FeedbackFormType:
-    pass
+    inquiries: list[InquiryType]
 
 
 @strawberry_django.type(Inquiry, fields="__all__")
 class InquiryType:
-    pass
+    replies: list[ReplyType]
 
 
 @strawberry_django.type(Reply, fields="__all__")
@@ -107,7 +108,7 @@ class ReplyType:
     exclude=["user", "name", "email"],
 )
 class EventFeedbackType:
-    pass
+    replies: list[ReplyType]
 
 
 @strawberry_django.type(EventRecord, fields="__all__")
@@ -132,7 +133,16 @@ class EventRecordType:
     ],
 )
 class EventType:
-    pass
+    feedback_form: FeedbackFormType | None
+    feedbacks: list[EventFeedbackType]
+    record: EventRecordType | None
+    tags: list[EventTagType]
+    administration_units: list[AdministrationUnitType]
+    location: LocationType | None
+    category: EventCategoryType
+    group: EventGroupType
+    program: EventProgramType
+    intended_for: EventIntendedForType
 
 
 # ---------------------------------------------------------------------------
