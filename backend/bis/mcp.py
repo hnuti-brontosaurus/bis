@@ -64,6 +64,13 @@ class BISTools(MCPToolset):
         Returns:
             Query result dict, or confirmation message when export=True.
         """
+        try:
+            return self._execute_query(query, variables, export)
+        except Exception as e:
+            logger.exception("MCP query error")
+            return f"Error: {type(e).__name__}: {e}"
+
+    def _execute_query(self, query, variables, export):
         from bis.mcp_schema import schema
 
         context = {
@@ -78,13 +85,23 @@ class BISTools(MCPToolset):
         )
 
         if result.errors:
-            error_msgs = "; ".join(str(e) for e in result.errors)
-            raise ValueError(f"GraphQL error: {error_msgs}")
+            messages = []
+            for err in result.errors:
+                msg = str(err)
+                if hasattr(err, "locations") and err.locations:
+                    locs = ", ".join(
+                        f"line {loc.line} col {loc.column}" for loc in err.locations
+                    )
+                    msg += f" (at {locs})"
+                if hasattr(err, "path") and err.path:
+                    msg += f" [path: {'.'.join(str(p) for p in err.path)}]"
+                messages.append(msg)
+            return "GraphQL errors:\n" + "\n".join(f"- {m}" for m in messages)
 
         if export:
             user_email = self.request.user.email
             if not user_email:
-                raise ValueError("No email address on your account.")
+                return "Error: No email address on your account."
 
             if not context["_export_qs"]:
                 return "No data matched for export."

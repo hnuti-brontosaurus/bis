@@ -16,6 +16,7 @@ RUN apt-get update \
     postgresql-client \
     libheif-dev build-essential pkg-config git \
     libpango-1.0-0 libpangoft2-1.0-0 \
+    nano htop \
  && rm -rf /var/lib/apt/lists/*
 
 # Place venv outside /app to avoid conflicts with volume mounts in dev
