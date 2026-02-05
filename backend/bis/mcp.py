@@ -1,160 +1,109 @@
 """
 MCP (Model Context Protocol) tools for BIS.
 
-This module exposes Django models and custom tools for AI agents
-to interact with the BIS system via MCP.
+Single GraphQL-based tool for event and feedback analysis.
+The LLM writes GraphQL queries to select exactly the fields it needs.
+Export mode sends full XLSX (with PII) to the authenticated user's email.
 """
 
-from mcp_server import MCPToolset, ModelQueryToolset
+import logging
+from concurrent.futures import ThreadPoolExecutor
 
-from bis.models import Location, User
-from event.models import Event
+from django.conf import settings
+from mcp_server import MCPToolset
 
-
-class LocationQueryTool(ModelQueryToolset):
-    """Query locations in the BIS system."""
-
-    model = Location
-    description = "Search and query locations (volunteering sites) in BIS"
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("program", "region")
+logger = logging.getLogger(__name__)
 
 
-class EventQueryTool(ModelQueryToolset):
-    """Query events in the BIS system."""
+def _export_and_email(queryset, user_email, subject_label):
+    """Run do_export_to_xlsx, save to SavedFile, and email the link."""
+    from bis import emails
+    from other.models import SavedFile
+    from xlsx_export.export import do_export_to_xlsx
 
-    model = Event
-    description = "Search and query events (activities, camps, weekends) in BIS"
-
-    def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related(
-                "location",
-                "group",
-                "category",
-                "program",
-                "intended_for",
-                "main_organizer",
-            )
-            .prefetch_related("administration_units", "tags")
+    try:
+        file = do_export_to_xlsx(queryset)
+        saved_file = SavedFile.objects.create(name=file.name)
+        name = f"saved_file_{saved_file.id}.xlsx"
+        saved_file.file.save(name, open(file.name, "rb"), save=False)
+        emails.text(
+            [user_email],
+            f"Export: {subject_label}",
+            f"tu: {settings.FULL_HOSTNAME}/media/saved_files/{name} máš!",
         )
+    except Exception as e:
+        logger.exception(f"Error exporting {subject_label} to email: {e}")
 
 
-class UserQueryTool(ModelQueryToolset):
-    """Query users in the BIS system (respects permissions)."""
-
-    model = User
-    description = "Search and query users/members in BIS"
-
-    def get_queryset(self):
-        # Only return basic user info, respecting privacy
-        qs = super().get_queryset()
-        if self.request and self.request.user.is_authenticated:
-            # Authenticated users can see more
-            return qs.prefetch_related("roles", "memberships")
-        # Anonymous users get limited data
-        return qs.none()
+_export_executor = ThreadPoolExecutor(max_workers=1)
 
 
 class BISTools(MCPToolset):
-    """Custom BIS tools for AI agents."""
+    """BIS event and feedback analysis via GraphQL."""
 
-    def get_upcoming_events(self, limit: int = 10) -> list[dict]:
-        """Get upcoming public events.
-
-        Args:
-            limit: Maximum number of events to return (default 10, max 50)
-
-        Returns:
-            List of upcoming events with basic info
-        """
-        from django.utils import timezone
-
-        limit = min(limit, 50)
-        events = Event.objects.filter(
-            start__gte=timezone.now().date(),
-            is_canceled=False,
-        ).order_by("start")[:limit]
-
-        return [
-            {
-                "id": e.id,
-                "name": e.name,
-                "start": str(e.start),
-                "end": str(e.end),
-                "location": e.location.name if e.location else None,
-                "category": str(e.category) if e.category else None,
-            }
-            for e in events
-        ]
-
-    def get_location_info(self, location_id: int) -> dict | None:
-        """Get detailed information about a specific location.
-
-        Args:
-            location_id: The ID of the location
-
-        Returns:
-            Location details or None if not found
-        """
-        try:
-            loc = Location.objects.get(id=location_id)
-            return {
-                "id": loc.id,
-                "name": loc.name,
-                "description": loc.description,
-                "address": loc.address,
-                "is_traditional": loc.is_traditional,
-                "for_beginners": loc.for_beginners,
-                "program": str(loc.program) if loc.program else None,
-                "region": str(loc.region) if loc.region else None,
-                "web": loc.web,
-            }
-        except Location.DoesNotExist:
-            return None
-
-    def search_events(
+    def query(
         self,
-        query: str | None = None,
-        location_name: str | None = None,
-        year: int | None = None,
-    ) -> list[dict]:
-        """Search for events by various criteria.
+        query: str,
+        variables: dict | None = None,
+        export: bool = False,
+    ) -> dict | str:
+        """Execute a GraphQL query against BIS data.
+
+        The schema exposes events with their locations, categories, feedback
+        forms, individual feedbacks with replies, and event records.
+        PII fields (organizer names/emails, feedback author info) are excluded.
+
+        When export=True, matching data is exported as full XLSX (including PII)
+        and emailed to you instead of being returned.
 
         Args:
-            query: Text to search in event names
-            location_name: Filter by location name (partial match)
-            year: Filter by year
+            query: A GraphQL query string.
+            variables: Optional dict of GraphQL variables.
+            export: If true, exports matching data as XLSX to your email.
 
         Returns:
-            List of matching events (max 20)
+            Query result dict, or confirmation message when export=True.
         """
-        from django.db.models import Q
+        from bis.mcp_schema import schema
 
-        qs = Event.objects.all()
+        context = {
+            "request": self.request,
+            "_export": export,
+            "_export_qs": {},
+        }
+        result = schema.execute_sync(
+            query,
+            variable_values=variables,
+            context_value=context,
+        )
 
-        if query:
-            qs = qs.filter(name__icontains=query)
+        if result.errors:
+            error_msgs = "; ".join(str(e) for e in result.errors)
+            raise ValueError(f"GraphQL error: {error_msgs}")
 
-        if location_name:
-            qs = qs.filter(location__name__icontains=location_name)
+        if export:
+            user_email = self.request.user.email
+            if not user_email:
+                raise ValueError("No email address on your account.")
 
-        if year:
-            qs = qs.filter(start__year=year)
+            if not context["_export_qs"]:
+                return "No data matched for export."
 
-        events = qs.order_by("-start")[:20]
+            for label, qs in context["_export_qs"].items():
+                _export_executor.submit(_export_and_email, qs, user_email, label)
 
-        return [
-            {
-                "id": e.id,
-                "name": e.name,
-                "start": str(e.start),
-                "end": str(e.end),
-                "location": e.location.name if e.location else None,
-                "is_canceled": e.is_canceled,
-            }
-            for e in events
-        ]
+            exported = ", ".join(context["_export_qs"].keys())
+            return (
+                f"Exporting {exported}. " f"You will receive an email at {user_email}."
+            )
+
+        return result.data
+
+
+from mcp_server.djangomcp import global_mcp_server
+
+# Append GraphQL schema SDL to MCP server instructions so the LLM knows
+# which types and fields are available when writing queries.
+from bis.mcp_schema import schema as _schema
+
+global_mcp_server.append_instructions("GRAPHQL SCHEMA:\n" + _schema.as_str())

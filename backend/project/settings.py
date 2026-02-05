@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "oauth2_provider",
     "oauth_dcr",
+    "strawberry_django",
     "mcp_server",
     "game_book",
     "game_book_categories",
@@ -259,8 +260,22 @@ OAUTH2_DCR = {
 # MCP Server settings
 DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
     "name": "bis-mcp",
-    "instructions": "BIS (Brontosaurus Information System) MCP server. "
-    "Provides access to event management, user profiles, and organization data.",
+    "instructions": (
+        "BIS (Brontosaurus Information System) MCP server.\n\n"
+        "Use the `query` tool to execute GraphQL queries. Request only the fields you need.\n"
+        "DB joins are automatically optimized based on your query.\n\n"
+        "ROOT QUERIES:\n"
+        "- events(filters, ordering, limit, offset): List events.\n"
+        "- feedbacks(eventFilters, limit, offset): List feedbacks.\n\n"
+        "GRAPH: Event -> location, category, group, program, intendedFor, tags,\n"
+        "administrationUnits, feedbacks -> replies -> inquiry, feedbackForm -> inquiries,\n"
+        "record (with participantsCount).\n\n"
+        "FILTERING: The filters/eventFilters argument is a JSON dict of Django ORM lookups.\n"
+        'Example: {start__year: 2024, category__slug: "public__volunteering"}\n\n'
+        "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n\n"
+        "PII fields (organizer names/emails, feedback author info) are excluded from query results.\n"
+        "Results are limited to what the authenticated user has permission to view."
+    ),
     "stateless": False,
 }
 

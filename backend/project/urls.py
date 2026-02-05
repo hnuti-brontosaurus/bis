@@ -15,9 +15,9 @@ from bis.views import (
 )
 
 
-class IsSuperUser(BasePermission):
+class MCPPermission(BasePermission):
     def has_permission(self, request, view):
-        return request.user and request.user.is_superuser
+        return request.user and request.user.is_staff
 
 
 urlpatterns = [
@@ -51,7 +51,7 @@ urlpatterns = [
     path(
         "mcp",
         MCPServerStreamableHttpView.as_view(
-            permission_classes=[IsSuperUser],
+            permission_classes=[MCPPermission],
             authentication_classes=[OAuth2Authentication],
         ),
         name="mcp_server_streamable_http_endpoint",
