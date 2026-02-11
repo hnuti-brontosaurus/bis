@@ -122,7 +122,8 @@ export const isFeedbackRequired = (event: FullEvent): boolean =>
     'holidays_with_brontosaurus',
     'education',
     'none',
-  ].includes(event.program.slug)
+  ].includes(event.program.slug) &&
+  event.intended_for.slug !== 'for_kids'
 
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')
