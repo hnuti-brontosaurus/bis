@@ -514,6 +514,8 @@ def send_automatic_feedback():
             "none",
         ],
         group__slug__in=["camp", "weekend_event"],
+    ).exclude(
+        intended_for__slug="for_kids",
     ):
         send_feedback_request(event)
         event.feedback_form.sent_at = date.today()
