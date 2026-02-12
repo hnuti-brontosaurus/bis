@@ -652,6 +652,7 @@ class EventFeedbackExportSerializer(ModelSerializer):
         return result
 
     def get_extra_fields(self, queryset):
+        self._hidden_first_sheet_keys = set()
         inquiries = Inquiry.objects.filter(
             feedback_form__event__feedbacks__in=queryset
         ).distinct()
@@ -662,6 +663,8 @@ class EventFeedbackExportSerializer(ModelSerializer):
                 keys.add(key)
                 yield f"{key}", inquiry.inquiry
                 yield f"{key}__stat", f"Hodnota"
+                if inquiry.data.get("type") != "scale":
+                    self._hidden_first_sheet_keys.add(f"{key}__stat")
 
 
 class LocationExportSerializer(ModelSerializer):

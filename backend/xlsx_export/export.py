@@ -122,7 +122,13 @@ class XLSXWriter:
             for item in serializer.data:
                 if not self.row:
                     header = self.get_fields(serializer, queryset)
-                    self.write_header(header)
+                    hidden_keys = getattr(
+                        serializer.child, "_hidden_first_sheet_keys", set()
+                    )
+                    display_header = {
+                        k: v for k, v in header.items() if k not in hidden_keys
+                    }
+                    self.write_header(display_header)
 
                 self.write_row(item)
                 self.add_stats(queryset.model, item)
