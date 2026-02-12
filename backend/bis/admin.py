@@ -1,5 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from admin_numeric_filter.admin import NumericFilterModelAdmin, RangeNumericFilter
+from admin_numeric_filter.admin import NumericFilterModelAdmin
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages

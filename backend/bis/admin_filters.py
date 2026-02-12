@@ -1,4 +1,3 @@
-from admin_numeric_filter.admin import RangeNumericFilter
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.contrib import admin
@@ -13,9 +12,9 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from bis.admin_helpers import (
     CacheRangeNumericFilter,
     CustomDateRangeFilter,
+    ListAwareRangeNumericFilter,
     RawRangeNumericFilter,
     YesNoFilter,
-    _unwrap_list_params,
     event_of_administration_unit_filter_factory,
 )
 from bis.models import Qualification
@@ -49,7 +48,7 @@ class AgeFilter(RawRangeNumericFilter):
         def min_max_age(value):
             return max(0, min(200, int(value)))
 
-        value_from = self.used_parameters.get(self.parameter_name + "_from", None)
+        value_from = self.used_parameters.get(self.parameter_name + "_from")
         if value_from is not None and value_from != "":
             filters.update(
                 {
@@ -58,7 +57,7 @@ class AgeFilter(RawRangeNumericFilter):
                 }
             )
 
-        value_to = self.used_parameters.get(self.parameter_name + "_to", None)
+        value_to = self.used_parameters.get(self.parameter_name + "_to")
         if value_to is not None and value_to != "":
             filters.update(
                 {
@@ -134,10 +133,9 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
         return queryset
 
 
-class DonationSumAmountFilter(RangeNumericFilter):
+class DonationSumAmountFilter(ListAwareRangeNumericFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
         field_path = "donations_sum"
-        _unwrap_list_params(params)
         super().__init__(field, request, params, model, model_admin, field_path)
         self.title = "Dle sumy darů"
 
@@ -240,7 +238,7 @@ class QualificationCategoryFilter(MultiSelectRelatedDropdownFilter):
         for lookup_arg, value in self.used_parameters.items():
             lookup_arg = lookup_arg.replace("qualifications__", "")
             if isinstance(value, list):
-                value = value[0] if value else None
+                value = value[-1] if value else None
             query = {lookup_arg: value}
             query.update(date_filter)
             params |= Q(**query)

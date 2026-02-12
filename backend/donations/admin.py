@@ -1,5 +1,4 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from admin_numeric_filter.admin import RangeNumericFilter
 from django.contrib import messages
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
@@ -20,7 +19,11 @@ from bis.admin_filters import (
     LastDonorsDonationFilter,
     RecurringDonorWhoStoppedFilter,
 )
-from bis.admin_helpers import list_filter_extra_note, list_filter_extra_title
+from bis.admin_helpers import (
+    ListAwareRangeNumericFilter,
+    list_filter_extra_note,
+    list_filter_extra_title,
+)
 from bis.admin_permissions import PermissionMixin
 from bis.emails import donation_confirmation
 from bis.permissions import Permissions
@@ -37,7 +40,7 @@ class DonationAdmin(PermissionMixin, NestedModelAdmin):
     autocomplete_fields = ("donor",)
     list_display = "__str__", "donor", "donated_at", "donation_source", "info"
     list_filter = (
-        ("amount", RangeNumericFilter),
+        ("amount", ListAwareRangeNumericFilter),
         ("donated_at", DateRangeFilter),
         HasDonorFilter,
         ("donation_source", MultiSelectRelatedDropdownFilter),
