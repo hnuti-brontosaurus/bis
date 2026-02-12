@@ -516,7 +516,7 @@ def send_automatic_feedback():
         group__slug__in=["camp", "weekend_event"],
     ):
         send_feedback_request(event)
-        event.feedback_form.sent_at = timezone.now()
+        event.feedback_form.sent_at = date.today()
         event.feedback_form.save()
 
 
