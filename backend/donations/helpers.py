@@ -15,7 +15,7 @@ def upload_bank_records(file):
         "VS",
     ]
 
-    data = StringIO(file.read().decode("utf-8").strip())
+    data = StringIO(file.read().decode("utf-8-sig").strip())
     data = list(csv.reader(data, delimiter=";"))
     header, data = data[0], data[1:]
 
