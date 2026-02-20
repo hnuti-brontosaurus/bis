@@ -525,28 +525,37 @@ def send_automatic_feedback():
 def expressed_engagement_in_feedback():
     """
     Email hnuti with info about people who filled in the feedback form
-    that they want to participate more in HB (in the 7 days).
-    - Missing name/email are replaced with defaults.
+    that they want to participate more in HB.
+    - Missing values are replaced with defaults.
     - Email is sent even if it is empty.
     (email 36)
     """
-    replies = Reply.objects.select_related("feedback", "feedback__event").filter(
+
+    replies = Reply.objects.select_related("feedback", "feedback__event", "inquiry").filter(
         feedback__created_at__gte=date.today() - timedelta(days=7),
-        inquiry__slug="involvement_means",
+        inquiry__slug__in=["involvement_means", "previous_participation_number"]
     )
 
-    items = (
-        ", ".join(
-            (
-                reply.feedback.name or "jméno nevyplněno",
-                f"email: {reply.feedback.email or 'email nevyplněn'}",
-                f"akce: {reply.feedback.event.name}",
-                f"jak se chce zapojit: {reply.reply}",
-            )
-        )
-        for reply in replies
-        if "nechci" not in reply.reply
-    )
+    # group replies by feedback ID - that is by the participant
+    feedback_groups = defaultdict(dict)
+    for reply in replies:
+        feedback_groups[reply.feedback_id][reply.inquiry.slug] = reply.reply
+        feedback_groups[reply.feedback_id]["feedback_obj"] = reply.feedback
+
+    items = []
+    for feedback_id, data in feedback_groups.items():
+        involvement = data.get("involvement_means", "")
+        if involvement and "nechci" not in involvement.lower():
+            fb = data["feedback_obj"]
+
+            item = "; ".join((
+                fb.name or "jméno nevyplněno",
+                f"email: {fb.email or 'email nevyplněn'}",
+                f"akce: {fb.event.name}",
+                f"jak se chce zapojit: {involvement}",
+                f"kolikátá akce s HB: {data.get("previous_participation_number", "neudáno")}"
+            ))
+            items.append(item)
 
     ecomail.send_email(
         emails["bis"],
