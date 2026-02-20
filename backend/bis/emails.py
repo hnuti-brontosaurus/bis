@@ -1,16 +1,20 @@
 from base64 import b64encode
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 
+from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.conf import settings
+from django.db.models import Count, Max, Q, QuerySet, Sum
+from django.utils import timezone
 from vokativ import vokativ
 
 from administration_units.models import AdministrationUnit
 from bis.helpers import make_a, make_ul
 from bis.models import Qualification
-from categories.models import EventProgramCategory, PronounCategory
+from categories.models import DonorEventCategory, EventProgramCategory, PronounCategory
 from common.helpers import get_date_range
+from donations.models import Donor, DonorEvent, Pledge, RecurrentState
 from ecomail import ecomail
 from event.models import Event
 from feedback.models import Reply
@@ -202,16 +206,8 @@ def event_not_closed_10_days():
 
 
 def event_not_closed_20_days():
-    for event in (
-        get_unclosed_events()
-        .filter(
-            end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
-        )
-        .filter(
-            end__gte=date(
-                2023, 11, 1
-            )  # remove notification for old events, can be removed after 3.1.2024
-        )
+    for event in get_unclosed_events().filter(
+        end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
     ):
         if not event.main_organizer:
             continue
@@ -509,31 +505,67 @@ def send_feedback_request(event):
         )
 
 
+def send_automatic_feedback():
+    for event in Event.objects.filter(
+        end=date.today() - timedelta(days=20),
+        feedback_form__sent_at__isnull=True,
+        feedback_form__isnull=False,
+        program__slug__in=[
+            "nature",
+            "monuments",
+            "holidays_with_brontosaurus",
+            "education",
+            "none",
+        ],
+        group__slug__in=["camp", "weekend_event"],
+    ).exclude(
+        intended_for__slug="for_kids",
+    ):
+        send_feedback_request(event)
+        event.feedback_form.sent_at = date.today()
+        event.feedback_form.save()
+
+
 def expressed_engagement_in_feedback():
     """
+    Email 36
     Email hnuti with info about people who filled in the feedback form
-    that they want to participate more in HB (in the 7 days).
-    - Missing name/email are replaced with defaults.
+    that they want to participate more in HB.
+    - Missing values are replaced with defaults.
     - Email is sent even if it is empty.
-    (email 36)
     """
-    replies = Reply.objects.select_related("feedback", "feedback__event").filter(
+
+    replies = Reply.objects.select_related(
+        "feedback", "feedback__event", "inquiry"
+    ).filter(
         feedback__created_at__gte=date.today() - timedelta(days=7),
-        inquiry__slug="involvement_means",
+        inquiry__slug__in=["involvement_means", "previous_participation_number"],
     )
 
-    items = (
-        ", ".join(
-            (
-                reply.feedback.name or "jméno nevyplněno",
-                f"email: {reply.feedback.email or 'email nevyplněn'}",
-                f"akce: {reply.feedback.event.name}",
-                f"jak se chce zapojit: {reply.reply}",
+    # group replies by feedback ID - that is by the participant
+    feedback_groups = defaultdict(dict)
+    for reply in replies:
+        feedback_groups[reply.feedback_id][reply.inquiry.slug] = reply.reply
+        feedback_groups[reply.feedback_id]["feedback_obj"] = reply.feedback
+
+    items = []
+    for feedback_id, data in feedback_groups.items():
+        involvement = data.get("involvement_means", "")
+        if involvement and "nechci" not in involvement.lower():
+            fb = data["feedback_obj"]
+            previous_participation = data.get(
+                "previous_participation_number", "neudáno"
             )
-        )
-        for reply in replies
-        if "nechci" not in reply.reply
-    )
+            item = "; ".join(
+                (
+                    fb.name or "jméno nevyplněno",
+                    f"email: {fb.email or 'email nevyplněn'}",
+                    f"akce: {fb.event.name}",
+                    f"jak se chce zapojit: {involvement}",
+                    f"kolikátá akce s HB: {previous_participation}",
+                )
+            )
+            items.append(item)
 
     ecomail.send_email(
         emails["bis"],
@@ -541,3 +573,173 @@ def expressed_engagement_in_feedback():
         [emails["movement"][1]],
         variables={"replies": make_ul(items)},
     )
+
+
+def bulk_create_donor_event(
+    donors: QuerySet[Donor, Donor],
+    event_type: DonorEventCategory,
+    pledge: Pledge = None,
+):
+    DonorEvent.objects.bulk_create(
+        [
+            DonorEvent(
+                donor=donor,
+                pledge=pledge,
+                event_type=event_type,
+                email_sent_at=timezone.now(),
+            )
+            for donor in donors
+        ]
+    )
+
+
+def recurrent_donor_stopped():
+    """
+    Email 26
+    Notify if a recurrent donor (with at least two donations) did not send his donation (for the second time).
+    """
+    event_type = DonorEventCategory.objects.get(slug="recurrent_stopped")
+    donors = (
+        Donor.objects.annotate(
+            times_donated=Count(
+                "donations",
+                filter=Q(donations__pledge__is_recurrent=True),
+                distinct=True,
+            ),
+            last_donation_date=Max(
+                "donations__donated_at", filter=Q(donations__pledge__is_recurrent=True)
+            ),
+        )
+        .filter(
+            pledges__is_recurrent=True,
+            times_donated__gte=2,
+            last_donation_date__lt=today() - relativedelta(months=2),
+        )
+        .exclude(donorevent__event_type=event_type)
+    )
+
+    if not donors.exists():
+        return
+    for donor in donors:
+        # remind the donor
+        ecomail.send_email(
+            emails["donation"],
+            170,
+            [emails["donation"][1]],
+            variables={
+                **PronounCategory.get_variables(donor.user),
+                "vokativ": donor.user.vokativ,
+            },
+        )
+
+        # notify donation coordinator
+        text(
+            [emails["donation"][1]],
+            "Pravidelný dárce přestal darovat",
+            f"Od pravidelného dárce '{donor.user.get_proper_name()}' podruhé za sebou nepřišla pravidelná platba. Dostal o tom emailové upozornění.",
+        )
+
+    bulk_create_donor_event(donors, event_type)
+
+
+def new_recurrent_donors():
+    """
+    Email 27
+    Check new recurrent donors to thank them and to notify the donation coordinator.
+    Emails are sent two days after the first recurrent donation was received.
+    """
+    event_type = DonorEventCategory.objects.get(slug="new_recurrent_pledge")
+    donors = Donor.objects.filter(
+        pledges__is_recurrent=True,
+        pledges__recurrent_state=RecurrentState.COLLECTING,
+        pledges__pledged_at=today().date() - timedelta(days=2),
+    ).exclude(donorevent__event_type=event_type)
+
+    if not donors.exists():
+        return
+    for donor in donors:
+        # thank donor
+        ecomail.send_email(
+            emails["donation"],
+            171,
+            [emails["donation"][1]],
+            variables={
+                **PronounCategory.get_variables(donor.user),
+                "vokativ": donor.user.vokativ,
+            },
+        )
+
+        # notify donation coordinator
+        text(
+            [emails["donation"][1]],
+            "Nový pravidelný dárce",
+            f"Dárce '{donor.user.get_proper_name()}' začal pravidelně darovat a přišel mu*jí o tom děkovný email.",
+        )
+
+    bulk_create_donor_event(donors, event_type)
+
+
+def donated_10k():
+    """Email 28"""
+    event_type = DonorEventCategory.objects.get(slug="donor_10k_total")
+
+    donors = (
+        Donor.objects.annotate(total_donated=Sum("donations__amount"))
+        .filter(total_donated__gte=10000)
+        .exclude(donorevent__event_type=event_type)
+    )
+    if not donors.exists():
+        return
+
+    ecomail.send_email(
+        emails["donation"],
+        172,
+        [emails["donation"][1]],
+        variables={
+            "donors": make_ul([donor.user.get_proper_name() for donor in donors])
+        },
+    )
+
+    bulk_create_donor_event(donors, event_type)
+
+
+def donates_for_years():
+    """Email 30 – donor has been donating recurrently for N years."""
+    years = {1: "rok", 2: "roky", 3: "roky", 4: "roky", 5: "let"}
+
+    today = timezone.now()
+
+    for year, quantifier in years.items():
+        # exclude donors who already received any higher-or-equal year email
+        event_types = DonorEventCategory.objects.filter(
+            slug__in=[f"pledge_{y}y" for y in years if y >= year]
+        )
+
+        cutoff = today - relativedelta(years=year)
+
+        donors = (
+            Donor.objects.filter(
+                pledges__is_recurrent=True,
+                pledges__recurrent_state=RecurrentState.COLLECTING,
+                pledges__pledged_at__lte=cutoff,
+            )
+            .exclude(donorevent__event_type__in=event_types)
+            .distinct()
+        )
+        if not donors.exists():
+            continue
+
+        ecomail.send_email(
+            emails["donation"],
+            174,
+            [emails["donation"][1]],
+            variables={
+                "donors": make_ul([donor.user.get_proper_name() for donor in donors]),
+                "year": year,
+                "quantifier": quantifier,
+            },
+        )
+
+        bulk_create_donor_event(
+            donors, DonorEventCategory.objects.get(slug=f"pledge_{year}y")
+        )

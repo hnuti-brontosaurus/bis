@@ -1,4 +1,3 @@
-from categories.models import DonorEventCategory
 from dateutil.utils import today
 from django.contrib.gis.db.models import *
 from solo.models import SingletonModel
@@ -6,7 +5,7 @@ from solo.models import SingletonModel
 from administration_units.models import AdministrationUnit
 from bis.helpers import filter_queryset_with_multiple_or_queries, permission_cache
 from bis.models import User
-from categories.models import DonationSourceCategory
+from categories.models import DonationSourceCategory, DonorEventCategory
 from translation.translate import translate_model
 
 
@@ -159,7 +158,7 @@ class Pledge(Model):
         choices=RecurrentState.choices,
         default=RecurrentState.UNKNOWN,
     )
-    pledged_at = DateTimeField()
+    pledged_at = DateField()
 
     class Meta:
         ordering = ("-pledged_at",)

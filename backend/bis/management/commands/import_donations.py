@@ -3,13 +3,12 @@ from dateutil.parser import isoparse
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
-from donations.models import Pledge
 
 from administration_units.models import AdministrationUnit
 from bis.helpers import print_progress
 from bis.models import User, UserAddress
 from categories.models import DonationSourceCategory
-from donations.models import Donation, Donor
+from donations.models import Donation, Donor, Pledge
 
 
 class Command(BaseCommand):
@@ -94,10 +93,10 @@ class Command(BaseCommand):
             ) and AdministrationUnit.objects.get(
                 abbreviation=custom["Brontosaurus_adopce_RC"]
             )
-            pledged_at = isoparse(pledge["pledgedAt"])
+            pledged_at = isoparse(pledge["pledgedAt"]).date()
 
             donor = Donor.objects.get_or_create(user=user)[0]
-            donor.date_joined = min(donor.date_joined, pledged_at.date())
+            donor.date_joined = min(donor.date_joined, pledged_at)
             donor.basic_section_support = (
                 donor.basic_section_support or basic_section_support
             )
