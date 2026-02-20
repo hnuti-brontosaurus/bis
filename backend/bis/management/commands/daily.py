@@ -40,6 +40,7 @@ def check_disk_space():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        try_to_run(emails.events_summary)
         try_to_run(call_command, "create_categories")
         try_to_run(call_command, "update_dashboard_items")
         try_to_run(call_command, "record_history")
@@ -53,6 +54,11 @@ class Command(BaseCommand):
         try_to_run(emails.qualification_about_to_end)
         try_to_run(emails.qualification_ended)
         try_to_run(SavedFile.remove_old)
+
+        try_to_run(emails.recurrent_donor_stopped)
+        try_to_run(emails.new_recurrent_donors)
+        try_to_run(emails.donated_10k)
+        try_to_run(emails.donates_for_years)
 
         today = date.today()
         # weekly

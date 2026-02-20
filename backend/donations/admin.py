@@ -6,9 +6,6 @@ from django.contrib.messages import ERROR, INFO
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import FileResponse, HttpResponseRedirect
 from django.urls import reverse
-from donations.helpers import upload_bank_records
-from donations.models import Donation, Donor, Pledge, UploadBankRecords, VariableSymbol
-from event.models import *
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
@@ -33,7 +30,7 @@ from bis.emails import donation_confirmation
 from bis.permissions import Permissions
 from categories.models import PronounCategory
 from donations.helpers import upload_bank_records
-from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
+from donations.models import Donation, Donor, Pledge, UploadBankRecords, VariableSymbol
 from event.models import *
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
