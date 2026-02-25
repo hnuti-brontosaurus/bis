@@ -1078,8 +1078,18 @@ class ReplySerializer(ModelSerializer):
         fields = (
             "inquiry",
             "reply",
+            "value",
             "data",
         )
+
+    def validate_value(self, value):
+        if value is None:
+            return value
+        if isinstance(value, int) and not isinstance(value, bool):
+            return value
+        if isinstance(value, list) and all(isinstance(v, str) for v in value):
+            return value
+        raise ValidationError("Value must be None, int, or list of strings.")
 
 
 class EventFeedbackSerializer(ModelSerializer):

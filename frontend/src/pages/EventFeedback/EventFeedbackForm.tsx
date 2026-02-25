@@ -53,10 +53,10 @@ const mapReply = (reply: Reply, inquiries: InquiryRead[]): Reply => {
           reply: reply.data?.comment
             ? `${reply.reply} ${reply.data.comment}`
             : reply.reply,
-          value: reply.reply,
+          value: Number(reply.reply),
           data: {
             ...reply.data,
-            rating: reply.reply,
+            rating: Number(reply.reply),
           },
         }
       default:

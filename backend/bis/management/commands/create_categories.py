@@ -125,6 +125,10 @@ class Command(BaseCommand):
             defaults=dict(name="Hlavní vedoucí dětských táborů (HVDT)"),
         )
         QualificationCategory.objects.update_or_create(
+            slug="main_leader_of_recovery_events",
+            defaults=dict(name="Hlavní vedoucí zotavovacích akcí (HVZA)"),
+        )
+        QualificationCategory.objects.update_or_create(
             slug="organizer_without_education",
             defaults=dict(name="Organizátorský přístup do BISu"),
         )

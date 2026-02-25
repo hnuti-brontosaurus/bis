@@ -40,7 +40,6 @@ class IngredientSerializer(ModelSerializer):
 class RecipeIngredientSerializer(ModelSerializer):
     ingredient = IngredientSerializer()
     unit = UnitSerializer()
-    amount = FloatField()
 
     class Meta:
         nested = True

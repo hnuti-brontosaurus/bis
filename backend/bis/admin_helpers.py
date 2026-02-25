@@ -44,7 +44,7 @@ class YesNoFilter(SimpleListFilter):
         if self.value() == "no":
             queryset = queryset.exclude(**self.query)
         if self.distinct:
-            queryset = queryset.distinct()
+            queryset = queryset.model.objects.filter(pk__in=queryset.values_list("pk"))
         return queryset
 
 
@@ -60,22 +60,26 @@ class RawRangeNumericFilter(ListFilter):
 
         if self.parameter_name + "_from" in params:
             value = params.pop(self.parameter_name + "_from")
+            if isinstance(value, list):
+                value = value[-1] if value else None
             self.used_parameters[self.parameter_name + "_from"] = value
 
         if self.parameter_name + "_to" in params:
             value = params.pop(self.parameter_name + "_to")
+            if isinstance(value, list):
+                value = value[-1] if value else None
             self.used_parameters[self.parameter_name + "_to"] = value
 
     def queryset(self, request, queryset):
         filters = {}
 
-        value_from = self.used_parameters.get(self.parameter_name + "_from", None)
+        value_from = self.used_parameters.get(self.parameter_name + "_from")
         if value_from is not None and value_from != "":
-            filters.update({self.parameter_name + "__gte": value_from})
+            filters[self.parameter_name + "__gte"] = value_from
 
-        value_to = self.used_parameters.get(self.parameter_name + "_to", None)
+        value_to = self.used_parameters.get(self.parameter_name + "_to")
         if value_to is not None and value_to != "":
-            filters.update({self.parameter_name + "__lte": value_to})
+            filters[self.parameter_name + "__lte"] = value_to
 
         return queryset.filter(**filters)
 
@@ -95,10 +99,6 @@ class RawRangeNumericFilter(ListFilter):
                 "step": 1,
                 "parameter_name": self.parameter_name,
                 "request": self.request,
-                # 'min': self.min_value,
-                # 'max': self.max_value,
-                # 'value_from': self.used_parameters.get(self.parameter_name + '_from'),
-                # 'value_to': self.used_parameters.get(self.parameter_name + '_to'),
                 "form": SliderNumericForm(
                     name=self.parameter_name,
                     data={
@@ -247,7 +247,17 @@ class UserExportFilter(TextOnlyFilter):
     title = "Export dle e-mailů"
 
 
-class CacheRangeNumericFilter(RangeNumericFilter):
+class ListAwareRangeNumericFilter(RangeNumericFilter):
+    """RangeNumericFilter compatible with Django 5.2+ list-valued filter params."""
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
+        for key, value in self.used_parameters.items():
+            if isinstance(value, list):
+                self.used_parameters[key] = value[-1] if value else None
+
+
+class CacheRangeNumericFilter(ListAwareRangeNumericFilter):
     cache_name = None
     custom_title = None
 
@@ -259,27 +269,13 @@ class CacheRangeNumericFilter(RangeNumericFilter):
     def queryset(self, request, queryset):
         filters = {}
 
-        value_from = self.used_parameters.get(self.parameter_name + "_from", None)
+        value_from = self.used_parameters.get(self.parameter_name + "_from")
         if value_from is not None and value_from != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__gte": self.used_parameters.get(
-                        self.parameter_name + "_from", None
-                    ),
-                }
-            )
+            filters[self.parameter_name + "__gte"] = value_from
 
-        value_to = self.used_parameters.get(self.parameter_name + "_to", None)
+        value_to = self.used_parameters.get(self.parameter_name + "_to")
         if value_to is not None and value_to != "":
-            filters.update(
-                {
-                    self.parameter_name
-                    + "__lte": self.used_parameters.get(
-                        self.parameter_name + "_to", None
-                    ),
-                }
-            )
+            filters[self.parameter_name + "__lte"] = value_to
 
         setattr(request, self.cache_name, filters)
         return queryset
@@ -330,7 +326,7 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
         return res
 
 
-class MembershipYearFilter(RangeNumericFilter):
+class MembershipYearFilter(ListAwareRangeNumericFilter):
     def queryset(self, request, queryset):
         queryset = super().queryset(request, queryset)
 

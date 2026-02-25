@@ -3,9 +3,22 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
-from oauth_dcr.views import DynamicClientRegistrationView
+from mcp_server.views import MCPServerStreamableHttpView
+from oauth2_provider.contrib.rest_framework import OAuth2Authentication
+from rest_framework.permissions import BasePermission
 
-from bis.views import CodeView, LoginView
+from bis.views import (
+    CodeView,
+    LoginView,
+    MCPClientRegistrationView,
+    OAuthAuthorizationServerMetadataView,
+)
+
+
+class MCPPermission(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
+
 
 urlpatterns = [
     # custom authentication
@@ -24,12 +37,25 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
     path(f"{settings.API_BASE}", include("api.urls")),
     path(f"game_book/", include("game_book.urls")),
+    # OAuth 2.0 Authorization Server Metadata (RFC 8414, required by MCP spec)
+    path(
+        ".well-known/oauth-authorization-server",
+        OAuthAuthorizationServerMetadataView.as_view(),
+        name="oauth2_server_metadata",
+    ),
     # OAuth2 Provider (django-oauth-toolkit)
     path("o/", include("oauth2_provider.urls", namespace="oauth2_provider")),
-    # Dynamic Client Registration (for Claude AI)
-    path("o/register/", DynamicClientRegistrationView.as_view(), name="oauth2_dcr"),
-    # MCP Server endpoint
-    path("", include("mcp_server.urls")),
+    # Dynamic Client Registration (for MCP clients like Claude AI)
+    path("o/register/", MCPClientRegistrationView.as_view(), name="oauth2_dcr"),
+    # MCP Server endpoint (superusers only)
+    path(
+        "mcp",
+        MCPServerStreamableHttpView.as_view(
+            permission_classes=[MCPPermission],
+            authentication_classes=[OAuth2Authentication],
+        ),
+        name="mcp_server_streamable_http_endpoint",
+    ),
 ]
 
 if settings.DEBUG:

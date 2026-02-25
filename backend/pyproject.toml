@@ -25,6 +25,7 @@ dependencies = [
     "django-oauth-toolkit>=3.2",
     "django-oauth-toolkit-dcr>=0.1",
     "django-mcp-server>=0.5",
+    "strawberry-graphql-django>=0.53",
     "django-debug-toolbar>=4.0",
     "django-admin-numeric-filter @ git+https://github.com/lukasvinclav/django-admin-numeric-filter.git@c5718f59eea66f67bbaa2ee542206719dfd43df3",
     # Database
