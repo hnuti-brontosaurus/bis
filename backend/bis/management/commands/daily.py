@@ -7,12 +7,6 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 
 from bis import emails
-from bis.emails import (
-    donated_10k,
-    donates_for_years,
-    new_recurrent_donors,
-    recurrent_donor_stopped,
-)
 from other.models import SavedFile
 
 
@@ -60,10 +54,10 @@ class Command(BaseCommand):
         try_to_run(emails.qualification_ended)
         try_to_run(SavedFile.remove_old)
 
-        try_to_run(recurrent_donor_stopped)
-        try_to_run(new_recurrent_donors)
-        try_to_run(donated_10k)
-        try_to_run(donates_for_years)
+        try_to_run(emails.recurrent_donor_stopped)
+        try_to_run(emails.new_recurrent_donors)
+        try_to_run(emails.donated_10k)
+        try_to_run(emails.donates_for_years)
 
         today = date.today()
         # weekly
