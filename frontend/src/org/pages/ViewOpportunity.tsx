@@ -1,7 +1,8 @@
 import classNames from 'classnames'
 import { Actions, Button, ButtonLink, DataView, Loading } from 'components'
 import * as combinedTranslations from 'config/static/combinedTranslations'
-import { sanitize } from 'dompurify'
+import DOMPurify from 'dompurify'
+const { sanitize } = DOMPurify
 import { useCurrentUser } from 'hooks/currentUser'
 import type { FullOpportunity } from 'hooks/readFullOpportunity'
 import { useRemoveOpportunity } from 'hooks/removeOpportunity'

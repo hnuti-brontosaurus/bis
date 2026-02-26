@@ -1,6 +1,6 @@
-import { ReactComponent as OneTreeIcon } from 'assets/one-tree.svg'
-import { ReactComponent as TentIcon } from 'assets/tent.svg'
-import { ReactComponent as ThreeTreesIcon } from 'assets/three-trees.svg'
+import OneTreeIcon from 'assets/one-tree.svg?react'
+import TentIcon from 'assets/tent.svg?react'
+import ThreeTreesIcon from 'assets/three-trees.svg?react'
 
 export const form = {
   group: {

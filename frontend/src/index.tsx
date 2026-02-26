@@ -1,8 +1,3 @@
-// polyfills must be imported first
-// https://github.com/facebook/create-react-app/blob/main/packages/react-app-polyfill/README.md#polyfilling-other-language-features
-import 'react-app-polyfill/ie11'
-import 'react-app-polyfill/stable'
-// this line intentionally left blank
 import './config'
 import './index.scss'
 // this line intentionally left blank

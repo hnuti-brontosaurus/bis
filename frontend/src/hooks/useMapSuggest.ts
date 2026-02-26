@@ -42,7 +42,7 @@ export const useMapSuggest = (
       setLoading(true)
       fetch(`https://api.mapy.cz/v1/suggest?${params.toString()}`, {
         headers: {
-          'X-Mapy-Api-Key': process.env.REACT_APP_MAPY_CZ_API_KEY,
+          'X-Mapy-Api-Key': import.meta.env.VITE_MAPY_CZ_API_KEY,
         } as HeadersInit,
       })
         .then(response => {

@@ -8,7 +8,8 @@ import {
   ExternalButtonLink,
   Loading,
 } from 'components'
-import { sanitize } from 'dompurify'
+import DOMPurify from 'dompurify'
+const { sanitize } = DOMPurify
 import type { FullEvent } from 'app/services/bisTypes'
 import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'

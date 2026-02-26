@@ -1,5 +1,5 @@
 import { skipToken } from '@reduxjs/toolkit/dist/query'
-import { ReactComponent as QueueIcon } from 'assets/participant-queue.svg'
+import QueueIcon from 'assets/participant-queue.svg?react'
 import { api } from 'app/services/bis'
 import type { AdministrationUnit, FullEvent } from 'app/services/bisTypes'
 import { EventApplication } from 'app/services/bisTypes'

@@ -14,7 +14,7 @@ case "$1" in
     ;;
     dev)
         echo "Running Server..."
-        yarn start
+        yarn dev
     ;;
     *)
         yarn build

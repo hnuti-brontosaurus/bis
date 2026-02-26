@@ -1,7 +1,7 @@
 import { api } from 'app/services/bis'
-import { ReactComponent as Cheese } from 'assets/cheese.svg'
-import { ReactComponent as Leaf } from 'assets/leaf.svg'
-import { ReactComponent as Piglet } from 'assets/mama-i-laura.svg'
+import Cheese from 'assets/cheese.svg?react'
+import Leaf from 'assets/leaf.svg?react'
+import Piglet from 'assets/mama-i-laura.svg?react'
 import classNames from 'classnames'
 import {
   FormInputError,
