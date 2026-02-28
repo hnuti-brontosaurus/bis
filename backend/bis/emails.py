@@ -531,9 +531,11 @@ def expressed_engagement_in_feedback():
     (email 36)
     """
 
-    replies = Reply.objects.select_related("feedback", "feedback__event", "inquiry").filter(
+    replies = Reply.objects.select_related(
+        "feedback", "feedback__event", "inquiry"
+    ).filter(
         feedback__created_at__gte=date.today() - timedelta(days=7),
-        inquiry__slug__in=["involvement_means", "previous_participation_number"]
+        inquiry__slug__in=["involvement_means", "previous_participation_number"],
     )
 
     # group replies by feedback ID - that is by the participant
@@ -548,13 +550,18 @@ def expressed_engagement_in_feedback():
         if involvement and "nechci" not in involvement.lower():
             fb = data["feedback_obj"]
 
-            item = "; ".join((
-                fb.name or "jméno nevyplněno",
-                f"email: {fb.email or 'email nevyplněn'}",
-                f"akce: {fb.event.name}",
-                f"jak se chce zapojit: {involvement}",
-                f"kolikátá akce s HB: {data.get("previous_participation_number", "neudáno")}"
-            ))
+            previous_participation_number = data.get(
+                "previous_participation_number", ""
+            )
+            item = "; ".join(
+                (
+                    fb.name or "jméno nevyplněno",
+                    f"email: {fb.email or 'email nevyplněn'}",
+                    f"akce: {fb.event.name}",
+                    f"jak se chce zapojit: {involvement}",
+                    f"kolikátá akce s HB: {previous_participation_number}",
+                )
+            )
             items.append(item)
 
     ecomail.send_email(
