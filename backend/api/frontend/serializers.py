@@ -14,7 +14,7 @@ from rest_framework.fields import (
     UUIDField,
 )
 from rest_framework.permissions import SAFE_METHODS
-from rest_framework.relations import SlugRelatedField
+from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
 from rest_framework.serializers import ListSerializer
 from rest_framework.serializers import ModelSerializer as DRFModelSerializer
 from rest_framework.serializers import Serializer
@@ -658,6 +658,9 @@ class FeedbackFormSerializer(ModelSerializer):
 
 class RecordSerializer(ModelSerializer):
     contacts = EventContactSerializer(many=True, required=False)
+    participants = PrimaryKeyRelatedField(
+        many=True, queryset=User.objects.all(), pk_field=UUIDField()
+    )
 
     age_stats = SerializerMethodField()
 

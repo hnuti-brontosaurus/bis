@@ -254,8 +254,6 @@ class QualificationCategoryFilter(MultiSelectRelatedDropdownFilter):
         params = Q()
         for lookup_arg, value in self.used_parameters.items():
             lookup_arg = lookup_arg.replace("qualifications__", "")
-            if isinstance(value, list):
-                value = value[-1] if value else None
             query = {lookup_arg: value}
             query.update(date_filter)
             params |= Q(**query)
