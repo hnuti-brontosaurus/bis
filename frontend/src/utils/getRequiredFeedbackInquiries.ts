@@ -46,7 +46,7 @@ const checkInSection: QuestionnaireSection = [
     slug: 'propagation_source',
     is_required: true,
     data: {
-      type: 'radio',
+      type: 'checkbox',
       options: [
         { option: 'web Hnutí Brontosaurus' },
         { option: 'sociální sítě – Facebook' },
