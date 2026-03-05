@@ -149,6 +149,15 @@ export const EventFeedbackForm: FC<{
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit} onReset={onCancel}>
           <FormSectionGroup>
+            {groupInquiriesByHeaders(orderedInquiries).map(
+              ({ header, inquiries }) => (
+                <FormSection header={header}>
+                  {inquiries.map((inquiry, index) => (
+                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
+                  ))}
+                </FormSection>
+              ),
+            )}
             <FormSection header="Osobní údaje">
               <InfoBox>
                 {user ? (
@@ -178,15 +187,6 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            {groupInquiriesByHeaders(orderedInquiries).map(
-              ({ header, inquiries }) => (
-                <FormSection header={header}>
-                  {inquiries.map((inquiry, index) => (
-                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
-                  ))}
-                </FormSection>
-              ),
-            )}
           </FormSectionGroup>
           <Actions>
             <Button secondary type="reset">
