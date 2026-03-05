@@ -7,8 +7,8 @@ import styles from './Dashboard.module.scss'
 export const Dashboard: FC<{ items: DashboardItem[] }> = ({ items }) => (
   <div className={styles.main}>
     <div className={styles.scrollContainer}>
-      {items.map(item => (
-        <DashboardRow key={`${item.date}-${item.name}`} {...item} />
+      {items.map((item, index) => (
+        <DashboardRow {...item} />
       ))}
     </div>
   </div>
