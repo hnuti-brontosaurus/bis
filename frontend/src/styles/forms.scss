@@ -50,7 +50,7 @@ input[type='reset'] {
     margin-right: 0;
   }
 
-  input {
+  input[type="radio"] {
     cursor: pointer;
     /* Add if not using autoprefixer */
     -webkit-appearance: none;

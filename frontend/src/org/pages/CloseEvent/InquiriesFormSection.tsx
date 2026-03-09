@@ -22,7 +22,7 @@ const InquiryOptions: FC<{
   question: number
   type: 'checkbox' | 'radio'
 }> = ({ question, type, fixed }) => {
-  const { register } = useFormContext<FeedbackStepFormShape>()
+  const { register, watch, setValue } = useFormContext<FeedbackStepFormShape>()
   const fields = useFieldArray({ name: `inquiries.${question}.data.options` })
   return (
     <div>
@@ -58,6 +58,25 @@ const InquiryOptions: FC<{
             </div>
           </li>
         ))}
+        {watch(`inquiries.${question}.data.otherOption`) && (
+          <li>
+            <div className={styles.option}>
+              <div>jiné &hellip;</div>
+              <button
+                type="button"
+                onClick={() =>
+                  setValue(`inquiries.${question}.data.otherOption`, false)
+                }
+                className={styles.delete}
+                aria-label='Smazat možnost "jiné"'
+                title='Smazat možnost "jiné"'
+                disabled={fixed}
+              >
+                <FaTrashAlt />
+              </button>
+            </div>
+          </li>
+        )}
         {!fixed && (
           <li>
             <Button
@@ -69,6 +88,20 @@ const InquiryOptions: FC<{
               }}
             >
               Přidat možnost <FaPlus />
+            </Button>
+          </li>
+        )}
+        {!fixed && !watch(`inquiries.${question}.data.otherOption`) && (
+          <li>
+            <Button
+              tertiary
+              className={styles.addOptionButton}
+              onClick={() =>
+                setValue(`inquiries.${question}.data.otherOption`, true)
+              }
+              type="button"
+            >
+              Přidat možnost "jiné" <FaPlus />
             </Button>
           </li>
         )}
