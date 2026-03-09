@@ -60,16 +60,24 @@ const OptionInquiry: FC = () => {
           {option}
         </label>
       ))}
-      {inquiry.data?.otherOption && (
-        <label key="other" className={`${inquiry.data!.type}Label`}>
-          <input type={inquiry.data!.type} />
-          <div className={styles.other}>
-            <span>jiné:</span>
-            <input type="text" />
-          </div>
-        </label>
-      )}
+      {inquiry.data?.otherOption && <OtherOption />}
     </fieldset>
+  )
+}
+
+const OtherOption: FC = () => {
+  const { inquiry, index } = useInquiryContext()
+  const { register } = useFormContext()
+  const registerField = useRegister()
+
+  return (
+    <label className={`${inquiry.data!.type}Label`}>
+      <input type={inquiry.data!.type} value="jiné" {...registerField} />
+      <div className={styles.other}>
+        <span>jiné:</span>
+        <input type="text" {...register(`replies.${index}.data.other`)} />
+      </div>
+    </label>
   )
 }
 

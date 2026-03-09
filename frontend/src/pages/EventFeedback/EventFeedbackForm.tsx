@@ -17,7 +17,6 @@ import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
 import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Assign } from 'utility-types'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
@@ -39,14 +38,28 @@ const mapReply = (reply: Reply, inquiries: InquiryRead[]): Reply => {
 
   if (inquiry) {
     switch (inquiry.data?.type) {
-      case 'checkbox':
-        if (Array.isArray(reply.reply)) {
-          return { ...reply, reply: reply.reply.join(', '), value: reply.reply }
-        } else {
-          return { ...reply, reply: reply.reply, value: [reply.reply] }
+      case 'checkbox': {
+        const origValues = Array.isArray(reply.reply)
+          ? reply.reply
+          : [reply.reply]
+        const values = reply.data?.other
+          ? origValues.map(value =>
+              value === 'jiné' ? reply.data?.other : value,
+            )
+          : origValues
+        return {
+          ...reply,
+          reply: values.join(', '),
+          value: values,
         }
-      case 'radio':
-        return { ...reply, value: [reply.reply] }
+      }
+      case 'radio': {
+        const value =
+          reply.reply === 'jiné' && reply.data?.other
+            ? reply.data.other
+            : reply.reply
+        return { ...reply, reply: value, value: [value] }
+      }
       case 'scale':
         return {
           ...reply,
@@ -116,8 +129,6 @@ export const EventFeedbackForm: FC<{
   } = methods
 
   usePersistForm('feedback', String(id), watch)
-
-  console.log(feedbackForm.inquiries)
 
   const showMessage = useShowMessage()
   const handleSubmit = methods.handleSubmit(
