@@ -55,3 +55,9 @@
     flex-direction: column;
   }
 }
+
+.other {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}

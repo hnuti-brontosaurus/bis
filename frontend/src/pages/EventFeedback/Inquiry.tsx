@@ -60,6 +60,15 @@ const OptionInquiry: FC = () => {
           {option}
         </label>
       ))}
+      {inquiry.data?.otherOption && (
+        <label key="other" className={`${inquiry.data!.type}Label`}>
+          <input type={inquiry.data!.type} />
+          <div className={styles.other}>
+            <span>jiné:</span>
+            <input type="text" />
+          </div>
+        </label>
+      )}
     </fieldset>
   )
 }

@@ -57,8 +57,8 @@ const checkInSection: QuestionnaireSection = [
         { option: 'školní program' },
         { option: 'festival (informační stánek)' },
         { option: 'dobrovolnické centrum (MUNI Pomáhá apod.)' },
-        // TODO add "other" with text field
       ],
+      otherOption: true,
       fixed: true,
     },
   },
@@ -77,8 +77,8 @@ const checkInSection: QuestionnaireSection = [
         { option: 'kamarádi/účastníci' },
         { option: 'organizátoři' },
         { option: 'pořádající základní článek/klub' },
-        // TODO add "other" with text field
       ],
+      otherOption: true,
       fixed: true,
     },
   },

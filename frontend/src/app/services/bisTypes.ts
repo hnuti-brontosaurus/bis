@@ -208,6 +208,7 @@ type InquiryData = {
   type: InquiryType
   options?: { option: string }[]
   comment?: boolean
+  otherOption?: boolean
   fixed?: boolean
   layout?: 'horizontal' | 'vertical'
 }
