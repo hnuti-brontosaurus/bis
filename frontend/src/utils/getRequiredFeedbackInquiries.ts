@@ -48,22 +48,21 @@ const checkInSection: QuestionnaireSection = [
     data: {
       type: 'checkbox',
       options: [
+        { option: 'Facebook, Instagram' },
+        { option: 'reklama na sociálních sítích' },
         { option: 'web Hnutí Brontosaurus' },
-        { option: 'sociální sítě – Facebook' },
-        { option: 'sociální sítě – Instagram' },
         { option: 'kamarád*ka, známý*á nebo rodič' },
-        { option: 'tištěná propagace (plakát, leták)' },
-        { option: 'weby s nabídkou akcí (dobrovolnik.cz apod.)' },
+        { option: 'na jiné akci Hnutí Brontosaurus' },
+        { option: 'tištěná propagace (plakát, leták apod.)' },
+        { option: 'školní program' },
+        { option: 'festival (informační stánek)' },
         { option: 'dobrovolnické centrum (MUNI Pomáhá apod.)' },
-        { option: 'akce nebo festival (Ekostan, Dort aj.)' },
-        { option: 'Roverský kmen' },
-        { option: 'nepamatuji si' },
+        // TODO add "other" with text field
       ],
       fixed: true,
     },
   },
   {
-    // TODO this one should have optional comment
     inquiry:
       'Proč sis vybral*a právě tuto akci? Prosím vyber tři nejdůležitější důvody a budeme rádi i za krátký komentář.',
     slug: 'participation_reasons',
@@ -78,18 +77,8 @@ const checkInSection: QuestionnaireSection = [
         { option: 'kamarádi/účastníci' },
         { option: 'organizátoři' },
         { option: 'pořádající základní článek/klub' },
+        // TODO add "other" with text field
       ],
-      fixed: true,
-    },
-  },
-  {
-    // TODO remove when comment can be added to previous inquiry
-    inquiry:
-      'Chceš nám napsat něco více k tomu, proč sis vybral*a tuto akci? Budeme rádi za jakýkoli komentář',
-    slug: 'participation_reasons_comment',
-    is_required: false,
-    data: {
-      type: 'text',
       fixed: true,
     },
   },
