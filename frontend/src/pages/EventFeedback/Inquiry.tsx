@@ -92,12 +92,9 @@ const ScaleInquiry: FC = () => {
     <>
       <div className={styles.scale}>
         <div>
-          <div className={styles.scaleLabels}>
-            <div>zcela nesplňuje</div>
-            <div>zcela splňuje</div>
-          </div>
           <fieldset className={styles.scaleRange}>
-            {range(1, 11).map(rating => (
+            <div className={styles.scaleLabel}>zcela nesplňuje</div>
+            {range(1, 6).map(rating => (
               <label
                 key={rating}
                 className={classNames('radioLabel', styles.scaleOption)}
@@ -112,6 +109,7 @@ const ScaleInquiry: FC = () => {
                 {rating}
               </label>
             ))}
+            <div className={styles.scaleLabel}>zcela splňuje</div>
           </fieldset>
         </div>
         {inquiry.data?.comment && (

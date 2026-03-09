@@ -13,7 +13,7 @@ const questionTypes: { type: InquiryType; name: string }[] = [
   { type: 'text', name: 'Odstavec' },
   { type: 'radio', name: 'Výběr z možností' },
   { type: 'checkbox', name: 'Zaškrtávací políčka' },
-  { type: 'scale', name: 'Škála 1–10' },
+  { type: 'scale', name: 'Škála 1–5' },
   { type: 'header', name: 'Nadpis sekce' },
 ]
 
@@ -208,7 +208,7 @@ export const InquiriesFormSection: FC = () => {
         </>
       }
       help={
-        'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností, škála 1–10 = výběr na škále 1–10 (zcela splňuje – zcela nesplňuje) s volitelným komentářem, nadpis sekce = vytvoří v dotazníku číslovanou sekci'
+        'Odstavec = odpověď textem, výběr z možností = při odpovědi na otázku se musí vybrat pouze jedna z možností, zaškrtávací políčka = při odpovědi na otázku je možné vybrat více možností, škála 1–5 = výběr na škále 1–5 (zcela splňuje – zcela nesplňuje) s volitelným komentářem, nadpis sekce = vytvoří v dotazníku číslovanou sekci'
       }
     >
       <div className={styles.questionsBox}>
