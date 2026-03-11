@@ -47,7 +47,7 @@ const OptionInquiry: FC = () => {
   const register = useRegister()
   return (
     <fieldset
-      className={classNames(styles.wrap, {
+      className={classNames(styles.wrap, styles.options, {
         [styles.horizontalLayout]: inquiry.data?.layout === 'horizontal',
       })}
     >
@@ -157,6 +157,7 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
       <FormSubsection
         header={inquiry.inquiry}
         required={inquiry.is_required}
+        className={styles.question}
         headerClassName={styles.wrap}
       >
         <FormInputError name={`replies.${index}.reply`} isBlock>

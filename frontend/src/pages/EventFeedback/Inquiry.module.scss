@@ -1,5 +1,10 @@
 @use 'styles/media';
 
+.question {
+  align-items: flex-start;
+  margin-bottom: .5rem;
+}
+
 // in case of overlong answers
 .wrap {
   word-break: break-word;
@@ -19,10 +24,25 @@
   }
 }
 
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  :global(.radioLabel) {
+    margin: 0;
+  }
+  :global(.checkboxLabel) {
+    padding: 0;
+    margin: 0;
+  }
+}
+
 .scale {
   display: flex;
   column-gap: 1em;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .scaleLabel:first-child {
@@ -46,12 +66,14 @@
 }
 
 .horizontalLayout {
-  display: flex;
-  gap: 5px;
+  flex-direction: row;
+  row-gap: 10px;
+  column-gap: 20px;
   flex-wrap: wrap;
 
   @include media.for-phone-only {
     flex-direction: column;
+    gap: 10px;
   }
 }
 

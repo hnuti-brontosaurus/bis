@@ -79,15 +79,17 @@ export const FormSection = ({
   help,
   required,
   onWeb,
+  className,
 }: {
   children: ReactNode
   header: ReactNode
   help?: ReactNode
   required?: boolean
   onWeb?: boolean
+  className?: string
 }) => {
   return (
-    <div className={styles.section}>
+    <div className={classNames(styles.section, className)}>
       <FormNumberedHeader required={required} help={help} onWeb={onWeb}>
         {header}
       </FormNumberedHeader>

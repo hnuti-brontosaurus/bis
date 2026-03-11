@@ -1,6 +1,7 @@
 import { WebFeedbackForm } from 'app/services/bis'
 import { InquiryRead, User } from 'app/services/bisTypes'
 import { EventFeedback, Reply } from 'app/services/testApi'
+import classNames from 'classnames'
 import {
   Actions,
   Button,
@@ -21,6 +22,7 @@ import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
+import styles from './EventFeedbackForm.module.scss'
 
 const form2payload = (
   { replies, ...data }: EventFeedback,
@@ -162,14 +164,14 @@ export const EventFeedbackForm: FC<{
           <FormSectionGroup>
             {groupInquiriesByHeaders(orderedInquiries).map(
               ({ header, inquiries }) => (
-                <FormSection header={header}>
+                <FormSection header={header} className={styles.formSection}>
                   {inquiries.map((inquiry, index) => (
                     <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
                   ))}
                 </FormSection>
               ),
             )}
-            <FormSection header="Osobní údaje">
+            <FormSection header="Osobní údaje" className={styles.formSection}>
               <InfoBox>
                 {user ? (
                   <>
