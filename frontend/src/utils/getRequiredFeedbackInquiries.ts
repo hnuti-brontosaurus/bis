@@ -156,7 +156,7 @@ const involvementSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Chceš se do Hnutí Brontosaurus zapojit víc? Co tě nejvíc láká? Možnosti, jak se zapojit, najdeš v Aktuálních příležitostech.', // TODO link [Aktuálních příležitostech](https://brontosaurus.cz/zapoj-se/)
+      'Chceš se do Hnutí Brontosaurus zapojit víc? Co tě nejvíc láká? Možnosti, jak se zapojit, najdeš v <a href="https://brontosaurus.cz/zapoj-se/">Aktuálních příležitostech.</a>',
     slug: 'involvement_means',
     is_required: true,
     data: {

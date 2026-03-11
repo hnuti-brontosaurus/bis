@@ -1,8 +1,16 @@
 @use 'styles/media';
+@use 'styles/colors';
 
 .question {
   align-items: flex-start;
   margin-bottom: .5rem;
+}
+
+.questionText {
+  a {
+    color: colors.$bronto;
+    text-decoration: underline;
+  }
 }
 
 // in case of overlong answers

@@ -6,6 +6,7 @@ import {
   FormInputError,
   FormSubsection,
 } from 'components'
+import { sanitize } from 'dompurify'
 import range from 'lodash/range'
 import {
   createContext,
@@ -13,6 +14,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useFormContext } from 'react-hook-form'
@@ -155,6 +157,23 @@ const components: Record<InquiryType, FC> = {
   header: () => null,
 }
 
+const InquiryQuestion: FC<{ text: string }> = ({ text }) => {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    ref.current?.querySelectorAll('a')?.forEach(link => {
+      link.target = '__blank'
+      link.rel = 'noopener noreferrer'
+    })
+  }, [text])
+  return (
+    <span
+      className={styles.questionText}
+      ref={ref}
+      dangerouslySetInnerHTML={{ __html: sanitize(text) }}
+    />
+  )
+}
+
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
   const { setValue } = useFormContext()
   useEffect(() => {
@@ -174,7 +193,7 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
   return (
     <InquiryContext.Provider value={context}>
       <FormSubsection
-        header={inquiry.inquiry}
+        header={<InquiryQuestion text={inquiry.inquiry} />}
         required={inquiry.is_required}
         className={styles.question}
         headerClassName={styles.wrap}
