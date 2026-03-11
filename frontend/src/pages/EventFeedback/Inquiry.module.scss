@@ -38,6 +38,15 @@
   }
 }
 
+.optionLink {
+  min-height: unset;
+  margin-left: 5px;
+  :global(svg) {
+    width: 1em !important;
+    height: 1em !important;
+  }
+}
+
 .scale {
   display: flex;
   column-gap: 1em;

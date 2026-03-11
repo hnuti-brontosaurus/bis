@@ -162,18 +162,31 @@ const involvementSection: QuestionnaireSection = [
     data: {
       type: 'checkbox',
       options: [
-        { option: 'přidat se do organizátorského týmu' }, // TODO link https://brontosaurus.cz/zapoj-se/
-        { option: 'absolvovat organizátorský kurz' }, // TODO link https://organizator.brontosaurus.cz/
-        { option: 'zúčastnit se další akce Hnutí Brontosaurus' }, // TODO link https://brontosaurus.cz/
+        {
+          option: 'přidat se do organizátorského týmu',
+          href: 'https://brontosaurus.cz/zapoj-se/',
+        },
+        {
+          option: 'absolvovat organizátorský kurz',
+          href: 'https://organizator.brontosaurus.cz/',
+        },
+        {
+          option: 'zúčastnit se další akce Hnutí Brontosaurus',
+          href: 'https://brontosaurus.cz/',
+        },
         { option: 'vytvořit vlastní akci' },
         {
           option:
             'zapojit se do dobrovolnického centra v Brně, Praze nebo Olomouci',
         },
         { option: 'stát se vedoucím Brontosauřích dětských oddílů' },
-        { option: 'stát se členem Hnutí Brontosaurus' }, // TODO link https://brontosaurus.cz/zapoj-se/clenstvi/
         {
-          option: 'stát se podporovatelem Hnutí Brontosaurus', // TODO link https://brontosaurus.cz/podpor-nas/
+          option: 'stát se členem Hnutí Brontosaurus',
+          href: 'https://brontosaurus.cz/zapoj-se/clenstvi/',
+        },
+        {
+          option: 'stát se podporovatelem Hnutí Brontosaurus',
+          href: 'https://brontosaurus.cz/podpor-nas/',
         },
         { option: 'nechci se zapojit' },
         { option: 'jsem zapojen*á až až' },

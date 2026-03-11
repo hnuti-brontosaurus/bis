@@ -1,6 +1,11 @@
 import { InquiryRead, InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { Button, FormInputError, FormSubsection } from 'components'
+import {
+  Button,
+  ExternalButtonLink,
+  FormInputError,
+  FormSubsection,
+} from 'components'
 import range from 'lodash/range'
 import {
   createContext,
@@ -11,6 +16,7 @@ import {
   useState,
 } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { HiExternalLink } from 'react-icons/hi'
 import { required } from 'utils/validationMessages'
 import styles from './Inquiry.module.scss'
 
@@ -51,13 +57,26 @@ const OptionInquiry: FC = () => {
         [styles.horizontalLayout]: inquiry.data?.layout === 'horizontal',
       })}
     >
-      {inquiry.data?.options?.map(({ option }) => (
+      {inquiry.data?.options?.map(({ option, href }) => (
         <label
           key={option}
           className={classNames(styles.wrap, `${inquiry.data!.type}Label`)}
         >
           <input type={inquiry.data!.type} value={option} {...register} />
-          {option}
+          <span>
+            {option}
+            {href && (
+              <ExternalButtonLink
+                target="__blank"
+                rel="noopener noreferrer"
+                tertiary
+                href={href}
+                className={styles.optionLink}
+              >
+                <HiExternalLink />
+              </ExternalButtonLink>
+            )}
+          </span>
         </label>
       ))}
       {inquiry.data?.otherOption && <OtherOption />}
