@@ -67,7 +67,7 @@ describe('Close event - evidence and participants', () => {
           .should('be.visible')
           .selectFile('cypress/e2e/simple-participants.xlsx')
 
-        cy.get('table[class^=ParticipantsStep_table] tbody tr')
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr')
           .should('have.length', 4)
           .last()
           .find('td')
@@ -140,12 +140,12 @@ describe('Close event - evidence and participants', () => {
 
     const fillAddress = name => {
       cy.get(`[name="${name}"]`)
-        .closest('[class*=AddressSubform_select]')
+        .closest('[class*=AddressSubform-module__select]')
         .find('[class*=control] [class*=Input] input')
         .type('Hvězdová 4')
       cy.wait('@suggestAddress')
       cy.get(`[name="${name}"]`)
-        .closest('[class*=AddressSubform_select]')
+        .closest('[class*=AddressSubform-module__select]')
         .find('[class*=MenuList] [class*=option]')
         .eq(0)
         .click()
@@ -455,7 +455,7 @@ describe('Close event - evidence and participants', () => {
 
       it('[existent users] should import data, save the users as participants and show in table', () => {
         // at the beginning, the table has 4 rows
-        cy.get('table[class^=ParticipantsStep_table] tbody tr').should(
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr').should(
           'have.length',
           4,
         )
@@ -482,7 +482,7 @@ describe('Close event - evidence and participants', () => {
 
         // a table with imported users should appear
         // and after a while, indicate that users exist already
-        cy.get('[class^=ImportParticipantsList_container] table tbody tr')
+        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
           .should('have.length', 2)
           .find('[title="Uživatel/ka existuje"]')
           .should('have.length', 2)
@@ -506,13 +506,13 @@ describe('Close event - evidence and participants', () => {
           })
         })
 
-        cy.get('[class^=ImportParticipantsList_container]')
+        cy.get('[class^=ImportParticipantsList-module__container]')
           .find('button')
           .contains('Přidat do seznamu')
           .click()
 
         // check that the users appear in the table
-        cy.get('table[class^=ParticipantsStep_table] tbody tr').should(
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr').should(
           'have.length',
           6,
         )
@@ -520,7 +520,7 @@ describe('Close event - evidence and participants', () => {
 
       it('[non-existent users] should import data, create users and save them as participants', () => {
         // at the beginning, the table has 4 rows
-        cy.get('table[class^=ParticipantsStep_table] tbody tr').should(
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr').should(
           'have.length',
           4,
         )
@@ -558,7 +558,7 @@ describe('Close event - evidence and participants', () => {
 
         // a table with imported users should appear
         // and after a while, indicate that users don't exist yet
-        cy.get('[class^=ImportParticipantsList_container] table tbody tr')
+        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
           .should('have.length', 2)
           .find('[title="Uživatel/ka bude vytvořen/a"]')
           .should('have.length', 2)
@@ -582,7 +582,7 @@ describe('Close event - evidence and participants', () => {
           })
         })
 
-        cy.get('[class^=ImportParticipantsList_container]')
+        cy.get('[class^=ImportParticipantsList-module__container]')
           .find('button')
           .contains('Přidat do seznamu')
           .click()
@@ -672,7 +672,7 @@ describe('Close event - evidence and participants', () => {
         cy.wait('@fetchParticipants')
 
         // check that the users appear in the table
-        cy.get('table[class^=ParticipantsStep_table] tbody tr').should(
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr').should(
           'have.length',
           6,
         )
@@ -680,7 +680,7 @@ describe('Close event - evidence and participants', () => {
 
       it('should allow editing imported data', () => {
         // at the beginning, the table has 4 rows
-        cy.get('table[class^=ParticipantsStep_table] tbody tr').should(
+        cy.get('table[class^=ParticipantsStep-module__table] tbody tr').should(
           'have.length',
           4,
         )
@@ -709,14 +709,14 @@ describe('Close event - evidence and participants', () => {
 
         // click one of the users
         cy.get(
-          '[class^=ImportParticipantsList_container] table tbody tr[class^=ImportParticipantsList_userRow]',
+          '[class^=ImportParticipantsList-module__container] table tbody tr[class^=ImportParticipantsList-module__userRow]',
         )
           .should('have.length', 2)
           .first()
           .click()
 
         // edit some of the user's fields
-        cy.get('[class^=ImportParticipantsList_container] table tbody tr')
+        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
           .should('have.length', 3)
           .first()
           .next()
@@ -732,13 +732,13 @@ describe('Close event - evidence and participants', () => {
 
         // same for the second user
         cy.get(
-          '[class^=ImportParticipantsList_container] table tbody tr[class^=ImportParticipantsList_userRow]',
+          '[class^=ImportParticipantsList-module__container] table tbody tr[class^=ImportParticipantsList-module__userRow]',
         )
           .should('have.length', 2)
           .last()
           .click()
 
-        cy.get('[class^=ImportParticipantsList_container] table tbody tr')
+        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
           .find('input[name="address.street"]')
           .should('have.value', 'Hlavní 5')
           .clear()
@@ -763,7 +763,7 @@ describe('Close event - evidence and participants', () => {
           { fixture: 'user2' },
         ).as('updateUser')
 
-        cy.get('[class^=ImportParticipantsList_container]')
+        cy.get('[class^=ImportParticipantsList-module__container]')
           .find('button')
           .contains('Přidat do seznamu')
           .click()

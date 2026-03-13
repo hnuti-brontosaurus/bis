@@ -7,7 +7,7 @@ import {
 } from 'features/systemMessage/useSystemMessage'
 import { useTitle } from 'hooks/title'
 import { useUpdateInquiries } from 'hooks/useUpdateInquiries'
-import { defaultsDeep, omit } from 'lodash'
+import { defaultsDeep, cloneDeep, omit } from 'lodash'
 import { useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { sortOrder } from 'utils/helpers'
@@ -68,7 +68,7 @@ export const CloseEvent = () => {
   }
 
   const defaultValues = {
-    record: defaultsDeep(event.record, {
+    record: defaultsDeep(cloneDeep(event.record), {
       is_event_closed_email_enabled: true,
     }),
     feedback_form: omit(event.feedback_form, ['sent_at']),

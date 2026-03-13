@@ -12,6 +12,9 @@ export default defineConfig({
     preprocessorOptions: {
       scss: { includePaths: ['src'] },
     },
+    modules: {
+      generateScopedName: '[name]__[local]__[hash:base64:5]'
+    }
   },
   // safety net for third-party libs that still reference process.env
   define: { 'process.env': {} },
