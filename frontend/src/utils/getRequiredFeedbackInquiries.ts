@@ -11,7 +11,7 @@ const checkInSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Pokolikáté jsi na akci s Hnutím Brontosaurus? (myslíme tábor nebo víkendovou akci)',
+      'Pokolikáté jsi na akci s\u00a0Hnutím Brontosaurus? (myslíme tábor nebo víkendovou akci)',
     slug: 'previous_participation_number',
     is_required: true,
     data: {
@@ -27,7 +27,7 @@ const checkInSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Věděl*a jsi, že akce je součástí Hnutí Brontosaurus a dostal*a jsi informace o tom, jaké akce Hnutí Brontosaurus pořádá?',
+      'Věděl*a jsi, že akce je součástí Hnutí Brontosaurus, a\u00a0dostal*a jsi informace o\u00a0tom, jaké akce Hnutí Brontosaurus pořádá?',
     slug: 'brontosaurus_knowledge',
     is_required: true,
     data: {
@@ -42,7 +42,7 @@ const checkInSection: QuestionnaireSection = [
     },
   },
   {
-    inquiry: 'Jak ses o této akci dozvěděl*a?',
+    inquiry: 'Jak ses o\u00a0této akci dozvěděl*a?',
     slug: 'propagation_source',
     is_required: true,
     data: {
@@ -92,7 +92,7 @@ const eventSection: QuestionnaireSection = [
   },
 
   {
-    inquiry: 'Komunikace před akcí byla jasná a měl*a jsem dostatek informací ',
+    inquiry: 'Komunikace před akcí byla jasná a měl*a jsem dostatek informací.',
     slug: 'pre_event_communication',
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
@@ -112,7 +112,8 @@ const eventSection: QuestionnaireSection = [
     data: { type: 'scale', comment: true, fixed: true },
   },
   {
-    inquiry: 'Akce mi rozšířila obzory v oblasti péče o přírodu nebo památky.',
+    inquiry:
+      'Akce mi rozšířila obzory v\u00a0oblasti péče o\u00a0přírodu nebo památky.',
     slug: 'impact_self_volunteering',
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
@@ -134,7 +135,7 @@ const volunteeringSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Měl*a jsem dostatek informací o účelu a smysluplnosti dobrovolnické činnosti na pomoc přírodě, památkám nebo lidem.',
+      'Měl*a jsem dostatek informací o\u00a0účelu a smyslu dobrovolnické pomoci přírodě, památkám nebo lidem.',
     slug: 'volunteering_communication',
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },
@@ -156,7 +157,7 @@ const involvementSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Chceš se do Hnutí Brontosaurus zapojit víc? Co tě nejvíc láká? Možnosti, jak se zapojit, najdeš v <a href="https://brontosaurus.cz/zapoj-se/">Aktuálních příležitostech.</a>',
+      'Chceš se do Hnutí Brontosaurus zapojit víc? Co tě nejvíc láká? Možnosti, jak se zapojit, najdeš v <a href="https://brontosaurus.cz/zapoj-se/">Aktuálních příležitostech</a>.',
     slug: 'involvement_means',
     is_required: true,
     data: {
