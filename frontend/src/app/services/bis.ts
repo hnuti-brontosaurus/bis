@@ -80,7 +80,7 @@ export const ALL_USERS = 2000
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_API_BASE_URL ?? '/api/',
+    baseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api/',
     prepareHeaders: (headers, { getState }) => {
       // By default, if we have a token in the store, let's use that for authenticated requests
       const token = (getState() as RootState).auth.token

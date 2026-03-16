@@ -488,10 +488,10 @@ describe('create event', () => {
 
       submit()
 
-      cy.get('[class^=SystemMessage_header]')
+      cy.get('[class^=SystemMessage-module__header]')
         .should('be.visible')
         .contains('chyby ve validaci')
-      cy.get('[class^=SystemMessage_detail]')
+      cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
         .contains('Alternativní adresa pro přihlášení: Toto pole je povinné')
     })
@@ -505,10 +505,10 @@ describe('create event', () => {
 
       submit()
 
-      cy.get('[class^=SystemMessage_header]')
+      cy.get('[class^=SystemMessage-module__header]')
         .should('be.visible')
         .contains('chyby ve validaci')
-      cy.get('[class^=SystemMessage_detail]')
+      cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
         .contains('Alternativní adresa pro přihlášení: Zadejte platný odkaz')
     })
@@ -545,7 +545,7 @@ describe('create event', () => {
     it('user should be pre-filled in team', () => {
       fillForm()
       cy.get('[name=other_organizers]')
-        .parents('[class^=FormInputError_inputWrapper]')
+        .parents('[class^=FormInputError-module__inputWrapper]')
         .contains('Nickname (FirstName LastName)')
     })
 
@@ -554,17 +554,17 @@ describe('create event', () => {
         fillForm()
         // remove pre-filled organizer (self)
         cy.get('[name=other_organizers]')
-          .parents('[class^=FormInputError_inputWrapper]')
+          .parents('[class^=FormInputError-module__inputWrapper]')
           .get('[aria-label^=Remove][role=button]')
           .last()
           .click()
 
         submit()
 
-        cy.get('[class^=SystemMessage_header]')
+        cy.get('[class^=SystemMessage-module__header]')
           .should('be.visible')
           .contains('chyby ve validaci')
-        cy.get('[class^=SystemMessage_detail]')
+        cy.get('[class^=SystemMessage-module__detail]')
           .should('be.visible')
           .contains('Musíš být v organizátorském týmu.')
       })
@@ -573,7 +573,7 @@ describe('create event', () => {
         fillForm()
         // ok, user is pre-filled
         cy.get('[name=other_organizers]')
-          .parents('[class^=FormInputError_inputWrapper]')
+          .parents('[class^=FormInputError-module__inputWrapper]')
           .contains('Nickname (FirstName LastName)')
 
         // check that it's possible to submit
@@ -600,7 +600,7 @@ describe('create event', () => {
 
         // remove pre-filled organizer (self)
         cy.get('[name=other_organizers]')
-          .parents('[class^=FormInputError_inputWrapper]')
+          .parents('[class^=FormInputError-module__inputWrapper]')
           .get('[aria-label^=Remove][role=button]')
           .last()
           .click()
@@ -678,10 +678,10 @@ describe('create event', () => {
 
       submit()
 
-      cy.get('[class^=SystemMessage_header]')
+      cy.get('[class^=SystemMessage-module__header]')
         .should('be.visible')
         .contains('Nepodařilo se nám uložit akci')
-      cy.get('[class^=SystemMessage_detail]')
+      cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
         .contains('Nemůžeš vytvářet události v minulosti')
     })
@@ -854,10 +854,10 @@ describe('create event', () => {
 
       submit()
 
-      cy.get('[class^=SystemMessage_header]')
+      cy.get('[class^=SystemMessage-module__header]')
         .should('be.visible')
         .contains('chyby ve validaci')
-      cy.get('[class^=SystemMessage_detail]')
+      cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
         .contains('Vyplňte všechna pole VIP propagace')
     })

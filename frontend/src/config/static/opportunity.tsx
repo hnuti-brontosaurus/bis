@@ -1,6 +1,6 @@
-import { ReactComponent as HandsIcon } from 'assets/hands.svg'
-import { ReactComponent as HousesIcon } from 'assets/houses.svg'
-import { ReactComponent as OrganizerIcon } from 'assets/organizer.svg'
+import HandsIcon from 'assets/hands.svg?react'
+import HousesIcon from 'assets/houses.svg?react'
+import OrganizerIcon from 'assets/organizer.svg?react'
 
 export const about = (
   <>

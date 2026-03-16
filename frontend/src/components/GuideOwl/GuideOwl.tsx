@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from 'app/hooks'
-import { ReactComponent as HiddenOwl } from 'assets/hiddenOwl.svg'
-import { ReactComponent as Owl } from 'assets/owl.svg'
+import HiddenOwl from 'assets/hiddenOwl.svg?react'
+import Owl from 'assets/owl.svg?react'
 import classNames from 'classnames'
 import { SpeechBubble } from 'components/SpeechBubble/SpeechBubble'
 import { actions, selectInfoMessageVisibility } from 'features/ui/uiSlice'

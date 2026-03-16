@@ -1,4 +1,5 @@
-import { sanitize } from 'dompurify'
+import DOMPurify from 'dompurify'
+const { sanitize } = DOMPurify
 import { createElement } from 'react'
 import { Link } from 'react-router-dom'
 import { formatDateTime } from 'utils/helpers'

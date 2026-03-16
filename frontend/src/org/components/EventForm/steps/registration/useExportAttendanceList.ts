@@ -10,7 +10,7 @@ export interface Props {
  */
 const getUri = ({ eventId, format }: Props) =>
   `${
-    process.env.REACT_APP_API_BASE_URL ?? '/api/'
+    import.meta.env.VITE_API_BASE_URL ?? '/api/'
   }frontend/events/${eventId}/get_attendance_list/?formatting=${format}`
 
 /**

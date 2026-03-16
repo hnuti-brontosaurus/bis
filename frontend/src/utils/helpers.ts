@@ -67,8 +67,8 @@ fetch image and convert it to base64
 */
 export const toDataURL = async (url: string): Promise<string> => {
   const response = await fetch(
-    process.env.REACT_APP_CORS_PROXY
-      ? process.env.REACT_APP_CORS_PROXY + url
+    import.meta.env.VITE_CORS_PROXY
+      ? import.meta.env.VITE_CORS_PROXY + url
       : url,
   )
   const blob = await response.blob()

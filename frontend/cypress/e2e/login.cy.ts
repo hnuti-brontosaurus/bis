@@ -1,7 +1,5 @@
 /// <reference types="Cypress" />
-import { mergeWith } from 'lodash'
 import type { User } from '../../src/app/services/bisTypes'
-import { withOverwriteArray } from '../../src/utils/helpers'
 
 const organizer: User = {
   id: '0419781d-06ba-432b-8617-797ea14cf848',
@@ -29,7 +27,7 @@ const organizer: User = {
   last_name: 'LastName',
 } as User
 
-const user: User = mergeWith({}, organizer, { roles: [] }, withOverwriteArray)
+const user: User = Object.assign({}, organizer, {roles: []});
 
 describe('login', () => {
   beforeEach(() => {
