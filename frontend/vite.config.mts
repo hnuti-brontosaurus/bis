@@ -2,9 +2,10 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import svgr from 'vite-plugin-svgr'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import checker from 'vite-plugin-checker'
 
 export default defineConfig(({mode}) => ({
-  plugins: [react(), tsconfigPaths(), svgr()],
+  plugins: [react(), tsconfigPaths(), svgr(), checker({typescript: true})],
   server: { host: '0.0.0.0', port: 3000, allowedHosts: ['frontend'] },
   build: { outDir: 'build' },
   assetsInclude: ['**/*.xlsx', '**/*.pdf'],

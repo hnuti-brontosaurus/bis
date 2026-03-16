@@ -14,7 +14,7 @@
   dependencies:
     "@babel/highlight" "^7.18.6"
 
-"@babel/code-frame@^7.28.6", "@babel/code-frame@^7.29.0":
+"@babel/code-frame@^7.27.1", "@babel/code-frame@^7.28.6", "@babel/code-frame@^7.29.0":
   version "7.29.0"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.0.tgz#7cd7a59f15b3cc0dcd803038f7792712a7d0b15c"
   integrity sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==
@@ -1721,6 +1721,13 @@ check-more-types@^2.24.0:
   optionalDependencies:
     fsevents "~2.3.2"
 
+chokidar@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-4.0.3.tgz#7be37a4c03c9aee1ecfe862a4a23b2c70c205d30"
+  integrity sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==
+  dependencies:
+    readdirp "^4.0.1"
+
 ci-info@^3.2.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.4.0.tgz#b28484fd436cbc267900364f096c9dc185efb251"
@@ -2646,6 +2653,11 @@ fd-slicer@~1.1.0:
   integrity sha512-cE1qsB/VwyQozZ+q1dGxR8LBYNZeofhEdUNGSMbQD3Gw2lAzX9Zb3uIU6Ebc/Fmyjo9AWWfnn0AUCHqtevs/8g==
   dependencies:
     pend "~1.2.0"
+
+fdir@^6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/fdir/-/fdir-6.5.0.tgz#ed2ab967a331ade62f18d077dae192684d50d350"
+  integrity sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==
 
 fflate@^0.4.8:
   version "0.4.8"
@@ -3963,6 +3975,14 @@ npm-run-path@^4.0.0:
   dependencies:
     path-key "^3.0.0"
 
+npm-run-path@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-6.0.0.tgz#25cfdc4eae04976f3349c0b1afc089052c362537"
+  integrity sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==
+  dependencies:
+    path-key "^4.0.0"
+    unicorn-magic "^0.3.0"
+
 object-assign@^4.0.1, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
@@ -4151,6 +4171,11 @@ path-key@^3.0.0, path-key@^3.1.0:
   resolved "https://registry.yarnpkg.com/path-key/-/path-key-3.1.1.tgz#581f6ade658cbba65a0d3380de7753295054f375"
   integrity sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==
 
+path-key@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/path-key/-/path-key-4.0.0.tgz#295588dc3aee64154f877adb9d780b81c554bf18"
+  integrity sha512-haREypq7xkM7ErfgIyA0z+Bj4AGKlMSdlQE2jvJo6huWD1EdkKYV+G/T4nq0YEF2vgTT8kqMFKo1uHn950r4SQ==
+
 path-parse@^1.0.7:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
@@ -4181,7 +4206,7 @@ picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.2.3, picomatch@^2.3.1:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
-picomatch@^4.0.2:
+picomatch@^4.0.2, picomatch@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.3.tgz#796c76136d1eead715db1e7bad785dedd695a042"
   integrity sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==
@@ -4483,6 +4508,11 @@ react@^18.2.0:
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
   dependencies:
     loose-envify "^1.1.0"
+
+readdirp@^4.0.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/readdirp/-/readdirp-4.1.2.tgz#eb85801435fbf2a7ee58f19e0921b068fc69948d"
+  integrity sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==
 
 readdirp@~3.6.0:
   version "3.6.0"
@@ -5136,6 +5166,19 @@ tiny-case@^1.0.3:
   resolved "https://registry.yarnpkg.com/tiny-case/-/tiny-case-1.0.3.tgz#d980d66bc72b5d5a9ca86fb7c9ffdb9c898ddd03"
   integrity sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==
 
+tiny-invariant@^1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/tiny-invariant/-/tiny-invariant-1.3.3.tgz#46680b7a873a0d5d10005995eb90a70d74d60127"
+  integrity sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==
+
+tinyglobby@^0.2.15:
+  version "0.2.15"
+  resolved "https://registry.yarnpkg.com/tinyglobby/-/tinyglobby-0.2.15.tgz#e228dd1e638cea993d2fdb4fcd2d4602a79951c2"
+  integrity sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==
+  dependencies:
+    fdir "^6.5.0"
+    picomatch "^4.0.3"
+
 tmp@~0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.1.tgz#8457fc3037dcf4719c251367a1af6500ee1ccf14"
@@ -5340,6 +5383,11 @@ unbox-primitive@^1.1.0:
     has-symbols "^1.1.0"
     which-boxed-primitive "^1.1.1"
 
+unicorn-magic@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/unicorn-magic/-/unicorn-magic-0.3.0.tgz#4efd45c85a69e0dd576d25532fbfa22aa5c8a104"
+  integrity sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==
+
 universalify@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
@@ -5399,6 +5447,20 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
+vite-plugin-checker@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-checker/-/vite-plugin-checker-0.12.0.tgz#1e9688a5a10f5de1fd833bc1351618eed54db3bc"
+  integrity sha512-CmdZdDOGss7kdQwv73UyVgLPv0FVYe5czAgnmRX2oKljgEvSrODGuClaV3PDR2+3ou7N/OKGauDDBjy2MB07Rg==
+  dependencies:
+    "@babel/code-frame" "^7.27.1"
+    chokidar "^4.0.3"
+    npm-run-path "^6.0.0"
+    picocolors "^1.1.1"
+    picomatch "^4.0.3"
+    tiny-invariant "^1.3.3"
+    tinyglobby "^0.2.15"
+    vscode-uri "^3.1.0"
+
 vite-plugin-svgr@^4.2.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/vite-plugin-svgr/-/vite-plugin-svgr-4.5.0.tgz#253e4c703d1f0b30935c285ca8621f4857952338"
@@ -5427,6 +5489,11 @@ vite@^4.5.0:
     rollup "^3.27.1"
   optionalDependencies:
     fsevents "~2.3.2"
+
+vscode-uri@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/vscode-uri/-/vscode-uri-3.1.0.tgz#dd09ec5a66a38b5c3fffc774015713496d14e09c"
+  integrity sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==
 
 wait-on@^7.0.1:
   version "7.0.1"
