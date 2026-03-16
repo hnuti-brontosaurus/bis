@@ -50,7 +50,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "dev": "vite",
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build",
