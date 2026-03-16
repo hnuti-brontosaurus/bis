@@ -206,8 +206,9 @@ export type InquiryType = 'text' | 'checkbox' | 'radio' | 'scale' | 'header'
 
 type InquiryData = {
   type: InquiryType
-  options?: { option: string }[]
+  options?: { option: string; href?: string }[]
   comment?: boolean
+  otherOption?: boolean
   fixed?: boolean
   layout?: 'horizontal' | 'vertical'
 }
