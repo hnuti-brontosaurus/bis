@@ -12,11 +12,11 @@ from rest_framework.fields import (
     SerializerMethodField,
 )
 from rest_framework.relations import StringRelatedField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import BooleanField, ModelSerializer
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
-from donations.models import Donation, Donor
+from donations.models import Donation, Donor, Pledge
 from event.models import (
     Event,
     EventFinance,
@@ -138,8 +138,16 @@ class BaseDonorExportSerializer(ModelSerializer):
     regional_center_support = StringRelatedField()
     basic_section_support = StringRelatedField()
 
+    has_recurrent_donation = ReadOnlyField(label="Pravidelný dárce")
+
     @staticmethod
     def get_related(queryset):
+        recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
+        )
+
+        queryset = queryset.annotate(has_recurrent_donation=Exists(recurrent_pledges))
+
         return queryset.select_related(
             "regional_center_support",
             "basic_section_support",
@@ -421,8 +429,18 @@ class DonationExportSerializer(ModelSerializer):
     donor = BaseDonorExportSerializer()
     donation_source = StringRelatedField()
 
+    donor_has_recurrent_donation = ReadOnlyField(label="Pravidelný dárce")
+
     @staticmethod
     def get_related(queryset):
+        recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("donor"), is_recurrent=True, recurrent_state="collecting"
+        )
+
+        queryset = queryset.annotate(
+            donor_has_recurrent_donation=Exists(recurrent_pledges)
+        )
+
         return queryset.select_related(
             "donation_source",
             "donor__regional_center_support",
@@ -455,6 +473,7 @@ class DonationExportSerializer(ModelSerializer):
             "donation_source",
             "info",
             "donor",
+            "donor_has_recurrent_donation",
         )
 
 

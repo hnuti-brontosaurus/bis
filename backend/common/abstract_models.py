@@ -34,6 +34,9 @@ class BaseContact(Model):
         ordering = ("id",)
         abstract = True
 
+    def get_name(self):
+        return f"{self.first_name} {self.last_name}".strip() or self.email
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 

@@ -503,6 +503,9 @@ HealthInsuranceCompany:
 PronounCategory:
   name: Oslovení
   name_plural: Oslovení
+DonorEventCategory:
+  name: Typ achievementu dárce
+  name_plural: Typy achievementů dárce
 
 Donor:
   name: Dárce
@@ -518,13 +521,21 @@ Donor:
     date_joined: Dárcem od
     regional_center_support: podpora RC
     basic_section_support: podpora ZČ
-    has_recurrent_donation: Pravidelný dárce
-
+Pledge:
+  name: Pravidelný dar
+  name_plural: Pravidelné dary
+  fields:
+    donor: Dárce
+    donation_source: Zdroj dotace
+    is_recurrent: Je pravidelný dárce?
+    recurrent_state: Stav
+    pledged_at: Datum
 Donation:
   name: Dar
   name_plural: Dary
   fields:
     donor: Dárce
+    pledge: Nadřazený pravidelný dar
     donated_at: Datum
     amount: Částka
     donation_source: Zdroj dotace
@@ -532,6 +543,14 @@ Donation:
     _variable_symbol:
       - Variabilní symbol platby
       - pro párování na dárce
+DonorEvent:
+  name: Achievement dárce
+  name_plural: Achievementy dárce
+  fields:
+    donor: Dárce
+    pledge: Pravidelný dar
+    event_type: Typ achievementu
+    email_sent_at: Čas poslání emailu
 VariableSymbol:
   name: Variabilní symbol
   name_plural: Variabilní symboly
@@ -657,7 +676,7 @@ Game:
       - Původ programu
       - Kdo je autorem programu, odkud byl program převzat?
     administration_unit:
-      - Zákldní článek (RC/klub)
+      - Základní článek (RC/klub)
       - Chceš program přiřadit pod určitý článek? Dej mu kredit!
     thumbs_up: Dali palec nahoru
     favourites: Oblíbili si

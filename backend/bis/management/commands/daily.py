@@ -54,6 +54,11 @@ class Command(BaseCommand):
         try_to_run(emails.qualification_ended)
         try_to_run(SavedFile.remove_old)
 
+        try_to_run(emails.recurrent_donor_stopped)
+        try_to_run(emails.new_recurrent_donors)
+        try_to_run(emails.donated_10k)
+        try_to_run(emails.donates_for_years)
+
         today = date.today()
         # weekly
         if today.weekday() == 0:

@@ -10,7 +10,7 @@ from administration_units.models import AdministrationUnit
 from bis.helpers import print_progress
 from bis.models import User, UserAddress
 from categories.models import DonationSourceCategory
-from donations.models import Donation, Donor
+from donations.models import Donation, Donor, Pledge
 
 
 class Command(BaseCommand):
@@ -79,8 +79,6 @@ class Command(BaseCommand):
                 ),
             )
 
-            donor = Donor.objects.get_or_create(user=user)[0]
-
             basic_section_support = custom.get("Brontosaurus_adopce_ZC")
             if basic_section_support:
                 if basic_section_support == "Draci":
@@ -105,26 +103,35 @@ class Command(BaseCommand):
             ) and AdministrationUnit.objects.get(
                 abbreviation=custom["Brontosaurus_adopce_RC"]
             )
-            date_joined = isoparse(pledge["pledgedAt"])
-            has_recurrent_donation = pledge["isRecurrent"]
+            pledged_at = isoparse(pledge["pledgedAt"]).date()
 
-            donor.date_joined = min(donor.date_joined, date_joined.date())
+            donor = Donor.objects.get_or_create(user=user)[0]
+            donor.date_joined = min(donor.date_joined, pledged_at)
             donor.basic_section_support = (
                 donor.basic_section_support or basic_section_support
             )
             donor.regional_center_support = (
                 donor.regional_center_support or regional_center_support
             )
-            donor.has_recurrent_donation = (
-                has_recurrent_donation or donor.has_recurrent_donation
-            )
             donor.save()
 
+            pledge_object, _ = Pledge.objects.update_or_create(
+                id=pledge["pledgeId"],
+                defaults={
+                    "donor": donor,
+                    "donation_source": donation_source,
+                    "is_recurrent": pledge["isRecurrent"],
+                    "recurrent_state": pledge["recurrentState"],
+                    "pledged_at": pledged_at,
+                },
+            )
+
             for transaction in transactions:
-                Donation.objects.get_or_create(
+                Donation.objects.update_or_create(
                     _import_id=transaction["transactionId"],
                     defaults=dict(
                         donor=donor,
+                        pledge=pledge_object,
                         donated_at=isoparse(transaction["receivedAt"]),
                         amount=transaction["sentAmount"]["cents"] / 100,
                         donation_source=donation_source,
