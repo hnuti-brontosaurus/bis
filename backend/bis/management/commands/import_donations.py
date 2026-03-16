@@ -127,7 +127,7 @@ class Command(BaseCommand):
             )
 
             for transaction in transactions:
-                Donation.objects.get_or_create(
+                Donation.objects.update_or_create(
                     _import_id=transaction["transactionId"],
                     defaults=dict(
                         donor=donor,

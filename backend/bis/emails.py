@@ -3,9 +3,19 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from dateutil.relativedelta import relativedelta
-from dateutil.utils import today
 from django.conf import settings
-from django.db.models import Count, Max, Q, QuerySet, Sum
+from django.db.models import (
+    Count,
+    DateField,
+    F,
+    Max,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    Sum,
+)
+from django.db.models.functions import Cast
 from django.utils import timezone
 from vokativ import vokativ
 
@@ -14,7 +24,7 @@ from bis.helpers import make_a, make_ul
 from bis.models import Qualification
 from categories.models import DonorEventCategory, EventProgramCategory, PronounCategory
 from common.helpers import get_date_range
-from donations.models import Donor, DonorEvent, Pledge, RecurrentState
+from donations.models import Donor, DonorEvent, RecurrentState
 from ecomail import ecomail
 from event.models import Event
 from feedback.models import Reply
@@ -163,16 +173,18 @@ def events_summary():
     for program in EventProgramCategory.objects.all():
         new_events = Event.objects.filter(
             is_canceled=False,
-            created_at__gte=date.today() - timedelta(days=7),
+            created_at__gte=timezone.now().date() - timedelta(days=7),
             program__slug=program.slug,
         )
 
         closed_events = Event.objects.filter(
-            closed_at__gte=date.today() - timedelta(days=7), program__slug=program.slug
+            closed_at__gte=timezone.now().date() - timedelta(days=7),
+            program__slug=program.slug,
         )
 
         unclosed_events = get_unclosed_events().filter(
-            end__lte=date.today() - timedelta(days=20), program__slug=program.slug
+            end__lte=timezone.now().date() - timedelta(days=20),
+            program__slug=program.slug,
         )
 
         ecomail.send_email(
@@ -189,7 +201,7 @@ def events_summary():
 
 def event_not_closed_10_days():
     for event in get_unclosed_events().filter(
-        end=date.today() - timedelta(days=10),
+        end=timezone.now().date() - timedelta(days=10),
     ):
         organizers = event.other_organizers.all()
         ecomail.send_email(
@@ -207,7 +219,9 @@ def event_not_closed_10_days():
 
 def event_not_closed_20_days():
     for event in get_unclosed_events().filter(
-        end__in=[date.today() - timedelta(days=20 + 10 * i) for i in range(3 * 12)],
+        end__in=[
+            timezone.now().date() - timedelta(days=20 + 10 * i) for i in range(3 * 12)
+        ],
     ):
         if not event.main_organizer:
             continue
@@ -230,14 +244,14 @@ def event_end_participants_notification(event):
     if not hasattr(event, "record"):
         return
 
-    if event.end < (date.today() - timedelta(days=60)):
+    if event.end < (timezone.now().date() - timedelta(days=60)):
         return
 
     participants_to_notify = event.record.participants.exclude(
-        last_after_event_email__gte=date.today() - timedelta(days=6 * 30)
+        last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
     )
     for participant in event.record.participants.exclude(
-        last_after_event_email__gte=date.today() - timedelta(days=6 * 30)
+        last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
     ):
         ecomail.send_email(
             emails["movement"],
@@ -248,7 +262,7 @@ def event_end_participants_notification(event):
                 "event_name": event.name,
             },
         )
-    participants_to_notify.update(last_after_event_email=date.today())
+    participants_to_notify.update(last_after_event_email=timezone.now().date())
 
 
 def event_attendance_or_photos_notification(event):
@@ -262,8 +276,8 @@ def event_attendance_or_photos_notification(event):
 
 def get_consultants():
     valid_qualifications = Qualification.objects.filter(
-        valid_since__lte=date.today(),
-        valid_till__gte=date.today(),
+        valid_since__lte=timezone.now().date(),
+        valid_till__gte=timezone.now().date(),
     )
     return {
         "consultants": make_ul(
@@ -282,7 +296,7 @@ def get_consultants():
 
 
 def qualification_about_to_end():
-    to_date = date.today() + timedelta(days=90)
+    to_date = timezone.now().date() + timedelta(days=90)
     for qualification in Qualification.get_expiring_qualifications(
         to_date, Qualification.objects.filter(valid_till=to_date)
     ):
@@ -312,7 +326,7 @@ def qualification_ends_this_year() -> None:
     whose qualifications end this year.
     (email 8a)
     """
-    year = date.today().year
+    year = timezone.now().date().year
     start = date(year, 1, 1)
     end = date(year, 12, 31)
 
@@ -341,7 +355,8 @@ def qualification_ends_this_year() -> None:
 
 def qualification_ended():
     for qualification in Qualification.get_expiring_qualifications(
-        date.today(), Qualification.objects.filter(valid_till=date.today())
+        timezone.now().date(),
+        Qualification.objects.filter(valid_till=timezone.now().date()),
     ):
         if qualification.category.slug in [
             "consultant",
@@ -396,7 +411,7 @@ def opportunity_created(opportunity: Opportunity):
 
 def opportunities_created_summary():
     opportunities = Opportunity.objects.filter(
-        created_at__gte=date.today() - timedelta(days=7)
+        created_at__gte=timezone.now().date() - timedelta(days=7)
     )
     opportunities = "".join(
         f"<li>{opportunity.name}, {opportunity.category.name}</li>"
@@ -453,8 +468,8 @@ def donation_confirmation(donor, confirmation, year):
 
 def send_opportunities_summary():
     opportunities = Opportunity.objects.filter(
-        on_web_start__lte=today(),
-        on_web_end__gte=today(),
+        on_web_start__lte=timezone.now().date(),
+        on_web_end__gte=timezone.now().date(),
     )
     opportunities = [
         {
@@ -507,7 +522,7 @@ def send_feedback_request(event):
 
 def send_automatic_feedback():
     for event in Event.objects.filter(
-        end=date.today() - timedelta(days=20),
+        end=timezone.now().date() - timedelta(days=20),
         feedback_form__sent_at__isnull=True,
         feedback_form__isnull=False,
         program__slug__in=[
@@ -522,7 +537,7 @@ def send_automatic_feedback():
         intended_for__slug="for_kids",
     ):
         send_feedback_request(event)
-        event.feedback_form.sent_at = date.today()
+        event.feedback_form.sent_at = timezone.now().date()
         event.feedback_form.save()
 
 
@@ -538,7 +553,7 @@ def expressed_engagement_in_feedback():
     replies = Reply.objects.select_related(
         "feedback", "feedback__event", "inquiry"
     ).filter(
-        feedback__created_at__gte=date.today() - timedelta(days=7),
+        feedback__created_at__gte=timezone.now().date() - timedelta(days=7),
         inquiry__slug__in=["involvement_means", "previous_participation_number"],
     )
 
@@ -601,15 +616,13 @@ def expressed_engagement_in_feedback():
 
 
 def bulk_create_donor_event(
-    donors: QuerySet[Donor, Donor],
+    donors: QuerySet[Donor],
     event_type: DonorEventCategory,
-    pledge: Pledge = None,
 ):
     DonorEvent.objects.bulk_create(
         [
             DonorEvent(
                 donor=donor,
-                pledge=pledge,
                 event_type=event_type,
                 email_sent_at=timezone.now(),
             )
@@ -621,9 +634,21 @@ def bulk_create_donor_event(
 def recurrent_donor_stopped():
     """
     Email 26
-    Notify if a recurrent donor (with at least two donations) did not send his donation (for the second time).
+    Notify if a recurrent donor did not send his donation (for the second time).
+    Allows re-notification if a new donation was made and again stopped after the previous 'recurrent_stopped' event.
     """
     event_type = DonorEventCategory.objects.get(slug="recurrent_stopped")
+
+    # Subquery to check if an event was already sent AFTER the last donation
+    latest_event_date = (
+        DonorEvent.objects.filter(
+            donor=OuterRef("pk"),
+            event_type=event_type,
+        )
+        .values("email_sent_at")
+        .order_by("-email_sent_at")[:1]
+    )
+
     donors = (
         Donor.objects.annotate(
             times_donated=Count(
@@ -634,13 +659,25 @@ def recurrent_donor_stopped():
             last_donation_date=Max(
                 "donations__donated_at", filter=Q(donations__pledge__is_recurrent=True)
             ),
+            # Get the date of the last notification into the main query
+            last_notification_date=Subquery(latest_event_date),
         )
         .filter(
             pledges__is_recurrent=True,
             times_donated__gte=2,
-            last_donation_date__lt=today() - relativedelta(months=2),
+            last_donation_date__lt=timezone.now().date() - relativedelta(months=2),
         )
-        .exclude(donorevent__event_type=event_type)
+        .filter(
+            # We only keep donors who:
+            # 1. Never received the event (last_notification_date is None)
+            # OR 2. Last donation happened AFTER the last notification
+            Q(last_notification_date__isnull=True)
+            | Q(
+                last_donation_date__gt=Cast(
+                    F("last_notification_date"), output_field=DateField()
+                )
+            )
+        )
     )
 
     if not donors.exists():
@@ -650,7 +687,7 @@ def recurrent_donor_stopped():
         ecomail.send_email(
             emails["donation"],
             170,
-            [emails["donation"][1]],
+            [donor.user.email],
             variables={
                 **PronounCategory.get_variables(donor.user),
                 "vokativ": donor.user.vokativ,
@@ -677,7 +714,7 @@ def new_recurrent_donors():
     donors = Donor.objects.filter(
         pledges__is_recurrent=True,
         pledges__recurrent_state=RecurrentState.COLLECTING,
-        pledges__pledged_at=today().date() - timedelta(days=2),
+        pledges__pledged_at=timezone.now().date() - timedelta(days=2),
     ).exclude(donorevent__event_type=event_type)
 
     if not donors.exists():
@@ -687,7 +724,7 @@ def new_recurrent_donors():
         ecomail.send_email(
             emails["donation"],
             171,
-            [emails["donation"][1]],
+            [donor.user.email],
             variables={
                 **PronounCategory.get_variables(donor.user),
                 "vokativ": donor.user.vokativ,
@@ -729,17 +766,12 @@ def donated_10k():
 
 
 def donates_for_years():
-    """Email 30 – donor has been donating recurrently for N years."""
-    years = {1: "rok", 2: "roky", 3: "roky", 4: "roky", 5: "let"}
+    """Email 30 – donor has been donating recurrently for N years -> Notify coordinator."""
+    years = {5: "let", 4: "roky", 3: "roky", 2: "roky", 1: "rok"}
 
-    today = timezone.now()
+    today = timezone.now().date()
 
     for year, quantifier in years.items():
-        # exclude donors who already received any higher-or-equal year email
-        event_types = DonorEventCategory.objects.filter(
-            slug__in=[f"pledge_{y}y" for y in years if y >= year]
-        )
-
         cutoff = today - relativedelta(years=year)
 
         donors = (
@@ -748,22 +780,24 @@ def donates_for_years():
                 pledges__recurrent_state=RecurrentState.COLLECTING,
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(donorevent__event_type__in=event_types)
+            .exclude(donorevent__event_type__slug__icontains="pledge_")
             .distinct()
         )
+
         if not donors.exists():
             continue
 
-        ecomail.send_email(
-            emails["donation"],
-            174,
-            [emails["donation"][1]],
-            variables={
-                "donors": make_ul([donor.user.get_proper_name() for donor in donors]),
-                "year": year,
-                "quantifier": quantifier,
-            },
-        )
+        for donor in donors:
+            ecomail.send_email(
+                emails["donation"],
+                174,
+                [emails["donation"][1]],
+                variables={
+                    "donor": donor.user.get_proper_name(),
+                    "year": year,
+                    "quantifier": quantifier,
+                },
+            )
 
         bulk_create_donor_event(
             donors, DonorEventCategory.objects.get(slug=f"pledge_{year}y")

@@ -607,7 +607,6 @@ class Command(BaseCommand):
             "pledge_4y": "Pravidelný dárce daruje již 4 roky.",
             "pledge_5y": "Pravidelný dárce daruje již 5 let.",
             "donor_10k_total": "Součet všech darů od jednoho dárce přesáhl 10 000 Kč.",
-            "donor_5_donations": "Ne-pravidelný dárce daroval již 5x libovolnou částku.",
         }
         for slug, description in donor_event_categories.items():
             DonorEventCategory.objects.update_or_create(

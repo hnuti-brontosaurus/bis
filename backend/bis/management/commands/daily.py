@@ -40,7 +40,6 @@ def check_disk_space():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        try_to_run(emails.events_summary)
         try_to_run(call_command, "create_categories")
         try_to_run(call_command, "update_dashboard_items")
         try_to_run(call_command, "record_history")

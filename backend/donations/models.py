@@ -172,15 +172,8 @@ class DonorEvent(Model):
     """
 
     donor = ForeignKey(Donor, on_delete=CASCADE)
-    pledge = ForeignKey(
-        Pledge, null=True, blank=True, on_delete=CASCADE
-    )  # is useful here if a donor donates with different pledges
-
     event_type = ForeignKey(DonorEventCategory, on_delete=PROTECT)
     email_sent_at = DateTimeField()
-
-    class Meta:
-        unique_together = ("donor", "pledge", "event_type")
 
 
 @translate_model
