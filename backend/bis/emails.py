@@ -678,6 +678,7 @@ def recurrent_donor_stopped():
                 )
             )
         )
+        .distinct()
     )
 
     if not donors.exists():
@@ -749,6 +750,7 @@ def donated_10k():
         Donor.objects.annotate(total_donated=Sum("donations__amount"))
         .filter(total_donated__gte=10000)
         .exclude(donorevent__event_type=event_type)
+        .distinct()
     )
     if not donors.exists():
         return
