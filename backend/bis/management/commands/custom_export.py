@@ -38,10 +38,21 @@ class Command(BaseCommand):
         uploaded = 0
         for event in events:
             date_str = event.start.strftime("%Y-%m-%d") if event.start else "0000-00-00"
-            for file_path in self._collect_files(event):
-                drive_name = f"{date_str} - {event.name} - {file_path.name}"
+            files = [
+                (f"{date_str} - {event.name} - {file_path.name}", file_path.path)
+                for file_path in self._collect_files(event)
+            ]
+            if not files:
+                continue
+            existing = self._get_existing_names(
+                service, folder_id, [name for name, _ in files]
+            )
+            for drive_name, path in files:
+                if drive_name in existing:
+                    logging.info(f"  Skipping (already exists): {drive_name}")
+                    continue
                 logging.info(f"  Uploading: {drive_name}")
-                self._upload_file(service, folder_id, drive_name, file_path.path)
+                self._upload_file(service, folder_id, drive_name, path)
                 uploaded += 1
 
         logging.info(f"Done. Uploaded: {uploaded}")
@@ -105,10 +116,37 @@ class Command(BaseCommand):
                 if photo.photo:
                     yield photo.photo
 
+    def _get_existing_names(self, service, folder_id, names):
+        name_conditions = " or ".join(f"name='{n}'" for n in names)
+        q = f"({name_conditions}) and '{folder_id}' in parents and trashed=false"
+        results = (
+            service.files()
+            .list(
+                q=q,
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True,
+                fields="files(name)",
+            )
+            .execute()
+        )
+        return {f["name"] for f in results.get("files", [])}
+
     def _upload_file(self, service, folder_id, name, path):
-        service.files().create(
-            body={"name": name, "parents": [folder_id]},
-            media_body=MediaFileUpload(path, resumable=True),
-            supportsAllDrives=True,
-            fields="id",
-        ).execute()
+        import time
+
+        for attempt in range(5):
+            try:
+                service.files().create(
+                    body={"name": name, "parents": [folder_id]},
+                    media_body=MediaFileUpload(path, resumable=True),
+                    supportsAllDrives=True,
+                    fields="id",
+                ).execute()
+                return
+            except Exception as e:
+                if attempt == 4:
+                    raise
+                logging.warning(
+                    f"  Upload failed (attempt {attempt + 1}/5): {e}, retrying..."
+                )
+                time.sleep(2**attempt)
