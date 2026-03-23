@@ -15,9 +15,19 @@ class Command(BaseCommand):
         "Uploads all event files for 'Modrý Kámen' administration unit to Google Drive."
     )
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--shared-drive-id",
+            default="0APUaw_FPCiv7Uk9PVA",
+            help="ID of the Shared Drive where files will be uploaded",
+        )
+
     def handle(self, *args, **options):
         service = self._build_drive_service()
-        folder_id = self._get_or_create_folder(service, "Modrý kámen export")
+        shared_drive_id = options["shared_drive_id"]
+        folder_id = self._get_or_create_folder(
+            service, "Modrý kámen export", shared_drive_id
+        )
         logging.info(f"Using Drive folder id: {folder_id}")
 
         events = Event.objects.filter(
@@ -47,11 +57,15 @@ class Command(BaseCommand):
         )
         return build("drive", "v3", credentials=credentials)
 
-    def _get_or_create_folder(self, service, name):
+    def _get_or_create_folder(self, service, name, shared_drive_id):
         results = (
             service.files()
             .list(
-                q=f"name='{name}' and mimeType='application/vnd.google-apps.folder' and 'root' in parents and trashed=false",
+                q=f"name='{name}' and mimeType='application/vnd.google-apps.folder' and '{shared_drive_id}' in parents and trashed=false",
+                driveId=shared_drive_id,
+                corpora="drive",
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
                 fields="files(id)",
             )
             .execute()
@@ -61,7 +75,12 @@ class Command(BaseCommand):
         return (
             service.files()
             .create(
-                body={"name": name, "mimeType": "application/vnd.google-apps.folder"},
+                body={
+                    "name": name,
+                    "mimeType": "application/vnd.google-apps.folder",
+                    "parents": [shared_drive_id],
+                },
+                supportsAllDrives=True,
                 fields="id",
             )
             .execute()["id"]
@@ -90,5 +109,6 @@ class Command(BaseCommand):
         service.files().create(
             body={"name": name, "parents": [folder_id]},
             media_body=MediaFileUpload(path, resumable=True),
+            supportsAllDrives=True,
             fields="id",
         ).execute()
