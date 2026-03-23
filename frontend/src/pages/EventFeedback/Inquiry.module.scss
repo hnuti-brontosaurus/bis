@@ -1,4 +1,17 @@
 @use 'styles/media';
+@use 'styles/colors';
+
+.question {
+  align-items: flex-start;
+  margin-bottom: .5rem;
+}
+
+.questionText {
+  a {
+    color: colors.$bronto;
+    text-decoration: underline;
+  }
+}
 
 // in case of overlong answers
 .wrap {
@@ -19,15 +32,38 @@
   }
 }
 
-.scale {
+.options {
   display: flex;
-  gap: 1em;
+  flex-direction: column;
+  gap: 10px;
+
+  :global(.radioLabel) {
+    margin: 0;
+  }
+  :global(.checkboxLabel) {
+    padding: 0;
+    margin: 0;
+  }
 }
 
-.scaleLabels {
+.optionLink {
+  min-height: unset;
+  margin-left: 5px;
+  :global(svg) {
+    width: 1em !important;
+    height: 1em !important;
+  }
+}
+
+.scale {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: .2em;
+  column-gap: 1em;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.scaleLabel:first-child {
+  text-align: right;
 }
 
 .scaleRange {
@@ -47,11 +83,19 @@
 }
 
 .horizontalLayout {
-  display: flex;
-  gap: 5px;
+  flex-direction: row;
+  row-gap: 10px;
+  column-gap: 20px;
   flex-wrap: wrap;
 
   @include media.for-phone-only {
     flex-direction: column;
+    gap: 10px;
   }
+}
+
+.other {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }

@@ -10,12 +10,13 @@ export const form = {
   feedback_form: {
     introduction: {
       initial:
-        'Ahoj,\nvěříme, že sis víkendovku nebo tábor užil/a naplno, získal/a spoustu nových kamarádů a dovedností. Tvoje zkušenost je pro nás velmi cenná. Chtěli bychom Tě jménem jménem organizátorů i Hnutí Brontosaurus požádat o pár informací a zhodnocení celé akce. Vyplněním této ankety i Ty přispěješ k tomu, aby naše akce byly čím dál lepší.\nDěkujeme!',
+        'Ahoj,\n\ndoufáme, že sis víkendovku nebo tábor užil*a naplno, poznal*a nové lidi a odvezl*a si fajn zážitky i zkušenosti.\n' +
+        'Budeme moc rádi, když nám teď věnuješ pár minut a dáš nám vědět, jaké to pro tebe bylo. Tvoje zpětná vazba nám pomáhá dělat akce ještě lepší.',
       help: 'Text, který se objeví na začátku dotazníku. Pokud chceš, můžeš si připravený text opravit.',
     },
     after_submit_text: {
       initial:
-        'Moc děkujeme za vyplnění. Tvoje zpětná vazba nám pomůže dělat stále lepší akce. Těšíme se na viděnou na další akci Hnutí Brontosaurus!\nTvoji organizátoři',
+        'Moc děkujeme za vyplnění a těšíme se na viděnou na další akci Hnutí Brontosaurus!\nTvoji organizátoři a ústředí Hnutí Brontosaurus.',
       help: 'Tento text dojde účastníkům po vyplnění zpětné vazby. Doporučujeme jako odměnu přidat např. odkaz na fotky z akce, adresář či jiné drobnosti.',
     },
   },

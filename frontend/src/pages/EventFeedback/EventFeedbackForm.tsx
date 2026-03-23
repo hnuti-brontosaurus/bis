@@ -1,6 +1,7 @@
 import { WebFeedbackForm } from 'app/services/bis'
 import { InquiryRead, User } from 'app/services/bisTypes'
 import { EventFeedback, Reply } from 'app/services/testApi'
+import classNames from 'classnames'
 import {
   Actions,
   Button,
@@ -17,11 +18,11 @@ import { usePersistentFormData, usePersistForm } from 'hooks/persistForm'
 import merge from 'lodash/merge'
 import { FC } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Assign } from 'utility-types'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { sortOrder } from 'utils/helpers'
 import { Inquiry } from './Inquiry'
 import { MessageBox } from './MessageBox'
+import styles from './EventFeedbackForm.module.scss'
 
 const form2payload = (
   { replies, ...data }: EventFeedback,
@@ -39,14 +40,28 @@ const mapReply = (reply: Reply, inquiries: InquiryRead[]): Reply => {
 
   if (inquiry) {
     switch (inquiry.data?.type) {
-      case 'checkbox':
-        if (Array.isArray(reply.reply)) {
-          return { ...reply, reply: reply.reply.join(', '), value: reply.reply }
-        } else {
-          return { ...reply, reply: reply.reply, value: [reply.reply] }
+      case 'checkbox': {
+        const origValues = Array.isArray(reply.reply)
+          ? reply.reply
+          : [reply.reply]
+        const values = reply.data?.other
+          ? origValues.map(value =>
+              value === 'jiné' ? reply.data?.other : value,
+            )
+          : origValues
+        return {
+          ...reply,
+          reply: values.join(', '),
+          value: values,
         }
-      case 'radio':
-        return { ...reply, value: [reply.reply] }
+      }
+      case 'radio': {
+        const value =
+          reply.reply === 'jiné' && reply.data?.other
+            ? reply.data.other
+            : reply.reply
+        return { ...reply, reply: value, value: [value] }
+      }
       case 'scale':
         return {
           ...reply,
@@ -117,8 +132,6 @@ export const EventFeedbackForm: FC<{
 
   usePersistForm('feedback', String(id), watch)
 
-  console.log(feedbackForm.inquiries)
-
   const showMessage = useShowMessage()
   const handleSubmit = methods.handleSubmit(
     data => onSubmit(form2payload(data, feedbackForm.inquiries)),
@@ -149,7 +162,16 @@ export const EventFeedbackForm: FC<{
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit} onReset={onCancel}>
           <FormSectionGroup>
-            <FormSection header="Osobní údaje">
+            {groupInquiriesByHeaders(orderedInquiries).map(
+              ({ header, inquiries }) => (
+                <FormSection header={header} className={styles.formSection}>
+                  {inquiries.map((inquiry, index) => (
+                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
+                  ))}
+                </FormSection>
+              ),
+            )}
+            <FormSection header="Osobní údaje" className={styles.formSection}>
               <InfoBox>
                 {user ? (
                   <>
@@ -178,15 +200,6 @@ export const EventFeedbackForm: FC<{
                 </FormInputError>
               </InlineSection>
             </FormSection>
-            {groupInquiriesByHeaders(orderedInquiries).map(
-              ({ header, inquiries }) => (
-                <FormSection header={header}>
-                  {inquiries.map((inquiry, index) => (
-                    <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
-                  ))}
-                </FormSection>
-              ),
-            )}
           </FormSectionGroup>
           <Actions>
             <Button secondary type="reset">
