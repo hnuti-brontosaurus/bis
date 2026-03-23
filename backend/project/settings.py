@@ -340,6 +340,7 @@ DARUJME_SECRET = environ.get("DARUJME_SECRET")
 
 HCAPTCHA_SECRET = environ["HCAPTCHA_SECRET"]
 GROQ_API_KEY = environ["GROQ_API_KEY"]
+GOOGLE_CREDENTIALS = environ["GOOGLE_CREDENTIALS"]
 
 if DEBUG:
     import socket  # only if you haven't already imported this
