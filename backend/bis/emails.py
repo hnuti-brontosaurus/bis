@@ -535,9 +535,7 @@ def send_automatic_feedback():
         group__slug__in=["camp", "weekend_event"],
     ).exclude(
         intended_for__slug="for_kids",
-    ).exclude(
-        number_of_sub_events__gt=1,
-    ):
+    ).exclude(number_of_sub_events__gt=1):
         send_feedback_request(event)
         event.feedback_form.sent_at = timezone.now().date()
         event.feedback_form.save()
