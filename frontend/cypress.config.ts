@@ -8,5 +8,8 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:3000',
     video: false,
+    screenshotOnRunFailure: false,
+    responseTimeout: 5000,
+    pageLoadTimeout: 15000,
   },
 })

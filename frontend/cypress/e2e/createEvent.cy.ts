@@ -103,8 +103,8 @@ describe('create event', () => {
       .should('be.visible')
       .click()
       .type('Location 3')
-      .wait(2000)
-      .type('{downArrow}{downArrow}{enter}')
+    cy.get('[id^=react-select-5-option]').should('exist')
+    cy.get('#react-select-5-input').type('{downArrow}{downArrow}{enter}')
 
     next()
 
@@ -151,8 +151,8 @@ describe('create event', () => {
       .should('be.visible')
       .click()
       .type('displayname2')
-      .wait(2000)
-      .type('{downArrow}{downArrow}{downArrow}{enter}')
+    cy.get('[id^=react-select-7-option]').should('exist')
+    cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
 
     cy.get('[placeholder=DD]').should('be.visible').type('29')
     cy.get('[placeholder=MM]').should('be.visible').type('02')
@@ -269,10 +269,9 @@ describe('create event', () => {
 
     cy.wait('@createEvent').its('response.statusCode').should('equal', 400)
 
-    cy.wait(5000)
-
-    // for some buggy reason we need to fill the fields again
-    cy.get('input[name=start]').should('be.visible').type('2123-01-15')
+    // wait for error message to render, then fill the fields again
+    cy.contains('Toto pole nesmí být prázdné').should('be.visible')
+    cy.get('input[name=start]').should('be.visible').clear().type('2123-01-15')
     cy.get('input[name=end]').should('be.visible').type('2123-01-17')
 
     cy.intercept(
@@ -894,8 +893,8 @@ const fillForm = () => {
     .should('be.visible')
     .click()
     .type('Location 3')
-    .wait(2000)
-    .type('{downArrow}{downArrow}{enter}')
+  cy.get('[id^=react-select-5-option]').should('exist')
+  cy.get('#react-select-5-input').type('{downArrow}{downArrow}{enter}')
 
   next()
 
@@ -909,8 +908,8 @@ const fillForm = () => {
     .should('be.visible')
     .click({ force: true }) // TODO covered by "previous step" arrow
     .type('displayname2')
-    .wait(2000)
-    .type('{downArrow}{downArrow}{downArrow}{enter}')
+  cy.get('[id^=react-select-7-option]').should('exist')
+  cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
 
   cy.get('[placeholder=DD]').should('be.visible').type('29')
   cy.get('[placeholder=MM]').should('be.visible').type('02')
@@ -940,9 +939,8 @@ const fillForm = () => {
     .should('be.visible')
     .click()
 
-  // when we submit too fast, tests fail
-  // somehow main_organizer needs time to appear in form data
-  cy.wait(1000)
+  // main_organizer needs a React render cycle to appear in form data
+  cy.wait(100)
 }
 
 const fillPropagationFields = () => {
