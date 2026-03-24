@@ -36,10 +36,13 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: '*'
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
           prompt: |
             /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment
+
+            Always review the PR even if Claude has already commented — new commits may have been pushed since the last review. Focus on changes since the last review if there was one.
 
             After reviewing, if you find issues that you can confidently fix (formatting, simple bugs, CLAUDE.md violations), push fixes directly to the PR branch. Run `pre-commit run --files <changed files>` before committing. Do not fix complex architectural issues — just comment on those.
           show_full_output: true
