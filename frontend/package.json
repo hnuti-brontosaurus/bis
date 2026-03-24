@@ -56,6 +56,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "test": "yarn e2e // react-scripts test",
+    "test:unit": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md,css,scss}\" package.json docs/**/*.md cypress/**/*.{ts,json}",
