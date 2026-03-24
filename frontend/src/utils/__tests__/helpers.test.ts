@@ -9,7 +9,7 @@ import {
   shouldBeFinishedUntil,
   splitDateTime,
   validateUrl,
-} from '../helpers'
+} from 'utils/helpers'
 
 describe('validateUrl', () => {
   it('returns true for valid URLs', () => {
