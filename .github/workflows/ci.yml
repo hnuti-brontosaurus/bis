@@ -1,6 +1,6 @@
 name: Build, test & deploy
 
-on: [ push, pull_request ]
+on: [ push ]
 
 env:
   REGISTRY: ghcr.io
