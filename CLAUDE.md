@@ -49,6 +49,11 @@ yarn --cwd frontend format           # Run Prettier
 
 ### Pre-commit hooks
 Backend uses black + isort for Python formatting (configured in `.pre-commit-config.yaml`).
+**After modifying Python files, always run pre-commit before committing:**
+```bash
+pip install pre-commit  # if not installed
+pre-commit run --files <changed files>
+```
 
 ## Architecture
 
