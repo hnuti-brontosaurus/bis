@@ -176,20 +176,7 @@ describe('Standard event registration form', () => {
       })
     })
 
-    it('should forbid applying for past event', () => {
-      cy.setClock('2123-03-09')
-      cy.visit('/akce/2000/prihlasit')
-
-      cy.contains('proběhla')
-      cy.restoreClock()
-    })
-
-    it('should allow applying for event that ends today', () => {
-      cy.setClock('2123-03-08')
-      cy.visit('/akce/2000/prihlasit')
-
-      cy.get('[name=first_name]')
-      cy.restoreClock()
-    })
+    // Past event date checks (isEventPast) are unit tested in
+    // src/utils/__tests__/helpers.test.ts
   })
 })

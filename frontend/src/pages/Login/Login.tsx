@@ -14,7 +14,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import styles from './Login.module.scss'
 
-const getErrorMessage = (
+export const getErrorMessage = (
   error: FetchBaseQueryError | SerializedError,
 ): string => {
   if ('status' in error) {

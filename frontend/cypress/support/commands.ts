@@ -197,4 +197,11 @@ Cypress.Commands.add('restoreClock', () => {
   })
 })
 
+Cypress.Commands.overwrite(
+  'type',
+  (originalFn, element, text, options) => {
+    return originalFn(element, text, { delay: 1, ...options })
+  },
+)
+
 export {}
