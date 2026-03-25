@@ -16,6 +16,7 @@ from bis.admin_filters import (
     DonationSumRangeFilter,
     FirstDonorsDonationFilter,
     HasDonorFilter,
+    HasRecurrentDonationFilter,
     LastDonorsDonationFilter,
     RecurringDonorWhoStoppedFilter,
 )
@@ -29,7 +30,7 @@ from bis.emails import donation_confirmation
 from bis.permissions import Permissions
 from categories.models import PronounCategory
 from donations.helpers import upload_bank_records
-from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
+from donations.models import Donation, Donor, Pledge, UploadBankRecords, VariableSymbol
 from event.models import *
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
@@ -115,6 +116,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         "get_donations_sum",
         "get_last_donation",
         "get_donations_sources",
+        "has_active_recurrent_donation_display",
         "regional_center_support",
         "basic_section_support",
         "subscribed_to_newsletter",
@@ -137,7 +139,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         ("user__roles", MultiSelectRelatedDropdownFilter),
         "subscribed_to_newsletter",
         "is_public",
-        "has_recurrent_donation",
+        HasRecurrentDonationFilter,
         AutocompleteFilterFactory("Podporující RC", "regional_center_support"),
         AutocompleteFilterFactory("Podporující ZČ", "basic_section_support"),
         list_filter_extra_title("Dary"),
@@ -179,6 +181,20 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         queryset = (
             super().get_queryset(request).prefetch_related("donations__donation_source")
         )
+        active_recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
+        )
+        queryset = queryset.annotate(
+            has_active_recurrent_donation=Exists(active_recurrent_pledges)
+        )
+
+        past_recurrent_pledges = Pledge.objects.filter(
+            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="stopped"
+        )
+        queryset = queryset.annotate(
+            had_recurrent_donation=Exists(past_recurrent_pledges)
+        )
+
         donations_source_filter = MultiSelectRelatedDropdownFilter(
             field=Donation.donation_source.field,
             request=request,
@@ -238,6 +254,10 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
     @admin.display(description="Darovací kampaně")
     def get_donations_sources(self, obj):
         return obj.donation_sources
+
+    @admin.display(description="Pravidelný dárce", boolean=True)
+    def has_active_recurrent_donation_display(self, obj):
+        return obj.has_active_recurrent_donation
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if object_id:

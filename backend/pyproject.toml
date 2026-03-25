@@ -59,6 +59,9 @@ dependencies = [
     "geopy>=2.4",
     # AI
     "groq>=1.0",
+    # Google API
+    "google-api-python-client>=2.0",
+    "google-auth>=2.0",
 ]
 
 [dependency-groups]

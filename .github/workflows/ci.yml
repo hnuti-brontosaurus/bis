@@ -1,36 +1,87 @@
 name: Build, test & deploy
 
-on: [ push, pull_request ]
+on: [ push ]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: pre-commit/action@v3.0.1
+
   build:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Docker login
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Disable make sync
-        run: touch submodule_sync
+      - name: Set up environment
+        run: |
+          touch submodule_sync
+          cp .example.env .env
+          echo '.git' > .dockerignore
+          cat .gitignore >> .dockerignore
 
-      - name: Install pre-commit
-        run: pip install pre-commit==3.8.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Run pre-commit
-        run: pre-commit run -a
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          build-args: APP_PORT=8000
+          load: true
+          tags: bis-backend:latest
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
-      - name: Build image
-        run: make
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          load: true
+          tags: bis-frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
-      - name: Run test
+      - name: Build cookbook image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cookbook
+          load: true
+          tags: bis-cookbook:latest
+          cache-from: type=gha,scope=cookbook
+          cache-to: type=gha,mode=max,scope=cookbook
+
+      - name: Cache frontend node_modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: frontend-deps-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Cache cookbook node_modules
+        uses: actions/cache@v4
+        with:
+          path: cookbook/node_modules
+          key: cookbook-deps-${{ hashFiles('cookbook/yarn.lock') }}
+
+      - name: Run tests
         run: make test
 
       - name: Build frontend
@@ -42,21 +93,21 @@ jobs:
       - name: Build cookbook
         run: make build_cookbook
 
-      - name: Copy frontend static files to backend
+      - name: Copy cookbook static files to backend
         run: cp -r cookbook/dist/* backend/cookbook_static/
 
-      - name: Build image to copy FE into it
-        run: make
-
-      - name: Tag sha
-        run: docker tag bis-backend ${{ env.IMAGE_NAME }}:$GITHUB_SHA
-
-      - name: Push sha
-        run: docker push ${{ env.IMAGE_NAME }}:$GITHUB_SHA
-
+      - name: Build and push final image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          build-args: APP_PORT=8000
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
   deploy-dev:
-    needs: build
+    needs: [pre-commit, build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || contains(github.event.head_commit.message, '#deploy')
 
@@ -65,7 +116,7 @@ jobs:
         run: curl -X POST --fail -F token=${{ secrets.GITLAB_TOKEN }} -F "ref=main" -F "variables[TARGET_ENV]=devel" -F "variables[TARGET_TAG]=$GITHUB_SHA" https://gitlab.com/api/v4/projects/43999052/trigger/pipeline
 
   deploy-prod:
-    needs: build
+    needs: [pre-commit, build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
 

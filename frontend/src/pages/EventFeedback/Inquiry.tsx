@@ -1,6 +1,12 @@
 import { InquiryRead, InquiryType } from 'app/services/bisTypes'
 import classNames from 'classnames'
-import { Button, FormInputError, FormSubsection } from 'components'
+import {
+  Button,
+  ExternalButtonLink,
+  FormInputError,
+  FormSubsection,
+} from 'components'
+import { sanitize } from 'dompurify'
 import range from 'lodash/range'
 import {
   createContext,
@@ -8,9 +14,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { HiExternalLink } from 'react-icons/hi'
 import { required } from 'utils/validationMessages'
 import styles from './Inquiry.module.scss'
 
@@ -47,20 +55,50 @@ const OptionInquiry: FC = () => {
   const register = useRegister()
   return (
     <fieldset
-      className={classNames(styles.wrap, {
+      className={classNames(styles.wrap, styles.options, {
         [styles.horizontalLayout]: inquiry.data?.layout === 'horizontal',
       })}
     >
-      {inquiry.data?.options?.map(({ option }) => (
+      {inquiry.data?.options?.map(({ option, href }) => (
         <label
           key={option}
           className={classNames(styles.wrap, `${inquiry.data!.type}Label`)}
         >
           <input type={inquiry.data!.type} value={option} {...register} />
-          {option}
+          <span>
+            {option}
+            {href && (
+              <ExternalButtonLink
+                target="__blank"
+                rel="noopener noreferrer"
+                tertiary
+                href={href}
+                className={styles.optionLink}
+              >
+                <HiExternalLink />
+              </ExternalButtonLink>
+            )}
+          </span>
         </label>
       ))}
+      {inquiry.data?.otherOption && <OtherOption />}
     </fieldset>
+  )
+}
+
+const OtherOption: FC = () => {
+  const { inquiry, index } = useInquiryContext()
+  const { register } = useFormContext()
+  const registerField = useRegister()
+
+  return (
+    <label className={`${inquiry.data!.type}Label`}>
+      <input type={inquiry.data!.type} value="jiné" {...registerField} />
+      <div className={styles.other}>
+        <span>jiné:</span>
+        <input type="text" {...register(`replies.${index}.data.other`)} />
+      </div>
+    </label>
   )
 }
 
@@ -75,12 +113,9 @@ const ScaleInquiry: FC = () => {
     <>
       <div className={styles.scale}>
         <div>
-          <div className={styles.scaleLabels}>
-            <div>zcela nesplňuje</div>
-            <div>zcela splňuje</div>
-          </div>
           <fieldset className={styles.scaleRange}>
-            {range(1, 11).map(rating => (
+            <div className={styles.scaleLabel}>zcela nesplňuje</div>
+            {range(1, 6).map(rating => (
               <label
                 key={rating}
                 className={classNames('radioLabel', styles.scaleOption)}
@@ -95,6 +130,7 @@ const ScaleInquiry: FC = () => {
                 {rating}
               </label>
             ))}
+            <div className={styles.scaleLabel}>zcela splňuje</div>
           </fieldset>
         </div>
         {inquiry.data?.comment && (
@@ -121,6 +157,23 @@ const components: Record<InquiryType, FC> = {
   header: () => null,
 }
 
+const InquiryQuestion: FC<{ text: string }> = ({ text }) => {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    ref.current?.querySelectorAll('a')?.forEach(link => {
+      link.target = '__blank'
+      link.rel = 'noopener noreferrer'
+    })
+  }, [text])
+  return (
+    <span
+      className={styles.questionText}
+      ref={ref}
+      dangerouslySetInnerHTML={{ __html: sanitize(text) }}
+    />
+  )
+}
+
 export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
   const { setValue } = useFormContext()
   useEffect(() => {
@@ -140,8 +193,9 @@ export const Inquiry: FC<InquiryProps> = ({ inquiry, index }) => {
   return (
     <InquiryContext.Provider value={context}>
       <FormSubsection
-        header={inquiry.inquiry}
+        header={<InquiryQuestion text={inquiry.inquiry} />}
         required={inquiry.is_required}
+        className={styles.question}
         headerClassName={styles.wrap}
       >
         <FormInputError name={`replies.${index}.reply`} isBlock>
