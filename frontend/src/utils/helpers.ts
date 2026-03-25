@@ -123,7 +123,8 @@ export const isFeedbackRequired = (event: FullEvent): boolean =>
     'education',
     'none',
   ].includes(event.program.slug) &&
-  event.intended_for.slug !== 'for_kids'
+  event.intended_for.slug !== 'for_kids' &&
+  !(event.number_of_sub_events && event.number_of_sub_events > 1)
 
 export const splitDateTime = (datetime: string): [string, string] => {
   const [date] = datetime.split('T')
