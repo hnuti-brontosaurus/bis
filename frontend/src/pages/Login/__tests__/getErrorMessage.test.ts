@@ -1,4 +1,4 @@
-import { getErrorMessage } from 'pages/Login/Login'
+import { getErrorMessage } from 'pages/Login/getErrorMessage'
 
 describe('getErrorMessage', () => {
   it('returns auth error message for 400', () => {
