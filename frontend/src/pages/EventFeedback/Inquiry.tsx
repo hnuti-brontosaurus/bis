@@ -6,7 +6,8 @@ import {
   FormInputError,
   FormSubsection,
 } from 'components'
-import { sanitize } from 'dompurify'
+import DOMPurify from 'dompurify'
+const { sanitize } = DOMPurify
 import range from 'lodash/range'
 import {
   createContext,
