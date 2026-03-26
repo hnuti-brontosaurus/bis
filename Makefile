@@ -125,7 +125,7 @@ test_backend:
 	make prepare_test_env
 	$(call compose_with_trap,                                                              \
 		-f docker-compose/dev_test.yaml                                                    \
-		-f docker-compose/dev_test_$$OS.yaml run backend sh docker-entrypoint.sh test)
+		-f docker-compose/dev_test_$$OS.yaml run --quiet-pull backend sh docker-entrypoint.sh test)
 
 
 test_frontend: node_modules/cypress/bin/cypress

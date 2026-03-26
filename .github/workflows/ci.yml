@@ -113,70 +113,39 @@ jobs:
       !contains(github.event.head_commit.message, '[claude-ci-fix]')
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       pull-requests: write
       issues: write
-      id-token: write
-      actions: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Get failed run logs
-        id: logs
+      - name: Ask Claude to fix CI failure
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          {
-            echo 'failed_logs<<LOGS_DELIMITER'
-            gh run view ${{ github.run_id }} --log-failed 2>&1 | tail -c 50000 || true
-            echo 'LOGS_DELIMITER'
-          } >> "$GITHUB_OUTPUT"
+          BRANCH="${GITHUB_REF_NAME}"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MSG="@claude The CI build failed on branch \`${BRANCH}\`. Please look at the failed CI run, analyze the error, and push a fix if you're confident you can resolve it. Include \`[claude-ci-fix]\` in the commit message. If you're not sure about the fix, just explain what went wrong. Run: ${RUN_URL}"
 
-      - name: Run Claude to fix CI failure
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          direct_prompt: |
-            The CI build for branch `${{ github.ref_name }}` failed. Here are the failed logs:
+          # Try to find an open PR for this branch
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" --head "${BRANCH}" --json number --jq '.[0].number' 2>/dev/null || true)
 
-            ```
-            ${{ steps.logs.outputs.failed_logs }}
-            ```
+          # Prevent loops: stop if Claude already attempted 2+ fixes on this branch
+          FIX_ATTEMPTS=$(git log --oneline --grep='\[claude-ci-fix\]' origin/${BRANCH} 2>/dev/null | wc -l || echo "0")
+          if [ "$FIX_ATTEMPTS" -ge 2 ]; then
+            echo "Claude already attempted $FIX_ATTEMPTS fixes on this branch, skipping"
+            exit 0
+          fi
 
-            Analyze the failure and fix the issue if you're confident you can resolve it.
-            If you make changes, commit with `[claude-ci-fix]` in the commit message and push to the current branch.
-            Run pre-commit before committing to ensure formatting is correct.
-            If you're not sure about the fix, create a GitHub issue describing the problem:
-            - Title: a short summary of the CI failure
-            - Body: what failed, your analysis of the root cause, and any suggestions for fixing it
-            - Use `gh issue create` to create the issue
-          settings: |
-            {
-              "permissions": {
-                "allow": [
-                  "Bash(git diff:*)",
-                  "Bash(git log:*)",
-                  "Bash(git show:*)",
-                  "Bash(git add:*)",
-                  "Bash(git commit:*)",
-                  "Bash(git push:*)",
-                  "Bash(git status:*)",
-                  "Bash(pre-commit:*)",
-                  "Bash(pip install:*)",
-                  "Bash(yarn:*)",
-                  "Bash(make:*)",
-                  "Bash(gh issue create:*)",
-                  "Read",
-                  "Write",
-                  "Edit",
-                  "Glob",
-                  "Grep"
-                ]
-              }
-            }
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "$MSG"
+          else
+            # No PR exists - create an issue so Claude can pick it up
+            gh issue create --repo "${{ github.repository }}" \
+              --title "CI build failed on \`${BRANCH}\`" \
+              --body "$MSG"
+          fi
 
   deploy-dev:
     needs: [pre-commit, build]
