@@ -106,6 +106,78 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
+  claude-fix:
+    needs: [pre-commit, build]
+    if: >
+      failure() &&
+      !contains(github.event.head_commit.message, '[claude-ci-fix]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Get failed run logs
+        id: logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo 'failed_logs<<LOGS_DELIMITER'
+            gh run view ${{ github.run_id }} --log-failed 2>&1 | tail -c 50000 || true
+            echo 'LOGS_DELIMITER'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude to fix CI failure
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          direct_prompt: |
+            The CI build for branch `${{ github.ref_name }}` failed. Here are the failed logs:
+
+            ```
+            ${{ steps.logs.outputs.failed_logs }}
+            ```
+
+            Analyze the failure and fix the issue if you're confident you can resolve it.
+            If you make changes, commit with `[claude-ci-fix]` in the commit message and push to the current branch.
+            Run pre-commit before committing to ensure formatting is correct.
+            If you're not sure about the fix, create a GitHub issue describing the problem:
+            - Title: a short summary of the CI failure
+            - Body: what failed, your analysis of the root cause, and any suggestions for fixing it
+            - Use `gh issue create` to create the issue
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(git diff:*)",
+                  "Bash(git log:*)",
+                  "Bash(git show:*)",
+                  "Bash(git add:*)",
+                  "Bash(git commit:*)",
+                  "Bash(git push:*)",
+                  "Bash(git status:*)",
+                  "Bash(pre-commit:*)",
+                  "Bash(pip install:*)",
+                  "Bash(yarn:*)",
+                  "Bash(make:*)",
+                  "Bash(gh issue create:*)",
+                  "Read",
+                  "Write",
+                  "Edit",
+                  "Glob",
+                  "Grep"
+                ]
+              }
+            }
+
   deploy-dev:
     needs: [pre-commit, build]
     runs-on: ubuntu-latest

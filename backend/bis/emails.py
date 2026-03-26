@@ -521,20 +521,24 @@ def send_feedback_request(event):
 
 
 def send_automatic_feedback():
-    for event in Event.objects.filter(
-        end=timezone.now().date() - timedelta(days=20),
-        feedback_form__sent_at__isnull=True,
-        feedback_form__isnull=False,
-        program__slug__in=[
-            "nature",
-            "monuments",
-            "holidays_with_brontosaurus",
-            "education",
-            "none",
-        ],
-        group__slug__in=["camp", "weekend_event"],
-    ).exclude(
-        intended_for__slug="for_kids",
+    for event in (
+        Event.objects.filter(
+            end=timezone.now().date() - timedelta(days=20),
+            feedback_form__sent_at__isnull=True,
+            feedback_form__isnull=False,
+            program__slug__in=[
+                "nature",
+                "monuments",
+                "holidays_with_brontosaurus",
+                "education",
+                "none",
+            ],
+            group__slug__in=["camp", "weekend_event"],
+        )
+        .exclude(
+            intended_for__slug="for_kids",
+        )
+        .exclude(number_of_sub_events__gt=1)
     ):
         send_feedback_request(event)
         event.feedback_form.sent_at = timezone.now().date()
