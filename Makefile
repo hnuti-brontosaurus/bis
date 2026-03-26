@@ -110,7 +110,7 @@ startup_testing:
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
             -f docker-compose/dev_test.yaml                                                \
-            -f docker-compose/dev_test_$$OS.yaml up -d)
+            -f docker-compose/dev_test_$$OS.yaml up --quiet-pull -d)
 
 startup_testing_frontend:
 	$(call with_os,                                                                        \
@@ -119,7 +119,7 @@ startup_testing_frontend:
             -f docker-compose.yaml                                                         \
             -f docker-compose/dev.yaml                                                     \
             -f docker-compose/dev_test.yaml                                                \
-            -f docker-compose/dev_test_$$OS.yaml up -d)
+            -f docker-compose/dev_test_$$OS.yaml up --quiet-pull -d)
 
 test_backend:
 	make prepare_test_env
