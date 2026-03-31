@@ -511,6 +511,7 @@ def send_feedback_request(event):
             emails["bis"],
             305,
             [participant.email],
+            subject=f"🦕 Jaký to bylo? Zpětná vazba z akce {event.name}",
             variables={
                 "event_name": event.name,
                 "event_date": event.get_date(),
