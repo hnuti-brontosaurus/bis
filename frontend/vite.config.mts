@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import svgr from 'vite-plugin-svgr'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import checker from 'vite-plugin-checker'
@@ -19,4 +19,8 @@ export default defineConfig(({mode}) => ({
   },
   // safety net for third-party libs that still reference process.env
   define: { 'process.env': {} },
+  test: {
+    globals: true,
+    environment: 'node',
+  },
 }))

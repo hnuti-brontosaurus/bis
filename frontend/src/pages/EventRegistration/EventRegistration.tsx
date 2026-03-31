@@ -14,7 +14,7 @@ import { useState } from 'react'
 import { FaRegCalendarAlt } from 'react-icons/fa'
 import { GrLocation } from 'react-icons/gr'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { formatDateRange } from 'utils/helpers'
+import { formatDateRange, isEventPast } from 'utils/helpers'
 import styles from './EventRegistration.module.scss'
 import {
   EventRegistrationForm,
@@ -67,14 +67,7 @@ export const EventRegistration = () => {
 
   if (!event) return <Loading>Připravujeme přihlášku</Loading>
 
-  // akce už proběhla?
-  // we make sure that it's still possible to register to events ending today
-  // by setting both dates to midnight
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const end = new Date(event.end)
-  end.setHours(0, 0, 0, 0)
-  if (today > end)
+  if (isEventPast(event.end))
     return (
       <Error message={`Akce ${event.name} už proběhla`}>
         <ExternalButtonLink

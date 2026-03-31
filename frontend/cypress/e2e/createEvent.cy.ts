@@ -103,8 +103,8 @@ describe('create event', () => {
       .should('be.visible')
       .click()
       .type('Location 3')
-      .wait(2000)
-      .type('{downArrow}{downArrow}{enter}')
+    cy.get('[id^=react-select-5-option]').should('exist')
+    cy.get('#react-select-5-input').type('{downArrow}{downArrow}{enter}')
 
     next()
 
@@ -151,8 +151,8 @@ describe('create event', () => {
       .should('be.visible')
       .click()
       .type('displayname2')
-      .wait(2000)
-      .type('{downArrow}{downArrow}{downArrow}{enter}')
+    cy.get('[id^=react-select-7-option]').should('exist')
+    cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
 
     cy.get('[placeholder=DD]').should('be.visible').type('29')
     cy.get('[placeholder=MM]').should('be.visible').type('02')
@@ -269,10 +269,9 @@ describe('create event', () => {
 
     cy.wait('@createEvent').its('response.statusCode').should('equal', 400)
 
-    cy.wait(5000)
-
-    // for some buggy reason we need to fill the fields again
-    cy.get('input[name=start]').should('be.visible').type('2123-01-15')
+    // wait for error message to render, then fill the fields again
+    cy.contains('Toto pole nesmí být prázdné').should('be.visible')
+    cy.get('input[name=start]').should('be.visible').clear().type('2123-01-15')
     cy.get('input[name=end]').should('be.visible').type('2123-01-17')
 
     cy.intercept(
@@ -618,194 +617,11 @@ describe('create event', () => {
     })
   })
 
-  describe('saving past event', () => {
-    beforeEach(() => {
-      // clone event
-      cy.interceptFullEvent()
-    })
+  // Date validation rules (before/after March, admin override, etc.) are
+  // unit tested in src/utils/__tests__/helpers.test.ts
+  // (getEventCannotBeOlderThan, shouldBeFinishedUntil)
+  // Error display from 400 responses is covered by "shows api error message" above.
 
-    afterEach(() => {
-      cy.restoreClock()
-    })
-
-    it('allow saving an event in the future', () => {
-      cy.setClock('2023-01-05')
-      cy.visit('/org/akce/vytvorit?klonovat=1000')
-      next()
-
-      cy.get('[name=start]').type('2023-02-10')
-      cy.get('[name=end]').type('2023-02-12')
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        { id: 1000 },
-      ).as('createEvent')
-
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-
-      submit()
-
-      cy.wait('@createEvent')
-    })
-
-    it('after 03/01 forbid saving event from past year', () => {
-      cy.setClock('2023-03-01')
-      cy.visit('/org/akce/vytvorit?klonovat=1000')
-      next()
-
-      cy.get('[name=start]').type('2022-12-29')
-      cy.get('[name=end]').type('2022-12-31')
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        {
-          statusCode: 400,
-          body: ['Nemůžeš vytvářet události v minulosti'],
-        },
-      ).as('createEvent')
-
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-
-      submit()
-
-      cy.get('[class^=SystemMessage-module__header]')
-        .should('be.visible')
-        .contains('Nepodařilo se nám uložit akci')
-      cy.get('[class^=SystemMessage-module__detail]')
-        .should('be.visible')
-        .contains('Nemůžeš vytvářet události v minulosti')
-    })
-
-    it('before 03/01 allow saving event from past year', () => {
-      cy.setClock('2023-02-28')
-      cy.visit('/org/akce/vytvorit?klonovat=1000')
-      next()
-
-      cy.get('[name=start]').type('2022-12-29')
-      cy.get('[name=end]').type('2022-12-31')
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        { id: 1000 },
-      ).as('createEvent')
-
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-
-      submit()
-
-      cy.wait('@createEvent')
-      cy.get('@createEvent.all').should('have.length', 1)
-    })
-
-    it('before 03/01 forbid saving event from two years ago', () => {
-      cy.setClock('2023-02-28')
-      cy.visit('/org/akce/vytvorit?klonovat=1000')
-      next()
-
-      cy.get('[name=start]').type('2021-12-29')
-      cy.get('[name=end]').type('2021-12-31')
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        {
-          statusCode: 400,
-          body: ['Nemůžeš vytvářet události v minulosti'],
-        },
-      ).as('createEvent')
-
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-
-      submit()
-
-      cy.get('[class^=SystemMessage]')
-        .should('contain', 'Nepodařilo se nám uložit akci')
-        .should('contain', 'Nemůžeš vytvářet události v minulosti')
-    })
-
-    it('after 03/01 allow saving event which continues into this year', () => {
-      cy.setClock('2023-03-01')
-      cy.visit('/org/akce/vytvorit?klonovat=1000')
-      next()
-
-      cy.get('[name=start]').type('2022-09-01')
-      cy.get('[name=end]').type('2023-06-30')
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        { id: 1000 },
-      ).as('createEvent')
-
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-
-      submit()
-
-      cy.wait('@createEvent')
-      cy.get('@createEvent.all').should('have.length', 1)
-    })
-
-    context('admin or office_worker', () => {
-      ;['admin', 'office_worker'].forEach(role => {
-        it(`[${role}] should be allowed to save event in deeper past`, () => {
-          cy.visit('/logout')
-          cy.interceptLogin({ fixture: role })
-          cy.login('asdf@example.com', 'correcthorsebatterystaple')
-
-          cy.setClock('2023-02-28')
-          cy.visit('/org/akce/vytvorit?klonovat=1000')
-          next()
-
-          cy.get('[name=start]').type('2020-12-29')
-          cy.get('[name=end]').type('2020-12-31')
-
-          cy.intercept(
-            { method: 'POST', pathname: '/api/frontend/events' },
-            { id: 1000 },
-          ).as('createEvent')
-
-          cy.intercept(
-            'POST',
-            '/api/frontend/events/1000/propagation/images/',
-            {},
-          )
-          cy.intercept(
-            'POST',
-            '/api/frontend/events/1000/questionnaire/questions/',
-            {},
-          )
-
-          submit()
-
-          cy.wait('@createEvent')
-          cy.get('@createEvent.all').should('have.length', 1)
-        })
-      })
-    })
-  })
 
   describe('VIP propagation', () => {
     beforeEach(() => {
@@ -894,8 +710,8 @@ const fillForm = () => {
     .should('be.visible')
     .click()
     .type('Location 3')
-    .wait(2000)
-    .type('{downArrow}{downArrow}{enter}')
+  cy.get('[id^=react-select-5-option]').should('exist')
+  cy.get('#react-select-5-input').type('{downArrow}{downArrow}{enter}')
 
   next()
 
@@ -909,8 +725,8 @@ const fillForm = () => {
     .should('be.visible')
     .click({ force: true }) // TODO covered by "previous step" arrow
     .type('displayname2')
-    .wait(2000)
-    .type('{downArrow}{downArrow}{downArrow}{enter}')
+  cy.get('[id^=react-select-7-option]').should('exist')
+  cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
 
   cy.get('[placeholder=DD]').should('be.visible').type('29')
   cy.get('[placeholder=MM]').should('be.visible').type('02')
@@ -940,9 +756,8 @@ const fillForm = () => {
     .should('be.visible')
     .click()
 
-  // when we submit too fast, tests fail
-  // somehow main_organizer needs time to appear in form data
-  cy.wait(1000)
+  // main_organizer needs a React render cycle to appear in form data
+  cy.wait(100)
 }
 
 const fillPropagationFields = () => {
