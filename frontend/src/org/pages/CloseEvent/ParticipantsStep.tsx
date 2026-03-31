@@ -1,7 +1,7 @@
 import { FullEvent } from 'app/services/bisTypes'
-import { ReactComponent as Counted } from 'assets/counting.svg'
-import { ReactComponent as EmailList } from 'assets/email-list.svg'
-import { ReactComponent as FullList } from 'assets/full-list.svg'
+import Counted from 'assets/counting.svg?react'
+import EmailList from 'assets/email-list.svg?react'
+import FullList from 'assets/full-list.svg?react'
 import classNames from 'classnames'
 import {
   FormInputError,

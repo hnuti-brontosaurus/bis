@@ -6,7 +6,7 @@ interface Props {
 
 const getUri = ({ eventId }: Props) =>
   `${
-    process.env.REACT_APP_API_BASE_URL ?? '/api/'
+    import.meta.env.VITE_API_BASE_URL ?? '/api/'
   }frontend/events/${eventId}/export_files`
 
 const getName = ({ eventId }: Props) => `fotky_${eventId}.zip`

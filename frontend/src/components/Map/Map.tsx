@@ -1,13 +1,10 @@
 import MarkerClusterGroup from '@changey/react-leaflet-markercluster'
-import markerNew, {
-  ReactComponent as MapMarkerNew,
-} from 'assets/map-marker-new.svg'
-import markerSelected, {
-  ReactComponent as MapMarkerSelected,
-} from 'assets/map-marker-selected.svg'
-import markerExistent, {
-  ReactComponent as MapMarkerDefault,
-} from 'assets/map-marker.svg'
+import markerNew from 'assets/map-marker-new.svg'
+import MapMarkerNew from 'assets/map-marker-new.svg?react'
+import markerSelected from 'assets/map-marker-selected.svg'
+import MapMarkerSelected from 'assets/map-marker-selected.svg?react'
+import markerExistent from 'assets/map-marker.svg'
+import MapMarkerDefault from 'assets/map-marker.svg?react'
 import { MapyCzSearch } from 'components/MapyCzSearch/MapyCzSearch'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import { useOnScreen } from 'hooks/onScreen'
@@ -228,7 +225,7 @@ export const Map = ({
         >
           <TileLayer
             url={
-              process.env.REACT_APP_MAP_TILE_SERVER ??
+              import.meta.env.VITE_MAP_TILE_SERVER ??
               'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
             }
           />
