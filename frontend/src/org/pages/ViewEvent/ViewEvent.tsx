@@ -9,7 +9,6 @@ import {
   Loading,
 } from 'components'
 import DOMPurify from 'dompurify'
-const { sanitize } = DOMPurify
 import type { FullEvent } from 'app/services/bisTypes'
 import { useTitle } from 'hooks/title'
 import { useAllowedToCreateEvent } from 'hooks/useAllowedToCreateEvent'
@@ -448,7 +447,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <header>Co na nás čeká</header>
                 <section
                   dangerouslySetInnerHTML={{
-                    __html: sanitize(
+                    __html: DOMPurify.sanitize(
                       event.propagation?.invitation_text_introduction ?? '',
                     ),
                   }}
@@ -456,7 +455,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <header>Co, kde a jak</header>
                 <section
                   dangerouslySetInnerHTML={{
-                    __html: sanitize(
+                    __html: DOMPurify.sanitize(
                       event.propagation
                         ?.invitation_text_practical_information ?? '',
                     ),
@@ -465,7 +464,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <header>Dobrovolnická pomoc</header>
                 <section
                   dangerouslySetInnerHTML={{
-                    __html: sanitize(
+                    __html: DOMPurify.sanitize(
                       event.propagation?.invitation_text_work_description ?? '',
                     ),
                   }}
@@ -473,7 +472,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <header>Malá ochutnávka</header>
                 <section
                   dangerouslySetInnerHTML={{
-                    __html: sanitize(
+                    __html: DOMPurify.sanitize(
                       event.propagation?.invitation_text_about_us ?? '',
                     ),
                   }}

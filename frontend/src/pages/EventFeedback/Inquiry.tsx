@@ -7,7 +7,6 @@ import {
   FormSubsection,
 } from 'components'
 import DOMPurify from 'dompurify'
-const { sanitize } = DOMPurify
 import range from 'lodash/range'
 import {
   createContext,
@@ -170,7 +169,7 @@ const InquiryQuestion: FC<{ text: string }> = ({ text }) => {
     <span
       className={styles.questionText}
       ref={ref}
-      dangerouslySetInnerHTML={{ __html: sanitize(text) }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
     />
   )
 }
