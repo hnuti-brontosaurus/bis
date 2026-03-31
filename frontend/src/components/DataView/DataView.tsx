@@ -1,5 +1,4 @@
 import DOMPurify from 'dompurify'
-const { sanitize } = DOMPurify
 import { createElement } from 'react'
 import { Link } from 'react-router-dom'
 import { formatDateTime } from 'utils/helpers'
@@ -51,7 +50,7 @@ export const DataView = <T extends Data>({
         <div
           className={styles.withFormattedHTML}
           dangerouslySetInnerHTML={{
-            __html: sanitize(data),
+            __html: DOMPurify.sanitize(data),
           }}
         />
       )

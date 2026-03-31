@@ -6,7 +6,7 @@ import {
   FormInputError,
   FormSubsection,
 } from 'components'
-import { sanitize } from 'dompurify'
+import DOMPurify from 'dompurify'
 import range from 'lodash/range'
 import {
   createContext,
@@ -169,7 +169,7 @@ const InquiryQuestion: FC<{ text: string }> = ({ text }) => {
     <span
       className={styles.questionText}
       ref={ref}
-      dangerouslySetInnerHTML={{ __html: sanitize(text) }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(text) }}
     />
   )
 }

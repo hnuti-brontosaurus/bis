@@ -2,7 +2,6 @@ import classNames from 'classnames'
 import { Actions, Button, ButtonLink, DataView, Loading } from 'components'
 import * as combinedTranslations from 'config/static/combinedTranslations'
 import DOMPurify from 'dompurify'
-const { sanitize } = DOMPurify
 import { useCurrentUser } from 'hooks/currentUser'
 import type { FullOpportunity } from 'hooks/readFullOpportunity'
 import { useRemoveOpportunity } from 'hooks/removeOpportunity'
@@ -76,25 +75,25 @@ export const ViewOpportunity = () => {
         <header>Představení příležitosti</header>
         <section
           dangerouslySetInnerHTML={{
-            __html: sanitize(opportunity.introduction),
+            __html: DOMPurify.sanitize(opportunity.introduction),
           }}
         />
         <header>Popis činnosti</header>
         <section
           dangerouslySetInnerHTML={{
-            __html: sanitize(opportunity.description),
+            __html: DOMPurify.sanitize(opportunity.description),
           }}
         />
         <header>Přínos pro lokalitu</header>
         <section
           dangerouslySetInnerHTML={{
-            __html: sanitize(opportunity.location_benefits ?? ''),
+            __html: DOMPurify.sanitize(opportunity.location_benefits ?? ''),
           }}
         />
         <header>Co mi to přinese?</header>
         <section
           dangerouslySetInnerHTML={{
-            __html: sanitize(opportunity.personal_benefits),
+            __html: DOMPurify.sanitize(opportunity.personal_benefits),
           }}
         />
         {opportunity.requirements ? (
@@ -102,7 +101,7 @@ export const ViewOpportunity = () => {
             <header>Co potřebuji ke spolupráci</header>
             <section
               dangerouslySetInnerHTML={{
-                __html: sanitize(opportunity.requirements),
+                __html: DOMPurify.sanitize(opportunity.requirements),
               }}
             />
           </>
