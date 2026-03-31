@@ -50,6 +50,8 @@ from bis.models import (
 )
 from bis.permissions import Permissions
 from categories.models import MembershipCategory, PronounCategory, QualificationCategory
+from ecomail.sync_ecomail import create_tmp_tag
+from login_code.models import ThrottleLog
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
@@ -267,6 +269,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         export_emails,
         mark_as_woman,
         mark_as_man,
+        create_tmp_tag,
     ]
 
     def get_actions(self, request):

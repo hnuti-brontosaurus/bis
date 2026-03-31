@@ -333,6 +333,7 @@ AUTH_USER_MODEL = "bis.User"
 SKIP_VALIDATION = False
 
 ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
+ECOMAIL_LIST_ID = 62  # 28 = "Ecomail+BIS+web" list
 
 # darujme
 DARUJME_API_KEY = environ.get("DARUJME_API_KEY")

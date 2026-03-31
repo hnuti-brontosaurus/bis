@@ -1,23 +1,6 @@
 from rest_framework import serializers
 
 
-class DeleteContactSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-
-class CreateContactSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    data = serializers.DictField(
-        child=serializers.CharField(), allow_empty=True, required=False
-    )
-
-
-class SetSubscriptionStatusSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    list_id = serializers.CharField()
-    is_subscribed = serializers.BooleanField()
-
-
 class AttachmentSerializer(serializers.Serializer):
     name = serializers.CharField()
     content_type = serializers.CharField()

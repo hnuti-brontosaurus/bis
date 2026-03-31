@@ -47,6 +47,8 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
+from ecomail.sync_ecomail import create_tmp_tag
+from event.models import *
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 
@@ -258,6 +260,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         mark_as_man,
         export_to_xlsx,
         change_fundraising_campaign,
+        create_tmp_tag,
     ]
     list_display = (
         "user",

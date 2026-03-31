@@ -15,6 +15,7 @@ from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats, make_br
 from bis.models import Membership, User
 from common.history import show_history
+from ecomail.sync_ecomail import create_tmp_tag
 from dateutil.utils import today
 from django.contrib import admin
 from django.contrib.gis.db.models import PointField
@@ -63,7 +64,7 @@ class AdministrationSubUnitAdmin(PermissionMixin, NestedStackedInline):
 
 @admin.register(AdministrationUnit)
 class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
-    actions = [export_to_xlsx]
+    actions = [export_to_xlsx, create_tmp_tag]
     list_display = (
         "abbreviation",
         "get_links",
