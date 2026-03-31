@@ -333,6 +333,7 @@ SKIP_VALIDATION = False
 EMAILS_ENABLED = bool(int(environ["EMAILS_ENABLED"]))
 
 ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
+ECOMAIL_LIST_ID = 62  # 28 = "Ecomail+BIS+web" list
 
 # darujme
 DARUJME_API_KEY = environ.get("DARUJME_API_KEY")

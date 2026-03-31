@@ -54,15 +54,12 @@ class Command(BaseCommand):
         try_to_run(emails.qualification_about_to_end)
         try_to_run(emails.qualification_ended)
         try_to_run(SavedFile.remove_old)
+        try_to_run(emails.recurrent_donor_stopped)
+        try_to_run(emails.new_recurrent_donors)
+        try_to_run(emails.donated_10k)
+        try_to_run(emails.donates_for_years)
 
         today = date.today()
-        # TODO remove this in april
-        if today >= date(2026, 3, 25):
-            try_to_run(emails.recurrent_donor_stopped)
-            try_to_run(emails.new_recurrent_donors)
-            try_to_run(emails.donated_10k)
-            try_to_run(emails.donates_for_years)
-
         # weekly
         if today.weekday() == 0:
             try_to_run(emails.events_summary)

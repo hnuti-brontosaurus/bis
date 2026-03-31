@@ -45,6 +45,7 @@ from donations.models import (
     UploadBankRecords,
     VariableSymbol,
 )
+from ecomail.sync_ecomail import create_tmp_tag
 from event.models import *
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
@@ -252,6 +253,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         mark_as_man,
         export_to_xlsx,
         change_fundraising_campaign,
+        create_tmp_tag,
     ]
     list_display = (
         "user",
