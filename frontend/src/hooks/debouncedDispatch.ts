@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 // after "time (milliseconds)" of inactivity
 // this way, we prevent firing too often (with every key stroke etc...)
 export const useDebouncedDispatch = (time_ = 300) => {
-  const time = (window as any).Cypress ? 0 : time_
+  const time = import.meta.env.VITE_CYPRESS ? 0 : time_
   const dispatch = useAppDispatch()
   const debouncedDispatch = useMemo(
     () => debounce(dispatch, time),

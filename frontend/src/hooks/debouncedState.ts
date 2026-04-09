@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce'
 import { useEffect, useMemo, useState } from 'react'
 
 export function useDebouncedState<T>(delay_: number, defaultValue: T) {
-  const delay = (window as any).Cypress ? 0 : delay_
+  const delay = import.meta.env.VITE_CYPRESS ? 0 : delay_
   const [value, setState] = useState<T>(defaultValue)
   const [debouncedValue, setDebouncedState] = useState<T>(defaultValue)
 

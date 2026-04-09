@@ -4,6 +4,10 @@ services:
       TEST: 1
       ALLOWED_HOSTS: '*'
 
+  frontend:
+    environment:
+      VITE_CYPRESS: 'true'
+
   postgres:
     volumes:
       - postgresqldata_test:/var/lib/postgresql/data
