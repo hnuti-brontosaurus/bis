@@ -86,7 +86,7 @@ export const toDataURL = async (url: string): Promise<string> => {
 }
 
 // event should be finished before March next year
-const shouldBeFinishedUntil = (event: { end: string }): number => {
+export const shouldBeFinishedUntil = (event: { end: string }): number => {
   const eventEnd = new Date(event.end)
   eventEnd.getFullYear()
 
@@ -305,6 +305,37 @@ export const getErrorMessage = <T extends FieldValues>(
   errors: FieldErrors<T>,
   name: FieldName<T>,
 ) => (get(errors, name) as FieldError | undefined)?.message
+
+/**
+ * Check if all VIP propagation fields are filled (all or none pattern)
+ */
+export const checkVipPropagationFilled = (
+  vipPropagation: {
+    goals_of_event?: string
+    program?: string
+    short_invitation_text?: string
+  } | null | undefined,
+): boolean =>
+  Boolean(
+    vipPropagation &&
+      vipPropagation.goals_of_event &&
+      vipPropagation.program &&
+      vipPropagation.short_invitation_text &&
+      vipPropagation.goals_of_event.trim() &&
+      vipPropagation.program.trim() &&
+      vipPropagation.short_invitation_text.trim(),
+  )
+
+/**
+ * Check if an event has already ended (comparing dates at midnight)
+ */
+export const isEventPast = (eventEnd: string, now: Date = new Date()): boolean => {
+  const today = new Date(now)
+  today.setHours(0, 0, 0, 0)
+  const end = new Date(eventEnd)
+  end.setHours(0, 0, 0, 0)
+  return today > end
+}
 
 /**
  * Validates whether a given string is a properly formatted URL.

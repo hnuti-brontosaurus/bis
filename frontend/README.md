@@ -72,3 +72,14 @@ Use the command: `VITE_API_BASE_URL="http://localhost:8080/https://dev.bis.bront
 ```sh
 yarn analyze
 ```
+
+## Testing
+### Unit tests (vitest)
+```sh
+yarn test:unit
+```
+### Integration tests (cypress)
+**Dev server must be running on `localhost://3000`!**
+```sh
+yarn test:e2e
+```

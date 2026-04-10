@@ -179,8 +179,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('[name=email]').type('test@example.com')
         fillAddress('address.street')
 
-        // give form a chance to persist
-        cy.wait(1000)
+        // debounce is 0ms under Cypress, form persists immediately
       }
 
       const checkForm = (exists: boolean) => {
@@ -314,7 +313,7 @@ describe('Close event - evidence and participants', () => {
         cy.get('div:contains(Něco se nepovedlo)').should('be.visible')
 
         // wait a bit and check that modal is still open
-        cy.wait(1000)
+        cy.wait(100)
         checkForm(true)
       })
 

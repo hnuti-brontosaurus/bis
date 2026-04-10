@@ -72,7 +72,7 @@ class Command(BaseCommand):
         results = (
             service.files()
             .list(
-                q=f"name='{name}' and mimeType='application/vnd.google-apps.folder' and '{shared_drive_id}' in parents and trashed=false",
+                q=f"name='{self._escape_drive_query(name)}' and mimeType='application/vnd.google-apps.folder' and '{shared_drive_id}' in parents and trashed=false",
                 driveId=shared_drive_id,
                 corpora="drive",
                 includeItemsFromAllDrives=True,
@@ -116,8 +116,14 @@ class Command(BaseCommand):
                 if photo.photo:
                     yield photo.photo
 
+    @staticmethod
+    def _escape_drive_query(s: str) -> str:
+        return s.replace("\\", "\\\\").replace("'", "\\'")
+
     def _get_existing_names(self, service, folder_id, names):
-        name_conditions = " or ".join(f"name='{n}'" for n in names)
+        name_conditions = " or ".join(
+            f"name='{self._escape_drive_query(n)}'" for n in names
+        )
         q = f"({name_conditions}) and '{folder_id}' in parents and trashed=false"
         results = (
             service.files()

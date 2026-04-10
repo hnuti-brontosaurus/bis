@@ -79,8 +79,11 @@ describe('update opportunity', () => {
         .should('be.visible')
         .clear()
         .type('somethingdifferent')
-      // wait for the changes to get persisted
-      cy.wait(1000)
+      // wait for redux-persist to flush to localStorage
+      cy.window()
+        .its('localStorage')
+        .invoke('getItem', 'persist:form')
+        .should('contain', 'somethingdifferent')
       // refresh page
       cy.reload(true)
       // see that the inputs are still changed

@@ -573,33 +573,8 @@ def expressed_engagement_in_feedback():
         involvement = data.get("involvement_means", "")
         if involvement and "nechci" not in involvement.lower():
             fb = data["feedback_obj"]
-            previous_participation = data.get(
-                "previous_participation_number", "neudáno"
-            )
-            item = "; ".join(
-                (
-                    fb.name or "jméno nevyplněno",
-                    f"email: {fb.email or 'email nevyplněn'}",
-                    f"akce: {fb.event.name}",
-                    f"jak se chce zapojit: {involvement}",
-                    f"kolikátá akce s HB: {previous_participation}",
-                )
-            )
-            items.append(item)
-    # group replies by feedback ID - that is by the participant
-    feedback_groups = defaultdict(dict)
-    for reply in replies:
-        feedback_groups[reply.feedback_id][reply.inquiry.slug] = reply.reply
-        feedback_groups[reply.feedback_id]["feedback_obj"] = reply.feedback
-
-    items = []
-    for feedback_id, data in feedback_groups.items():
-        involvement = data.get("involvement_means", "")
-        if involvement and "nechci" not in involvement.lower():
-            fb = data["feedback_obj"]
-
             previous_participation_number = data.get(
-                "previous_participation_number", ""
+                "previous_participation_number", "neudáno"
             )
             item = "; ".join(
                 (

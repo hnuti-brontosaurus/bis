@@ -129,9 +129,10 @@ test_backend:
 
 
 test_frontend: node_modules/cypress/bin/cypress
+	yarn --cwd frontend run test:unit
 	make startup_testing_frontend
 	yarn --cwd frontend run wait-on http-get://localhost:3000
-	$(call with_trap, yarn --cwd frontend run cypress run)
+	$(call with_trap, yarn --cwd frontend run e2e:ci $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',))
 
 
 test_e2e: node_modules/cypress/bin/cypress

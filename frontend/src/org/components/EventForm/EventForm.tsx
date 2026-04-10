@@ -24,7 +24,12 @@ import { FC, useMemo } from 'react'
 import { FieldErrorsImpl, useForm, UseFormReturn } from 'react-hook-form'
 import { DeepPick } from 'ts-deep-pick'
 import type { Assign, Optional, Overwrite } from 'utility-types'
-import { getIdBySlug, hasFormError, withOverwriteArray } from 'utils/helpers'
+import {
+  checkVipPropagationFilled,
+  getIdBySlug,
+  hasFormError,
+  withOverwriteArray,
+} from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import { BasicInfoStep } from './steps/BasicInfoStep'
 import { EventGroupStep } from './steps/EventGroupStep'
@@ -286,14 +291,7 @@ const form2finalData = (data: EventFormShape): SubmitShape => {
       finalData.propagation!.maximum_age = null
   }
 
-  const isVipPropagationFilled =
-    data.vip_propagation &&
-    data.vip_propagation.goals_of_event &&
-    data.vip_propagation.program &&
-    data.vip_propagation.short_invitation_text &&
-    data.vip_propagation.goals_of_event.trim() &&
-    data.vip_propagation.program.trim() &&
-    data.vip_propagation.short_invitation_text.trim()
+  const isVipPropagationFilled = checkVipPropagationFilled(data.vip_propagation)
 
   finalData.vip_propagation = isVipPropagationFilled
     ? data.vip_propagation
