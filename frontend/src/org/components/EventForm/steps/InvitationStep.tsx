@@ -172,7 +172,8 @@ export const InvitationStep = ({
           >
             <InfoBox className={styles.narrowInfoBox}>
               Nahraj pouze fotku bez textu a grafiky pro kvalitní zobrazení na
-              webu.
+              webu. Lidi nejvíce zaujme reálná fotka bez textu a přidané
+              grafiky.
             </InfoBox>
             <FormInputError>
               <ImageUpload required name="main_image.image" />
@@ -183,6 +184,10 @@ export const InvitationStep = ({
             onWeb
             help="Další fotky, které se zobrazí u akce."
           >
+            <InfoBox className={styles.narrowInfoBox}>
+              Alespoň 3 fotky z předchozích akcí, které zachycují reálné lidi a
+              emoce mohou významně pomoci tvé propagaci.
+            </InfoBox>
             <ImagesUpload name="images" />
           </FormSection>
         </FormSectionGroup>
