@@ -135,7 +135,7 @@ const volunteeringSection: QuestionnaireSection = [
   },
   {
     inquiry:
-      'Měl*a jsem dostatek informací o\u00a0účelu a smyslu dobrovolnické pomoci přírodě, památkám nebo lidem.',
+      'Měl*a jsem dostatek informací o\u00a0účelu a smysluplnosti dobrovolnické pomoci přírodě, památkám nebo lidem.',
     slug: 'volunteering_communication',
     is_required: true,
     data: { type: 'scale', comment: true, fixed: true },

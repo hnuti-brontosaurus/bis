@@ -44,7 +44,7 @@ export const FeedbackStepInfo: FC<Props> = ({ feedbackRequired }) => {
             <ExternalHeaderLink href="https://drive.google.com/file/d/1DjWAPuQCFsQ5JF4W-cxCa4o71ITYUO4v/view">
               podrobný návod
             </ExternalHeaderLink>
-            <ExternalHeaderLink href="https://drive.google.com/file/d/1KlSNJW9kYDRoGWAqAPsOH8XOf8hFZin-/view">
+            <ExternalHeaderLink href="https://drive.google.com/file/d/13BsR3p_Re4VqII5CXC1yffvWHt73z8RR/view">
               pdf zpětné vazby
             </ExternalHeaderLink>
           </header>
