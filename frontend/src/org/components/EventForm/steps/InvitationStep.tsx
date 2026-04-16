@@ -184,11 +184,11 @@ export const InvitationStep = ({
             onWeb
             help="Další fotky, které se zobrazí u akce."
           >
-            <ImagesUpload name="images" />
             <InfoBox className={styles.narrowInfoBox}>
               Alespoň 3 fotky z předchozích akcí, které zachycují reálné lidi a
               emoce mohou významně pomoci tvé propagaci.
             </InfoBox>
+            <ImagesUpload name="images" />
           </FormSection>
         </FormSectionGroup>
       </form>
