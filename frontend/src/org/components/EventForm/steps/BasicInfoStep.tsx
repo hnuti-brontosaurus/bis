@@ -18,6 +18,7 @@ import Select from 'react-select'
 import * as validationMessages from 'utils/validationMessages'
 import { required } from 'utils/validationMessages'
 import { MethodsShapes } from '..'
+import styles from './BasicInfoStep.module.scss'
 
 export const BasicInfoStep = ({
   methods,
@@ -162,6 +163,13 @@ export const BasicInfoStep = ({
                     ))}
                 </select>
               </FormInputError>
+              <div className={styles.selectInfo}>
+                {
+                  categories.results!.find(
+                    category => watch('category') == category.id,
+                  )?.description
+                }
+              </div>
             </FullSizeElement>
           </FormSection>
           <FormSection header="Program" required>
