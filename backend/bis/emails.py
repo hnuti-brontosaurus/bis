@@ -599,12 +599,15 @@ def bulk_create_donor_event(
     donors: QuerySet[Donor],
     event_type: DonorEventCategory,
 ):
+    from donations.models import FundraisingCampaign
+
+    campaign = FundraisingCampaign.objects.get(slug="automatic_emails")
     DonorEvent.objects.bulk_create(
         [
             DonorEvent(
                 donor=donor,
                 event_type=event_type,
-                email_sent_at=timezone.now(),
+                campaign=campaign,
             )
             for donor in donors
         ]
@@ -625,8 +628,8 @@ def recurrent_donor_stopped():
             donor=OuterRef("pk"),
             event_type=event_type,
         )
-        .values("email_sent_at")
-        .order_by("-email_sent_at")[:1]
+        .values("created_at")
+        .order_by("-created_at")[:1]
     )
 
     donors = (

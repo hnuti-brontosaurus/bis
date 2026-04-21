@@ -3,7 +3,7 @@ from django.apps import apps
 from django.contrib import admin
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.exceptions import ValidationError
-from django.db.models import Max, Min, OuterRef, Q, Subquery, Sum, Value
+from django.db.models import Max, Min, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.timezone import now
@@ -293,3 +293,68 @@ class HasFeedbackFilter(YesNoFilter):
     parameter_name = "has_feedback"
     query = {"feedbacks__isnull": False}
     distinct = True
+
+
+class HasPledgeInCampaignFilter(admin.SimpleListFilter):
+    title = "Příslib vyplněn"
+    parameter_name = "has_pledge_in_campaign"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Ano"),
+            ("no", "Ne"),
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+
+        from donations.models import DonorEvent
+
+        campaign_ids = [
+            c for c in request.GET.get("events__campaign__id__in", "").split(",") if c
+        ]
+
+        q = Q(pledge__gt="")
+        if campaign_ids:
+            q &= Q(campaign_id__in=campaign_ids)
+
+        donor_ids_with_pledge = DonorEvent.objects.filter(q).values_list(
+            "donor_id", flat=True
+        )
+
+        if self.value() == "yes":
+            return queryset.filter(pk__in=donor_ids_with_pledge)
+        if self.value() == "no":
+            return queryset.exclude(pk__in=donor_ids_with_pledge)
+
+        return queryset
+
+
+class MultiSelectRelatedDropdownAndCampaignFilter(MultiSelectRelatedDropdownFilter):
+    """Like MultiSelectRelatedDropdownFilter, but ANDs with the campaign filter when campaigns are selected."""
+
+    def queryset(self, request, queryset):
+        if not self.used_parameters:
+            return queryset
+
+        campaign_ids = [
+            c for c in request.GET.get("events__campaign__id__in", "").split(",") if c
+        ]
+        if not campaign_ids:
+            return super().queryset(request, queryset)
+
+        from donations.models import DonorEvent
+
+        donor_event_q = Q(campaign_id__in=campaign_ids)
+        for lookup_arg, value in self.used_parameters.items():
+            donor_event_q &= Q(**{lookup_arg.replace("events__", "", 1): value})
+
+        try:
+            return queryset.filter(
+                pk__in=DonorEvent.objects.filter(donor_event_q).values_list(
+                    "donor_id", flat=True
+                )
+            )
+        except (ValueError, ValidationError) as e:
+            raise IncorrectLookupParameters(e)

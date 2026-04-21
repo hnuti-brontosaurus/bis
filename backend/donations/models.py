@@ -165,15 +165,37 @@ class Pledge(Model):
 
 
 @translate_model
-class DonorEvent(Model):
-    """Stores info about donor events and related emails.
-    E.g. When a donor donates 10 000 CZK with non-recurrent donations,
-    an email with thanks is sent to him and this event is created (to prevent sending the same email multiple times).
-    """
+class FundraisingCampaign(Model):
+    name = CharField(max_length=63)
+    slug = SlugField(unique=True)
 
-    donor = ForeignKey(Donor, on_delete=CASCADE)
+    class Meta:
+        ordering = ("id",)
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
+class DonorEvent(Model):
+    donor = ForeignKey(Donor, on_delete=CASCADE, related_name="events")
     event_type = ForeignKey(DonorEventCategory, on_delete=PROTECT)
-    email_sent_at = DateTimeField()
+    created_at = DateTimeField(auto_now_add=True)
+    campaign = ForeignKey(
+        FundraisingCampaign,
+        on_delete=PROTECT,
+        related_name="events",
+    )
+    note = TextField(blank=True)
+    pledge = TextField(blank=True)
+    reminder = DateTimeField(null=True, blank=True)
+    created_by = ForeignKey(
+        User,
+        on_delete=PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
 
 
 @translate_model

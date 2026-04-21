@@ -614,6 +614,11 @@ class Command(BaseCommand):
             "pledge_4y": "Pravidelný dárce daruje již 4 roky.",
             "pledge_5y": "Pravidelný dárce daruje již 5 let.",
             "donor_10k_total": "Součet všech darů od jednoho dárce přesáhl 10 000 Kč.",
+            "added_to_campaign": "Přidán do fundraisingové kampaně",
+            "call_no_answer": "Volání — nezvedl",
+            "call_declined": "Volání — odmítl",
+            "call_postponed": "Volání — odloženo",
+            "call_reached": "Volání — odvoláno",
         }
         for slug, description in donor_event_categories.items():
             DonorEventCategory.objects.update_or_create(

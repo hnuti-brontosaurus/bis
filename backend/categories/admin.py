@@ -106,3 +106,8 @@ class HealthInsuranceCompanyAdmin(PermissionMixin, admin.ModelAdmin):
 @admin.register(PronounCategory)
 class PronounCategoryAdmin(PermissionMixin, admin.ModelAdmin):
     pass
+
+
+@admin.register(DonorEventCategory)
+class DonorEventCategoryAdmin(PermissionMixin, admin.ModelAdmin):
+    pass

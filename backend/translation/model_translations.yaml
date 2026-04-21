@@ -505,9 +505,8 @@ PronounCategory:
   name: Oslovení
   name_plural: Oslovení
 DonorEventCategory:
-  name: Typ achievementu dárce
-  name_plural: Typy achievementů dárce
-
+  name: Typ značky dárce
+  name_plural: Typy značek dárce
 Donor:
   name: Dárce
   name_plural: Dárci
@@ -544,14 +543,21 @@ Donation:
     _variable_symbol:
       - Variabilní symbol platby
       - pro párování na dárce
+FundraisingCampaign:
+  name: Fundraisingová kampaň
+  name_plural: Fundraisingové kampaně
+  fields:
+    name: Název
+    slug: Slug
 DonorEvent:
-  name: Achievement dárce
-  name_plural: Achievementy dárce
+  name: Značka dárce
+  name_plural: Značky dárce
   fields:
     donor: Dárce
-    pledge: Pravidelný dar
-    event_type: Typ achievementu
-    email_sent_at: Čas poslání emailu
+    event_type: Typ
+    campaign: Kampaň
+    pledge: Příslib
+    reminder: Připomínka
 VariableSymbol:
   name: Variabilní symbol
   name_plural: Variabilní symboly
