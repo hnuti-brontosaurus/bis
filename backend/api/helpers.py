@@ -56,7 +56,7 @@ class Base64FieldMixin:
             header, base64_data = base64_data.split(";base64,", 1)
             assert re.match(
                 r"data:\w+/\w+;filename=.*", header
-            ), f'{header=} does not match "data:\w+/\w+;filename=.*"'
+            ), f'{header=} does not match "data:\\w+/\\w+;filename=.*"'
             header = header[5:]
             content_type, filename = header.split(";")
             filename = filename.split("=", 1)[1]
