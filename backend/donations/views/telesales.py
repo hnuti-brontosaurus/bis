@@ -36,6 +36,8 @@ class CallForm(forms.Form):
         ),
         input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:%S"],
     )
+    do_not_call = forms.BooleanField(required=False, label="Už nevolat")
+    do_not_solicit = forms.BooleanField(required=False, label="Už nežádat o dar")
 
     def clean(self):
         cleaned = super().clean()
@@ -106,6 +108,9 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
                 reminder=form.cleaned_data["reminder"],
                 created_by=request.user,
             )
+            donor.do_not_call = form.cleaned_data["do_not_call"]
+            donor.do_not_solicit = form.cleaned_data["do_not_solicit"]
+            donor.save(update_fields=["do_not_call", "do_not_solicit"])
             messages.success(
                 request, f"Zaznamenáno: {donor} — {OUTCOME_LABELS[outcome]}."
             )
@@ -113,7 +118,12 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
                 reverse("admin:donations_telesales_worklist", args=[campaign.id])
             )
     else:
-        form = CallForm()
+        form = CallForm(
+            initial={
+                "do_not_call": donor.do_not_call,
+                "do_not_solicit": donor.do_not_solicit,
+            }
+        )
 
     donor_context = get_donor_campaign_context(donor, campaign)
 

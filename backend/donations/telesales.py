@@ -15,7 +15,6 @@ from django.db.models import (
 from django.db.models.functions import Coalesce, Greatest
 from django.utils import timezone
 
-from bis.permissions import Permissions
 from donations.models import Donor, DonorEvent
 
 CALL_OUTCOME_SLUGS = frozenset(

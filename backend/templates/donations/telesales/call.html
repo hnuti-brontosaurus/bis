@@ -60,6 +60,13 @@
 </details>
 {% endif %}
 
+{% if donor.do_not_call or donor.do_not_solicit %}
+<div class="telesales-donor-flags">
+  {% if donor.do_not_call %}<span class="telesales-flag telesales-flag--no-call">Už nevolat</span>{% endif %}
+  {% if donor.do_not_solicit %}<span class="telesales-flag telesales-flag--no-solicit">Už nežádat o dar</span>{% endif %}
+</div>
+{% endif %}
+
 {% if form.errors %}
 <div class="errornote">
   <p>Oprav prosím následující chyby:</p>
@@ -113,6 +120,16 @@
     {{ form.reminder }}
     {% if form.reminder.errors %}<p class="help telesales-error">{{ form.reminder.errors.0 }}</p>{% endif %}
   </p>
+
+  <fieldset class="telesales-donor-prefs">
+    <legend>Preference dárce</legend>
+    <label class="telesales-pref-label">
+      {{ form.do_not_call }} {{ form.do_not_call.label }}
+    </label>
+    <label class="telesales-pref-label">
+      {{ form.do_not_solicit }} {{ form.do_not_solicit.label }}
+    </label>
+  </fieldset>
 
   <p class="submit-row">
     <input type="submit" class="default" value="Uložit a pokračovat">

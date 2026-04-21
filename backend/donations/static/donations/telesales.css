@@ -52,10 +52,6 @@
 .telesales-table th { background: var(--darkened-bg); font-weight: 600; }
 .telesales-table tbody tr:hover { background: var(--selected-row); }
 
-.telesales-phone a {
-  white-space: nowrap;
-}
-
 .telesales-vokativ { color: var(--body-quiet-color); font-size: .85rem; }
 .telesales-note { color: var(--body-quiet-color); font-size: .85rem; max-width: 220px; }
 .telesales-overdue { color: var(--error-fg); font-weight: bold; }
@@ -121,3 +117,29 @@
 .telesales-outcome-call_reached:has(input:checked) { border-color: #155724; background: #d4edda; }
 
 .telesales-error { color: var(--error-fg); font-size: .85rem; margin-top: .2rem; }
+
+.telesales-donor-flags { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.telesales-flag {
+  display: inline-block;
+  padding: .3rem .8rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: .9rem;
+}
+.telesales-flag--no-call { background: #f8d7da; color: #721c24; }
+.telesales-flag--no-solicit { background: #fff3cd; color: #856404; }
+
+.telesales-donor-prefs {
+  border: 1px solid var(--border-color);
+  padding: .75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+.telesales-pref-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: normal;
+  margin-bottom: .4rem;
+  cursor: pointer;
+}
