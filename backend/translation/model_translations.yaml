@@ -521,6 +521,8 @@ Donor:
     date_joined: Dárcem od
     regional_center_support: podpora RC
     basic_section_support: podpora ZČ
+    do_not_call: Už nevolat
+    do_not_solicit: Už nežádat o dar
 Pledge:
   name: Pravidelný dar
   name_plural: Pravidelné dary
