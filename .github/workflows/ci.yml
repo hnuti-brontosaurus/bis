@@ -106,47 +106,6 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
-  claude-fix:
-    needs: [pre-commit, build]
-    if: >
-      failure() &&
-      !contains(github.event.head_commit.message, '[claude-ci-fix]')
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      issues: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Ask Claude to fix CI failure
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH="${GITHUB_REF_NAME}"
-          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          MSG="@claude The CI build failed on branch \`${BRANCH}\`. Please look at the failed CI run, analyze the error, and push a fix if you're confident you can resolve it. Include \`[claude-ci-fix]\` in the commit message. If you're not sure about the fix, just explain what went wrong. Run: ${RUN_URL}"
-
-          # Try to find an open PR for this branch
-          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" --head "${BRANCH}" --json number --jq '.[0].number' 2>/dev/null || true)
-
-          # Prevent loops: stop if Claude already attempted 2+ fixes on this branch
-          FIX_ATTEMPTS=$(git log --oneline --grep='\[claude-ci-fix\]' origin/${BRANCH} 2>/dev/null | wc -l || echo "0")
-          if [ "$FIX_ATTEMPTS" -ge 2 ]; then
-            echo "Claude already attempted $FIX_ATTEMPTS fixes on this branch, skipping"
-            exit 0
-          fi
-
-          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body "$MSG"
-          else
-            # No PR exists - create an issue so Claude can pick it up
-            gh issue create --repo "${{ github.repository }}" \
-              --title "CI build failed on \`${BRANCH}\`" \
-              --body "$MSG"
-          fi
-
   deploy-dev:
     needs: [pre-commit, build]
     runs-on: ubuntu-latest
