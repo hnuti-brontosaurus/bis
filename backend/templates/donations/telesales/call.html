@@ -1,0 +1,143 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'donations/telesales.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="telesales-call-header">
+  <h1>{{ donor.user.get_full_name }}</h1>
+  <div class="telesales-call-meta">
+    {% if donor.user.pronoun %}
+      <span class="telesales-pronoun">{{ donor.user.pronoun }}</span>
+    {% endif %}
+    {% if donor.formal_vokativ %}
+      <span class="telesales-vokativ">{{ donor.formal_vokativ }}</span>
+    {% endif %}
+    {% if donor.user.phone %}
+      <a class="telesales-phone-hero" href="tel:{{ donor.user.phone }}">
+        {{ donor.user.phone }}
+      </a>
+    {% else %}
+      <span class="telesales-no-phone">Bez telefonního čísla</span>
+    {% endif %}
+  </div>
+  <div class="telesales-call-stats">
+    Kampaň: <strong>{{ campaign }}</strong>
+    &bull;
+    Volání v okně: <strong>{{ donor_context.calls_in_window }}/4</strong>
+  </div>
+</div>
+
+{% if donor_context.history %}
+<details class="telesales-history">
+  <summary>Historie kampaně ({{ donor_context.history|length }} událostí)</summary>
+  <table class="telesales-table">
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Událost</th>
+        <th>Poznámka</th>
+        <th>Příslib</th>
+        <th>Připomenutí</th>
+        <th>Zadal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in donor_context.history %}
+      <tr>
+        <td>{{ event.created_at|date:"j. n. Y H:i" }}</td>
+        <td>{{ event.event_type }}</td>
+        <td>{{ event.note }}</td>
+        <td>{{ event.pledge }}</td>
+        <td>{% if event.reminder %}{{ event.reminder|date:"j. n. Y H:i" }}{% endif %}</td>
+        <td>{% if event.created_by %}{{ event.created_by }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% endif %}
+
+{% if form.errors %}
+<div class="errornote">
+  <p>Oprav prosím následující chyby:</p>
+  <ul>
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li>{{ field.label }}: {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" class="telesales-call-form">
+  {% csrf_token %}
+
+  <fieldset class="telesales-outcomes">
+    <legend>Výsledek volání</legend>
+    <div class="telesales-outcome-buttons">
+      {% for value, label in outcome_choices %}
+      <label class="telesales-outcome-label telesales-outcome-{{ value }}">
+        <input type="radio" name="outcome" value="{{ value }}"
+               {% if form.outcome.value == value %}checked{% endif %}
+               onchange="updateCallForm(this.value)">
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+    {% if form.outcome.errors %}
+      <p class="help telesales-error">{{ form.outcome.errors.0 }}</p>
+    {% endif %}
+  </fieldset>
+
+  <p>
+    <label for="{{ form.note.id_for_label }}">Poznámka:</label>
+    {{ form.note }}
+    {% if form.note.errors %}<p class="help telesales-error">{{ form.note.errors.0 }}</p>{% endif %}
+  </p>
+
+  <p>
+    <label for="{{ form.pledge.id_for_label }}" id="label-pledge">Příslib:</label>
+    {{ form.pledge }}
+    {% if form.pledge.errors %}<p class="help telesales-error">{{ form.pledge.errors.0 }}</p>{% endif %}
+  </p>
+
+  <p>
+    <label for="{{ form.reminder.id_for_label }}" id="label-reminder">Připomenutí:</label>
+    {{ form.reminder }}
+    {% if form.reminder.errors %}<p class="help telesales-error">{{ form.reminder.errors.0 }}</p>{% endif %}
+  </p>
+
+  <p class="submit-row">
+    <input type="submit" class="default" value="Uložit a pokračovat">
+    <a href="{% url 'admin:donations_telesales_worklist' campaign.id %}">Zrušit</a>
+  </p>
+</form>
+
+<script>
+function updateCallForm(outcome) {
+  var pledgeField = document.getElementById('{{ form.pledge.id_for_label }}');
+  var reminderField = document.getElementById('{{ form.reminder.id_for_label }}');
+  var needsReminder = outcome === 'call_postponed';
+  var canHaveReminder = outcome === 'call_postponed' || outcome === 'call_reached';
+  var canHavePledge = outcome === 'call_postponed' || outcome === 'call_reached';
+
+  pledgeField.disabled = !canHavePledge;
+  reminderField.disabled = !canHaveReminder;
+  reminderField.required = needsReminder;
+
+  document.getElementById('label-reminder').classList.toggle('required', needsReminder);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var checked = document.querySelector('input[name="outcome"]:checked');
+  if (checked) updateCallForm(checked.value);
+});
+</script>
+{% endblock %}

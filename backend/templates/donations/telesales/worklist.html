@@ -1,0 +1,197 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'donations/telesales.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% if not campaign %}
+  <p>Žádná kampaň neexistuje.</p>
+{% else %}
+
+<p class="telesales-counts">
+  Připomenutí: <strong>{{ reminders|length }}</strong>
+  &bull;
+  Ke kontaktu: <strong>{{ worklist|length }}</strong>
+  &bull;
+  Hotovo: <strong>{{ finished|length }}</strong>
+</p>
+
+{% if reminders %}
+<h2>Připomenutí ({{ reminders|length }})</h2>
+<table class="telesales-table">
+  <thead>
+    <tr>
+      <th>Jméno</th>
+      <th>Telefon</th>
+      <th>Připomenutí</th>
+      <th>Poslední kontakt</th>
+      <th>Volání</th>
+      <th>Oslovení / vokativ</th>
+      <th>Poslední vyplněná poznámka</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for donor in reminders %}
+    <tr>
+      <td>
+        <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
+          {{ donor.user.get_name }}
+        </a>
+      </td>
+      <td class="telesales-phone">
+        {% if donor.user.phone %}
+          <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
+        {% else %}—{% endif %}
+      </td>
+      <td class="{% if donor.latest_reminder_due_at <= now %}telesales-overdue{% endif %}">
+        {{ donor.latest_reminder_due_at|date:"j. n. Y H:i" }}
+        {% if donor.latest_reminder_due_at <= now %}
+          <span class="telesales-hint">({{ donor.latest_reminder_due_at|timesince }} zpět)</span>
+        {% else %}
+          <span class="telesales-hint">(za {{ donor.latest_reminder_due_at|timeuntil }})</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+      </td>
+      <td>
+        <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
+          {{ donor.calls_in_window }}/4
+        </span>
+      </td>
+      <td class="telesales-vokativ">
+        {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
+        {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
+      </td>
+      <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
+      <td>
+        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+          Zavolat
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<h2>Ke kontaktu ({{ worklist|length }})</h2>
+{% if worklist %}
+<table class="telesales-table">
+  <thead>
+    <tr>
+      <th>Jméno</th>
+      <th>Telefon</th>
+      <th>Poslední kontakt</th>
+      <th>Volání</th>
+      <th>Oslovení / vokativ</th>
+      <th>Poslední vyplněná poznámka</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for donor in worklist %}
+    <tr>
+      <td>
+        <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
+          {{ donor.user.get_name }}
+        </a>
+      </td>
+      <td class="telesales-phone">
+        {% if donor.user.phone %}
+          <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
+        {% else %}—{% endif %}
+      </td>
+      <td>
+        {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+      </td>
+      <td>
+        <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
+          {{ donor.calls_in_window }}/4
+        </span>
+      </td>
+      <td class="telesales-vokativ">
+        {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
+        {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
+      </td>
+      <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
+      <td>
+        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+          Zavolat
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="telesales-empty">Žádní dárci ke kontaktu.</p>
+{% endif %}
+
+{% if finished %}
+<details class="telesales-finished">
+  <summary>Hotovo ({{ finished|length }})</summary>
+  <table class="telesales-table">
+    <thead>
+      <tr>
+        <th>Jméno</th>
+        <th>Telefon</th>
+        <th>Důvod</th>
+        <th>Poslední kontakt</th>
+        <th>Volání</th>
+        <th>Oslovení / vokativ</th>
+        <th>Poslední vyplněná poznámka</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for donor in finished %}
+      <tr>
+        <td>
+          <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
+            {{ donor.user.get_name }}
+          </a>
+        </td>
+        <td class="telesales-phone">
+          {% if donor.user.phone %}
+            <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if donor.latest_call_slug == "call_reached" %}Odvoláno{% else %}Příliš mnoho pokusů{% endif %}
+        </td>
+        <td>
+          {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+        </td>
+        <td>
+          <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
+            {{ donor.calls_in_window }}/4
+          </span>
+        </td>
+        <td class="telesales-vokativ">
+          {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
+          {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
+        </td>
+        <td class="telesales-note">
+          {% if donor.recent_campaign_events %}
+            {{ donor.recent_campaign_events.0.note|truncatechars:60 }}
+          {% endif %}
+        </td>
+        <td>
+          <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+            Zavolat
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% endif %}
+
+{% endif %}
+{% endblock %}

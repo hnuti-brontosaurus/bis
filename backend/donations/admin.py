@@ -8,6 +8,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import FileResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.html import format_html
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
@@ -49,7 +50,40 @@ from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 @admin.register(FundraisingCampaign)
 class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
-    pass
+    list_display = ("name", "slug", "telesales_link")
+
+    @admin.display(description="Telesales")
+    def telesales_link(self, obj):
+        url = reverse("admin:donations_telesales_worklist", args=[obj.id])
+        return format_html('<a href="{}">Volat</a>', url)
+
+    def get_urls(self):
+        from django.urls import path
+
+        from donations.views.telesales import (
+            telesales_call_view,
+            telesales_worklist_view,
+        )
+
+        def worklist_campaign(request, campaign_id):
+            return telesales_worklist_view(self, request, campaign_id)
+
+        def call(request, campaign_id, donor_id):
+            return telesales_call_view(self, request, campaign_id, donor_id)
+
+        custom = [
+            path(
+                "telesales/<int:campaign_id>/",
+                self.admin_site.admin_view(worklist_campaign),
+                name="donations_telesales_worklist",
+            ),
+            path(
+                "telesales/<int:campaign_id>/call/<int:donor_id>/",
+                self.admin_site.admin_view(call),
+                name="donations_telesales_call",
+            ),
+        ]
+        return custom + super().get_urls()
 
 
 @admin.register(Donation)
