@@ -55,7 +55,11 @@ def set_qualification_end_date(instance: Qualification, **kwargs):
     if instance.category.slug == "organizer":
         instance.valid_till = date(instance.valid_since.year + 5, 9, 30)
 
-    if instance.category.slug in ["weekend_organizer", "main_leader_of_kids_camps"]:
+    if instance.category.slug in [
+        "weekend_organizer",
+        "main_leader_of_kids_camps",
+        "main_leader_of_recovery_events",
+    ]:
         instance.valid_till = instance.valid_since + relativedelta(years=100)
 
 
