@@ -25,7 +25,6 @@
   <thead>
     <tr>
       <th>Jméno</th>
-      <th>Telefon</th>
       <th>Připomenutí</th>
       <th>Poslední kontakt</th>
       <th>Volání</th>
@@ -41,11 +40,6 @@
         <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
           {{ donor.user.get_name }}
         </a>
-      </td>
-      <td class="telesales-phone">
-        {% if donor.user.phone %}
-          <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
-        {% else %}—{% endif %}
       </td>
       <td class="{% if donor.latest_reminder_due_at <= now %}telesales-overdue{% endif %}">
         {{ donor.latest_reminder_due_at|date:"j. n. Y H:i" }}
@@ -85,7 +79,6 @@
   <thead>
     <tr>
       <th>Jméno</th>
-      <th>Telefon</th>
       <th>Poslední kontakt</th>
       <th>Volání</th>
       <th>Oslovení / vokativ</th>
@@ -100,11 +93,6 @@
         <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
           {{ donor.user.get_name }}
         </a>
-      </td>
-      <td class="telesales-phone">
-        {% if donor.user.phone %}
-          <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
-        {% else %}—{% endif %}
       </td>
       <td>
         {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
@@ -139,7 +127,6 @@
     <thead>
       <tr>
         <th>Jméno</th>
-        <th>Telefon</th>
         <th>Důvod</th>
         <th>Poslední kontakt</th>
         <th>Volání</th>
@@ -155,11 +142,6 @@
           <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
             {{ donor.user.get_name }}
           </a>
-        </td>
-        <td class="telesales-phone">
-          {% if donor.user.phone %}
-            <a href="tel:{{ donor.user.phone }}">{{ donor.user.phone }}</a>
-          {% else %}—{% endif %}
         </td>
         <td>
           {% if donor.latest_call_slug == "call_reached" %}Odvoláno{% else %}Příliš mnoho pokusů{% endif %}
