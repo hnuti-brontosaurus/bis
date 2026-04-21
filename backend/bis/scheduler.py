@@ -60,6 +60,20 @@ def run_daily_command():
         logging.exception("Daily command failed: %s", e)
 
 
+def run_category_migration():
+    """One-time: migrate and recreate categories on 2026-04-23 12:30 Prague time."""
+    from django.core.management import call_command
+
+    logging.info("Running one-time category migration...")
+    try:
+        call_command("migrate_categories")
+        logging.info("migrate_categories completed successfully")
+        call_command("create_categories")
+        logging.info("create_categories completed successfully")
+    except Exception as e:
+        logging.exception("Category migration failed: %s", e)
+
+
 def scheduler_loop():
     """Main scheduler loop that runs daily task at exactly 7:00 AM."""
     import zoneinfo
@@ -85,6 +99,15 @@ def scheduler_loop():
 
             if now.hour == 7 and now.minute == 0:
                 run_daily_command()
+
+            if (
+                now.year == 2026
+                and now.month == 4
+                and now.day == 23
+                and now.hour == 12
+                and now.minute == 30
+            ):
+                run_category_migration()
 
         except Exception as e:
             logging.exception("Scheduler error: %s", e)

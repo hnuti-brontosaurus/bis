@@ -1,3 +1,6 @@
+import zoneinfo
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
 
 from bis.models import Location
@@ -45,11 +48,18 @@ from game_book_categories.models import (
 from other.models import DonationPointsAggregation
 from translation.translate import _
 
+_CATEGORIES_ACTIVATION = datetime(
+    2026, 4, 23, 12, 30, tzinfo=zoneinfo.ZoneInfo("Europe/Prague")
+)
+
 
 class Command(BaseCommand):
     help = "Creates categories etc."
 
     def create_event_categories(self, data, prefix="", name_prefix=""):
+        is_active = (
+            datetime.now(zoneinfo.ZoneInfo("Europe/Prague")) < _CATEGORIES_ACTIVATION
+        )
         if len(prefix):
             prefix += "__"
         if len(name_prefix):
@@ -61,7 +71,7 @@ class Command(BaseCommand):
             if isinstance(value, int):
                 EventCategory.objects.update_or_create(
                     slug=slug,
-                    defaults=dict(name=name, order=value + 100, is_active=False),
+                    defaults=dict(name=name, order=value + 100, is_active=is_active),
                 )
             else:
                 self.create_event_categories(value, slug, name)
@@ -314,13 +324,16 @@ class Command(BaseCommand):
                 "description": "Ekostany, výstavy pro veřejnost",
             },
         }
+        is_active = (
+            datetime.now(zoneinfo.ZoneInfo("Europe/Prague")) >= _CATEGORIES_ACTIVATION
+        )
         for i, (slug, defaults) in enumerate(event_categories.items()):
             EventCategory.objects.update_or_create(
                 slug=slug,
                 defaults={
                     **defaults,
                     "order": i,
-                    "is_active": True,
+                    "is_active": is_active,
                 },
             )
 
