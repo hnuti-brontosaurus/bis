@@ -61,7 +61,7 @@ class Command(BaseCommand):
             if isinstance(value, int):
                 EventCategory.objects.update_or_create(
                     slug=slug,
-                    defaults=dict(name=name, order=value + 100, is_active=True),
+                    defaults=dict(name=name, order=value + 100, is_active=False),
                 )
             else:
                 self.create_event_categories(value, slug, name)
@@ -301,6 +301,10 @@ class Command(BaseCommand):
                 "name": "vzdělávací pro organizátory HB",
                 "description": "OHB, Cestičky, malá OHB, BRĎO kurzy, vzdělávání pro ústředí",
             },
+            "internal_educational_full": {
+                "name": "OHB, Cestičky",
+                "description": "",
+            },
             "evp": {
                 "name": "výukový program (EVP)",
                 "description": "pouze Environmentální vzdělávací přednášky EVP",
@@ -316,7 +320,7 @@ class Command(BaseCommand):
                 defaults={
                     **defaults,
                     "order": i,
-                    "is_active": False,
+                    "is_active": True,
                 },
             )
 

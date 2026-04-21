@@ -1001,6 +1001,7 @@ class Qualification(Model):
             raise ValidationError("Hlavní organizátor nemá uvedený email")
 
         qualification_required_for_categories = {
+            # old slugs
             "internal__section_meeting",
             "public__volunteering",
             "public__only_experiential",
@@ -1008,6 +1009,25 @@ class Qualification(Model):
             "public__educational__course",
             "public__educational__ohb",
             "public__other__for_public",
+            # new slugs
+            "section_meeting",
+            "section_event",
+            "volunteering",
+            "experiential",
+            "public_educational",
+            "internal_educational",
+            "internal_educational_full",
+        }
+
+        section_meeting_categories = {
+            "internal__section_meeting",
+            "section_meeting",
+            "section_event",
+        }
+        ohb_categories = {
+            "public__educational__ohb",
+            "internal_educational",
+            "internal_educational_full",
         }
 
         if category not in qualification_required_for_categories:
@@ -1022,7 +1042,7 @@ class Qualification(Model):
         required_one_of = set()
 
         if intended_for == "for_kids":
-            if group == "camp" or category == "internal__section_meeting":
+            if group == "camp" or category in section_meeting_categories:
                 required_one_of = {"kids_leader"}
             else:
                 required_one_of = {"kids_intern"}
@@ -1043,7 +1063,7 @@ class Qualification(Model):
             if group == "weekend_event":
                 required_one_of = {"weekend_organizer"}
 
-        if category == "public__educational__ohb":
+        if category in ohb_categories:
             required_one_of = {"instructor", "consultant_for_kids"}
 
         if required_one_of:

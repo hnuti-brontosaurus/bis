@@ -10,12 +10,32 @@ export const getRequiredQualifications = (
   event: Partial<Pick<Event, 'intended_for' | 'group' | 'category'>>,
 ): string[] => {
   const qualificationRequiredForCategories: EventCategory['slug'][] = [
+    // old slugs
     'internal__section_meeting',
     'public__volunteering',
     'public__only_experiential',
     'public__educational__course',
     'public__educational__ohb',
     'public__other__for_public',
+    // new slugs
+    'section_meeting',
+    'section_event',
+    'volunteering',
+    'experiential',
+    'public_educational',
+    'internal_educational',
+    'internal_educational_full',
+  ]
+
+  const sectionMeetingCategories = [
+    'internal__section_meeting',
+    'section_meeting',
+    'section_event',
+  ]
+  const ohbCategories = [
+    'public__educational__ohb',
+    'internal_educational',
+    'internal_educational_full',
   ]
 
   const intendedFor = event.intended_for?.slug ?? ''
@@ -32,7 +52,7 @@ export const getRequiredQualifications = (
   let required_one_of: string[] = []
 
   if (intendedFor === 'for_kids') {
-    if (group === 'camp' || category === 'internal__section_meeting')
+    if (group === 'camp' || sectionMeetingCategories.includes(category))
       required_one_of = ['kids_leader']
     else required_one_of = ['kids_intern']
   }
@@ -52,7 +72,7 @@ export const getRequiredQualifications = (
     if (group === 'weekend_event') required_one_of = ['weekend_organizer']
   }
 
-  if (category === 'public__educational__ohb') required_one_of = ['instructor']
+  if (ohbCategories.includes(category)) required_one_of = ['instructor']
 
   return required_one_of
 }
