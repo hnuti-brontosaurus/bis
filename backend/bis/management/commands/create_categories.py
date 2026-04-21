@@ -485,6 +485,9 @@ class Command(BaseCommand):
             slug="qualified_organizer", defaults=dict(name="Organizátor s kvalifikací")
         )
         RoleCategory.objects.update_or_create(slug="any", defaults=dict(name="Kdokoli"))
+        RoleCategory.objects.update_or_create(
+            slug="fundraiser", defaults=dict(name="Fundraiser")
+        )
 
         HealthInsuranceCompany.objects.update_or_create(
             slug="VZP",

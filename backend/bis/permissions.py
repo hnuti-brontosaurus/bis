@@ -151,6 +151,17 @@ class Permissions:
             ]:
                 return True
 
+        if self.user.is_fundraiser:
+            if self.model in [
+                User,
+                UserAddress,
+                UserContactAddress,
+                UserClosePerson,
+                EYCACard,
+                Donor,
+            ]:
+                return True
+
         # for any user
         if self.model in [
             UserAddress,
@@ -224,6 +235,17 @@ class Permissions:
             if self.model in [User, DuplicateUser]:
                 return True
 
+        if self.user.is_fundraiser:
+            if self.model in [
+                User,
+                UserAddress,
+                UserContactAddress,
+                UserClosePerson,
+                EYCACard,
+                Donor,
+            ]:
+                return True
+
         # for any user
         if self.model in [
             User,
@@ -291,6 +313,10 @@ class Permissions:
 
         if self.user.is_education_member:
             if self.model in [DuplicateUser]:
+                return True
+
+        if self.user.is_fundraiser:
+            if self.model in [UserContactAddress, UserClosePerson]:
                 return True
 
         # for any user

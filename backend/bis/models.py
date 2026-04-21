@@ -339,6 +339,10 @@ class User(SearchMixin, AbstractBaseUser):
         return self.roles.filter(slug="qualified_organizer").exists()
 
     @cached_property
+    def is_fundraiser(self):
+        return self.roles.filter(slug="fundraiser").exists()
+
+    @cached_property
     def is_member_only(self):
         return not self.roles.exclude(slug="any").exists()
 
@@ -357,6 +361,7 @@ class User(SearchMixin, AbstractBaseUser):
             or self.is_office_worker
             or self.is_auditor
             or self.is_executive
+            or self.is_fundraiser
         )
 
     @cached_property
@@ -368,6 +373,7 @@ class User(SearchMixin, AbstractBaseUser):
             or self.is_executive
             or self.is_education_member
             or self.is_board_member
+            or self.is_fundraiser
         )
 
     @cached_property
