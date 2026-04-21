@@ -37,6 +37,7 @@ class EventFeedback(Model):
 @translate_model
 class FeedbackForm(Model):
     event = OneToOneField(Event, related_name="feedback_form", on_delete=CASCADE)
+    email_content = TextField(blank=True)
     introduction = TextField(blank=True)
     after_submit_text = TextField(blank=True)
     sent_at = DateField(null=True, blank=True)

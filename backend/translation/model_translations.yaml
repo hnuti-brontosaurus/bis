@@ -410,6 +410,7 @@ FeedbackForm:
   name: Formulář zpětné vazby
   fields:
     event_record: Záznam z akce
+    email_content: Text e-mailu
     introduction: Úvodní text zpětné vazby
     after_submit_text: Text po zodpovězení zpětné vazby
 
