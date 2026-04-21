@@ -10,6 +10,7 @@ import {
   Loading,
   NumberInput,
   Help,
+  ExternalButtonLink,
 } from 'components'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useEffect } from 'react'
@@ -141,7 +142,24 @@ export const BasicInfoStep = ({
           </FormSection>
         </FormSectionGroup>
         <FormSectionGroup startIndex={5}>
-          <FormSection header="Typ akce" required>
+          <FormSection
+            header="Typ akce"
+            help={
+              <>
+                Viz{' '}
+                <ExternalButtonLink
+                  tertiary
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="https://drive.google.com/file/d/1S3YacAZIWu-9pc6hdaxXaRzt3cNqxSMZ/view?usp=sharing"
+                >
+                  nové typy akcí
+                </ExternalButtonLink>
+                .
+              </>
+            }
+            required
+          >
             <FullSizeElement>
               <FormInputError>
                 <select

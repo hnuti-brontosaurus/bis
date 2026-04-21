@@ -1,4 +1,3 @@
-import qualificationGuide from 'assets/Průvodce-kvalifikacemi.pdf'
 import { ReactNode } from 'react'
 import styles from './QualificationGuide.module.scss'
 
@@ -12,7 +11,7 @@ export const QualificationGuideDownload = ({
       className={styles.link}
       target="_blank"
       rel="noopener noreferrer"
-      href={qualificationGuide}
+      href="https://drive.google.com/file/d/1kA-Kyipm4BF6bgeoO98MZTXjCaFQ-Ril/view?usp=sharing"
     >
       {children}
     </a>

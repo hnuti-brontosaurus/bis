@@ -2617,6 +2617,13 @@ export type WebEventsListApiArg = {
     | 'public__other__exhibition'
     | 'public__other__for_public'
     | 'public__volunteering'
+    | 'section_meeting'
+    | 'section_event'
+    | 'volunteering'
+    | 'experiential'
+    | 'public_educational'
+    | 'internal_educational'
+    | 'internal_educational_full'
   )[]
   duration?: number
   durationGte?: number
