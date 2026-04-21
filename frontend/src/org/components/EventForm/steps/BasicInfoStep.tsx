@@ -149,7 +149,7 @@ export const BasicInfoStep = ({
                 Viz{' '}
                 <ExternalButtonLink
                   tertiary
-                  target="__blank"
+                  target="_blank"
                   rel="noopener noreferrer"
                   href="https://drive.google.com/file/d/1S3YacAZIWu-9pc6hdaxXaRzt3cNqxSMZ/view?usp=sharing"
                 >
