@@ -6,10 +6,11 @@ import {
   FormSubsection,
   FullSizeElement,
   InfoBox,
+  RichTextEditor,
 } from 'components'
 import { form as formTexts } from 'config/static/closeEvent'
 import { FC } from 'react'
-import { FormProvider, UseFormReturn } from 'react-hook-form'
+import { Controller, FormProvider, UseFormReturn } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
 import { FeedbackStepInfo } from './FeedbackStepInfo'
@@ -32,6 +33,15 @@ export const FeedbackStep: FC<Props> = ({
       <FormSectionGroup startIndex={firstIndex}>
         <FormSection header="zpětná vazba">
           <FeedbackStepInfo feedbackRequired={feedbackRequired} />
+          <FormSubsection header="Text e-mailu">
+            <FormInputError isBlock>
+              <Controller
+                name="feedback_form.email_content"
+                control={methods.control}
+                render={({ field }) => <RichTextEditor {...field} />}
+              />
+            </FormInputError>
+          </FormSubsection>
           <FormSubsection
             header="Úvod k dotazníku"
             required

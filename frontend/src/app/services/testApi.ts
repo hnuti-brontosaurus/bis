@@ -3044,6 +3044,7 @@ export type FeedbackForm = {
   introduction?: string
   after_submit_text?: string
   sent_at?: string
+  email_content?: string
 }
 export type Record = {
   total_hours_worked?: number | null
