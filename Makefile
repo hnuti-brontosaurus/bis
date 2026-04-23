@@ -129,6 +129,7 @@ test_backend:
 
 
 test_frontend: node_modules/cypress/bin/cypress
+	yarn --cwd frontend run test:types
 	yarn --cwd frontend run test:unit
 	make startup_testing_frontend
 	yarn --cwd frontend run wait-on http-get://localhost:3000
