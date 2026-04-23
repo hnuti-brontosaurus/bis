@@ -652,6 +652,7 @@ class FeedbackFormSerializer(ModelSerializer):
         fields = (
             "introduction",
             "after_submit_text",
+            "email_content",
             "sent_at",
         )
 
