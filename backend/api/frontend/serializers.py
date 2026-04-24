@@ -75,7 +75,7 @@ from event.models import (
 )
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
-from other.models import DashboardItem
+from other.models import Announcement, DashboardItem
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -1129,6 +1129,12 @@ class DashboardItemSerializer(ModelSerializer):
     class Meta:
         model = DashboardItem
         fields = "visible_date", "date", "name", "description"
+
+
+class AnnouncementSerializer(ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = ("id", "text", "severity", "start", "end")
 
 
 class GetUnknownUserRequestSerializer(Serializer):

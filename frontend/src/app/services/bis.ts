@@ -27,6 +27,7 @@ import dayjs from 'dayjs'
 import type { Assign, Overwrite } from 'utility-types'
 import type {
   AdministrationUnit,
+  Announcement,
   AttendanceListPage,
   AttendanceListPagePayload,
   DietCategory,
@@ -1193,6 +1194,11 @@ export const api = createApi({
         params: {
           page_size: 1000,
         },
+      }),
+    }),
+    readAnnouncements: build.query<Announcement[], void>({
+      query: () => ({
+        url: '/frontend/announcements/',
       }),
     }),
 

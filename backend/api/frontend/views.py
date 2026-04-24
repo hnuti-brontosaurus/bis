@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import api_view, permission_classes
@@ -20,6 +21,7 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from api.frontend.filters import EventFilter, LocationFilter, UserFilter
 from api.frontend.permissions import BISPermissions
 from api.frontend.serializers import (
+    AnnouncementSerializer,
     AttendanceListPageSerializer,
     DashboardItemSerializer,
     EventApplicationSerializer,
@@ -58,7 +60,7 @@ from event.models import (
 from feedback.models import EventFeedback, Inquiry
 from login_code.models import ThrottleLog
 from opportunities.models import Opportunity
-from other.models import DashboardItem
+from other.models import Announcement, DashboardItem
 from questionnaire.models import EventApplication, Question
 from xlsx_export import export
 from xlsx_export.export import export_to_xlsx
@@ -218,6 +220,21 @@ class DashboardItemViewSet(PermissionViewSetBase):
 
     def get_queryset(self):
         return DashboardItem.get_items_for_user(self.request.user)
+
+
+class AnnouncementViewSet(ListModelMixin, GenericViewSet):
+    lookup_field = "id"
+    permission_classes = []
+    authentication_classes = []
+    pagination_class = None
+    serializer_class = AnnouncementSerializer
+
+    def get_queryset(self):
+        current_time = timezone.now()
+        return Announcement.objects.filter(
+            start__lte=current_time,
+            end__gte=current_time,
+        )
 
 
 class LocationViewSet(PermissionViewSetBase):

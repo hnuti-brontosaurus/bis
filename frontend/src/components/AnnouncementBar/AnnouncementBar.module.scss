@@ -1,0 +1,40 @@
+.bar {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 40px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.closeButton {
+  position: absolute;
+  right: 12px;
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  color: inherit;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+}

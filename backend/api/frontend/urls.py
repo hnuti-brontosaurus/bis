@@ -3,6 +3,7 @@ from rest_framework_nested import routers
 
 from api import frontend
 from api.frontend.views import (
+    AnnouncementViewSet,
     AttendanceListPageViewSet,
     DashboardItemViewSet,
     EventApplicationViewSet,
@@ -28,6 +29,7 @@ from api.frontend.views import (
 
 router = routers.DefaultRouter()
 
+router.register("announcements", AnnouncementViewSet, "announcements")
 router.register("users", UserViewSet, "users")
 router.register("search_users", UserSearchViewSet, "search_users")
 router.register("events", EventViewSet, "events")

@@ -10,6 +10,7 @@ from nested_admin.nested import (
 from bis.admin_permissions import PermissionMixin
 from event.models import *
 from other.models import (
+    Announcement,
     DashboardItem,
     DonationPoints,
     DonationPointsColumn,
@@ -78,6 +79,12 @@ def mark_as_resolved(model_admin, request, queryset):
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
     queryset.update(is_resolved=True)
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(PermissionMixin, NestedModelAdmin):
+    list_display = ("severity", "start", "end", "text")
+    list_filter = ("severity",)
 
 
 @admin.register(DashboardItem)

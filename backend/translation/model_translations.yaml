@@ -645,6 +645,15 @@ OfferedHelp:
     additional_team_role: Jiné týmové role
     info: Popis pomoci
 
+Announcement:
+  name: Oznámení
+  name_plural: Oznámení
+  fields:
+    text: Text
+    severity: Závažnost
+    start: Začátek
+    end: Konec
+
 DashboardItem:
   name: Termín
   name_plural: Termíny
