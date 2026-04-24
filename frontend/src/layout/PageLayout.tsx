@@ -1,4 +1,5 @@
 import { useAppSelector } from 'app/hooks'
+import { AnnouncementBar } from 'components/AnnouncementBar/AnnouncementBar'
 import { selectShowHeader } from 'features/ui/uiSlice'
 import { ReactNode } from 'react'
 import { Header } from './Header'
@@ -9,6 +10,7 @@ export const PageLayout = ({ children }: { children: ReactNode }) => {
   const showHeader = useAppSelector(selectShowHeader)
   return (
     <Layout page>
+      <AnnouncementBar />
       {showHeader && (
         <LayoutHeader>
           <Header />

@@ -16,6 +16,26 @@ from translation.translate import translate_model
 
 
 @translate_model
+class Announcement(Model):
+    SEVERITY_CHOICES = [
+        ("info", "Info"),
+        ("warning", "Varování"),
+        ("error", "Chyba"),
+    ]
+
+    text = TextField()
+    severity = CharField(max_length=7, choices=SEVERITY_CHOICES, default="info")
+    start = DateTimeField()
+    end = DateTimeField()
+
+    class Meta:
+        ordering = ("-start",)
+
+    def __str__(self):
+        return f"[{self.severity}] {self.text[:50]}"
+
+
+@translate_model
 class DuplicateUser(Model):
     user = ForeignKey(User, on_delete=CASCADE, related_name="duplicates")
     other = ForeignKey(User, on_delete=CASCADE, related_name="other_duplicates")

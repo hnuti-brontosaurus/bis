@@ -242,3 +242,11 @@ export type EventTag = {
   description: string
   is_active: boolean
 }
+
+export type Announcement = {
+  id: number
+  text: string
+  severity: 'info' | 'warning' | 'error'
+  start: string
+  end: string
+}
