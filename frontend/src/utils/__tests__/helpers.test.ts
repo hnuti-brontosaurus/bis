@@ -97,9 +97,7 @@ describe('checkVipPropagationFilled', () => {
 
   it('returns false when fields are missing', () => {
     expect(checkVipPropagationFilled({})).toBe(false)
-    expect(
-      checkVipPropagationFilled({ goals_of_event: 'goals' }),
-    ).toBe(false)
+    expect(checkVipPropagationFilled({ goals_of_event: 'goals' })).toBe(false)
   })
 })
 

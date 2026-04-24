@@ -164,7 +164,11 @@ export const EventFeedbackForm: FC<{
           <FormSectionGroup>
             {groupInquiriesByHeaders(orderedInquiries).map(
               ({ header, inquiries }) => (
-                <FormSection header={header} className={styles.formSection}>
+                <FormSection
+                  key={header}
+                  header={header}
+                  className={styles.formSection}
+                >
                   {inquiries.map((inquiry, index) => (
                     <Inquiry key={index} inquiry={inquiry} index={inquiry.id} />
                   ))}

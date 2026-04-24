@@ -14,10 +14,10 @@ h5 {
 
 .tableContainer {
   overflow-x: auto;
-  transform: rotateX(.5turn);
+  transform: rotateX(0.5turn);
 
   table {
-    transform: rotateX(.5turn);
+    transform: rotateX(0.5turn);
   }
 
   @include media.for-tablet-portrait-up {
@@ -36,7 +36,7 @@ h5 {
 }
 
 .emptyList {
-  transform: rotateX(.5turn);
+  transform: rotateX(0.5turn);
 }
 
 .table {
@@ -185,20 +185,24 @@ h5 {
 
     .existingParticipantContainerWrapper {
       margin-top: 12px;
-      [class$=-control]{
+      [class$='-control'] {
         border-width: 2px;
         border-color: black;
       }
-      .existingParticipantContainer{
+      .existingParticipantContainer {
         overflow-x: auto;
         @include media.for-tablet-portrait-up {
-          thead th, 
+          thead th,
           tbody td {
-            &:first-child
-            {
+            &:first-child {
               position: sticky;
               left: 0;
-              background-image: linear-gradient(to right, #ffffff 0%, #ffffff  99.7%, #d9d9d9 100%);
+              background-image: linear-gradient(
+                to right,
+                #ffffff 0%,
+                #ffffff 99.7%,
+                #d9d9d9 100%
+              );
             }
             &:last-child {
               position: sticky;
@@ -218,12 +222,12 @@ h5 {
   .StatsContainer {
     @include media.for-tablet-portrait-up {
       padding: 20px 20px 0 20px;
-     }
-     @include media.for-tablet-landscape-up {
+    }
+    @include media.for-tablet-landscape-up {
       padding: 40px 40px 0 40px;
-     }
+    }
     @include media.for-phone-only {
-     padding: 10px 10px 0 10px;
+      padding: 10px 10px 0 10px;
     }
   }
 }
@@ -297,7 +301,8 @@ h5 {
   border: 3px solid black;
 }
 
-.org, .orgTitle {
+.org,
+.orgTitle {
   border-radius: 8px;
   color: white;
   padding: 0 4px;

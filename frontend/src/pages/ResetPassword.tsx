@@ -25,8 +25,8 @@ const getErrorMessage = (
       if ('data' in error && Array.isArray(error.data)) {
         return (
           <>
-            {error.data.map(a => (
-              <div>
+            {error.data.map((a, index) => (
+              <div key={index}>
                 {a}
                 <br />
               </div>

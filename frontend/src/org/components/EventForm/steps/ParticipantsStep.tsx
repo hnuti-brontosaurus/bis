@@ -176,7 +176,6 @@ export const ParticipantsStep: FC<{
         showApplicationsStats={true}
       ></ParticipantsStats>
       <Applications
-        // @ts-ignore
         event={event}
         highlightedApplications={highlightedApplication}
         chooseHighlightedApplication={id =>

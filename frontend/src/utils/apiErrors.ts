@@ -5,6 +5,7 @@ import {
   getFieldName,
   getObjectPaths,
   ModelTranslations,
+  NestedObject,
 } from './validationErrors'
 
 export const apiErrors2Message = (
@@ -22,7 +23,7 @@ export const apiErrors2Message = (
   }
   // or show nicely formatted errors
   else if (error.data && typeof error.data === 'object') {
-    const namesWithMessages = getObjectPaths(error.data as {})
+    const namesWithMessages = getObjectPaths(error.data as NestedObject)
       .map(path => {
         // if last element is a digit, remove it
         if (/^\d+$/.test(path.split('.').pop() ?? '')) {

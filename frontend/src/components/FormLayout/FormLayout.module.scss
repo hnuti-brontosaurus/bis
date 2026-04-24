@@ -17,8 +17,8 @@
     padding: 5px 10px 5px;
   }
   @include media.for-tablet-portrait-up {
-    margin: .5rem 0 0;
-    padding: .5rem 1rem .5rem;
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 1rem 0.5rem;
   }
   @include media.for-tablet-landscape-up {
     margin: 1rem 0 0;
@@ -45,7 +45,7 @@
 
   header {
     margin-top: 0.5rem;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
     font-size: 1.2rem;
     font-weight: 600;
     @include media.for-phone-only {

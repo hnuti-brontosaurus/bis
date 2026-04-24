@@ -36,6 +36,7 @@ export const OpportunityList = () => {
             tabs={[]}
             actions={[
               <ExternalButtonLink
+                key="apply-link"
                 href="https://docs.google.com/forms/d/e/1FAIpQLSdkhNLXC3YvMFgykj8r8KrQ_-xwfcZr13Hsfyy5Diyyvx2JLg/viewform"
                 target="__blank"
                 rel="noopener noreferrer"

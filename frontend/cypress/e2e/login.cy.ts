@@ -27,7 +27,7 @@ const organizer: User = {
   last_name: 'LastName',
 } as User
 
-const user: User = Object.assign({}, organizer, {roles: []});
+const user: User = Object.assign({}, organizer, { roles: [] })
 
 describe('login', () => {
   beforeEach(() => {

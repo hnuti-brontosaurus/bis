@@ -21,9 +21,9 @@ export const ParticipantsStats: FC<{
       pageSize: 10000,
     })
 
-  let applications = applicationsData ? applicationsData.results : []
-  let participants = participantsData ? participantsData.results : []
-  let organizers = otherOrganizers ? otherOrganizers : []
+  const applications = applicationsData ? applicationsData.results : []
+  const participants = participantsData ? participantsData.results : []
+  const organizers = otherOrganizers ? otherOrganizers : []
 
   const applicationsPending = applications.filter(
     app => app.state === ApplicationStates.pending,
@@ -116,9 +116,9 @@ export const ParticipantsStats: FC<{
 }
 
 const ageDifference = (birthday: Date, comparingDate: Date): number => {
-  var ageyear = comparingDate.getFullYear() - birthday.getFullYear()
-  var agemonth = comparingDate.getMonth() - birthday.getMonth()
-  var ageday = comparingDate.getDate() - birthday.getDate()
+  let ageyear = comparingDate.getFullYear() - birthday.getFullYear()
+  const agemonth = comparingDate.getMonth() - birthday.getMonth()
+  const ageday = comparingDate.getDate() - birthday.getDate()
 
   if (agemonth < 0) {
     ageyear--

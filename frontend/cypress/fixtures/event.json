@@ -18,8 +18,13 @@
     "is_active": true
   },
   "tags": [
-    {"id": 1, "name": "Retro akce", "slug": "retro_event", "description": "Retro akce k oslavám 50 let HB"},
-    {"id": 2, "name": "Akce v regionech", "slug": "region_event"}
+    {
+      "id": 1,
+      "name": "Retro akce",
+      "slug": "retro_event",
+      "description": "Retro akce k oslavám 50 let HB"
+    },
+    { "id": 2, "name": "Akce v regionech", "slug": "region_event" }
   ],
   "program": { "id": 3, "name": "BRĎO", "slug": "kids" },
   "intended_for": {

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export -- module declarations for asset imports require default exports */
 declare module '@changey/react-leaflet-markercluster'
 
 declare module 'react-tooltip-lite' {

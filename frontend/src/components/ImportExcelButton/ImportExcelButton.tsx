@@ -10,7 +10,7 @@ import { array2object } from 'utils/helpers'
 import * as xlsx from 'xlsx'
 import styles from './ImportExcelButton.module.scss'
 
-export interface ImportExcelButtonProps<T extends {}> {
+export interface ImportExcelButtonProps<T extends Record<string, unknown>> {
   // keyMap is a config which says how to map columns in imported document (keyMap values) onto imported object (keyMap keys)
   keyMap: Schema<T, number>
   headerRows?: number
@@ -18,7 +18,7 @@ export interface ImportExcelButtonProps<T extends {}> {
   onUpload: (data: T[]) => void
 }
 
-export const ImportExcelButton = <T extends {}>({
+export const ImportExcelButton = <T extends Record<string, unknown>>({
   keyMap,
   headerRows = 1,
   children,

@@ -23,7 +23,7 @@ export const event = merge(
   {
     questions: {
       data: {
-        _name: translations.question.data,
+        _name: translations.generic.data,
         type: 'Typ',
         options: { _name: 'Možnosti', option: 'Možnost' },
       },

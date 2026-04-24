@@ -90,7 +90,7 @@ export const shouldBeFinishedUntil = (event: { end: string }): number => {
   const eventEnd = new Date(event.end)
   eventEnd.getFullYear()
 
-  let finishUntil = new Date(0)
+  const finishUntil = new Date(0)
   finishUntil.setFullYear(eventEnd.getFullYear() + 1)
   finishUntil.setMonth(2) // this means March (months are zero-based)
   finishUntil.setDate(1)
@@ -137,7 +137,7 @@ export const splitDateTime = (datetime: string): [string, string] => {
   return [date, time]
 }
 
-export const joinDateTime = (date: string, time: string = ''): string => {
+export const joinDateTime = (date: string, time = ''): string => {
   const [rawHours, rawMinutes] = time.split(':')
   const ddRegexp = /^\d\d$/
   const hours = ddRegexp.test(rawHours) ? rawHours : '00'
@@ -259,7 +259,7 @@ export const withOverwriteArray = (a: any, b: any) =>
  * remove html tags from html document
  */
 export const stripHtml = (html: string): string => {
-  let doc = new DOMParser().parseFromString(html, 'text/html')
+  const doc = new DOMParser().parseFromString(html, 'text/html')
   return doc.body.textContent || ''
 }
 
@@ -310,11 +310,14 @@ export const getErrorMessage = <T extends FieldValues>(
  * Check if all VIP propagation fields are filled (all or none pattern)
  */
 export const checkVipPropagationFilled = (
-  vipPropagation: {
-    goals_of_event?: string
-    program?: string
-    short_invitation_text?: string
-  } | null | undefined,
+  vipPropagation:
+    | {
+        goals_of_event?: string
+        program?: string
+        short_invitation_text?: string
+      }
+    | null
+    | undefined,
 ): boolean =>
   Boolean(
     vipPropagation &&
@@ -329,7 +332,10 @@ export const checkVipPropagationFilled = (
 /**
  * Check if an event has already ended (comparing dates at midnight)
  */
-export const isEventPast = (eventEnd: string, now: Date = new Date()): boolean => {
+export const isEventPast = (
+  eventEnd: string,
+  now: Date = new Date(),
+): boolean => {
   const today = new Date(now)
   today.setHours(0, 0, 0, 0)
   const end = new Date(eventEnd)

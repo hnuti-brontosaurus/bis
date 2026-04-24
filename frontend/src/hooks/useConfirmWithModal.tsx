@@ -40,7 +40,7 @@ export const useConfirmWithModal = ({
    *
    * @param onConfirm - The function to execute if the user confirms the action.
    */
-  const confirmWithModal = async (onConfirm: Function) => {
+  const confirmWithModal = async (onConfirm: () => unknown) => {
     // Show confirmation modal and wait for user input
     const isConfirmed = await new Promise(resolve => {
       confirmAlert({

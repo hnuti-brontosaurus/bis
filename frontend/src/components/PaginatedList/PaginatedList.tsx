@@ -9,7 +9,7 @@ import { FC } from 'react'
  *
  * We can provide additional props for table in this component
  */
-export const UnscalablePaginatedList = <T, C extends {} = {}>({
+export const UnscalablePaginatedList = <T, C extends object = object>({
   data,
   table,
   className,

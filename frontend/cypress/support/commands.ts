@@ -40,6 +40,7 @@ import { RouteHandler } from 'cypress/types/net-stubbing'
 // }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       /**
@@ -197,11 +198,8 @@ Cypress.Commands.add('restoreClock', () => {
   })
 })
 
-Cypress.Commands.overwrite(
-  'type',
-  (originalFn, element, text, options) => {
-    return originalFn(element, text, { delay: 1, ...options })
-  },
-)
+Cypress.Commands.overwrite('type', (originalFn, element, text, options) => {
+  return originalFn(element, text, { delay: 1, ...options })
+})
 
 export {}
