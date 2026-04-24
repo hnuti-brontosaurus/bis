@@ -494,7 +494,9 @@ describe('create event', () => {
         .contains('chyby ve validaci')
       cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
-        .contains('Alternativní adresa pro přihlášení: Toto pole je povinné')
+        .contains(
+          'Alternativní odkaz pro registraci na akci: Toto pole je povinné',
+        )
     })
 
     it('[link not valid url] should fail with validation error', () => {
@@ -511,7 +513,9 @@ describe('create event', () => {
         .contains('chyby ve validaci')
       cy.get('[class^=SystemMessage-module__detail]')
         .should('be.visible')
-        .contains('Alternativní adresa pro přihlášení: Zadejte platný odkaz')
+        .contains(
+          'Alternativní odkaz pro registraci na akci: Zadejte platný odkaz',
+        )
     })
 
     it('should fill the form properly with default data', () => {
