@@ -188,7 +188,7 @@ export const hasRequiredQualification = (
 
   const qualifications = getValidQualifications(user, date)
   for (const qualification of qualifications) {
-    let category: QualificationCategory | undefined = qualification.category
+    const category: QualificationCategory | undefined = qualification.category
     if (requiredCategoryIsPresent(category, requiredOneOf)) return true
   }
   return false
@@ -196,10 +196,10 @@ export const hasRequiredQualification = (
 
 // https://stackoverflow.com/a/7091965
 function getAge(userDateString: string, targetDateString?: string): number {
-  var today = targetDateString ? new Date(targetDateString) : new Date()
-  var birthDate = new Date(userDateString)
-  var age = today.getFullYear() - birthDate.getFullYear()
-  var m = today.getMonth() - birthDate.getMonth()
+  const today = targetDateString ? new Date(targetDateString) : new Date()
+  const birthDate = new Date(userDateString)
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const m = today.getMonth() - birthDate.getMonth()
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
     age--
   }

@@ -28,24 +28,24 @@
 }
 
 .date {
-  padding-right: .3rem;
+  padding-right: 0.3rem;
 }
 
 .date:not(:first-child),
 .title:not(:nth-child(2)) {
   border-top: 1px solid colors.$gray-300;
-  padding-top: .3rem;
+  padding-top: 0.3rem;
 }
 
 .single {
-  padding-bottom: .3rem;
+  padding-bottom: 0.3rem;
 }
 
 .description {
-  padding: 0 .7rem .3rem;
+  padding: 0 0.7rem 0.3rem;
 
   grid-column: span 2;
   font-style: italic;
   line-height: 1.1;
-  font-size: .9rem;
+  font-size: 0.9rem;
 }

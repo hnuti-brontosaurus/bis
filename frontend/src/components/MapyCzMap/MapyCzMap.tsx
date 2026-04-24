@@ -99,8 +99,8 @@ export const MapyCzMap = ({
     if (map) {
       map.getSignals().addListener(this, 'marker-click', function (e: any) {
         // vybrany marker
-        var marker = e.target
-        var id = marker.getId()
+        const marker = e.target
+        const id = marker.getId()
         // zobrazime jeho jmeno - parovani vybraneho markeru pomoci jeho id a nasich vstupnich dat
         if (id) {
           onSelect(Number(id))

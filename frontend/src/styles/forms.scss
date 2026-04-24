@@ -51,7 +51,7 @@ input[type='reset'] {
     margin-right: 0;
   }
 
-  input[type="radio"] {
+  input[type='radio'] {
     cursor: pointer;
     /* Add if not using autoprefixer */
     -webkit-appearance: none;
@@ -91,7 +91,8 @@ input[type='reset'] {
   }
 }
 
-.checkboxDesription, .checkboxLabelWrapper {
+.checkboxDesription,
+.checkboxLabelWrapper {
   display: inline-block;
   align-items: center;
 }

@@ -40,5 +40,5 @@ export const RichTextEditor = forwardRef<
 // TODO rewrite to yay schema
 export const htmlRequired =
   (required: string | boolean) =>
-  (value: string = '') =>
+  (value = '') =>
     !required || stripHtml(value).trim().length > 0 || required

@@ -152,7 +152,9 @@ describe('create event', () => {
       .click()
       .type('displayname2')
     cy.get('[id^=react-select-7-option]').should('exist')
-    cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
+    cy.get('#react-select-7-input').type(
+      '{downArrow}{downArrow}{downArrow}{enter}',
+    )
 
     cy.get('[placeholder=DD]').should('be.visible').type('29')
     cy.get('[placeholder=MM]').should('be.visible').type('02')
@@ -622,7 +624,6 @@ describe('create event', () => {
   // (getEventCannotBeOlderThan, shouldBeFinishedUntil)
   // Error display from 400 responses is covered by "shows api error message" above.
 
-
   describe('VIP propagation', () => {
     beforeEach(() => {
       fillForm()
@@ -726,7 +727,9 @@ const fillForm = () => {
     .click({ force: true }) // TODO covered by "previous step" arrow
     .type('displayname2')
   cy.get('[id^=react-select-7-option]').should('exist')
-  cy.get('#react-select-7-input').type('{downArrow}{downArrow}{downArrow}{enter}')
+  cy.get('#react-select-7-input').type(
+    '{downArrow}{downArrow}{downArrow}{enter}',
+  )
 
   cy.get('[placeholder=DD]').should('be.visible').type('29')
   cy.get('[placeholder=MM]').should('be.visible').type('02')

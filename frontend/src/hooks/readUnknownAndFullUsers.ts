@@ -24,7 +24,9 @@ export const useReadUnknownAndFullUsers = (
 
   const { data: fullUsers, ...fullUsersStatus } =
     api.endpoints.readUsers.useQuery(
-      searchIds && searchIds.length > 0 ? { _search_id: searchIds, pageSize: ALL_USERS } : skipToken,
+      searchIds && searchIds.length > 0
+        ? { _search_id: searchIds, pageSize: ALL_USERS }
+        : skipToken,
     )
 
   const combinedUsers: (UserSearch | User)[] | undefined =

@@ -481,7 +481,9 @@ describe('Close event - evidence and participants', () => {
 
         // a table with imported users should appear
         // and after a while, indicate that users exist already
-        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
+        cy.get(
+          '[class^=ImportParticipantsList-module__container] table tbody tr',
+        )
           .should('have.length', 2)
           .find('[title="Uživatel/ka existuje"]')
           .should('have.length', 2)
@@ -557,7 +559,9 @@ describe('Close event - evidence and participants', () => {
 
         // a table with imported users should appear
         // and after a while, indicate that users don't exist yet
-        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
+        cy.get(
+          '[class^=ImportParticipantsList-module__container] table tbody tr',
+        )
           .should('have.length', 2)
           .find('[title="Uživatel/ka bude vytvořen/a"]')
           .should('have.length', 2)
@@ -715,7 +719,9 @@ describe('Close event - evidence and participants', () => {
           .click()
 
         // edit some of the user's fields
-        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
+        cy.get(
+          '[class^=ImportParticipantsList-module__container] table tbody tr',
+        )
           .should('have.length', 3)
           .first()
           .next()
@@ -737,7 +743,9 @@ describe('Close event - evidence and participants', () => {
           .last()
           .click()
 
-        cy.get('[class^=ImportParticipantsList-module__container] table tbody tr')
+        cy.get(
+          '[class^=ImportParticipantsList-module__container] table tbody tr',
+        )
           .find('input[name="address.street"]')
           .should('have.value', 'Hlavní 5')
           .clear()

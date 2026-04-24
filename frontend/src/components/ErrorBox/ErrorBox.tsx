@@ -29,8 +29,8 @@ export const ErrorBox: FC<IErrorBox> = ({ error }) => {
 
   return (
     <div className={styles.infoBoxError}>
-      {arrayStringsFromObject(error).map(error => (
-        <div>{error}</div>
+      {arrayStringsFromObject(error).map((message, index) => (
+        <div key={index}>{message}</div>
       ))}
     </div>
   )

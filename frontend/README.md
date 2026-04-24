@@ -74,12 +74,17 @@ yarn analyze
 ```
 
 ## Testing
+
 ### Unit tests (vitest)
+
 ```sh
 yarn test:unit
 ```
+
 ### Integration tests (cypress)
+
 **Dev server must be running on `localhost://3000`!**
+
 ```sh
 yarn test:e2e
 ```

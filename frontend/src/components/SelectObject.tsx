@@ -15,7 +15,7 @@ import styles from './SelectObject.module.scss'
 // Redeclare forwardRef - to be able to forward refs to generic components
 // https://fettblog.eu/typescript-react-generic-forward-refs/#option-3%3A-augment-forwardref
 // but actually, redeclaration was messing with other forwardRef usages, so we just typecast the one that is here
-type GenericForwardRef = <T, P = {}>(
+type GenericForwardRef = <T, P = object>(
   render: (props: P, ref: React.Ref<T>) => React.ReactElement | null,
 ) => (props: P & React.RefAttributes<T>) => React.ReactElement | null
 

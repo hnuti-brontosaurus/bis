@@ -167,7 +167,7 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
 
   const [updateApplication] = api.endpoints.updateEventApplication.useMutation()
   const addParticipant = async (newParticipantId: string) => {
-    let newParticipants = [...eventParticipants]
+    const newParticipants = [...eventParticipants]
     newParticipants.push(newParticipantId)
 
     await patchEvent({
@@ -573,11 +573,11 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                                     <span>
                                       {
                                         administrationUnits.results.find(
-                                          // @ts-ignore
+                                          // @ts-ignore -- membership array contains union of types
                                           unit =>
-                                            // @ts-ignore
+                                            // @ts-ignore -- membership array contains union of types
                                             membership.administration_unit ===
-                                            // @ts-ignore
+                                            // @ts-ignore -- membership array contains union of types
                                             unit.id,
                                         )?.name
                                       }
@@ -585,11 +585,11 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                                     <span>
                                       {
                                         categories.results.find(
-                                          // @ts-ignore
+                                          // @ts-ignore -- membership array contains union of types
                                           category =>
-                                            // @ts-ignore
+                                            // @ts-ignore -- membership array contains union of types
                                             membership.category ===
-                                            // @ts-ignore
+                                            // @ts-ignore -- membership array contains union of types
                                             category.id,
                                         )?.name
                                       }
@@ -760,11 +760,16 @@ retrievedUser.address.region || ''
                     )}
                     {!showAddParticipantForm &&
                       userOptions.length !== 0 &&
-                      userOptions?.map(user => <UserCollapseRow user={user} />)}
+                      userOptions?.map(user => (
+                        <UserCollapseRow key={user.id} user={user} />
+                      ))}
                     {!showAddParticipantForm &&
                       allUsers.length !== 0 &&
                       allUsers.map(user => (
-                        <UserWithoutAccessCollapseRow user={user} />
+                        <UserWithoutAccessCollapseRow
+                          key={user._search_id}
+                          user={user}
+                        />
                       ))}
                   </tbody>
                 </table>

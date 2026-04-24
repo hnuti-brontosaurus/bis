@@ -147,7 +147,7 @@ export const Applications: FC<{
       eventId: event.id,
     })
 
-  let applications = applicationsData ? applicationsData.results : []
+  const applications = applicationsData ? applicationsData.results : []
 
   const { data: applicationUsersData } = api.endpoints.readUsers.useQuery(
     applicationsData
@@ -234,6 +234,7 @@ export const Applications: FC<{
         <td onClick={showDetails}>{formatDateTime(application.created_at)}</td>
         {event.questions.map(question => (
           <BoundedCell
+            key={question.id}
             onClick={showDetails}
             text={
               application.answers.find(
@@ -361,7 +362,7 @@ export const Applications: FC<{
                   <th>e-mail</th>
                   <th>datum podání</th>
                   {event.questions.map(question => (
-                    <th>{question.question}</th>
+                    <th key={question.id}>{question.question}</th>
                   ))}
                   <th>poznámka</th>
                   <th>

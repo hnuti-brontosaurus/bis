@@ -4,7 +4,7 @@
 .questionsBox {
   width: 100%;
   max-width: 925px;
-  margin: .5rem 0;
+  margin: 0.5rem 0;
 
   .questionList {
     display: flex;
@@ -68,13 +68,13 @@
       vertical-align: baseline;
     }
 
-    input[type=text]:disabled,
+    input[type='text']:disabled,
     select:disabled {
       border-color: colors.$gray-200;
       cursor: not-allowed;
     }
 
-    input[type=checkbox]:disabled::before {
+    input[type='checkbox']:disabled::before {
       box-shadow: inset 1em 1em colors.$gray-300;
     }
 

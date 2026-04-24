@@ -29,7 +29,7 @@ export const ButtonSelect = forwardRef(
           className={styles.input}
         />
         <label htmlFor={id} className={styles.label}>
-          {/* @ts-ignore */}
+          {/* @ts-ignore -- icon prop type from react-icons */}
           <div className={styles.icon}>{icon}</div>
           <div className={styles.labelText}>{label}</div>
         </label>

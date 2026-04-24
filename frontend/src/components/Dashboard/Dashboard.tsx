@@ -8,7 +8,7 @@ export const Dashboard: FC<{ items: DashboardItem[] }> = ({ items }) => (
   <div className={styles.main}>
     <div className={styles.scrollContainer}>
       {items.map((item, index) => (
-        <DashboardRow {...item} />
+        <DashboardRow key={index} {...item} />
       ))}
     </div>
   </div>

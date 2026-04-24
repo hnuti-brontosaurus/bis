@@ -184,7 +184,7 @@ export const Participants: FC<{
         removeModalData &&
         participantsMap[removeModalData.id]
       ) {
-        for (let i of participantsMap[removeModalData.id]) {
+        for (const i of participantsMap[removeModalData.id]) {
           await updateApplication({
             id: Number(i),
             eventId: eventId,
@@ -392,7 +392,7 @@ export const Participants: FC<{
                             <TableCellIconButton
                               disabled={true}
                               icon={EditUser}
-                              action={() => {}}
+                              action={() => undefined}
                               tooltipContent="Upravit účastníka"
                               color={colors.yellow}
                               ariaLabel={`Upravit účastníka ${participant.first_name} ${participant.last_name}`}
@@ -400,7 +400,7 @@ export const Participants: FC<{
                             <TableCellIconButton
                               disabled={true}
                               icon={Bin}
-                              action={() => {}}
+                              action={() => undefined}
                               tooltipContent="Smazat účastníka"
                               color={colors.error}
                               ariaLabel={`Smazat účastníka ${participant.first_name} ${participant.last_name}`}

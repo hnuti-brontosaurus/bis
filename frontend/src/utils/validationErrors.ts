@@ -37,7 +37,7 @@ export const validationErrors2Message = <FormShape extends FieldValues>(
   errors: FieldErrorsImpl<FormShape>,
   fieldNames: ModelTranslations = {},
   genericNames: GenericTranslations = {},
-  limit: number = 10,
+  limit = 10,
 ): string => {
   const namesWithMessages = getErrorPaths(
     pickErrors(errors) as NestedObject,
@@ -65,7 +65,7 @@ export const validationErrors2Message = <FormShape extends FieldValues>(
   return output
 }
 
-type NestedObject =
+export type NestedObject =
   | {
       [key: string]: NestedObject | number | string
     }

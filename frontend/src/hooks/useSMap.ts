@@ -31,13 +31,13 @@ export const useSMap = () => {
   const [SMap, setSMap] = useState<[any, boolean]>([undefined, true])
   useEffect(() => {
     const onload = () => {
-      // @ts-ignore
+      // @ts-ignore -- SMap loader injected on window by external script
       window.Loader.async = true
-      // @ts-ignore
+      // @ts-ignore -- SMap loader injected on window by external script
       window.Loader.load(null, { suggest: true }, () => {
-        // @ts-ignore
+        // @ts-ignore -- SMap loader injected on window by external script
         const smap = window.SMap
-        // @ts-ignore
+        // @ts-ignore -- SMap loader injected on window by external script
         setSMap([smap, false])
       })
     }
