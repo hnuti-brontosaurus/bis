@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from categories.models import EventCategory
 from event.models import Event
@@ -31,7 +32,12 @@ class Command(BaseCommand):
             for slug in set(old_to_new_mapping.values())
         }
 
-        events = list(Event.objects.filter(start__year=2026).select_related("category"))
+        today = timezone.now().date()
+        events = list(
+            Event.objects.exclude(start__year__lt=2026, end__lte=today).select_related(
+                "category"
+            )
+        )
 
         for event in events:
             new_slug = old_to_new_mapping.get(event.category.slug)
