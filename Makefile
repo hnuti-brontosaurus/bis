@@ -80,7 +80,7 @@ build_frontend:
 build_cookbook:
 	docker compose run cookbook sh docker-entrypoint.sh build
 
-dev:
+dev: clean
 	$(call compose_with_trap,                                                              \
 		--profile dev                                                                   \
 		-f docker-compose/dev_$$OS.yaml up)
