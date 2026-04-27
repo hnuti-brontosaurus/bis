@@ -170,15 +170,16 @@ def events_to_list(events):
 
 
 def events_summary():
+    week_ago = timezone.now().date() - timedelta(days=7)
     for program in EventProgramCategory.objects.all():
         new_events = Event.objects.filter(
             is_canceled=False,
-            created_at__gte=timezone.now().date() - timedelta(days=7),
+            created_at__gte=week_ago,
             program__slug=program.slug,
         )
 
         closed_events = Event.objects.filter(
-            closed_at__gte=timezone.now().date() - timedelta(days=7),
+            closed_at__gte=week_ago,
             program__slug=program.slug,
         )
 
@@ -186,6 +187,16 @@ def events_summary():
             end__lte=timezone.now().date() - timedelta(days=20),
             program__slug=program.slug,
         )
+
+        events_with_new_photos = Event.objects.filter(
+            program__slug=program.slug,
+            record__photos__created_at__gte=week_ago,
+        ).distinct()
+
+        events_with_new_attendance = Event.objects.filter(
+            program__slug=program.slug,
+            record__attendance_list_pages__created_at__gte=week_ago,
+        ).distinct()
 
         ecomail.send_email(
             emails["bis"],
@@ -195,6 +206,10 @@ def events_summary():
                 "new_events": events_to_list(new_events),
                 "closed_events": events_to_list(closed_events),
                 "unclosed_events": events_to_list(unclosed_events),
+                "events_with_new_photos": events_to_list(events_with_new_photos),
+                "events_with_new_attendance": events_to_list(
+                    events_with_new_attendance
+                ),
             },
         )
 
@@ -263,15 +278,6 @@ def event_end_participants_notification(event):
             },
         )
     participants_to_notify.update(last_after_event_email=timezone.now().date())
-
-
-def event_attendance_or_photos_notification(event):
-    ecomail.send_email(
-        emails["bis"],
-        225,
-        [event.program.email],
-        variables={"event": event.name},
-    )
 
 
 def get_consultants():

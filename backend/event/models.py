@@ -428,6 +428,7 @@ class EventAttendanceListPage(Model):
         EventRecord, on_delete=CASCADE, related_name="attendance_list_pages"
     )
     page = FileField(upload_to="attendance_list_pages", null=True, blank=True)
+    created_at = DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ("id",)
@@ -448,6 +449,7 @@ class EventAttendanceListPage(Model):
 class EventPhoto(Model):
     record = ForeignKey(EventRecord, on_delete=CASCADE, related_name="photos")
     photo = ThumbnailImageField(upload_to="event_photos")
+    created_at = DateTimeField(auto_now_add=True)
 
     @admin.display(description="Náhled")
     def photo_tag(self):

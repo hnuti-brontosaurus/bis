@@ -781,10 +781,6 @@ class EventSerializer(ModelSerializer):
             and not instance.feedback_form.sent_at
             and validated_data.get("feedback_form", {}).get("sent_at")
         )
-        had_attendance = EventAttendanceListPage.objects.filter(
-            record__event=instance
-        ).exists()
-        had_photos = EventPhoto.objects.filter(record__event=instance).exists()
         if is_closing:
             validated_data["closed_at"] = date.today()
 
@@ -794,14 +790,6 @@ class EventSerializer(ModelSerializer):
 
         if should_send_feedback:
             emails.send_feedback_request(instance)
-
-        has_attendance = EventAttendanceListPage.objects.filter(
-            record__event=instance
-        ).exists()
-        has_photos = EventPhoto.objects.filter(record__event=instance).exists()
-
-        if (not had_attendance and has_attendance) or (not had_photos and has_photos):
-            emails.event_attendance_or_photos_notification(instance)
 
         return instance
 
