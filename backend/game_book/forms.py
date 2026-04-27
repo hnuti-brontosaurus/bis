@@ -39,6 +39,18 @@ class CategoryMultipleChoiceField(CategoryChoiceMixin, forms.ModelMultipleChoice
 
 
 class FilterForm(Form):
+    USER_SPECIFIC_FIELDS = (
+        "only_my_games",
+        "only_my_favourites",
+        "only_watched_by_me",
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is None or not user.is_authenticated:
+            for name in self.USER_SPECIFIC_FIELDS:
+                self.fields.pop(name, None)
+
     search_input = forms.CharField(label="Hledej v textu", required=False)
     order = forms.ChoiceField(
         label="Pořadí",

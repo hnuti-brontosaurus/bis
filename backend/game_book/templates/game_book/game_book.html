@@ -15,12 +15,14 @@
             <div class="btn btn-outline-secondary"
                  onclick="handle_quick_search_button_submit({tags: '8'})">🌱 Eko
             </div>
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({only_my_games: 'on'})">🐷 Mé
-            </div>
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({only_my_favourites: 'on'})">⭐ Mnou oblíbené
-            </div>
+            {% if request.user.is_authenticated %}
+                <div class="btn btn-outline-secondary"
+                     onclick="handle_quick_search_button_submit({only_my_games: 'on'})">🐷 Mé
+                </div>
+                <div class="btn btn-outline-secondary"
+                     onclick="handle_quick_search_button_submit({only_my_favourites: 'on'})">⭐ Mnou oblíbené
+                </div>
+            {% endif %}
             <div class="btn btn-outline-secondary"
                  onclick="handle_quick_search_button_submit({is_verified: 'on'})">✅ Ověřené
             </div>

@@ -40,7 +40,7 @@ class GameBookView(TemplateView):
             "participant_number_category",
             "participant_age_category",
         )
-        context["form"] = form = FilterForm(self.request.GET)
+        context["form"] = form = FilterForm(self.request.GET, user=self.request.user)
         setattr(form, "hide_validation_classes", True)
 
         if form.is_valid():
