@@ -48,6 +48,11 @@ def set_board_members(instance, **kwargs):
 )
 @receiver(
     m2m_changed,
+    sender=BrontosaurusMovement.fundraisers.through,
+    dispatch_uid="update_roles_cache8",
+)
+@receiver(
+    m2m_changed,
     sender=Event.other_organizers.through,
     dispatch_uid="update_roles_cache7",
 )

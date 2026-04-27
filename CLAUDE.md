@@ -40,6 +40,11 @@ docker exec -it bis-backend python manage.py reset      # Import old database
 docker exec -it bis-backend python manage.py testing_db # Create test database
 ```
 
+**IMPORTANT:** Always pass `-u $(id -u):$(id -g)` to `docker exec`/`docker run` so any files written (migrations, fixtures, etc.) are owned by your host user and editable without `sudo chown`:
+```bash
+docker exec -u $(id -u):$(id -g) bis-backend python manage.py makemigrations
+```
+
 ### Frontend-specific
 ```bash
 yarn --cwd frontend generate-api     # Regenerate RTK-Query types from OpenAPI

@@ -706,6 +706,8 @@ class User(SearchMixin, AbstractBaseUser):
             roles += ["executive"]
         if self in brontosaurus_movement.education_members.all():
             roles += ["education_member"]
+        if self in brontosaurus_movement.fundraisers.all():
+            roles += ["fundraiser"]
         if self.chairman_of.exists():
             roles += ["chairman"]
         if self.vice_chairman_of.exists():

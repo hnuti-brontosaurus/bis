@@ -179,6 +179,7 @@ class BrontosaurusMovementAdmin(PermissionMixin, SingletonModelAdmin):
         "audit_committee",
         "executive_committee",
         "education_members",
+        "fundraisers",
     )
     readonly_fields = ("history",)
     exclude = ("_history",)

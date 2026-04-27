@@ -173,6 +173,9 @@ BrontosaurusMovement:
     education_members:
       - EDU - konzultanti a instruktoři
       - Vidí pouze uživatele a mohou editovat pouze jejich kvalifikaci
+    fundraisers:
+      - Fundraiseři
+      - Mají přístup k telesales a vidí dárce
 
 
 Membership:
