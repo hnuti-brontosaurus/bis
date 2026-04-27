@@ -127,7 +127,7 @@ class EventRecordType:
         "main_organizer",
         "other_organizers",
         "created_by",
-        "internal_note",
+        "organizers_note",
         "_import_id",
         "_search_field",
     ],

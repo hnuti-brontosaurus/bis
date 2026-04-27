@@ -87,7 +87,7 @@ class Event(SearchMixin, Model):
     closed_at = DateField(blank=True, null=True)
 
     is_attendance_list_required = BooleanField(default=False)
-    internal_note = TextField(blank=True)
+    organizers_note = TextField(blank=True)
 
     _import_id = CharField(max_length=15, default="")
     _search_field = CharField(max_length=128, blank=True)
@@ -327,8 +327,6 @@ class EventRecord(Model):
     participants = ManyToManyField(User, "participated_in_events", blank=True)
     number_of_participants = PositiveIntegerField(null=True, blank=True)
     number_of_participants_under_26 = PositiveIntegerField(null=True, blank=True)
-
-    note = TextField(blank=True)
 
     is_event_closed_email_enabled = BooleanField(default=True)
 

@@ -408,7 +408,7 @@ class QualificationNoteSerializer(ModelSerializer):
         fields = (
             "created_at",
             "created_by",
-            "note",
+            "education_members_note",
         )
 
 
@@ -671,7 +671,6 @@ class RecordSerializer(ModelSerializer):
             "number_of_participants",
             "number_of_participants_under_26",
             "is_event_closed_email_enabled",
-            "note",
             "contacts",
             "age_stats",
         )
@@ -725,7 +724,7 @@ class EventSerializer(ModelSerializer):
             "main_organizer",
             "other_organizers",
             "is_attendance_list_required",
-            "internal_note",
+            "organizers_note",
             "duration",
             "finance",
             "propagation",
@@ -738,7 +737,7 @@ class EventSerializer(ModelSerializer):
 
     def get_excluded_fields(self, fields):
         if self.context["request"].user.is_member_only:
-            return ["internal_note", "finance", "record"]
+            return ["organizers_note", "finance", "record"]
 
         return []
 
@@ -1010,8 +1009,7 @@ class EventApplicationSerializer(ModelSerializer):
             "close_person",
             "address",
             "answers",
-            "note",
-            "internal_note",
+            "applicant_note",
             "paid_for",
             "is_child_application",
         )
@@ -1027,15 +1025,8 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all(
-            [
-                key in ["user", "state", "internal_note", "paid_for"]
-                for key in validated_data
-            ]
-        ):
-            raise ValidationError(
-                "Only user, state, paid_for and internal_note are editable"
-            )
+        if not all([key in ["user", "state", "paid_for"] for key in validated_data]):
+            raise ValidationError("Only user, state and paid_for are editable")
         return super().update(instance, validated_data)
 
 
@@ -1092,7 +1083,6 @@ class EventFeedbackSerializer(ModelSerializer):
             "name",
             "email",
             "created_at",
-            "note",
             "replies",
         )
 

@@ -319,7 +319,6 @@ class RecordExportSerializer(ModelSerializer):
             "get_young_percentage",
             "total_hours_worked",
             "comment_on_work_done",
-            "note",
         )
 
     def get_has_participants_list(self, instance):
@@ -410,7 +409,7 @@ class EventExportSerializer(ModelSerializer):
             "main_organizer",
             "other_organizers",
             "is_attendance_list_required",
-            "internal_note",
+            "organizers_note",
             "finance",
             "propagation",
             "vip_propagation",
@@ -566,8 +565,7 @@ class EventApplicationExportSerializer(ModelSerializer):
             "health_issues",
             "pronoun",
             "created_at",
-            "note",
-            "internal_note",
+            "applicant_note",
             "paid_for",
             "close_person",
             "address",
@@ -655,7 +653,6 @@ class EventFeedbackExportSerializer(ModelSerializer):
             "name",
             "email",
             "created_at",
-            "note",
         )
 
     @staticmethod

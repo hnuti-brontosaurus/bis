@@ -1,7 +1,6 @@
 import { FC, useState } from 'react'
 import { FaAngleDown, FaAngleUp } from 'react-icons/fa'
 import { InfoBox } from 'components'
-import { feedback } from '../../../config/static/translations'
 import { ExternalHeaderLink } from './ExternalHeaderLink'
 import styles from './FeedbackStepInfo.module.scss'
 

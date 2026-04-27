@@ -377,8 +377,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         if request.user.is_superuser or request.user.is_office_worker:
             for header, data in fieldsets:
                 if header == "Interní data":
-                    if "internal_note" not in data["fields"]:
-                        data["fields"].append("internal_note")
+                    if "office_workers_note" not in data["fields"]:
+                        data["fields"].append("office_workers_note")
 
                     if request.user.is_superuser and "get_token" not in data["fields"]:
                         data["fields"].append("get_token")

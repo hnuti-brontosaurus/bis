@@ -19,7 +19,7 @@ class Donor(Model):
     formal_vokativ = CharField(max_length=63, blank=True)
     subscribed_to_newsletter = BooleanField(default=True)
     is_public = BooleanField(default=True)
-    internal_note = TextField(blank=True)
+    fundraisers_note = TextField(blank=True)
     do_not_call = BooleanField(default=False)
     do_not_solicit = BooleanField(default=False)
 
@@ -61,7 +61,7 @@ class Donor(Model):
             elif field.name in [
                 "regional_center_support",
                 "basic_section_support",
-                "internal_note",
+                "fundraisers_note",
                 "formal_vokativ",
             ]:
                 if not getattr(self, field.name) and getattr(other, field.name):
@@ -206,7 +206,7 @@ class DonorEvent(Model):
         on_delete=PROTECT,
         related_name="events",
     )
-    note = TextField(blank=True)
+    fundraisers_note = TextField(blank=True)
     pledge = TextField(blank=True)
     reminder = DateTimeField(null=True, blank=True)
     created_by = ForeignKey(

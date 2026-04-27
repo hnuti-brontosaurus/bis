@@ -110,9 +110,9 @@ def _annotate_worklist(qs, campaign):
             donor=OuterRef("pk"),
             campaign=campaign,
         )
-        .exclude(note="")
+        .exclude(fundraisers_note="")
         .order_by("-created_at")
-        .values("note")[:1],
+        .values("fundraisers_note")[:1],
         output_field=CharField(),
     )
 

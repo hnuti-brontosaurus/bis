@@ -53,7 +53,7 @@ User:
       - Problémový účastník
       - Pokud vyplněno, zobrazí se jako varování organizátorům akcí u přihlášky
     roles: Role
-    internal_note: Poznámka ústředí
+    office_workers_note: Poznámka ústředí
     subscribed_to_newsletter: Odebírá novinky?
     last_after_event_email: Poslední e-mail po akci
     is_contact_information_verified: Ověřil své kontaktní údaje?
@@ -199,6 +199,7 @@ QualificationNote:
   name: Poznámka ke kvalifikacím uživatele
   name_plural: Poznámky ke kvalifikacím uživatele
   fields:
+    education_members_note: Poznámka
 
 Event:
   name: Akce
@@ -235,6 +236,9 @@ Event:
     other_organizers: Další organizátoři
     is_attendance_list_required: Je prezenční listina vyžadována?
     vip_propagation: Je akce propagována v rámci VIP propagace?
+    organizers_note:
+      - Privátní poznámka
+      - Možnost přidat interní poznámku. Poznámku uvidí pouze lidé, kteří si mohou tuto akci zobrazit přímo v BISu.
 
 EventFinance:
   name: Finance akce
@@ -328,7 +332,6 @@ EventRecord:
     comment_on_work_done: Komentář k vykonané práci
     attendance_list_pages: Prezenční listina
     participants: Účastníci
-    note: Poznámka k průběhu akce
     feedback_form: Formulář zpětné vazby
     number_of_participants:
       - Počet účastníků
@@ -371,6 +374,7 @@ EventApplication:
     state: Stav
     is_child_application: Přihláška dítěte dospělým
     paid_for: Zaplacena?
+    applicant_note: Poznámka
 EventApplicationClosePerson:
   name: Rodič / blízká osoba
   name_plural: Rodič / blízká osoba
@@ -526,6 +530,7 @@ Donor:
     basic_section_support: podpora ZČ
     do_not_call: Už nevolat
     do_not_solicit: Už nežádat o dar
+    fundraisers_note: Interní poznámka
 Pledge:
   name: Pravidelný dar
   name_plural: Pravidelné dary
@@ -563,6 +568,7 @@ DonorEvent:
     campaign: Kampaň
     pledge: Příslib
     reminder: Připomínka
+    fundraisers_note: Poznámka
 VariableSymbol:
   name: Variabilní symbol
   name_plural: Variabilní symboly

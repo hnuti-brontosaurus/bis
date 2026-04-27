@@ -250,7 +250,10 @@ def test_call_form_rejects_postponed_without_reminder(
     client.force_login(caller)
 
     url = reverse("admin:donations_telesales_call", args=[campaign.id, donor.id])
-    response = client.post(url, {"outcome": "call_postponed", "note": "", "pledge": ""})
+    response = client.post(
+        url,
+        {"outcome": "call_postponed", "fundraisers_note": "", "pledge": ""},
+    )
 
     assert response.status_code == 200
     assert "Připomenutí je povinné".encode() in response.content
@@ -269,7 +272,13 @@ def test_call_form_rejects_postponed_with_past_reminder(
     past = (timezone.now() - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
     url = reverse("admin:donations_telesales_call", args=[campaign.id, donor.id])
     response = client.post(
-        url, {"outcome": "call_postponed", "note": "", "pledge": "", "reminder": past}
+        url,
+        {
+            "outcome": "call_postponed",
+            "fundraisers_note": "",
+            "pledge": "",
+            "reminder": past,
+        },
     )
 
     assert response.status_code == 200

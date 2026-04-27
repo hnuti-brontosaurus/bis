@@ -17,7 +17,6 @@ class EventFeedback(Model):
     name = CharField(max_length=63, blank=True)
     email = EmailField(blank=True, null=True)
     created_at = DateTimeField(auto_now_add=True)
-    note = TextField(blank=True)
 
     class Meta:
         ordering = ("id",)

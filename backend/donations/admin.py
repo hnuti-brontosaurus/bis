@@ -126,7 +126,7 @@ class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
     fields = (
         "event_type",
         "campaign",
-        "note",
+        "fundraisers_note",
         "pledge",
         "reminder",
         "created_at",

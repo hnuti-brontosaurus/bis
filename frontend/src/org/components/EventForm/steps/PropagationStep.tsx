@@ -262,7 +262,7 @@ export const PropagationStep = ({
           >
             <FullSizeElement>
               <FormInputError>
-                <textarea {...register('internal_note', {})} />
+                <textarea {...register('organizers_note', {})} />
               </FormInputError>
             </FullSizeElement>
           </FormSection>

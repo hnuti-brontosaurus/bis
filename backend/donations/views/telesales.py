@@ -27,7 +27,9 @@ OUTCOME_LABELS = dict(OUTCOME_CHOICES)
 
 class CallForm(forms.Form):
     outcome = forms.ChoiceField(choices=OUTCOME_CHOICES)
-    note = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    fundraisers_note = forms.CharField(
+        required=False, widget=forms.Textarea(attrs={"rows": 3})
+    )
     pledge = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 2}))
     reminder = forms.DateTimeField(
         required=False,
@@ -103,7 +105,7 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
                 donor=donor,
                 event_type=DonorEventCategory.objects.get(slug=outcome),
                 campaign=campaign,
-                note=form.cleaned_data["note"],
+                fundraisers_note=form.cleaned_data["fundraisers_note"],
                 pledge=form.cleaned_data["pledge"],
                 reminder=form.cleaned_data["reminder"],
                 created_by=request.user,

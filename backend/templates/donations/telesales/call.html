@@ -49,7 +49,7 @@
       <tr>
         <td>{{ event.created_at|date:"j. n. Y H:i" }}</td>
         <td>{{ event.event_type }}</td>
-        <td>{{ event.note }}</td>
+        <td>{{ event.fundraisers_note }}</td>
         <td>{{ event.pledge }}</td>
         <td>{% if event.reminder %}{{ event.reminder|date:"j. n. Y H:i" }}{% endif %}</td>
         <td>{% if event.created_by %}{{ event.created_by }}{% endif %}</td>
@@ -104,9 +104,9 @@
   </fieldset>
 
   <p>
-    <label for="{{ form.note.id_for_label }}">Poznámka:</label>
-    {{ form.note }}
-    {% if form.note.errors %}<p class="help telesales-error">{{ form.note.errors.0 }}</p>{% endif %}
+    <label for="{{ form.fundraisers_note.id_for_label }}">Poznámka:</label>
+    {{ form.fundraisers_note }}
+    {% if form.fundraisers_note.errors %}<p class="help telesales-error">{{ form.fundraisers_note.errors.0 }}</p>{% endif %}
   </p>
 
   <p>

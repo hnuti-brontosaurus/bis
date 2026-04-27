@@ -143,7 +143,7 @@ const validationSchema: yup.ObjectSchema<RegistrationFormShape> = yup.object({
       then: schema => schema.defined(),
       otherwise: schema => schema.required(),
     }),
-  note: yup.string(),
+  applicant_note: yup.string(),
   birthday: birthdayValidation.required(),
   close_person: yup
     .object({
@@ -372,7 +372,7 @@ export const EventRegistrationForm = ({
               <InlineSection>
                 <Label>Poznámka</Label>
                 <FormInputError>
-                  <textarea {...register('note')} />
+                  <textarea {...register('applicant_note')} />
                 </FormInputError>
               </InlineSection>
             </FormSection>

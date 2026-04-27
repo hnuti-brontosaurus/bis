@@ -1,28 +1,20 @@
 from contextlib import nullcontext
-from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
 from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.forms import SortableHiddenMixin
-from nested_admin.nested import (
-    NestedModelAdmin,
-    NestedStackedInline,
-    NestedTabularInline,
-)
 from rangefilter.filters import DateRangeFilter
 
 from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
-from bis.helpers import AgeStats, paused_validation
+from bis.helpers import paused_validation
 from event.models import *
 from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
 from feedback.models import EventFeedback
-from questionnaire.admin import EventApplicationAdmin, QuestionnaireAdmin
 from translation.translate import _
 from xlsx_export.export import (
     do_export_to_xlsx,
@@ -31,166 +23,6 @@ from xlsx_export.export import (
     export_to_xlsx_response,
     get_attendance_list,
 )
-
-
-class EventPropagationImageAdmin(
-    PermissionMixin, SortableHiddenMixin, NestedTabularInline
-):
-    model = EventPropagationImage
-    sortable_field_name = "order"
-    readonly_fields = ("image_tag",)
-    extra = 3
-    classes = ("collapse",)
-
-    def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj, **kwargs)
-
-        if self.saving_raw(request):
-            return formset
-
-        class New1(formset):
-            def clean(_self):
-                super().clean()
-                forms = [form for form in _self.forms if form.is_valid()]
-                forms = [form for form in forms if form.cleaned_data.get("image")]
-                forms = [
-                    form
-                    for form in forms
-                    if not (_self.can_delete and _self._should_delete_form(form))
-                ]
-                if len(forms) < 1 and request._event_propagation_needs_image:
-                    raise ValidationError("Nutno nahrát alespoň jeden obrázek")
-
-        return New1
-
-
-class EventPhotoAdmin(PermissionMixin, NestedTabularInline):
-    model = EventPhoto
-    readonly_fields = ("photo_tag",)
-    extra = 3
-    classes = ("collapse",)
-
-
-class AttendanceListPageAdmin(PermissionMixin, NestedTabularInline):
-    model = EventAttendanceListPage
-    extra = 3
-    classes = ("collapse",)
-
-
-class EventContactAdmin(PermissionMixin, NestedTabularInline):
-    model = EventContact
-    classes = ("collapse",)
-
-
-class EventFinanceReceiptAdmin(PermissionMixin, NestedStackedInline):
-    model = EventFinanceReceipt
-    classes = ("collapse",)
-
-
-class EventFinanceAdmin(PermissionMixin, NestedStackedInline):
-    model = EventFinance
-    classes = ("collapse",)
-
-    exclude = "grant_category", "grant_amount", "total_event_cost"
-
-    inlines = (EventFinanceReceiptAdmin,)
-
-
-class EventVIPPropagationAdmin(PermissionMixin, NestedStackedInline):
-    model = VIPEventPropagation
-    classes = ("collapse",)
-
-
-class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
-    model = EventPropagation
-    inlines = (EventPropagationImageAdmin,)
-    classes = ("collapse",)
-
-    exclude = ("_contact_url",)
-
-    def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj, **kwargs)
-
-        class New1(formset):
-            def clean(_self):
-                request._event_propagation_needs_image = bool(
-                    getattr(_self, "cleaned_data", [True])[0]
-                ) and not (
-                    _self.can_delete and _self._should_delete_form(_self.forms[0])
-                )
-                return super().clean()
-
-        return New1
-
-
-class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
-    model = EventRegistration
-    classes = ("collapse",)
-    inlines = QuestionnaireAdmin, EventApplicationAdmin
-
-
-class EventRecordAdmin(PermissionMixin, NestedStackedInline):
-    model = EventRecord
-    inlines = (
-        EventPhotoAdmin,
-        AttendanceListPageAdmin,
-        EventContactAdmin,
-    )
-
-    readonly_fields = (
-        "get_participants_age_stats_event_start",
-        "get_participants_age_stats_year_start",
-        "get_participants_table",
-    )
-    autocomplete_fields = ("participants",)
-
-    @admin.display(
-        description="Statistika věku účastníků a organizátorů k začátku akce"
-    )
-    def get_participants_age_stats_event_start(self, obj):
-        return AgeStats(
-            "účastníků", obj.get_all_participants(), obj.event.start
-        ).as_table()
-
-    @admin.display(
-        description="Statistika věku účastníků a organizátorů k začátku roku"
-    )
-    def get_participants_age_stats_year_start(self, obj):
-        return AgeStats(
-            "účastníků", obj.get_all_participants(), date(obj.event.start.year, 1, 1)
-        ).as_table()
-
-    @admin.display(description="E-maily účastníků a organizátorů")
-    def get_participants_table(self, obj):
-        def make_cell(item):
-            return f"<td>{item}</td>"
-
-        def make_row(items):
-            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
-
-        # participants = obj.record.get_all_participants()
-        # header = []
-        # participants = []
-        # rows = [make_row(row) for row in participants]
-        # rows = [header] + rows
-
-        html = [
-            # f'<table>{"".join(rows)}</table>',
-            '<input type="submit" value="E-maily účastníků" name="_attendance_list_emails_export"><br>',
-            '<input type="submit" value="E-maily účastníků a organizátorů" name="_attendance_list_all_emails_export"><br>',
-            '<input type="submit" value="Zobrazit přihlášky / účastníky v BISu" name="_redirect_to_fe_attendance_list"><br>',
-        ]
-        return mark_safe("".join(html))
-
-    def get_formset(self, request, obj=None, **kwargs):
-        kwargs.update(
-            {
-                "help_texts": {
-                    "get_participants_age_stats_year_start": "Pro podmínky dotací",
-                }
-            }
-        )
-        return super().get_formset(request, obj, **kwargs)
 
 
 @admin.action(description="Zarchivovat akce")
@@ -205,17 +37,10 @@ def export_feedbacks(model_admin, request, queryset):
 
 
 @admin.register(Event)
-class EventAdmin(PermissionMixin, NestedModelAdmin):
+class EventAdmin(PermissionMixin, admin.ModelAdmin):
     change_form_template = "bis/event_change_form.html"
 
     actions = [mark_as_archived, export_to_xlsx, export_feedbacks]
-    inlines = (
-        EventFinanceAdmin,
-        EventPropagationAdmin,
-        EventVIPPropagationAdmin,
-        EventRecordAdmin,
-    )
-    filter_horizontal = ("other_organizers",)
 
     list_filter = [
         list_filter_extra_text(
@@ -334,59 +159,29 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 "record__participants",
                 "tags",
             )
-        else:
-            qs = qs.prefetch_related(
-                "administration_units",
-                "record__participants",
-                "record__photos",
-                "finance__receipts",
-            )
         return qs
 
     date_hierarchy = "start"
     search_fields = Event.get_search_fields()
-    readonly_fields = "duration", "created_by", "created_at", "closed_at"
 
-    autocomplete_fields = (
-        "main_organizer",
-        "other_organizers",
-        "location",
-        "administration_units",
+    fields = (
+        "name",
+        "is_canceled",
+        "is_closed",
+        "is_archived",
+        "is_attendance_list_required",
+        "duration",
+        "created_by",
+        "created_at",
+        "closed_at",
     )
-
-    exclude = "_import_id", "_search_field"
-
-    def get_form(self, request, obj=None, change=False, **kwargs):
-        form = super(EventAdmin, self).get_form(request, obj, change, **kwargs)
-        user = request.user
-
-        class F1(form):
-            def clean(_self):
-                super().clean()
-                if not user.is_superuser and not user.is_office_worker:
-                    if not any(
-                        [
-                            any(
-                                [
-                                    au in user.administration_units.all()
-                                    for au in _self.cleaned_data.get(
-                                        "administration_units", []
-                                    )
-                                ]
-                            ),
-                            _self.cleaned_data.get("main_organizer") == user,
-                            user
-                            in _self.cleaned_data.get("other_organizers", []).all(),
-                        ]
-                    ):
-                        raise ValidationError(
-                            "Akci musíš vytvořit pod svou organizační jednotkou nebo "
-                            "musíš být v organizátorském týmu"
-                        )
-
-                return _self.cleaned_data
-
-        return F1
+    readonly_fields = (
+        "name",
+        "duration",
+        "created_by",
+        "created_at",
+        "closed_at",
+    )
 
     def save_related(self, request, form, formsets, change):
         if request.method == "POST" and "_save_raw" in request.POST:

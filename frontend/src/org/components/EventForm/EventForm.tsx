@@ -116,7 +116,7 @@ const shapes = {
     'propagation.working_hours',
     'propagation.working_days',
     'propagation.web_url',
-    'internal_note',
+    'organizers_note',
   ],
   invitation: [
     'propagation.invitation_text_introduction',

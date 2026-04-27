@@ -148,7 +148,7 @@ export type EventApplicationPayload = Pick<
   | 'phone'
   | 'email'
   | 'birthday'
-  | 'note'
+  | 'applicant_note'
   | 'nickname'
   | 'close_person'
   | 'health_issues'

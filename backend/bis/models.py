@@ -277,7 +277,7 @@ class User(SearchMixin, AbstractBaseUser):
     date_joined = DateField(default=datetime.date.today)
     last_after_event_email = DateField(blank=True, null=True)
     is_contact_information_verified = BooleanField(default=False)
-    internal_note = TextField(blank=True)
+    office_workers_note = TextField(blank=True)
 
     _import_id = CharField(max_length=255, default="")
     _str = CharField(max_length=255)
@@ -486,7 +486,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "behaviour_issues",
                     "pronoun",
                     "subscribed_to_newsletter",
-                    "internal_note",
+                    "office_workers_note",
                     "photo",
                     "last_after_event_email",
                     "is_contact_information_verified",
@@ -1092,7 +1092,7 @@ class Qualification(Model):
 class QualificationNote(Model):
     user = ForeignKey(User, on_delete=CASCADE, related_name="qualification_notes")
     created_by = ForeignKey(User, on_delete=CASCADE, related_name="+")
-    note = TextField()
+    education_members_note = TextField()
     created_at = DateField(auto_now_add=True)
 
     class Meta:

@@ -60,7 +60,7 @@ export const user = {
   close_person: 'Rodič / blízká osoba',
   health_insurance_company: 'Pojišťovna',
   roles: 'Role',
-  internal_note: 'Poznámka ústředí',
+  office_workers_note: 'Poznámka ústředí',
   subscribed_to_newsletter: 'Odebírá novinky?',
 } as const
 
@@ -195,7 +195,7 @@ export const event = {
   _name_plural: 'Akce',
   group: 'Délka',
   category: 'Typ',
-  internal_note: 'Privátní poznámka',
+  organizers_note: 'Privátní poznámka',
   program: 'Program',
   intended_for: 'Pro koho?',
   location: ['Lokalita', 'Zobrazí se na webu jako místo konání akce'],
@@ -337,7 +337,6 @@ export const eventRecord = {
   comment_on_work_done: 'Okomentování vykonané práce',
   attendance_list_pages: 'Prezenční listina',
   participants: 'Účastníci',
-  note: 'Poznámka k akci',
   number_of_participants: [
     'Počet účastníků',
     'Vyplň pouze pokud nejsou vyplnění konkrétní účastníci',
@@ -378,6 +377,7 @@ export const eventApplication = {
   _name_plural: 'Přihláška na akci',
   event_registration: 'Přihlášení na akci',
   state: 'Stav',
+  applicant_note: 'Poznámka',
 } as const
 
 export const eventApplicationClosePerson = {
@@ -517,7 +517,7 @@ export const donor = {
   regional_center_support: 'podpora RC',
   basic_section_support: 'podpora ZČ',
   has_recurrent_donation: 'Pravidelný dárce',
-  internal_note: 'Interní poznámka',
+  fundraisers_note: 'Interní poznámka',
 } as const
 
 export const donation = {

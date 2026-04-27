@@ -436,7 +436,7 @@ export const ViewEvent = ({ readonly }: { readonly?: boolean }) => {
                 <tr>
                   <th>Poznámka</th>
                   <td>
-                    {event.internal_note == '' ? '-' : event.internal_note}
+                    {event.organizers_note == '' ? '-' : event.organizers_note}
                   </td>
                 </tr>
               </tbody>

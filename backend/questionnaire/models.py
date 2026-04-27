@@ -45,8 +45,7 @@ class EventApplication(Model):
     )
 
     created_at = DateTimeField(auto_now_add=True)
-    note = TextField(blank=True)
-    internal_note = TextField(blank=True)
+    applicant_note = TextField(blank=True)
     paid_for = BooleanField(default=False)
 
     class Meta:

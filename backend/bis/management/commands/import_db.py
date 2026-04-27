@@ -614,7 +614,7 @@ class Command(BaseCommand):
             #     intended_for=self.event_intended_for_category_map[item['prokoho']],
             #     main_organizer=self.user_map.get(item.get('odpovedna')),
             #     number_of_sub_events=item['pocet'],
-            #     internal_note=item['poznamka'] or '',
+            #     organizers_note=item['poznamka'] or '',
             # ))[0]
             event = Event.objects.filter(_import_id=id).first()
 

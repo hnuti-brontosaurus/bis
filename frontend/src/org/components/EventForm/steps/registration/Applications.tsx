@@ -242,7 +242,7 @@ export const Applications: FC<{
             }
           />
         ))}
-        <td onClick={showDetails}>{application.note}</td>
+        <td onClick={showDetails}>{application.applicant_note}</td>
         <td>
           <div className={styles.actionCell}>
             <PaidForCheckbox

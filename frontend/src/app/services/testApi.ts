@@ -3053,7 +3053,6 @@ export type Record = {
   number_of_participants?: number | null
   /** Vyplň pouze pokud nejsou vyplnění konkrétní účastníci */
   number_of_participants_under_26?: number | null
-  note?: string
   contacts?: EventContact[]
   is_event_closed_email_enabled?: boolean
 }
@@ -3082,7 +3081,7 @@ export type Event = {
   main_organizer: string
   other_organizers?: User[]
   is_attendance_list_required?: boolean
-  internal_note?: string
+  organizers_note?: string
   duration: number
   finance: Finance | null
   propagation: Propagation | null
@@ -3315,7 +3314,6 @@ export type EventFeedback = {
   user?: string | null
   name?: string
   email?: string | null
-  note?: string
   replies: Reply[]
 }
 export type EventFeedbackRead = {
@@ -3324,7 +3322,6 @@ export type EventFeedbackRead = {
   name?: string
   email?: string | null
   created_at: string
-  note?: string
   replies: ReplyRead[]
 }
 export type PaginatedEventFeedbackList = {
@@ -3343,7 +3340,6 @@ export type PatchedEventFeedback = {
   user?: string | null
   name?: string
   email?: string | null
-  note?: string
   replies?: Reply[]
 }
 export type PatchedEventFeedbackRead = {
@@ -3352,7 +3348,6 @@ export type PatchedEventFeedbackRead = {
   name?: string
   email?: string | null
   created_at?: string
-  note?: string
   replies?: ReplyRead[]
 }
 export type EventPhoto = {
@@ -3419,7 +3414,7 @@ export type EventApplication = {
   close_person: EventApplicationClosePerson | null
   address: EventApplicationAddress | null
   answers: Answer[]
-  note?: string
+  applicant_note?: string
   is_child_application?: boolean
   paid_for: boolean
 }
@@ -3445,7 +3440,7 @@ export type PatchedEventApplication = {
   close_person?: EventApplicationClosePerson | null
   address?: EventApplicationAddress | null
   answers?: Answer[]
-  note?: string
+  applicant_note?: string
   is_child_application?: boolean
   paid_for?: boolean
 }
@@ -3490,7 +3485,7 @@ export type PatchedEvent = {
   main_organizer?: string
   other_organizers?: User[]
   is_attendance_list_required?: boolean
-  internal_note?: string
+  organizers_note?: string
   duration?: number
   finance?: Finance | null
   propagation?: Propagation | null

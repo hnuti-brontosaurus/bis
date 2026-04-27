@@ -186,7 +186,7 @@ export const ShowApplicationModal: FC<IShowApplicationModalProps> = ({
               <div>
                 <h5>Poznámka</h5>
               </div>
-              <div>{currentApplication.note}</div>
+              <div>{currentApplication.applicant_note}</div>
             </div>
           </div>
         )}

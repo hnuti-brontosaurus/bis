@@ -160,7 +160,7 @@
         </td>
         <td class="telesales-note">
           {% if donor.recent_campaign_events %}
-            {{ donor.recent_campaign_events.0.note|truncatechars:60 }}
+            {{ donor.recent_campaign_events.0.fundraisers_note|truncatechars:60 }}
           {% endif %}
         </td>
         <td>
