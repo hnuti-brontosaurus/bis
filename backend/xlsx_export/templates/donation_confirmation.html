@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+            margin: 0;
+        }
+
+        .header img {
+            display: block;
+            width: 100%;
+        }
+
+        .content {
+            padding: 0 2.5cm;
+        }
+
+        .date {
+            text-align: right;
+            margin-top: 1.5cm;
+            margin-bottom: 1.5cm;
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 13pt;
+        }
+
+        .body-text {
+            text-align: justify;
+            margin-bottom: 1.5cm;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+        }
+
+        .signatures > img {
+            height: 3cm;
+        }
+
+        .signature-block img {
+            height: 1.5cm;
+        }
+
+        .signature-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .signer {
+            text-align: center;
+            margin-bottom: 1cm;
+        }
+
+        .legal-text {
+            text-align: justify;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9pt;
+            color: #1c8a3c;
+            padding-bottom: 1cm;
+        }
+
+        .footer hr {
+            border: none;
+            border-top: 1px solid #1c8a3c;
+            margin: 0 2.5cm 0.4cm 2.5cm;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <img src="header.png" alt="Hnutí Brontosaurus">
+</div>
+
+<div class="content">
+    <div class="date">V Brně dne {{ date }}</div>
+
+    <div class="title">Potvrzení o přijetí daru</div>
+
+    <div class="body-text">
+        {% if company %}
+            Potvrzujeme, že firma {{ company.name }}, IČO {{ company.ico }},
+            sídlem {{ company.address }} v roce {{ year }} poskytla dar Hnutí Brontosaurus
+            ve výši {{ amount }} Kč.
+        {% else %}
+            Potvrzujeme, že {{ pronoun }} {{ first_name }} {{ last_name }},
+            trvale bytem {{ address }} v roce {{ year }} {{ provided }} dar Hnutí Brontosaurus
+            ve výši {{ amount }} Kč.
+        {% endif %}
+        Tento dar byl v souladu se Zákonem č. 586/1992 Sb., o daních z příjmů, ve znění
+        pozdějších předpisů dle § 15 odst. 1, poskytnut na podporu mládeže a ekologické účely.
+    </div>
+
+    <div class="signatures">
+        <img src="stamp.png" alt="Razítko">
+        <div class="signature-block">
+            <img src="signature.png" alt="Podpis">
+            <div class="signer">
+                Ing. Josef Dvořáček<br>
+                finanční ředitel<br>
+                Hnutí Brontosaurus
+            </div>
+        </div>
+    </div>
+
+    <div class="legal-text">
+        Toto potvrzení se vystavuje pro potřeby snížení základu daně podle zákona o dani
+        z příjmu č. 586/1992 Sb.{% if not company %} Potvrzení o přijetí daru je potřeba
+        doložit ke svému Přiznání k dani z příjmů nebo předat svému zaměstnavateli
+        k provedení ročního zúčtování daně z příjmů fyzických osob.{% endif %}
+    </div>
+</div>
+
+<div class="footer">
+    <hr>
+    Hnutí Brontosaurus • Cejl 35, Brno 602 00 • IČ: 004 08 328<br>
+    hnuti@brontosaurus.cz • tel: +420 734 392 735 • www.brontosaurus.cz
+</div>
+</body>
+</html>

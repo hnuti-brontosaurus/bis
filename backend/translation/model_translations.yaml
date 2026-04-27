@@ -569,6 +569,14 @@ VariableSymbol:
   fields:
     donor: Dárce
     variable_symbol: Variabilní symbol
+Company:
+  name: Firma
+  name_plural: Firmy
+  fields:
+    donor: Dárce
+    name: Název firmy
+    ico: IČO
+    address: Sídlo
 UploadBankRecords:
   name: Nahrání bankovních záznamů
   name_plural: Nahrání bankovních záznamů

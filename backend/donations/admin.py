@@ -36,6 +36,7 @@ from bis.permissions import Permissions
 from categories.models import DonorEventCategory, PronounCategory
 from donations.helpers import upload_bank_records
 from donations.models import (
+    Company,
     Donation,
     Donor,
     DonorEvent,
@@ -110,6 +111,11 @@ class DonationAdminInline(PermissionMixin, NestedTabularInline):
 
 class VariableSymbolInline(PermissionMixin, NestedTabularInline):
     model = VariableSymbol
+    extra = 0
+
+
+class CompanyInline(PermissionMixin, NestedTabularInline):
+    model = Company
     extra = 0
 
 
@@ -271,6 +277,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         "basic_section_support",
     )
     inlines = (
+        CompanyInline,
         VariableSymbolInline,
         DonationAdminInline,
         DonorEventAdminInline,

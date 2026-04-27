@@ -126,6 +126,20 @@ class Donor(Model):
 
 
 @translate_model
+class Company(Model):
+    donor = OneToOneField(Donor, related_name="company", on_delete=CASCADE)
+    name = CharField(max_length=255)
+    ico = CharField(max_length=15)
+    address = CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ("id",)
+
+
+@translate_model
 class VariableSymbol(Model):
     donor = ForeignKey(Donor, related_name="variable_symbols", on_delete=CASCADE)
     variable_symbol = PositiveBigIntegerField(unique=True)

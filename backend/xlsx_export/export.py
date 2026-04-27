@@ -1,12 +1,10 @@
 import logging
 import os
-from base64 import b64encode
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from datetime import date
 from itertools import zip_longest
-from os.path import join
 from pathlib import Path
 from shutil import copy2, make_archive
 from tempfile import TemporaryDirectory
@@ -14,33 +12,26 @@ from threading import Lock
 from time import sleep
 from zipfile import ZIP_DEFLATED, ZipFile
 
-import openpyxl
 import xlsxwriter
 from django.conf import settings
 from django.contrib import admin, messages
-from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import FileResponse
 from django.template import Context, Template
 from django.utils.formats import date_format
-from PIL import Image, ImageDraw, ImageFont
-from rest_framework.serializers import CharField, ModelSerializer, Serializer
+from rest_framework.serializers import ModelSerializer
 from weasyprint import HTML
-from xlsx2html import xlsx2html
 
 from bis import emails
 from bis.helpers import print_progress
 from bis.models import User
-from common.thumbnails import get_thumbnail_path
 from event.models import Event
 from feedback.models import EventFeedback
 from other.models import SavedFile
-from project.settings import BASE_DIR
 from questionnaire.models import EventApplication
 from translation.translate import _
-from xlsx_export.helpers import text_into_lines
 from xlsx_export.serializers import (
     AdministrationUnitExportSerializer,
     DonationExportSerializer,
@@ -639,27 +630,11 @@ def export_files(event: Event):
 
 
 def get_donation_confirmation(donor):
-    fixtures = Path(join(BASE_DIR, "xlsx_export", "fixtures"))
-
-    # template is here https://docs.google.com/document/d/1mu5JAIUywyCz4LcbQ3BcQjHFAHbkhQ09/edit
-    # and converted using https://pdf2png.com/
-    background = Image.open(fixtures / "donation_confirmation_template.png")
-    page = Image.new("RGB", background.size, (255, 255, 255))
-    page.paste(background)
-    page = page.resize((page.width * 3, page.height * 3))
-
-    draw = ImageDraw.Draw(page)
-    font = ImageFont.truetype(str(fixtures / "ARIAL.TTF"), size=3 * 34)
-
     today = date.today()
     year = today.year - 1 if today.month < 6 else today.year
     created_at = today
     if today.month < 6:
         created_at = min(today, date(today.year, 1, 31))
-
-    text = date_format(created_at)
-    text_params = dict(fill=(0, 0, 0), font=font, spacing=1.5 * 34)
-    draw.text((1244 * 3, 379 * 3 - 1), text, **text_params)
 
     total = sum(
         donation.amount for donation in donor.donations.filter(donated_at__year=year)
@@ -667,25 +642,41 @@ def get_donation_confirmation(donor):
     assert total > 0, f"{donor} za poslední rok nic nedaroval"
 
     pronoun = donor.user.pronoun and donor.user.pronoun.slug
-    pronoun_texts = ["pan/slečna/paní", "poskytl/a"]
+    pronoun_text, provided_text = "pan/slečna/paní", "poskytl/a"
     if pronoun == "man":
-        pronoun_texts = ["pan", "poskytl"]
+        pronoun_text, provided_text = "pan", "poskytl"
     if pronoun == "woman":
-        pronoun_texts = ["paní", "poskytla"]
+        pronoun_text, provided_text = "paní", "poskytla"
 
-    text = (
-        f"Potvrzujeme, že {pronoun_texts[0]} {donor.user.first_name} {donor.user.last_name}, "
-        f"trvale bytem {donor.user.address}, "
-        f"v roce {year} {pronoun_texts[1]} dar Hnutí Brontosaurus ve výši {total} Kč. "
+    template_path = (
+        Path(settings.BASE_DIR)
+        / "xlsx_export"
+        / "templates"
+        / "donation_confirmation.html"
     )
-
-    text += "Tento dar byl v souladu se Zákonem č. 586/1992 Sb., o daních z příjmů, ve znění pozdějších předpisů dle § 15 odst. 1, poskytnut na podporu mládeže a ekologické účely."
-    text = text_into_lines(draw, font, text, 4000)
-    draw.text((176 * 3, 600 * 3 - 1), text, **text_params)
-
-    page = page.resize((page.width // 3, page.height // 3), Image.LANCZOS)
+    template = Template(template_path.read_text())
+    context = Context(
+        {
+            "date": date_format(created_at),
+            "year": year,
+            "amount": total,
+            "pronoun": pronoun_text,
+            "provided": provided_text,
+            "first_name": donor.user.first_name,
+            "last_name": donor.user.last_name,
+            "address": donor.user.address,
+            "company": getattr(donor, "company", None),
+        }
+    )
+    html_content = template.render(context)
     tmp_pdf = NamedTemporaryFile(
-        mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
+        mode="w",
+        suffix=".pdf",
+        newline="",
+        encoding="utf8",
+        prefix="donation_confirmation_",
     )
-    page.save(tmp_pdf.name)
+    HTML(string=html_content, base_url=str(template_path.parent)).write_pdf(
+        tmp_pdf.name
+    )
     return open(tmp_pdf.name, "rb"), year

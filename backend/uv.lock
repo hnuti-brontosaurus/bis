@@ -54,15 +54,6 @@ wheels = [
 ]
 
 [[package]]
-name = "babel"
-version = "2.17.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7d/6b/d52e42361e1aa00709585ecc30b3f9684b3ab62530771402248b1b1d6240/babel-2.17.0.tar.gz", hash = "sha256:0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d", size = 9951852, upload-time = "2025-02-01T15:17:41.026Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/b8/3fe70c75fe32afc4bb507f75563d39bc5642255d1d94f1f23604725780bf/babel-2.17.0-py3-none-any.whl", hash = "sha256:4d0b53093fdfb4b21c92b5213dba5a1b23885afa8383709427046b21c366e5f2", size = 10182537, upload-time = "2025-02-01T15:17:37.39Z" },
-]
-
-[[package]]
 name = "bis-backend"
 version = "1.0.0"
 source = { virtual = "." }
@@ -111,8 +102,6 @@ dependencies = [
     { name = "unidecode" },
     { name = "vokativ" },
     { name = "weasyprint" },
-    { name = "xlrd" },
-    { name = "xlsx2html" },
     { name = "xlsxwriter" },
 ]
 
@@ -168,8 +157,6 @@ requires-dist = [
     { name = "unidecode", specifier = ">=1.3" },
     { name = "vokativ", specifier = ">=1.2" },
     { name = "weasyprint", specifier = ">=67.0" },
-    { name = "xlrd", specifier = ">=2.0" },
-    { name = "xlsx2html", specifier = ">=0.4" },
     { name = "xlsxwriter", specifier = ">=3.1" },
 ]
 
@@ -2066,30 +2053,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0b/02/ae6ceac1baeda530866a85075641cec12989bd8d31af6d5ab4a3e8c92f47/webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923", size = 9721, upload-time = "2017-04-05T20:21:34.189Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/24/2a3e3df732393fed8b3ebf2ec078f05546de641fe1b667ee316ec1dcf3b7/webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78", size = 11774, upload-time = "2017-04-05T20:21:32.581Z" },
-]
-
-[[package]]
-name = "xlrd"
-version = "2.0.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/07/5a/377161c2d3538d1990d7af382c79f3b2372e880b65de21b01b1a2b78691e/xlrd-2.0.2.tar.gz", hash = "sha256:08b5e25de58f21ce71dc7db3b3b8106c1fa776f3024c54e45b45b374e89234c9", size = 100167, upload-time = "2025-06-14T08:46:39.039Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/62/c8d562e7766786ba6587d09c5a8ba9f718ed3fa8af7f4553e8f91c36f302/xlrd-2.0.2-py2.py3-none-any.whl", hash = "sha256:ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9", size = 96555, upload-time = "2025-06-14T08:46:37.766Z" },
-]
-
-[[package]]
-name = "xlsx2html"
-version = "0.6.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "babel" },
-    { name = "openpyxl" },
-    { name = "packaging" },
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/1b/770c7c3d73b7dd0309f8aa640be19782f6762f03caa871edcb8c3fbd0ae6/xlsx2html-0.6.2.tar.gz", hash = "sha256:e3be926dca7c3217eabe6b9e4e50447b1c65cd2a16a711e395f5e9a1ac18ce9e", size = 19638, upload-time = "2025-01-09T11:40:59.176Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0c/26/a43d76e5ffddb1c2d958915fec5d99552a80559e6403ee3f0dd3db28fdea/xlsx2html-0.6.2-py2.py3-none-any.whl", hash = "sha256:d10d6c18be2e563a9fe8aee5dcadb2140be38e1090db717ede1b8ff09648452a", size = 17547, upload-time = "2025-01-09T11:40:53.929Z" },
 ]
 
 [[package]]
