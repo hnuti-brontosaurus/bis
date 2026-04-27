@@ -176,16 +176,35 @@ class Command(BaseCommand):
             point = Point(feature["geometry"]["coordinates"], srid=4326)
             data = self.get_location_data(_import_id)
 
+            parsed = self.parse_attributes(data["attributes_values"])
+            patron = parsed.pop("patron", None)
+            contact_person = parsed.pop("contact_person", None)
+
             location = Location.objects.update_or_create(
                 _import_id=f"m{_import_id}",
                 defaults=dict(
                     name=feature["properties"]["name"],
                     is_traditional=True,
                     **self.categories_map[feature["properties"]["category"]],
-                    **self.parse_attributes(data["attributes_values"]),
+                    **parsed,
                     gps_location=point,
                 ),
             )[0]
+
+            for related, model in (
+                (patron, LocationPatron),
+                (contact_person, LocationContactPerson),
+            ):
+                if related is None:
+                    continue
+                model.objects.update_or_create(
+                    location=location,
+                    defaults=dict(
+                        first_name=related.first_name,
+                        last_name=related.last_name,
+                        email=related.email,
+                    ),
+                )
 
             for image in self.get_images(_import_id):
                 path = image["image"]["origin"]["path"]
