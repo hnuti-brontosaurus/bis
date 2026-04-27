@@ -2,7 +2,7 @@ from django.db import migrations
 
 
 def create_default_registrations(apps, schema_editor):
-    Event = apps.get_model("event", "Event")
+    Event = apps.get_model("bis", "Event")
     EventRegistration = apps.get_model("event", "EventRegistration")
 
     missing = Event.objects.filter(registration__isnull=True)
