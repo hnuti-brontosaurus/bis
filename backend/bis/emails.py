@@ -699,7 +699,7 @@ def new_recurrent_donors():
         pledges__is_recurrent=True,
         pledges__recurrent_state=RecurrentState.COLLECTING,
         pledges__pledged_at=timezone.now().date() - timedelta(days=2),
-    ).exclude(donorevent__event_type=event_type)
+    ).exclude(events__event_type=event_type)
 
     if not donors.exists():
         return
@@ -732,7 +732,7 @@ def donated_10k():
     donors = (
         Donor.objects.annotate(total_donated=Sum("donations__amount"))
         .filter(total_donated__gte=10000)
-        .exclude(donorevent__event_type=event_type)
+        .exclude(events__event_type=event_type)
         .distinct()
     )
     if not donors.exists():
@@ -765,7 +765,7 @@ def donates_for_years():
                 pledges__recurrent_state=RecurrentState.COLLECTING,
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(donorevent__event_type__slug__icontains="pledge_")
+            .exclude(events__event_type__slug__icontains="pledge_")
             .distinct()
         )
 

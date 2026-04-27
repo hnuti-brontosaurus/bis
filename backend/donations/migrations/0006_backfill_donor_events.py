@@ -51,7 +51,7 @@ def backfill_donorevent(apps, schema_editor):
             times_donated__gte=2,
             last_donation_date__lt=today - relativedelta(months=2),
         )
-        .exclude(donorevent__event_type=event_type)
+        .exclude(events__event_type=event_type)
         .distinct()
     )
     bulk_create_donor_event(donors, event_type)
@@ -65,7 +65,7 @@ def backfill_donorevent(apps, schema_editor):
         pledges__is_recurrent=True,
         pledges__recurrent_state="collecting",
         pledges__pledged_at=today - timedelta(days=2),
-    ).exclude(donorevent__event_type=event_type)
+    ).exclude(events__event_type=event_type)
     bulk_create_donor_event(donors, event_type)
 
     # 3. donated_10k
@@ -79,7 +79,7 @@ def backfill_donorevent(apps, schema_editor):
     donors = (
         Donor.objects.annotate(total_donated=Sum("donations__amount"))
         .filter(total_donated__gte=10000)
-        .exclude(donorevent__event_type=event_type)
+        .exclude(events__event_type=event_type)
         .distinct()
     )
     bulk_create_donor_event(donors, event_type)
@@ -103,7 +103,7 @@ def backfill_donorevent(apps, schema_editor):
                 pledges__recurrent_state="collecting",
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(donorevent__event_type__slug__icontains="pledge_")
+            .exclude(events__event_type__slug__icontains="pledge_")
             .distinct()
         )
         bulk_create_donor_event(donors, event_type)
