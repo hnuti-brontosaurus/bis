@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
         cutoff = None if options["all"] else time.time() - options["since_days"] * 86400
 
-        events = Event.objects.order_by("start").iterator()
+        events = Event.objects.filter(is_archived=False).order_by("start").iterator()
 
         uploaded = 0
         for event in events:
