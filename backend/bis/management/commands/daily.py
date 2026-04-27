@@ -47,6 +47,7 @@ class Command(BaseCommand):
         try_to_run(call_command, "import_donations")
         try_to_run(call_command, "set_unique_user_str")
         try_to_run(call_command, "set_date_joined")
+        try_to_run(call_command, "export_event_files_to_drive")
         try_to_run(emails.event_not_closed_10_days)
         try_to_run(emails.event_not_closed_20_days)
         try_to_run(emails.send_automatic_feedback)

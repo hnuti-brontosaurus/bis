@@ -341,6 +341,7 @@ DARUJME_SECRET = environ.get("DARUJME_SECRET")
 HCAPTCHA_SECRET = environ["HCAPTCHA_SECRET"]
 GROQ_API_KEY = environ["GROQ_API_KEY"]
 GOOGLE_CREDENTIALS = environ.get("GOOGLE_CREDENTIALS")
+GOOGLE_SHARED_DRIVE_ID = "0APUaw_FPCiv7Uk9PVA"
 
 if DEBUG:
     import socket  # only if you haven't already imported this

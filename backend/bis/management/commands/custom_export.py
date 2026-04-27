@@ -1,12 +1,14 @@
-import json
 import logging
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 
+from bis.drive import (
+    build_drive_service,
+    get_existing_names,
+    get_or_create_folder,
+    upload_file,
+)
 from event.models import Event
 
 
@@ -15,18 +17,12 @@ class Command(BaseCommand):
         "Uploads all event files for 'Modrý Kámen' administration unit to Google Drive."
     )
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--shared-drive-id",
-            default="0APUaw_FPCiv7Uk9PVA",
-            help="ID of the Shared Drive where files will be uploaded",
-        )
-
     def handle(self, *args, **options):
-        service = self._build_drive_service()
-        shared_drive_id = options["shared_drive_id"]
-        folder_id = self._get_or_create_folder(
-            service, "Modrý kámen export", shared_drive_id
+        service = build_drive_service()
+        folder_id = get_or_create_folder(
+            service,
+            "Modrý kámen export",
+            parent_id=settings.GOOGLE_SHARED_DRIVE_ID,
         )
         logging.info(f"Using Drive folder id: {folder_id}")
 
@@ -44,7 +40,7 @@ class Command(BaseCommand):
             ]
             if not files:
                 continue
-            existing = self._get_existing_names(
+            existing = get_existing_names(
                 service, folder_id, [name for name, _ in files]
             )
             for drive_name, path in files:
@@ -52,50 +48,10 @@ class Command(BaseCommand):
                     logging.info(f"  Skipping (already exists): {drive_name}")
                     continue
                 logging.info(f"  Uploading: {drive_name}")
-                self._upload_file(service, folder_id, drive_name, path)
+                upload_file(service, folder_id, drive_name, path)
                 uploaded += 1
 
         logging.info(f"Done. Uploaded: {uploaded}")
-
-    def _build_drive_service(self):
-        credentials_info = json.loads(settings.GOOGLE_CREDENTIALS)
-        credentials_info["private_key"] = credentials_info["private_key"].replace(
-            "\\n", "\n"
-        )
-        credentials = service_account.Credentials.from_service_account_info(
-            credentials_info,
-            scopes=["https://www.googleapis.com/auth/drive"],
-        )
-        return build("drive", "v3", credentials=credentials)
-
-    def _get_or_create_folder(self, service, name, shared_drive_id):
-        results = (
-            service.files()
-            .list(
-                q=f"name='{self._escape_drive_query(name)}' and mimeType='application/vnd.google-apps.folder' and '{shared_drive_id}' in parents and trashed=false",
-                driveId=shared_drive_id,
-                corpora="drive",
-                includeItemsFromAllDrives=True,
-                supportsAllDrives=True,
-                fields="files(id)",
-            )
-            .execute()
-        )
-        if files := results.get("files", []):
-            return files[0]["id"]
-        return (
-            service.files()
-            .create(
-                body={
-                    "name": name,
-                    "mimeType": "application/vnd.google-apps.folder",
-                    "parents": [shared_drive_id],
-                },
-                supportsAllDrives=True,
-                fields="id",
-            )
-            .execute()["id"]
-        )
 
     def _collect_files(self, event):
         if hasattr(event, "finance"):
@@ -115,44 +71,3 @@ class Command(BaseCommand):
             for photo in event.record.photos.all():
                 if photo.photo:
                     yield photo.photo
-
-    @staticmethod
-    def _escape_drive_query(s: str) -> str:
-        return s.replace("\\", "\\\\").replace("'", "\\'")
-
-    def _get_existing_names(self, service, folder_id, names):
-        name_conditions = " or ".join(
-            f"name='{self._escape_drive_query(n)}'" for n in names
-        )
-        q = f"({name_conditions}) and '{folder_id}' in parents and trashed=false"
-        results = (
-            service.files()
-            .list(
-                q=q,
-                supportsAllDrives=True,
-                includeItemsFromAllDrives=True,
-                fields="files(name)",
-            )
-            .execute()
-        )
-        return {f["name"] for f in results.get("files", [])}
-
-    def _upload_file(self, service, folder_id, name, path):
-        import time
-
-        for attempt in range(5):
-            try:
-                service.files().create(
-                    body={"name": name, "parents": [folder_id]},
-                    media_body=MediaFileUpload(path, resumable=True),
-                    supportsAllDrives=True,
-                    fields="id",
-                ).execute()
-                return
-            except Exception as e:
-                if attempt == 4:
-                    raise
-                logging.warning(
-                    f"  Upload failed (attempt {attempt + 1}/5): {e}, retrying..."
-                )
-                time.sleep(2**attempt)
