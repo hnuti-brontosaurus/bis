@@ -101,7 +101,7 @@ def send_email(
         return
 
     if not recipients:
-        logging.exception("No recipients for email", extra=data)
+        logging.warning("No recipients for email", extra=data)
         return
 
     SendEmailSerializer(data=data).is_valid(raise_exception=True)
