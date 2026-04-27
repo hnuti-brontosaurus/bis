@@ -6,244 +6,1189 @@
 // by backend/translation/generate_translations.py whenever the yamls change.
 // source-hash: f5373207e787b6bc
 
-
-export const baseAddress = {"_name": "Adresa", "_name_plural": "Adresa"} as const;
-
-export const baseContact = {"_name": "Kontakt", "_name_plural": "Kontakt"} as const;
-
-export const location = {"_name": "Lokalita", "_name_plural": "Lokalita", "name": "Název lokality", "patron": "Kontakt v hnutí", "contact_person": "Kontakt na lokalitě", "for_beginners": "Vhodné pro začínající organizátory?", "is_full": "Je lokalita plně vytížená?", "is_unexplored": "Je lokalita nová/nevyužívaná?", "program": "Program lokality", "accessibility_from_prague": "Dostupnost z Prahy", "accessibility_from_brno": "Dostupnost z Brna", "volunteering_work": "Práce na lokalitě", "volunteering_work_done": "Čeho jsme na lokalitě dosáhli", "volunteering_work_goals": "Čeho chceme dosáhnout / péče o lokalitu", "options_around": "Možnosti programu a vzdělávání", "facilities": "Zázemí", "address": "Adresa", "web": "Web", "is_traditional": "Tradiční brontosauří lokalita?"} as const;
-
-export const locationPhoto = {"_name": "Fotka lokality", "_name_plural": "Fotka lokality"} as const;
-
-export const locationContactPerson = {"_name": "Kontakt na lokalitě", "_name_plural": "Kontakt na lokalitě"} as const;
-
-export const locationPatron = {"_name": "Kontakt v hnutí", "_name_plural": "Kontakt v hnutí"} as const;
-
-export const user = {"_name": "Uživatel", "_name_plural": "Uživatel", "vokativ": "Vokativ", "email_exists": "Je e-mail skutečný?", "is_active": "Může se uživatel přihlásit?", "date_joined": "Datum vzniku uživatelského profilu", "close_person": "Rodič / blízká osoba", "health_insurance_company": "Pojišťovna", "behaviour_issues": ["Problémový účastník", "Pokud vyplněno, zobrazí se jako varování organizátorům akcí u přihlášky"], "roles": "Role", "office_workers_note": "Poznámka ústředí", "subscribed_to_newsletter": "Odebírá novinky?", "last_after_event_email": "Poslední e-mail po akci", "is_contact_information_verified": "Ověřil své kontaktní údaje?"} as const;
-
-export const userClosePerson = {"_name": "Rodič / blízká osoba", "_name_plural": "Rodič / blízká osoba"} as const;
-
-export const userAddress = {"_name": "Adresa uživatele", "_name_plural": "Adresa uživatele"} as const;
-
-export const eYCACard = {"_name": "EYCA karta", "_name_plural": "EYCA karta", "number": "Číslo kartičky", "submitted_for_creation": "Předáno k výrobě", "sent_to_user": "Odesláno uživateli", "valid_till": "Platnost do"} as const;
-
-export const userContactAddress = {"_name": "Kontaktní adresa uživatele", "_name_plural": "Kontaktní adresa uživatele"} as const;
-
-export const userEmail = {"_name": "E-mail uživatele", "_name_plural": "E-mail uživatele"} as const;
-
-export const duplicateUser = {"_name": "Duplicita", "_name_plural": "Duplicita", "user": ["Primární uživatel", "Tento uživatel (by měl) obsahovat aktuání informace"], "other": ["Duplicitní uživatel", "Tento uživatel (by měl) být zastaralý, jeho informace budou (po kontrole) připojeny k primárnímu (vybranému) uživateli"]} as const;
-
-export const administrationUnit = {"_name": "Organizační jednotka", "_name_plural": "Organizační jednotka", "name": ["Oficiální název", "Název z rejstříku, např. ZČ HB Zvonek"], "abbreviation": ["Zkrácený název", "Běžně užívaný název, např. Zvonek, Orchis..."], "description": ["Krátké představení"], "phone": "Telefon", "category": "Typ jednotky", "board_members": "Členové představenstva", "bank_account_number": "Číslo účtu", "chairman": "Předseda", "vice_chairman": "Místopředseda", "existed_since": "Datum vzniku", "existed_till": "Datum zániku", "ic": "IČO", "is_for_kids": "Jedná se o BRĎO oddíl?", "manager": "Hospodář", "www": "Webové stránky", "custom_statues": "Vlastní stanovy", "data_box": "Datová schránka", "facebook": "Facebook", "instagram": "Instagram"} as const;
-
-export const administrationUnitAddress = {"_name": "Adresa", "_name_plural": "Adresa", "administration_unit": "Organizační jednotka"} as const;
-
-export const administrationUnitContactAddress = {"_name": "Kontaktní adresa", "_name_plural": "Kontaktní adresa", "administration_unit": "Organizační jednotka"} as const;
-
-export const generalMeeting = {"_name": "Valná hromada", "_name_plural": "Valná hromada", "administration_unit": "Organizační jednotka"} as const;
-
-export const administrationSubUnit = {"_name": "Oddíl", "_name_plural": "Oddíl", "administration_unit": "Organizační jednotka", "is_for_kids": "Jedná se o BRĎO oddíl?", "www": "Webové stránky", "facebook": "Facebook", "instagram": "Instagram", "main_leader": "Hlavní vedoucí", "sub_leaders": "Oddíloví vedoucí"} as const;
-
-export const administrationSubUnitAddress = {"_name": "Adresa", "_name_plural": "Adresa", "sub_unit": "Oddíl"} as const;
-
-export const brontosaurusMovement = {"_name": "Přístupy", "_name_plural": "Přístupy", "director": ["Programový ředitel", "Má veškerá oprávnění"], "finance_director": ["Finanční ředitel", "Má veškerá oprávnění"], "bis_administrators": ["Správci BISu", "Mají veškeré oprávnění"], "office_workers": ["Pracovníci ústředí", "Mohou měnit vše kromě základních oprávnění"], "audit_committee": ["KRK - Kontrolní a revizní komise", "Vidí vše, nemohou editovat"], "executive_committee": ["VV - Výkonný výbor", "Vidí vše, nemohou editovat"], "education_members": ["EDU - konzultanti a instruktoři", "Vidí pouze uživatele a mohou editovat pouze jejich kvalifikaci"], "fundraisers": ["Fundraiseři", "Mají přístup k telesales a vidí dárce"]} as const;
-
-export const membership = {"_name": "Členství", "_name_plural": "Členství", "user": ["Uživatel", "Zde lze vyhledávat ve všech uživatelích BISu, ke kterým máte přístup"], "administration_unit": "Organizační jednotka", "year": "Členství v roce", "category": "Typ"} as const;
-
-export const qualification = {"_name": "Kvalifikace", "_name_plural": "Kvalifikace", "category": "Typ kvalifikace", "valid_till": "Platnost do", "valid_since": "Platnost od", "approved_by": "Schválilo"} as const;
-
-export const qualificationNote = {"_name": "Poznámka ke kvalifikacím uživatele", "_name_plural": "Poznámka ke kvalifikacím uživatele", "education_members_note": "Poznámka"} as const;
-
-export const event = {"_name": "Akce", "_name_plural": "Akce", "group": "Druh", "category": "Typ", "tags": "Štítky", "program": "Program", "intended_for": "Pro koho?", "location": ["Lokalita", "Zobrazí se na webu jako místo konání akce"], "is_canceled": ["Je akce zrušena?", "Akce se nebude konat / nekonala"], "is_closed": ["Je akce uzavřena?", "Příznak, zda-li jsou všechny povinné údaje po akci vyplněny"], "closed_at": "Čas uzavření akce", "is_archived": ["Je akce archivovaná?", "Zarchivovaná akce nelze editovat"], "start": "Začátek akce", "start_time": "Čas začátku akce", "end": "Konec akce", "duration": "Délka trvání akce", "online_link": ["Odkaz na připojení k online akci", "Vyplňte, pokud se akce koná online"], "number_of_sub_events": "Počet akcí v uvedeném období", "administration_units": "Organizační jednotky", "main_organizer": "Hlavní organizátor", "other_organizers": "Další organizátoři", "is_attendance_list_required": "Je prezenční listina vyžadována?", "vip_propagation": "Je akce propagována v rámci VIP propagace?", "organizers_note": ["Privátní poznámka", "Možnost přidat interní poznámku. Poznámku uvidí pouze lidé, kteří si mohou tuto akci zobrazit přímo v BISu."]} as const;
-
-export const eventFinance = {"_name": "Finance akce", "_name_plural": "Finance akce", "category": "Kategorie dle financí", "grant_category": "Typ grantu", "grant_amount": "Přidělené dotace", "total_event_cost": "Celkové náklady akce", "budget": "Rozpočet", "bank_account_number": ["Číslo bankvního účtu", "Pro zaslání dotací"]} as const;
-
-export const eventFinanceReceipt = {"_name": "Účtenka", "_name_plural": "Účtenka", "finance": "Finance akce", "receipt": "Účtenky"} as const;
-
-export const eventPropagation = {"_name": "Propagace akce", "_name_plural": "Propagace akce", "is_shown_on_web": "Je akce zobrazena na webu?", "minimum_age": "Minimální věk", "maximum_age": "Maximální věk", "cost": ["Účastnický poplatek", "Max. 12 znaků, \"Kč\" je doplněno automaticky, nechte prázdné pokud je akce bez poplatku"], "diets": "Možnosti stravování", "_contact_url": "Kontaktní url", "accommodation": "Ubytování", "working_days": ["Počet pracovních dní", "Pouze pro vícedenní dobrovolnické akce"], "working_hours": ["Odpracovaných hodin (denně)", "Pouze pro dobrovolnické akce"], "organizers": "Organizátoři (text do propagace)", "web_url": "Web akce", "invitation_text_introduction": ["Zvací text: Co nás čeká?", "Základní informace o tvé akci. Popiš téma akce a nastiň, co se tam bude dít a jak budete pomáhat, co se účastník naučí nového. Prvních několik vět se zobrazí v přehledu akcí na webu. První věty jsou k upoutání pozornosti nejdůležitější, proto se na ně zaměř a shrň ve 2-4 větách na co se účastníci mohou těšit."], "invitation_text_practical_information": ["Zvací text: Co, kde a jak", "Stručný popis programu akce – jakého typu budou aktivity na akci, kde se bude spát, co se bude jíst a další praktické záležitosti. Nezapomeň zdůraznit, zda bude program aktivní a plný zážitkového programu nebo bude spíše poklidnější nebo zaměřený na vzdělávání. Také napiš zda bude program fyzicky popř. psychicky náročný, aby účastníci věděli co mají čekat."], "invitation_text_work_description": ["Zvací text: Dobrovolnická pomoc", "Stručně popiš dobrovolnickou činnost a její smysl pro přírodu, památky nebo lidi (např. „sázíme vrbky, aby měli místní ptáci kde hnízdit“). Zasaď dobrovolnickou pomoc do kontextu místa a jeho příběhu (např. “kosením pomůžeme udržet pestrost nejvzácnější louky unikátní krajiny Bílých Karpat, jež …” ). Napiš, co se při práci účastníci naučí a v čem je to může rozvinout. Přidej i další zajímavosti, které se vážou k dané dobrovolnické činnosti a lokalitě. Uveď kolik prostoru na akci se bude věnovat dobrovolnické činnosti a jak bude náročná."], "invitation_text_about_us": ["Zvací text: Malá ochutnávka", "Malá ochutnávka uvádí fotky, které k akci přiložíte. Popište fotky, které přikládáte nebo přibližte jak vypadaly akce na stejném místě v minulosti. U nových akcí můžete více ukázat místo a důvody proč vás oslovilo a představit organizátory."], "contact_name": ["Jméno kontaktní osoby", "Nechte prázdné pokud chcete použít jméno kontaktní osoby"], "contact_phone": ["Kontaktní telefon", "Nechte prázdné pokud chcete použít telefon kontaktní osoby"], "contact_email": ["Kontaktní e-mail", "Nechte prázdné pokud chcete použít e-mail kontaktní osoby"]} as const;
-
-export const vIPEventPropagation = {"_name": "VIP propagace akce", "_name_plural": "VIP propagace akce", "event_propagation": "Propagace", "goals_of_event": ["Cíle akce a přínos pro prvoúčastníky", "Jaké je hlavní téma vaší akce? Jaké jsou hlavní cíle akce? Co nejvýstižněji popište, co akce přináší účastníkům, co zajímavého si zkusí, co se dozví, naučí, v čem se rozvinou..."], "program": ["Programové pojetí akce pro prvoúčastníky", "V základu uveďte, jak bude vaše akce programově a dramaturgicky koncipována (motivační příběh, zaměření programu – hry, diskuse, řemesla,...). Uveďte, jak náplň a program akce reflektují potřeby vaší cílové skupiny prvoúčastníků."], "rover_propagation": ["Propagovat akci v Roverském kmeni?", "Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 100 Kč."], "short_invitation_text": ["Krátký zvací text do propagace", "Ve 2-4 větách nalákejte na vaši akci a zdůrazněte osobní přínos pro účastníky (max. 200 znaků)."]} as const;
-
-export const eventRegistration = {"_name": "Přihlášení", "_name_plural": "Přihlášení", "is_registration_required": "Musí se účastníci na akci přihlásit?", "is_event_full": "Je akce plná?", "questionnaire": "Dotazník", "alternative_registration_link": "Alternativní odkaz pro registraci na akci"} as const;
-
-export const eventRecord = {"_name": "Záznam z akce", "_name_plural": "Záznam z akce", "total_hours_worked": "Odpracováno člověkohodin", "comment_on_work_done": "Komentář k vykonané práci", "attendance_list_pages": "Prezenční listina", "participants": "Účastníci", "feedback_form": "Formulář zpětné vazby", "number_of_participants": ["Počet účastníků", "U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích"], "number_of_participants_under_26": ["Počet účastníků pod 26 let", "U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích"], "is_event_closed_email_enabled": "Má se odeslat automatický e-mail po uzavření akce?"} as const;
-
-export const eventContact = {"_name": "Zjednodušená prezenční listina z jednodenní akce", "_name_plural": "Zjednodušená prezenční listina z jednodenní akce", "record": "Záznam z akce"} as const;
-
-export const eventPropagationImage = {"_name": "Obrázek k propagaci", "_name_plural": "Obrázek k propagaci", "propagation": "Propagace akce"} as const;
-
-export const eventPhoto = {"_name": "Fotka z akce", "_name_plural": "Fotka z akce", "record": "Záznam z akce"} as const;
-
-export const eventAttendanceListPage = {"_name": "Prezenční listina", "_name_plural": "Prezenční listina", "record": "Záznam z akce", "page": "Strana"} as const;
-
-export const eventApplication = {"_name": "Přihláška na akci", "_name_plural": "Přihláška na akci", "event_registration": "Přihlášení na akci", "state": "Stav", "is_child_application": "Přihláška dítěte dospělým", "paid_for": "Zaplacena?", "applicant_note": "Poznámka"} as const;
-
-export const eventApplicationClosePerson = {"_name": "Rodič / blízká osoba", "_name_plural": "Rodič / blízká osoba"} as const;
-
-export const eventApplicationAddress = {"_name": "Adresa", "_name_plural": "Adresa"} as const;
-
-export const questionnaire = {"_name": "Dotazník", "_name_plural": "Dotazník", "event_registration": "Přihlášení na akci", "introduction": "Úvodní text dotazníku", "after_submit_text": "Text po zodpovězení dotazníku"} as const;
-
-export const question = {"_name": "Otázka dotazníku", "_name_plural": "Otázka dotazníku", "question": "Otázka", "is_required": "Povinná otázka?", "questionnaire": "Dotazník"} as const;
-
-export const answer = {"_name": "Odpověď na otázku", "_name_plural": "Odpověď na otázku", "question": "Otázka", "application": "Přihláška na akci", "answer": "Odpověď"} as const;
-
-export const eventFeedback = {"_name": "Zpětná vazba k akci", "_name_plural": "Zpětná vazba k akci", "event_record": "Záznam z akce"} as const;
-
-export const feedbackForm = {"_name": "Formulář zpětné vazby", "_name_plural": "Formulář zpětné vazby", "event_record": "Záznam z akce", "email_content": "Text e-mailu", "introduction": "Úvodní text zpětné vazby", "after_submit_text": "Text po zodpovězení zpětné vazby"} as const;
-
-export const inquiry = {"_name": "Otázka zpětné vazby", "_name_plural": "Otázka zpětné vazby", "inquiry": "Otázka", "is_required": "Povinná otázka?", "feedback_form": "Formulář zpětné vazby"} as const;
-
-export const reply = {"_name": "Odpověď na otázku", "_name_plural": "Odpověď na otázku", "inquiry": "Otázka", "feedback": "Zpětná vazba k akci", "reply": "Odpověď", "value": "Hodnota pro statistiku"} as const;
-
-export const grantCategory = {"_name": "Typ grantu", "_name_plural": "Typ grantu"} as const;
-
-export const eventIntendedForCategory = {"_name": "Kategorie zaměření propagace", "_name_plural": "Kategorie zaměření propagace"} as const;
-
-export const dietCategory = {"_name": "Typ stravy", "_name_plural": "Typ stravy"} as const;
-
-export const qualificationCategory = {"_name": "Typ kvalifikace", "_name_plural": "Typ kvalifikace", "parents": "Nadřazené kvalifikace", "can_approve": "Schvaluje kvalifikace"} as const;
-
-export const administrationUnitCategory = {"_name": "Typ organizační jednotky", "_name_plural": "Typ organizační jednotky"} as const;
-
-export const membershipCategory = {"_name": "Členství", "_name_plural": "Členství"} as const;
-
-export const eventGroupCategory = {"_name": "Druh akce", "_name_plural": "Druh akce"} as const;
-
-export const eventCategory = {"_name": "Typ akce", "_name_plural": "Typ akce"} as const;
-
-export const eventTag = {"_name": "Štítek akce", "_name_plural": "Štítek akce", "is_active": ["Je aktivní?", "Neaktivní štítky se nezobrazí organizátorovi při vytváření nové akce"]} as const;
-
-export const eventProgramCategory = {"_name": "Program akce", "_name_plural": "Program akce"} as const;
-
-export const donationSourceCategory = {"_name": "Zdroj daru", "_name_plural": "Zdroj daru"} as const;
-
-export const organizerRoleCategory = {"_name": "Organizátorská role", "_name_plural": "Organizátorská role"} as const;
-
-export const teamRoleCategory = {"_name": "Týmová role", "_name_plural": "Týmová role"} as const;
-
-export const opportunityCategory = {"_name": "Kagegorie příležitosti", "_name_plural": "Kagegorie příležitosti"} as const;
-
-export const opportunityPriority = {"_name": "Priorita příležitosti", "_name_plural": "Priorita příležitosti"} as const;
-
-export const locationProgramCategory = {"_name": "Program lokality", "_name_plural": "Program lokality"} as const;
-
-export const locationAccessibilityCategory = {"_name": "Dostupnost lokality", "_name_plural": "Dostupnost lokality"} as const;
-
-export const roleCategory = {"_name": "Typ role", "_name_plural": "Typ role"} as const;
-
-export const healthInsuranceCompany = {"_name": "Zdravotní pojišťovna", "_name_plural": "Zdravotní pojišťovna"} as const;
-
-export const pronounCategory = {"_name": "Oslovení", "_name_plural": "Oslovení"} as const;
-
-export const donorEventCategory = {"_name": "Typ značky dárce", "_name_plural": "Typ značky dárce"} as const;
-
-export const donor = {"_name": "Dárce", "_name_plural": "Dárce", "formal_vokativ": ["Formální oslovení", "Pro účely potvrzení o daru"], "subscribed_to_newsletter": "Odebírá novinky?", "is_public": ["Chce zveřejnit?", "na webu a v závěrečné zprávě"], "date_joined": "Dárcem od", "regional_center_support": "podpora RC", "basic_section_support": "podpora ZČ", "do_not_call": "Už nevolat", "do_not_solicit": "Už nežádat o dar", "fundraisers_note": "Interní poznámka"} as const;
-
-export const pledge = {"_name": "Pravidelný dar", "_name_plural": "Pravidelný dar", "donor": "Dárce", "donation_source": "Zdroj dotace", "is_recurrent": "Je pravidelný dárce?", "recurrent_state": "Stav", "pledged_at": "Datum"} as const;
-
-export const donation = {"_name": "Dar", "_name_plural": "Dar", "donor": "Dárce", "pledge": "Nadřazený pravidelný dar", "donated_at": "Datum", "amount": "Částka", "donation_source": "Zdroj dotace", "info": "Info", "_variable_symbol": ["Variabilní symbol platby", "pro párování na dárce"]} as const;
-
-export const fundraisingCampaign = {"_name": "Fundraisingová kampaň", "_name_plural": "Fundraisingová kampaň", "name": "Název", "slug": "Slug"} as const;
-
-export const donorEvent = {"_name": "Značka dárce", "_name_plural": "Značka dárce", "donor": "Dárce", "event_type": "Typ", "campaign": "Kampaň", "pledge": "Příslib", "reminder": "Připomínka", "fundraisers_note": "Poznámka"} as const;
-
-export const variableSymbol = {"_name": "Variabilní symbol", "_name_plural": "Variabilní symbol", "donor": "Dárce", "variable_symbol": "Variabilní symbol"} as const;
-
-export const company = {"_name": "Firma", "_name_plural": "Firma", "donor": "Dárce", "name": "Název firmy", "ico": "IČO", "address": "Sídlo"} as const;
-
-export const uploadBankRecords = {"_name": "Nahrání bankovních záznamů", "_name_plural": "Nahrání bankovních záznamů", "file": "Soubor .csv"} as const;
-
-export const region = {"_name": "Kraj", "_name_plural": "Kraj", "area": "Oblast"} as const;
-
-export const zipCode = {"_name": "PSČ", "_name_plural": "PSČ"} as const;
-
-export const opportunity = {"_name": "Příležitost", "_name_plural": "Příležitost", "category": "Kategorie", "priority": "Priorita", "start": "Začátek příležitosti", "end": "Konec příležitosti", "on_web_start": "Zobrazit na webu od", "on_web_end": "Zobrazit na webu do", "location": "Místo příležitosti", "introduction": ["Představení příležitosti", "Krátce vysvětli význam činnosti a její přínos, aby přilákala zájemce"], "description": ["Popis činnosti", "Přibliž konkrétní činnosti a aktivity, které budou součástí příležitosti"], "location_benefits": ["Přínos pro lokalitu", "Popiš dopad a přínos činnosti pro dané místě (nezobrazí se u typu spolupráce)"], "personal_benefits": ["Přínos ze spolupráce", "Uveď konkrétní osobní přínos do života z realizace této příležitosti"], "requirements": ["Požadavky příležitosti", "Napiš dovednosti, zkušenosti či vybavení potřebné k zapojení do příležitosti"], "contact_person": "Kontaktní osoba", "contact_name": ["Jméno kontaktní osoby", "Nechte prázdné pokud chcete použít jméno kontaktní osoby"], "contact_phone": ["Kontaktní telefon", "Nechte prázdné pokud chcete použít telefon kontaktní osoby"], "contact_email": ["Kontaktní e-mail", "Nechte prázdné pokud chcete použít e-mail kontaktní osoby"]} as const;
-
-export const offeredHelp = {"_name": "Nabízená pomoc", "_name_plural": "Nabízená pomoc", "programs": "Programy", "organizer_roles": "Organizátorské role", "additional_organizer_role": "Jiná organizátorské role", "team_roles": "Týmové role", "additional_team_role": "Jiné týmové role", "info": "Popis pomoci"} as const;
-
-export const dashboardItem = {"_name": "Termín", "_name_plural": "Termín", "for_roles": "Pro role", "repeats_every_year": "Opakuje se každý rok?", "visible_date": "Zobrazený termín"} as const;
-
-export const donationPointsAggregation = {"_name": "Agregace", "_name_plural": "Agregace"} as const;
-
-export const donationPointsColumn = {"_name": "Sloupec", "_name_plural": "Sloupec", "aggregation": "Agregace", "points_per_each": "Body za jednotku", "section": "Sekce"} as const;
-
-export const donationPointsSection = {"_name": "Sekce", "_name_plural": "Sekce", "donation_points": "Body dotací"} as const;
-
-export const donationPoints = {"_name": "Body dotací", "_name_plural": "Body dotací", "since": ["Od", "Filtruji akce které začaly po daném datumu"], "till": ["Do", "Filtruji akce které začaly do daného datumu, filtruji členství za rok kterému patří tento den, určuji stáří členů k tomuto datu"]} as const;
-
-export const game = {"_name": "Program", "_name_plural": "Program", "is_hidden": ["Je program skrytý?", "Editor může program skrýt (autorské práva, nekorektní text, atd.)"], "created_at": "Vytvořen", "contributor": ["Přispěvatel", "Kdo zadal program do sborníku?"], "is_original": ["Autorský program?", "Jsi autorem tohoto programu — vytvořil si ho? Pokud ne, vyplň původ programu níže."], "is_draft": ["Rozpracován?", "Je program finálně zpracován, či ještě něco chybí doladit?"], "origin": ["Původ programu", "Kdo je autorem programu, odkud byl program převzat?"], "administration_unit": ["Základní článek (RC/klub)", "Chceš program přiřadit pod určitý článek? Dej mu kredit!"], "thumbs_up": "Dali palec nahoru", "favourites": "Oblíbili si", "watchers": "Sledují", "stars": ["Počet hvězd", "Interní hodnocení pro editory"], "is_verified": ["Je program ověřen?", "Editor může program ověřit, záruka brontosauří kvality"], "tags": ["Tagy", "Pokud ti nějaký tag chybí, napiš mi na sbornik@brontosaurus.cz, díky!"], "physical_category": "Fyzická náročnost", "physical_note": ["Poznámky", "Specifické poznámky k fyzické náročnosti"], "mental_category": "Psychická náročnost", "mental_note": ["Poznámky", "Specifické poznámky k psychické náročnosti"], "location_category": ["Místa uvedení", "Typová místa, na kterých lze / dává smysl program uvést"], "location_note": ["Poznámky", "Specifické poznámky k místu uvedení"], "participant_number_category": "Vhodný počet účastníků", "participant_number_note": ["Poznámky", "Specifické poznámky k počtu účastníků"], "participant_age_category": "Vhodný věk účastníků", "participant_age_note": ["Poznámky", "Specifické poznámky k věku účastníků"], "game_length_category": "Délka programu", "game_length_note": ["Poznámky", "Specifické poznámky k délce programu"], "preparation_length_category": "Délka přípravy", "preparation_length_note": ["Poznámky", "Specifické poznámky k délce / náročnosti přípravy programu"], "material_requirement_category": "Množství materiálu", "material_requirement_note": ["Poznámky", "Specifické poznámky k množství materiálu"], "organizers_number_category": "Počet orgů pro uvedení", "organizers_number_note": ["Poznámky", "Specifické poznámky k počtu orgů pro uvedení programu"], "short_description": ["Krátké představení", "Maximálně 250 znaků"], "goal": "Cíle programu", "description": ["Pravidla", "Popis a pravidla programu"], "motivation": ["Motivace", "Tipy na vtáhnutí účastníků do hry (scénkou, hudbou, aktivitkou)"], "material": ["Soupis materiálu", "Co je potřeba k uvedení hry, soubory pro tisk lze přiložit níže"], "notes": ["Metodické poznámky", "Tipy a triky pro uvedení, otázky na reflexi, atd."]} as const;
-
-export const baseFile = {"_name": "Soubor", "_name_plural": "Soubor", "file": "Soubor"} as const;
-
-export const gameFile = {"_name": "Soubor", "_name_plural": "Soubor"} as const;
-
-export const comment = {"_name": "Komentář", "_name_plural": "Komentář", "author": "Autor", "is_hidden": ["Pouze pro autora?", "Zobrazit komentář pouze autorovi?"]} as const;
-
-export const commentFile = {"_name": "Soubor", "_name_plural": "Soubor"} as const;
-
-export const playedAt = {"_name": "Uvedení programu", "_name_plural": "Uvedení programu"} as const;
-
-export const playedAtFile = {"_name": "Soubor", "_name_plural": "Soubor", "played_at": "Uvedení programu"} as const;
-
-export const gameList = {"_name": "Seznam programů", "_name_plural": "Seznam programů", "games": "Programy", "owner": "Autor seznamu"} as const;
-
-export const tag = {"_name": "Tag", "_name_plural": "Tag"} as const;
-
-export const baseCategory = {"_name": "Kategorie", "_name_plural": "Kategorie"} as const;
-
-export const physicalCategory = {"_name": "Kategorie fyzické náročnosti", "_name_plural": "Kategorie fyzické náročnosti"} as const;
-
-export const mentalCategory = {"_name": "Kategorie psychické náročnosti", "_name_plural": "Kategorie psychické náročnosti"} as const;
-
-export const locationCategory = {"_name": "Kategorie místa uvedení", "_name_plural": "Kategorie místa uvedení"} as const;
-
-export const participantNumberCategory = {"_name": "Kategorie početu účastníků", "_name_plural": "Kategorie početu účastníků"} as const;
-
-export const participantAgeCategory = {"_name": "Kategorie věku účastníků", "_name_plural": "Kategorie věku účastníků"} as const;
-
-export const gameLengthCategory = {"_name": "Kategorie délky programu", "_name_plural": "Kategorie délky programu"} as const;
-
-export const preparationLengthCategory = {"_name": "Kategorie délky přípravy", "_name_plural": "Kategorie délky přípravy"} as const;
-
-export const materialRequirementCategory = {"_name": "Kategorie množství materiálu", "_name_plural": "Kategorie množství materiálu"} as const;
-
-export const organizersNumberCategory = {"_name": "Kategorie početu orgů pro uvedení", "_name_plural": "Kategorie početu orgů pro uvedení"} as const;
-
-export const chef = {"_name": "Kuchařstvo", "_name_plural": "Kuchařstvo", "is_editor": "Editor?", "name": "Zobrazené jméno / přezdívka", "email": "Zobrazený e-mail", "photo": "Avatar"} as const;
-
-export const unit = {"_name": "Jednotka", "_name_plural": "Jednotka", "of": "Čeho", "name2": "Dva až čtyři", "name5": "Pět a víc", "abbreviation": "Zkratka"} as const;
-
-export const ingredient = {"_name": "Přísada", "_name_plural": "Přísada", "g_per_liter": "gramy na litr", "g_per_piece": "gramy na kus", "g_per_serving": "gramy na typickou porci", "state": "Konzistence", "reasoning": "Popis"} as const;
-
-export const recipe = {"_name": "Recept", "_name_plural": "Recept", "chef": "Kuchařstvo", "difficulty": "Náročnost", "intro": "Úvod", "sources": "Zdroje", "tags": "Tagy", "required_time": "Časová náročnost", "steps": "Postup", "tips": "Tipy"} as const;
-
-export const recipeIngredient = {"_name": "Přísada receptu", "_name_plural": "Přísada receptu", "amount": "Množství", "ingredient": "Přísada", "is_required": "Nutné?", "recipe": "Recept", "unit": "Jednotka"} as const;
-
-export const recipeStep = {"_name": "Krok receptu", "_name_plural": "Krok receptu", "recipe": "Recept", "is_required": "Nutné?"} as const;
-
-export const recipeTip = {"_name": "Tip k receptu", "_name_plural": "Tip k receptu", "recipe": "Recept"} as const;
-
-export const recipeComment = {"_name": "Komentář receptu", "_name_plural": "Komentář receptu", "recipe": "Recept"} as const;
-
-export const menu = {"_name": "Jídelníček", "_name_plural": "Jídelníček", "is_shared": "Sdíleno?", "is_starred": "Ohvězdičkováno?"} as const;
-
-export const menuRecipe = {"_name": "Recept jídelníčku", "_name_plural": "Recept jídelníčku", "menu": "Jídelníček", "original": "Originální recept", "served_at": "Servírováno"} as const;
-
-export const menuRecipeIngredient = {"_name": "Přísada receptu jídelníčku", "_name_plural": "Přísada receptu jídelníčku", "amount": "Množství", "ingredient": "Přísada", "is_used": "Použito?", "menu_recipe": "Recept", "unit": "Jednotka"} as const;
-
-export const recipeDifficulty = {"_name": "Kategorie obtížnosti receptů", "_name_plural": "Kategorie obtížnosti receptů"} as const;
-
-export const recipeTag = {"_name": "Tag", "_name_plural": "Tag", "group": "Zařazení"} as const;
-
-export const recipeRequiredTime = {"_name": "Časová náročnost receptu", "_name_plural": "Časová náročnost receptu"} as const;
-
-export const generic = {"user": "Uživatel", "email": "E-mail", "city": "Město", "street": "Ulice", "zip_code": "PSČ", "region": "Kraj", "location": "Lokalita", "name": "Název", "slug": "Zkratka", "description": "Popis", "photo": "Fotka", "first_name": "Křestní jméno", "last_name": "Příjmení", "nickname": "Přezdívka", "birth_name": "Rodné příjmení", "phone": "Tel. číslo", "birthday": "Datum narození", "order": "Pořadí", "pronoun": "Oslovení", "event": "Akce", "image": "Obrázek", "health_issues": "Alergie a zdravotní omezení", "application": "Přihláška", "created_at": "Vytvořeno", "date": "Datum", "place": "Místo", "note": "Poznámka", "internal_note": "Interní poznámka", "game": "Program", "file": "Soubor", "comment": "Komentář", "emoji": "Smajlík", "gps_location": "GPS lokace", "created_by": "Vytvořeno", "sent_at": "Odesláno", "data": "Data", "is_active": "Je aktivní?", "is_public": "Zveřejněno?", "updated_at": "Aktualizováno", "updated_by": "Aktualizováno"} as const;
-
-export const admin = {"header": "BIS - Brontosauří informační systém", "subheader": "Administrátorský přístup pro organizační jednotky a ústředí"} as const;
-
-export const login = {"too_many_retries": "Příliš mnoho pokusů, zkuste to znovu za hodinu", "user_does_not_exist": "Uživatel s tímto emailem neexistuje", "code_form_header": "Na e-mail {email} byl zaslán kód pro přihlášení", "code_invalid": "Kód není validní (chybný či expirovaný)"} as const;
-
-export const event_categories = {"internal": "Interní", "internal__general_meeting": "Valná hromada", "internal__volunteer_meeting": "Schůzka dobrovolníků, týmovka", "internal__section_meeting": "Oddílová, družinová schůzka", "public": "Veřejná", "public__volunteering": "Dobrovolnická", "public__only_experiential": "Čistě zážitková", "public__educational": "Vzdělávací", "public__educational__lecture": "Přednáška", "public__educational__course": "Kurz, školení, exkurze", "public__educational__ohb": "OHB", "public__educational__educational": "Výukový program", "public__educational__educational_with_stay": "Pobytový výukový program", "public__club": "Klub", "public__club__lecture": "Přednáška", "public__club__meeting": "Setkání", "public__other": "Ostatní", "public__other__for_public": "Akce pro veřejnost", "public__other__exhibition": "Výstava", "public__other__eco_tent": "Ekostan"} as const;
-
-export const cookbook = {"common": {"back": "Zpět", "filters": "filtry", "edit": "upravit", "cookbook": "Kuchařka", "recipes": "Recepty", "menus": "Jídleníčky", "chefs": "Kuchařstvo", "ingredients": "Přísady", "required": "Toto pole je povinné", "save": "Uložit", "save_error": "Chyba při uložení"}, "menu": {"vegan": "Proč vegan?", "manifest": "Manifest? :D", "how_to": "Jak začít", "risks": "Zdravotní rizika", "where_to_go": "Kam dál?", "tips": "Tipy a triky", "faq": "FAQ", "bronto": "Vaření na Bronto akci", "dumpster_diving": "Jak na dumpsterdiving", "zero_waste": "Zero waste", "join_us": "Přidej se", "login": "Přihlášení", "logout": "Odhlásit se", "create_profile": "Vytvoření profilu", "register": "Registrace", "my_recipes": "Moje recepty", "settings": "Nastevení"}, "login": {"unknown_email": "Tento e-mail v BISu neexistuje, zaregistrujte se prosím", "title": "Přihlášení / Registrace", "bad_email": "Špatný formát e-mailu", "email": "E-mail pro přihlášení do BISu", "first_name": "Křestní jméno", "last_name": "Příjmení", "password": "Heslo", "password2": "Heslo znovu", "register": "Registrovat", "login": "Přihlásit se", "passwords_not_same": "Zadaná hesla nejsou stejná", "registration_error": "Chyba při registraci", "login_error": "Chyba při přihlášení"}, "profile": {"new": "Vytvoření profilu", "title": "Můj profil", "error_saving": "Chyba při ukládání profilu"}, "recipes": {"create": "nový recept"}, "edit_recipe": null, "section": {"tips": "iip", "steps": "krok", "ingredients": "přísada"}, "ingredients": {"new": "Nová přísada"}} as const;
-
+export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
+
+export const baseContact = {
+  _name: 'Kontakt',
+  _name_plural: 'Kontakt',
+} as const
+
+export const location = {
+  _name: 'Lokalita',
+  _name_plural: 'Lokalita',
+  name: 'Název lokality',
+  patron: 'Kontakt v hnutí',
+  contact_person: 'Kontakt na lokalitě',
+  for_beginners: 'Vhodné pro začínající organizátory?',
+  is_full: 'Je lokalita plně vytížená?',
+  is_unexplored: 'Je lokalita nová/nevyužívaná?',
+  program: 'Program lokality',
+  accessibility_from_prague: 'Dostupnost z Prahy',
+  accessibility_from_brno: 'Dostupnost z Brna',
+  volunteering_work: 'Práce na lokalitě',
+  volunteering_work_done: 'Čeho jsme na lokalitě dosáhli',
+  volunteering_work_goals: 'Čeho chceme dosáhnout / péče o lokalitu',
+  options_around: 'Možnosti programu a vzdělávání',
+  facilities: 'Zázemí',
+  address: 'Adresa',
+  web: 'Web',
+  is_traditional: 'Tradiční brontosauří lokalita?',
+} as const
+
+export const locationPhoto = {
+  _name: 'Fotka lokality',
+  _name_plural: 'Fotka lokality',
+} as const
+
+export const locationContactPerson = {
+  _name: 'Kontakt na lokalitě',
+  _name_plural: 'Kontakt na lokalitě',
+} as const
+
+export const locationPatron = {
+  _name: 'Kontakt v hnutí',
+  _name_plural: 'Kontakt v hnutí',
+} as const
+
+export const user = {
+  _name: 'Uživatel',
+  _name_plural: 'Uživatel',
+  vokativ: 'Vokativ',
+  email_exists: 'Je e-mail skutečný?',
+  is_active: 'Může se uživatel přihlásit?',
+  date_joined: 'Datum vzniku uživatelského profilu',
+  close_person: 'Rodič / blízká osoba',
+  health_insurance_company: 'Pojišťovna',
+  behaviour_issues: [
+    'Problémový účastník',
+    'Pokud vyplněno, zobrazí se jako varování organizátorům akcí u přihlášky',
+  ],
+  roles: 'Role',
+  office_workers_note: 'Poznámka ústředí',
+  subscribed_to_newsletter: 'Odebírá novinky?',
+  last_after_event_email: 'Poslední e-mail po akci',
+  is_contact_information_verified: 'Ověřil své kontaktní údaje?',
+} as const
+
+export const userClosePerson = {
+  _name: 'Rodič / blízká osoba',
+  _name_plural: 'Rodič / blízká osoba',
+} as const
+
+export const userAddress = {
+  _name: 'Adresa uživatele',
+  _name_plural: 'Adresa uživatele',
+} as const
+
+export const eYCACard = {
+  _name: 'EYCA karta',
+  _name_plural: 'EYCA karta',
+  number: 'Číslo kartičky',
+  submitted_for_creation: 'Předáno k výrobě',
+  sent_to_user: 'Odesláno uživateli',
+  valid_till: 'Platnost do',
+} as const
+
+export const userContactAddress = {
+  _name: 'Kontaktní adresa uživatele',
+  _name_plural: 'Kontaktní adresa uživatele',
+} as const
+
+export const userEmail = {
+  _name: 'E-mail uživatele',
+  _name_plural: 'E-mail uživatele',
+} as const
+
+export const duplicateUser = {
+  _name: 'Duplicita',
+  _name_plural: 'Duplicita',
+  user: [
+    'Primární uživatel',
+    'Tento uživatel (by měl) obsahovat aktuání informace',
+  ],
+  other: [
+    'Duplicitní uživatel',
+    'Tento uživatel (by měl) být zastaralý, jeho informace budou (po kontrole) připojeny k primárnímu (vybranému) uživateli',
+  ],
+} as const
+
+export const administrationUnit = {
+  _name: 'Organizační jednotka',
+  _name_plural: 'Organizační jednotka',
+  name: ['Oficiální název', 'Název z rejstříku, např. ZČ HB Zvonek'],
+  abbreviation: [
+    'Zkrácený název',
+    'Běžně užívaný název, např. Zvonek, Orchis...',
+  ],
+  description: ['Krátké představení'],
+  phone: 'Telefon',
+  category: 'Typ jednotky',
+  board_members: 'Členové představenstva',
+  bank_account_number: 'Číslo účtu',
+  chairman: 'Předseda',
+  vice_chairman: 'Místopředseda',
+  existed_since: 'Datum vzniku',
+  existed_till: 'Datum zániku',
+  ic: 'IČO',
+  is_for_kids: 'Jedná se o BRĎO oddíl?',
+  manager: 'Hospodář',
+  www: 'Webové stránky',
+  custom_statues: 'Vlastní stanovy',
+  data_box: 'Datová schránka',
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+} as const
+
+export const administrationUnitAddress = {
+  _name: 'Adresa',
+  _name_plural: 'Adresa',
+  administration_unit: 'Organizační jednotka',
+} as const
+
+export const administrationUnitContactAddress = {
+  _name: 'Kontaktní adresa',
+  _name_plural: 'Kontaktní adresa',
+  administration_unit: 'Organizační jednotka',
+} as const
+
+export const generalMeeting = {
+  _name: 'Valná hromada',
+  _name_plural: 'Valná hromada',
+  administration_unit: 'Organizační jednotka',
+} as const
+
+export const administrationSubUnit = {
+  _name: 'Oddíl',
+  _name_plural: 'Oddíl',
+  administration_unit: 'Organizační jednotka',
+  is_for_kids: 'Jedná se o BRĎO oddíl?',
+  www: 'Webové stránky',
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  main_leader: 'Hlavní vedoucí',
+  sub_leaders: 'Oddíloví vedoucí',
+} as const
+
+export const administrationSubUnitAddress = {
+  _name: 'Adresa',
+  _name_plural: 'Adresa',
+  sub_unit: 'Oddíl',
+} as const
+
+export const brontosaurusMovement = {
+  _name: 'Přístupy',
+  _name_plural: 'Přístupy',
+  director: ['Programový ředitel', 'Má veškerá oprávnění'],
+  finance_director: ['Finanční ředitel', 'Má veškerá oprávnění'],
+  bis_administrators: ['Správci BISu', 'Mají veškeré oprávnění'],
+  office_workers: [
+    'Pracovníci ústředí',
+    'Mohou měnit vše kromě základních oprávnění',
+  ],
+  audit_committee: [
+    'KRK - Kontrolní a revizní komise',
+    'Vidí vše, nemohou editovat',
+  ],
+  executive_committee: ['VV - Výkonný výbor', 'Vidí vše, nemohou editovat'],
+  education_members: [
+    'EDU - konzultanti a instruktoři',
+    'Vidí pouze uživatele a mohou editovat pouze jejich kvalifikaci',
+  ],
+  fundraisers: ['Fundraiseři', 'Mají přístup k telesales a vidí dárce'],
+} as const
+
+export const membership = {
+  _name: 'Členství',
+  _name_plural: 'Členství',
+  user: [
+    'Uživatel',
+    'Zde lze vyhledávat ve všech uživatelích BISu, ke kterým máte přístup',
+  ],
+  administration_unit: 'Organizační jednotka',
+  year: 'Členství v roce',
+  category: 'Typ',
+} as const
+
+export const qualification = {
+  _name: 'Kvalifikace',
+  _name_plural: 'Kvalifikace',
+  category: 'Typ kvalifikace',
+  valid_till: 'Platnost do',
+  valid_since: 'Platnost od',
+  approved_by: 'Schválilo',
+} as const
+
+export const qualificationNote = {
+  _name: 'Poznámka ke kvalifikacím uživatele',
+  _name_plural: 'Poznámka ke kvalifikacím uživatele',
+  education_members_note: 'Poznámka',
+} as const
+
+export const event = {
+  _name: 'Akce',
+  _name_plural: 'Akce',
+  group: 'Druh',
+  category: 'Typ',
+  tags: 'Štítky',
+  program: 'Program',
+  intended_for: 'Pro koho?',
+  location: ['Lokalita', 'Zobrazí se na webu jako místo konání akce'],
+  is_canceled: ['Je akce zrušena?', 'Akce se nebude konat / nekonala'],
+  is_closed: [
+    'Je akce uzavřena?',
+    'Příznak, zda-li jsou všechny povinné údaje po akci vyplněny',
+  ],
+  closed_at: 'Čas uzavření akce',
+  is_archived: ['Je akce archivovaná?', 'Zarchivovaná akce nelze editovat'],
+  start: 'Začátek akce',
+  start_time: 'Čas začátku akce',
+  end: 'Konec akce',
+  duration: 'Délka trvání akce',
+  online_link: [
+    'Odkaz na připojení k online akci',
+    'Vyplňte, pokud se akce koná online',
+  ],
+  number_of_sub_events: 'Počet akcí v uvedeném období',
+  administration_units: 'Organizační jednotky',
+  main_organizer: 'Hlavní organizátor',
+  other_organizers: 'Další organizátoři',
+  is_attendance_list_required: 'Je prezenční listina vyžadována?',
+  vip_propagation: 'Je akce propagována v rámci VIP propagace?',
+  organizers_note: [
+    'Privátní poznámka',
+    'Možnost přidat interní poznámku. Poznámku uvidí pouze lidé, kteří si mohou tuto akci zobrazit přímo v BISu.',
+  ],
+} as const
+
+export const eventFinance = {
+  _name: 'Finance akce',
+  _name_plural: 'Finance akce',
+  category: 'Kategorie dle financí',
+  grant_category: 'Typ grantu',
+  grant_amount: 'Přidělené dotace',
+  total_event_cost: 'Celkové náklady akce',
+  budget: 'Rozpočet',
+  bank_account_number: ['Číslo bankvního účtu', 'Pro zaslání dotací'],
+} as const
+
+export const eventFinanceReceipt = {
+  _name: 'Účtenka',
+  _name_plural: 'Účtenka',
+  finance: 'Finance akce',
+  receipt: 'Účtenky',
+} as const
+
+export const eventPropagation = {
+  _name: 'Propagace akce',
+  _name_plural: 'Propagace akce',
+  is_shown_on_web: 'Je akce zobrazena na webu?',
+  minimum_age: 'Minimální věk',
+  maximum_age: 'Maximální věk',
+  cost: [
+    'Účastnický poplatek',
+    'Max. 12 znaků, "Kč" je doplněno automaticky, nechte prázdné pokud je akce bez poplatku',
+  ],
+  diets: 'Možnosti stravování',
+  _contact_url: 'Kontaktní url',
+  accommodation: 'Ubytování',
+  working_days: [
+    'Počet pracovních dní',
+    'Pouze pro vícedenní dobrovolnické akce',
+  ],
+  working_hours: [
+    'Odpracovaných hodin (denně)',
+    'Pouze pro dobrovolnické akce',
+  ],
+  organizers: 'Organizátoři (text do propagace)',
+  web_url: 'Web akce',
+  invitation_text_introduction: [
+    'Zvací text: Co nás čeká?',
+    'Základní informace o tvé akci. Popiš téma akce a nastiň, co se tam bude dít a jak budete pomáhat, co se účastník naučí nového. Prvních několik vět se zobrazí v přehledu akcí na webu. První věty jsou k upoutání pozornosti nejdůležitější, proto se na ně zaměř a shrň ve 2-4 větách na co se účastníci mohou těšit.',
+  ],
+  invitation_text_practical_information: [
+    'Zvací text: Co, kde a jak',
+    'Stručný popis programu akce – jakého typu budou aktivity na akci, kde se bude spát, co se bude jíst a další praktické záležitosti. Nezapomeň zdůraznit, zda bude program aktivní a plný zážitkového programu nebo bude spíše poklidnější nebo zaměřený na vzdělávání. Také napiš zda bude program fyzicky popř. psychicky náročný, aby účastníci věděli co mají čekat.',
+  ],
+  invitation_text_work_description: [
+    'Zvací text: Dobrovolnická pomoc',
+    'Stručně popiš dobrovolnickou činnost a její smysl pro přírodu, památky nebo lidi (např. „sázíme vrbky, aby měli místní ptáci kde hnízdit“). Zasaď dobrovolnickou pomoc do kontextu místa a jeho příběhu (např. “kosením pomůžeme udržet pestrost nejvzácnější louky unikátní krajiny Bílých Karpat, jež …” ). Napiš, co se při práci účastníci naučí a v čem je to může rozvinout. Přidej i další zajímavosti, které se vážou k dané dobrovolnické činnosti a lokalitě. Uveď kolik prostoru na akci se bude věnovat dobrovolnické činnosti a jak bude náročná.',
+  ],
+  invitation_text_about_us: [
+    'Zvací text: Malá ochutnávka',
+    'Malá ochutnávka uvádí fotky, které k akci přiložíte. Popište fotky, které přikládáte nebo přibližte jak vypadaly akce na stejném místě v minulosti. U nových akcí můžete více ukázat místo a důvody proč vás oslovilo a představit organizátory.',
+  ],
+  contact_name: [
+    'Jméno kontaktní osoby',
+    'Nechte prázdné pokud chcete použít jméno kontaktní osoby',
+  ],
+  contact_phone: [
+    'Kontaktní telefon',
+    'Nechte prázdné pokud chcete použít telefon kontaktní osoby',
+  ],
+  contact_email: [
+    'Kontaktní e-mail',
+    'Nechte prázdné pokud chcete použít e-mail kontaktní osoby',
+  ],
+} as const
+
+export const vIPEventPropagation = {
+  _name: 'VIP propagace akce',
+  _name_plural: 'VIP propagace akce',
+  event_propagation: 'Propagace',
+  goals_of_event: [
+    'Cíle akce a přínos pro prvoúčastníky',
+    'Jaké je hlavní téma vaší akce? Jaké jsou hlavní cíle akce? Co nejvýstižněji popište, co akce přináší účastníkům, co zajímavého si zkusí, co se dozví, naučí, v čem se rozvinou...',
+  ],
+  program: [
+    'Programové pojetí akce pro prvoúčastníky',
+    'V základu uveďte, jak bude vaše akce programově a dramaturgicky koncipována (motivační příběh, zaměření programu – hry, diskuse, řemesla,...). Uveďte, jak náplň a program akce reflektují potřeby vaší cílové skupiny prvoúčastníků.',
+  ],
+  rover_propagation: [
+    'Propagovat akci v Roverském kmeni?',
+    'Placená propagace vaší vícedenní akce v časopisu Roverský kmen za poplatek 100 Kč.',
+  ],
+  short_invitation_text: [
+    'Krátký zvací text do propagace',
+    'Ve 2-4 větách nalákejte na vaši akci a zdůrazněte osobní přínos pro účastníky (max. 200 znaků).',
+  ],
+} as const
+
+export const eventRegistration = {
+  _name: 'Přihlášení',
+  _name_plural: 'Přihlášení',
+  is_registration_required: 'Musí se účastníci na akci přihlásit?',
+  is_event_full: 'Je akce plná?',
+  questionnaire: 'Dotazník',
+  alternative_registration_link: 'Alternativní odkaz pro registraci na akci',
+} as const
+
+export const eventRecord = {
+  _name: 'Záznam z akce',
+  _name_plural: 'Záznam z akce',
+  total_hours_worked: 'Odpracováno člověkohodin',
+  comment_on_work_done: 'Komentář k vykonané práci',
+  attendance_list_pages: 'Prezenční listina',
+  participants: 'Účastníci',
+  feedback_form: 'Formulář zpětné vazby',
+  number_of_participants: [
+    'Počet účastníků',
+    'U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích',
+  ],
+  number_of_participants_under_26: [
+    'Počet účastníků pod 26 let',
+    'U opakovaných akcí je nutné zadat celkový počet účastníků na všech akcích',
+  ],
+  is_event_closed_email_enabled:
+    'Má se odeslat automatický e-mail po uzavření akce?',
+} as const
+
+export const eventContact = {
+  _name: 'Zjednodušená prezenční listina z jednodenní akce',
+  _name_plural: 'Zjednodušená prezenční listina z jednodenní akce',
+  record: 'Záznam z akce',
+} as const
+
+export const eventPropagationImage = {
+  _name: 'Obrázek k propagaci',
+  _name_plural: 'Obrázek k propagaci',
+  propagation: 'Propagace akce',
+} as const
+
+export const eventPhoto = {
+  _name: 'Fotka z akce',
+  _name_plural: 'Fotka z akce',
+  record: 'Záznam z akce',
+} as const
+
+export const eventAttendanceListPage = {
+  _name: 'Prezenční listina',
+  _name_plural: 'Prezenční listina',
+  record: 'Záznam z akce',
+  page: 'Strana',
+} as const
+
+export const eventApplication = {
+  _name: 'Přihláška na akci',
+  _name_plural: 'Přihláška na akci',
+  event_registration: 'Přihlášení na akci',
+  state: 'Stav',
+  is_child_application: 'Přihláška dítěte dospělým',
+  paid_for: 'Zaplacena?',
+  applicant_note: 'Poznámka',
+} as const
+
+export const eventApplicationClosePerson = {
+  _name: 'Rodič / blízká osoba',
+  _name_plural: 'Rodič / blízká osoba',
+} as const
+
+export const eventApplicationAddress = {
+  _name: 'Adresa',
+  _name_plural: 'Adresa',
+} as const
+
+export const questionnaire = {
+  _name: 'Dotazník',
+  _name_plural: 'Dotazník',
+  event_registration: 'Přihlášení na akci',
+  introduction: 'Úvodní text dotazníku',
+  after_submit_text: 'Text po zodpovězení dotazníku',
+} as const
+
+export const question = {
+  _name: 'Otázka dotazníku',
+  _name_plural: 'Otázka dotazníku',
+  question: 'Otázka',
+  is_required: 'Povinná otázka?',
+  questionnaire: 'Dotazník',
+} as const
+
+export const answer = {
+  _name: 'Odpověď na otázku',
+  _name_plural: 'Odpověď na otázku',
+  question: 'Otázka',
+  application: 'Přihláška na akci',
+  answer: 'Odpověď',
+} as const
+
+export const eventFeedback = {
+  _name: 'Zpětná vazba k akci',
+  _name_plural: 'Zpětná vazba k akci',
+  event_record: 'Záznam z akce',
+} as const
+
+export const feedbackForm = {
+  _name: 'Formulář zpětné vazby',
+  _name_plural: 'Formulář zpětné vazby',
+  event_record: 'Záznam z akce',
+  email_content: 'Text e-mailu',
+  introduction: 'Úvodní text zpětné vazby',
+  after_submit_text: 'Text po zodpovězení zpětné vazby',
+} as const
+
+export const inquiry = {
+  _name: 'Otázka zpětné vazby',
+  _name_plural: 'Otázka zpětné vazby',
+  inquiry: 'Otázka',
+  is_required: 'Povinná otázka?',
+  feedback_form: 'Formulář zpětné vazby',
+} as const
+
+export const reply = {
+  _name: 'Odpověď na otázku',
+  _name_plural: 'Odpověď na otázku',
+  inquiry: 'Otázka',
+  feedback: 'Zpětná vazba k akci',
+  reply: 'Odpověď',
+  value: 'Hodnota pro statistiku',
+} as const
+
+export const grantCategory = {
+  _name: 'Typ grantu',
+  _name_plural: 'Typ grantu',
+} as const
+
+export const eventIntendedForCategory = {
+  _name: 'Kategorie zaměření propagace',
+  _name_plural: 'Kategorie zaměření propagace',
+} as const
+
+export const dietCategory = {
+  _name: 'Typ stravy',
+  _name_plural: 'Typ stravy',
+} as const
+
+export const qualificationCategory = {
+  _name: 'Typ kvalifikace',
+  _name_plural: 'Typ kvalifikace',
+  parents: 'Nadřazené kvalifikace',
+  can_approve: 'Schvaluje kvalifikace',
+} as const
+
+export const administrationUnitCategory = {
+  _name: 'Typ organizační jednotky',
+  _name_plural: 'Typ organizační jednotky',
+} as const
+
+export const membershipCategory = {
+  _name: 'Členství',
+  _name_plural: 'Členství',
+} as const
+
+export const eventGroupCategory = {
+  _name: 'Druh akce',
+  _name_plural: 'Druh akce',
+} as const
+
+export const eventCategory = {
+  _name: 'Typ akce',
+  _name_plural: 'Typ akce',
+} as const
+
+export const eventTag = {
+  _name: 'Štítek akce',
+  _name_plural: 'Štítek akce',
+  is_active: [
+    'Je aktivní?',
+    'Neaktivní štítky se nezobrazí organizátorovi při vytváření nové akce',
+  ],
+} as const
+
+export const eventProgramCategory = {
+  _name: 'Program akce',
+  _name_plural: 'Program akce',
+} as const
+
+export const donationSourceCategory = {
+  _name: 'Zdroj daru',
+  _name_plural: 'Zdroj daru',
+} as const
+
+export const organizerRoleCategory = {
+  _name: 'Organizátorská role',
+  _name_plural: 'Organizátorská role',
+} as const
+
+export const teamRoleCategory = {
+  _name: 'Týmová role',
+  _name_plural: 'Týmová role',
+} as const
+
+export const opportunityCategory = {
+  _name: 'Kagegorie příležitosti',
+  _name_plural: 'Kagegorie příležitosti',
+} as const
+
+export const opportunityPriority = {
+  _name: 'Priorita příležitosti',
+  _name_plural: 'Priorita příležitosti',
+} as const
+
+export const locationProgramCategory = {
+  _name: 'Program lokality',
+  _name_plural: 'Program lokality',
+} as const
+
+export const locationAccessibilityCategory = {
+  _name: 'Dostupnost lokality',
+  _name_plural: 'Dostupnost lokality',
+} as const
+
+export const roleCategory = {
+  _name: 'Typ role',
+  _name_plural: 'Typ role',
+} as const
+
+export const healthInsuranceCompany = {
+  _name: 'Zdravotní pojišťovna',
+  _name_plural: 'Zdravotní pojišťovna',
+} as const
+
+export const pronounCategory = {
+  _name: 'Oslovení',
+  _name_plural: 'Oslovení',
+} as const
+
+export const donorEventCategory = {
+  _name: 'Typ značky dárce',
+  _name_plural: 'Typ značky dárce',
+} as const
+
+export const donor = {
+  _name: 'Dárce',
+  _name_plural: 'Dárce',
+  formal_vokativ: ['Formální oslovení', 'Pro účely potvrzení o daru'],
+  subscribed_to_newsletter: 'Odebírá novinky?',
+  is_public: ['Chce zveřejnit?', 'na webu a v závěrečné zprávě'],
+  date_joined: 'Dárcem od',
+  regional_center_support: 'podpora RC',
+  basic_section_support: 'podpora ZČ',
+  do_not_call: 'Už nevolat',
+  do_not_solicit: 'Už nežádat o dar',
+  fundraisers_note: 'Interní poznámka',
+} as const
+
+export const pledge = {
+  _name: 'Pravidelný dar',
+  _name_plural: 'Pravidelný dar',
+  donor: 'Dárce',
+  donation_source: 'Zdroj dotace',
+  is_recurrent: 'Je pravidelný dárce?',
+  recurrent_state: 'Stav',
+  pledged_at: 'Datum',
+} as const
+
+export const donation = {
+  _name: 'Dar',
+  _name_plural: 'Dar',
+  donor: 'Dárce',
+  pledge: 'Nadřazený pravidelný dar',
+  donated_at: 'Datum',
+  amount: 'Částka',
+  donation_source: 'Zdroj dotace',
+  info: 'Info',
+  _variable_symbol: ['Variabilní symbol platby', 'pro párování na dárce'],
+} as const
+
+export const fundraisingCampaign = {
+  _name: 'Fundraisingová kampaň',
+  _name_plural: 'Fundraisingová kampaň',
+  name: 'Název',
+  slug: 'Slug',
+} as const
+
+export const donorEvent = {
+  _name: 'Značka dárce',
+  _name_plural: 'Značka dárce',
+  donor: 'Dárce',
+  event_type: 'Typ',
+  campaign: 'Kampaň',
+  pledge: 'Příslib',
+  reminder: 'Připomínka',
+  fundraisers_note: 'Poznámka',
+} as const
+
+export const variableSymbol = {
+  _name: 'Variabilní symbol',
+  _name_plural: 'Variabilní symbol',
+  donor: 'Dárce',
+  variable_symbol: 'Variabilní symbol',
+} as const
+
+export const company = {
+  _name: 'Firma',
+  _name_plural: 'Firma',
+  donor: 'Dárce',
+  name: 'Název firmy',
+  ico: 'IČO',
+  address: 'Sídlo',
+} as const
+
+export const uploadBankRecords = {
+  _name: 'Nahrání bankovních záznamů',
+  _name_plural: 'Nahrání bankovních záznamů',
+  file: 'Soubor .csv',
+} as const
+
+export const region = {
+  _name: 'Kraj',
+  _name_plural: 'Kraj',
+  area: 'Oblast',
+} as const
+
+export const zipCode = { _name: 'PSČ', _name_plural: 'PSČ' } as const
+
+export const opportunity = {
+  _name: 'Příležitost',
+  _name_plural: 'Příležitost',
+  category: 'Kategorie',
+  priority: 'Priorita',
+  start: 'Začátek příležitosti',
+  end: 'Konec příležitosti',
+  on_web_start: 'Zobrazit na webu od',
+  on_web_end: 'Zobrazit na webu do',
+  location: 'Místo příležitosti',
+  introduction: [
+    'Představení příležitosti',
+    'Krátce vysvětli význam činnosti a její přínos, aby přilákala zájemce',
+  ],
+  description: [
+    'Popis činnosti',
+    'Přibliž konkrétní činnosti a aktivity, které budou součástí příležitosti',
+  ],
+  location_benefits: [
+    'Přínos pro lokalitu',
+    'Popiš dopad a přínos činnosti pro dané místě (nezobrazí se u typu spolupráce)',
+  ],
+  personal_benefits: [
+    'Přínos ze spolupráce',
+    'Uveď konkrétní osobní přínos do života z realizace této příležitosti',
+  ],
+  requirements: [
+    'Požadavky příležitosti',
+    'Napiš dovednosti, zkušenosti či vybavení potřebné k zapojení do příležitosti',
+  ],
+  contact_person: 'Kontaktní osoba',
+  contact_name: [
+    'Jméno kontaktní osoby',
+    'Nechte prázdné pokud chcete použít jméno kontaktní osoby',
+  ],
+  contact_phone: [
+    'Kontaktní telefon',
+    'Nechte prázdné pokud chcete použít telefon kontaktní osoby',
+  ],
+  contact_email: [
+    'Kontaktní e-mail',
+    'Nechte prázdné pokud chcete použít e-mail kontaktní osoby',
+  ],
+} as const
+
+export const offeredHelp = {
+  _name: 'Nabízená pomoc',
+  _name_plural: 'Nabízená pomoc',
+  programs: 'Programy',
+  organizer_roles: 'Organizátorské role',
+  additional_organizer_role: 'Jiná organizátorské role',
+  team_roles: 'Týmové role',
+  additional_team_role: 'Jiné týmové role',
+  info: 'Popis pomoci',
+} as const
+
+export const dashboardItem = {
+  _name: 'Termín',
+  _name_plural: 'Termín',
+  for_roles: 'Pro role',
+  repeats_every_year: 'Opakuje se každý rok?',
+  visible_date: 'Zobrazený termín',
+} as const
+
+export const donationPointsAggregation = {
+  _name: 'Agregace',
+  _name_plural: 'Agregace',
+} as const
+
+export const donationPointsColumn = {
+  _name: 'Sloupec',
+  _name_plural: 'Sloupec',
+  aggregation: 'Agregace',
+  points_per_each: 'Body za jednotku',
+  section: 'Sekce',
+} as const
+
+export const donationPointsSection = {
+  _name: 'Sekce',
+  _name_plural: 'Sekce',
+  donation_points: 'Body dotací',
+} as const
+
+export const donationPoints = {
+  _name: 'Body dotací',
+  _name_plural: 'Body dotací',
+  since: ['Od', 'Filtruji akce které začaly po daném datumu'],
+  till: [
+    'Do',
+    'Filtruji akce které začaly do daného datumu, filtruji členství za rok kterému patří tento den, určuji stáří členů k tomuto datu',
+  ],
+} as const
+
+export const game = {
+  _name: 'Program',
+  _name_plural: 'Program',
+  is_hidden: [
+    'Je program skrytý?',
+    'Editor může program skrýt (autorské práva, nekorektní text, atd.)',
+  ],
+  created_at: 'Vytvořen',
+  contributor: ['Přispěvatel', 'Kdo zadal program do sborníku?'],
+  is_original: [
+    'Autorský program?',
+    'Jsi autorem tohoto programu — vytvořil si ho? Pokud ne, vyplň původ programu níže.',
+  ],
+  is_draft: [
+    'Rozpracován?',
+    'Je program finálně zpracován, či ještě něco chybí doladit?',
+  ],
+  origin: [
+    'Původ programu',
+    'Kdo je autorem programu, odkud byl program převzat?',
+  ],
+  administration_unit: [
+    'Základní článek (RC/klub)',
+    'Chceš program přiřadit pod určitý článek? Dej mu kredit!',
+  ],
+  thumbs_up: 'Dali palec nahoru',
+  favourites: 'Oblíbili si',
+  watchers: 'Sledují',
+  stars: ['Počet hvězd', 'Interní hodnocení pro editory'],
+  is_verified: [
+    'Je program ověřen?',
+    'Editor může program ověřit, záruka brontosauří kvality',
+  ],
+  tags: [
+    'Tagy',
+    'Pokud ti nějaký tag chybí, napiš mi na sbornik@brontosaurus.cz, díky!',
+  ],
+  physical_category: 'Fyzická náročnost',
+  physical_note: ['Poznámky', 'Specifické poznámky k fyzické náročnosti'],
+  mental_category: 'Psychická náročnost',
+  mental_note: ['Poznámky', 'Specifické poznámky k psychické náročnosti'],
+  location_category: [
+    'Místa uvedení',
+    'Typová místa, na kterých lze / dává smysl program uvést',
+  ],
+  location_note: ['Poznámky', 'Specifické poznámky k místu uvedení'],
+  participant_number_category: 'Vhodný počet účastníků',
+  participant_number_note: [
+    'Poznámky',
+    'Specifické poznámky k počtu účastníků',
+  ],
+  participant_age_category: 'Vhodný věk účastníků',
+  participant_age_note: ['Poznámky', 'Specifické poznámky k věku účastníků'],
+  game_length_category: 'Délka programu',
+  game_length_note: ['Poznámky', 'Specifické poznámky k délce programu'],
+  preparation_length_category: 'Délka přípravy',
+  preparation_length_note: [
+    'Poznámky',
+    'Specifické poznámky k délce / náročnosti přípravy programu',
+  ],
+  material_requirement_category: 'Množství materiálu',
+  material_requirement_note: [
+    'Poznámky',
+    'Specifické poznámky k množství materiálu',
+  ],
+  organizers_number_category: 'Počet orgů pro uvedení',
+  organizers_number_note: [
+    'Poznámky',
+    'Specifické poznámky k počtu orgů pro uvedení programu',
+  ],
+  short_description: ['Krátké představení', 'Maximálně 250 znaků'],
+  goal: 'Cíle programu',
+  description: ['Pravidla', 'Popis a pravidla programu'],
+  motivation: [
+    'Motivace',
+    'Tipy na vtáhnutí účastníků do hry (scénkou, hudbou, aktivitkou)',
+  ],
+  material: [
+    'Soupis materiálu',
+    'Co je potřeba k uvedení hry, soubory pro tisk lze přiložit níže',
+  ],
+  notes: [
+    'Metodické poznámky',
+    'Tipy a triky pro uvedení, otázky na reflexi, atd.',
+  ],
+} as const
+
+export const baseFile = {
+  _name: 'Soubor',
+  _name_plural: 'Soubor',
+  file: 'Soubor',
+} as const
+
+export const gameFile = { _name: 'Soubor', _name_plural: 'Soubor' } as const
+
+export const comment = {
+  _name: 'Komentář',
+  _name_plural: 'Komentář',
+  author: 'Autor',
+  is_hidden: ['Pouze pro autora?', 'Zobrazit komentář pouze autorovi?'],
+} as const
+
+export const commentFile = { _name: 'Soubor', _name_plural: 'Soubor' } as const
+
+export const playedAt = {
+  _name: 'Uvedení programu',
+  _name_plural: 'Uvedení programu',
+} as const
+
+export const playedAtFile = {
+  _name: 'Soubor',
+  _name_plural: 'Soubor',
+  played_at: 'Uvedení programu',
+} as const
+
+export const gameList = {
+  _name: 'Seznam programů',
+  _name_plural: 'Seznam programů',
+  games: 'Programy',
+  owner: 'Autor seznamu',
+} as const
+
+export const tag = { _name: 'Tag', _name_plural: 'Tag' } as const
+
+export const baseCategory = {
+  _name: 'Kategorie',
+  _name_plural: 'Kategorie',
+} as const
+
+export const physicalCategory = {
+  _name: 'Kategorie fyzické náročnosti',
+  _name_plural: 'Kategorie fyzické náročnosti',
+} as const
+
+export const mentalCategory = {
+  _name: 'Kategorie psychické náročnosti',
+  _name_plural: 'Kategorie psychické náročnosti',
+} as const
+
+export const locationCategory = {
+  _name: 'Kategorie místa uvedení',
+  _name_plural: 'Kategorie místa uvedení',
+} as const
+
+export const participantNumberCategory = {
+  _name: 'Kategorie početu účastníků',
+  _name_plural: 'Kategorie početu účastníků',
+} as const
+
+export const participantAgeCategory = {
+  _name: 'Kategorie věku účastníků',
+  _name_plural: 'Kategorie věku účastníků',
+} as const
+
+export const gameLengthCategory = {
+  _name: 'Kategorie délky programu',
+  _name_plural: 'Kategorie délky programu',
+} as const
+
+export const preparationLengthCategory = {
+  _name: 'Kategorie délky přípravy',
+  _name_plural: 'Kategorie délky přípravy',
+} as const
+
+export const materialRequirementCategory = {
+  _name: 'Kategorie množství materiálu',
+  _name_plural: 'Kategorie množství materiálu',
+} as const
+
+export const organizersNumberCategory = {
+  _name: 'Kategorie početu orgů pro uvedení',
+  _name_plural: 'Kategorie početu orgů pro uvedení',
+} as const
+
+export const chef = {
+  _name: 'Kuchařstvo',
+  _name_plural: 'Kuchařstvo',
+  is_editor: 'Editor?',
+  name: 'Zobrazené jméno / přezdívka',
+  email: 'Zobrazený e-mail',
+  photo: 'Avatar',
+} as const
+
+export const unit = {
+  _name: 'Jednotka',
+  _name_plural: 'Jednotka',
+  of: 'Čeho',
+  name2: 'Dva až čtyři',
+  name5: 'Pět a víc',
+  abbreviation: 'Zkratka',
+} as const
+
+export const ingredient = {
+  _name: 'Přísada',
+  _name_plural: 'Přísada',
+  g_per_liter: 'gramy na litr',
+  g_per_piece: 'gramy na kus',
+  g_per_serving: 'gramy na typickou porci',
+  state: 'Konzistence',
+  reasoning: 'Popis',
+} as const
+
+export const recipe = {
+  _name: 'Recept',
+  _name_plural: 'Recept',
+  chef: 'Kuchařstvo',
+  difficulty: 'Náročnost',
+  intro: 'Úvod',
+  sources: 'Zdroje',
+  tags: 'Tagy',
+  required_time: 'Časová náročnost',
+  steps: 'Postup',
+  tips: 'Tipy',
+} as const
+
+export const recipeIngredient = {
+  _name: 'Přísada receptu',
+  _name_plural: 'Přísada receptu',
+  amount: 'Množství',
+  ingredient: 'Přísada',
+  is_required: 'Nutné?',
+  recipe: 'Recept',
+  unit: 'Jednotka',
+} as const
+
+export const recipeStep = {
+  _name: 'Krok receptu',
+  _name_plural: 'Krok receptu',
+  recipe: 'Recept',
+  is_required: 'Nutné?',
+} as const
+
+export const recipeTip = {
+  _name: 'Tip k receptu',
+  _name_plural: 'Tip k receptu',
+  recipe: 'Recept',
+} as const
+
+export const recipeComment = {
+  _name: 'Komentář receptu',
+  _name_plural: 'Komentář receptu',
+  recipe: 'Recept',
+} as const
+
+export const menu = {
+  _name: 'Jídelníček',
+  _name_plural: 'Jídelníček',
+  is_shared: 'Sdíleno?',
+  is_starred: 'Ohvězdičkováno?',
+} as const
+
+export const menuRecipe = {
+  _name: 'Recept jídelníčku',
+  _name_plural: 'Recept jídelníčku',
+  menu: 'Jídelníček',
+  original: 'Originální recept',
+  served_at: 'Servírováno',
+} as const
+
+export const menuRecipeIngredient = {
+  _name: 'Přísada receptu jídelníčku',
+  _name_plural: 'Přísada receptu jídelníčku',
+  amount: 'Množství',
+  ingredient: 'Přísada',
+  is_used: 'Použito?',
+  menu_recipe: 'Recept',
+  unit: 'Jednotka',
+} as const
+
+export const recipeDifficulty = {
+  _name: 'Kategorie obtížnosti receptů',
+  _name_plural: 'Kategorie obtížnosti receptů',
+} as const
+
+export const recipeTag = {
+  _name: 'Tag',
+  _name_plural: 'Tag',
+  group: 'Zařazení',
+} as const
+
+export const recipeRequiredTime = {
+  _name: 'Časová náročnost receptu',
+  _name_plural: 'Časová náročnost receptu',
+} as const
+
+export const generic = {
+  user: 'Uživatel',
+  email: 'E-mail',
+  city: 'Město',
+  street: 'Ulice',
+  zip_code: 'PSČ',
+  region: 'Kraj',
+  location: 'Lokalita',
+  name: 'Název',
+  slug: 'Zkratka',
+  description: 'Popis',
+  photo: 'Fotka',
+  first_name: 'Křestní jméno',
+  last_name: 'Příjmení',
+  nickname: 'Přezdívka',
+  birth_name: 'Rodné příjmení',
+  phone: 'Tel. číslo',
+  birthday: 'Datum narození',
+  order: 'Pořadí',
+  pronoun: 'Oslovení',
+  event: 'Akce',
+  image: 'Obrázek',
+  health_issues: 'Alergie a zdravotní omezení',
+  application: 'Přihláška',
+  created_at: 'Vytvořeno',
+  date: 'Datum',
+  place: 'Místo',
+  note: 'Poznámka',
+  internal_note: 'Interní poznámka',
+  game: 'Program',
+  file: 'Soubor',
+  comment: 'Komentář',
+  emoji: 'Smajlík',
+  gps_location: 'GPS lokace',
+  created_by: 'Vytvořeno',
+  sent_at: 'Odesláno',
+  data: 'Data',
+  is_active: 'Je aktivní?',
+  is_public: 'Zveřejněno?',
+  updated_at: 'Aktualizováno',
+  updated_by: 'Aktualizováno',
+} as const
+
+export const admin = {
+  header: 'BIS - Brontosauří informační systém',
+  subheader: 'Administrátorský přístup pro organizační jednotky a ústředí',
+} as const
+
+export const login = {
+  too_many_retries: 'Příliš mnoho pokusů, zkuste to znovu za hodinu',
+  user_does_not_exist: 'Uživatel s tímto emailem neexistuje',
+  code_form_header: 'Na e-mail {email} byl zaslán kód pro přihlášení',
+  code_invalid: 'Kód není validní (chybný či expirovaný)',
+} as const
+
+export const event_categories = {
+  internal: 'Interní',
+  internal__general_meeting: 'Valná hromada',
+  internal__volunteer_meeting: 'Schůzka dobrovolníků, týmovka',
+  internal__section_meeting: 'Oddílová, družinová schůzka',
+  public: 'Veřejná',
+  public__volunteering: 'Dobrovolnická',
+  public__only_experiential: 'Čistě zážitková',
+  public__educational: 'Vzdělávací',
+  public__educational__lecture: 'Přednáška',
+  public__educational__course: 'Kurz, školení, exkurze',
+  public__educational__ohb: 'OHB',
+  public__educational__educational: 'Výukový program',
+  public__educational__educational_with_stay: 'Pobytový výukový program',
+  public__club: 'Klub',
+  public__club__lecture: 'Přednáška',
+  public__club__meeting: 'Setkání',
+  public__other: 'Ostatní',
+  public__other__for_public: 'Akce pro veřejnost',
+  public__other__exhibition: 'Výstava',
+  public__other__eco_tent: 'Ekostan',
+} as const
+
+export const cookbook = {
+  common: {
+    back: 'Zpět',
+    filters: 'filtry',
+    edit: 'upravit',
+    cookbook: 'Kuchařka',
+    recipes: 'Recepty',
+    menus: 'Jídleníčky',
+    chefs: 'Kuchařstvo',
+    ingredients: 'Přísady',
+    required: 'Toto pole je povinné',
+    save: 'Uložit',
+    save_error: 'Chyba při uložení',
+  },
+  menu: {
+    vegan: 'Proč vegan?',
+    manifest: 'Manifest? :D',
+    how_to: 'Jak začít',
+    risks: 'Zdravotní rizika',
+    where_to_go: 'Kam dál?',
+    tips: 'Tipy a triky',
+    faq: 'FAQ',
+    bronto: 'Vaření na Bronto akci',
+    dumpster_diving: 'Jak na dumpsterdiving',
+    zero_waste: 'Zero waste',
+    join_us: 'Přidej se',
+    login: 'Přihlášení',
+    logout: 'Odhlásit se',
+    create_profile: 'Vytvoření profilu',
+    register: 'Registrace',
+    my_recipes: 'Moje recepty',
+    settings: 'Nastevení',
+  },
+  login: {
+    unknown_email: 'Tento e-mail v BISu neexistuje, zaregistrujte se prosím',
+    title: 'Přihlášení / Registrace',
+    bad_email: 'Špatný formát e-mailu',
+    email: 'E-mail pro přihlášení do BISu',
+    first_name: 'Křestní jméno',
+    last_name: 'Příjmení',
+    password: 'Heslo',
+    password2: 'Heslo znovu',
+    register: 'Registrovat',
+    login: 'Přihlásit se',
+    passwords_not_same: 'Zadaná hesla nejsou stejná',
+    registration_error: 'Chyba při registraci',
+    login_error: 'Chyba při přihlášení',
+  },
+  profile: {
+    new: 'Vytvoření profilu',
+    title: 'Můj profil',
+    error_saving: 'Chyba při ukládání profilu',
+  },
+  recipes: { create: 'nový recept' },
+  edit_recipe: null,
+  section: { tips: 'iip', steps: 'krok', ingredients: 'přísada' },
+  ingredients: { new: 'Nová přísada' },
+} as const
