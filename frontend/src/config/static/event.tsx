@@ -66,14 +66,15 @@ export const form = {
   registrationMethod: {
     help: (
       <>
-        Způsoby přihlášení na vaši akci na www.brontosaurus.cz, které se zobrazí
-        po kliknutí na tlačítko “chci jet”:
+        Způsoby přihlášení na vaši akci, které se zobrazí po kliknutí na
+        tlačítko “chci jet” (na webu, nebo na sdíleném odkazu):
         <ul>
           <li>
             Standardní přihláška na brontowebu (doporučujeme!) - Je jednotná pro
             celé HB. Do této přihlášky si můžete přidat vlastní otázky. Vyplněné
             údaje se pak rovnou zobrazí v BIS, což tobě i kanceláři ulehčí
-            práci.
+            práci. Funguje i u akcí, které nezveřejňujete na webu - stačí
+            sdílet odkaz na přihlášku.
           </li>
           <li>
             Jiná elektronická přihláška - Při přihlašování budou zájemci rovnou
@@ -84,15 +85,15 @@ export const form = {
             Registrace není potřeba, stačí přijít - Zobrazí se jako text u tvojí
             akce na webu.
           </li>
-          <li>
-            Máme bohužel plno, zkuste jinou z našich akcí - Zobrazí se jako text
-            u tvojí akce na webu.
-          </li>
         </ul>
       </>
     ),
   },
   registration: {
+    is_event_full: {
+      name: 'Je akce plná',
+      help: 'Pokud zaškrtnete, účastníkům se zobrazí, že je akce plná. Způsob přihlášení i nastavení dotazníku zůstanou zachované, takže když se místo uvolní, stačí zaškrtnutí zrušit.',
+    },
     questionnaire: {
       help: 'Zde můžeš připsat svoje doplňující otevřené otázky pro účastníky, které se zobrazí u standardní přihlášky na webu. Kromě tvých otázek se standardní přihláška ptá na jméno, datum narození, telefon a email účastníka.',
       introduction: {
