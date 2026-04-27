@@ -129,3 +129,4 @@ English for code, comments, variable names. Czech for user-facing strings.
 
 ## Claude instructions
 - When implementing new code / fixing a command, you are encouraged to update and CLAUDE.md with new findings about the repository to improve it
+- No defensive fixes. Fix the root cause, keep it DRY, fail fast — no consumer-side guards or sanitizers for upstream bugs.

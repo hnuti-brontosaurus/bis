@@ -571,6 +571,8 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 
     @admin.display(description="Přidej nové členství")
     def create_membership(self, obj):
+        if obj._state.adding:
+            return "Nejdřív ulož uživatele"
         url = reverse("admin:bis_membership_add")
         url += f"?user={obj.id}"
         return make_a("zde", url)
