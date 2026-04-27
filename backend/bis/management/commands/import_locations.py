@@ -65,6 +65,11 @@ class Command(BaseCommand):
             for_beginners=False,
             is_unexplored=True,
         ),
+        59434: dict(
+            program=LocationProgramCategory.objects.get(slug="monuments"),
+            for_beginners=False,
+            is_unexplored=False,
+        ),
     }
 
     location_accessibility_map = {
