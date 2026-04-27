@@ -119,6 +119,7 @@ class CustomDateRangeFilter(DateRangeFilter):
     custom_title = None
     cache_name = None
     single_date_only = False
+    annotate_fn = None
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         if self.custom_field_path:
@@ -126,6 +127,11 @@ class CustomDateRangeFilter(DateRangeFilter):
         super().__init__(field, request, params, model, model_admin, field_path)
         if self.custom_title:
             self.title = self.custom_title
+
+    def queryset(self, request, queryset):
+        if self.annotate_fn:
+            queryset = queryset.annotate(**{self.custom_field_path: self.annotate_fn})
+        return super().queryset(request, queryset)
 
     def _make_query_filter(self, request, validated_data):
         query_filter = super()._make_query_filter(request, validated_data)
