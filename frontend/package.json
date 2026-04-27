@@ -61,6 +61,7 @@
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md,css,scss}\" package.json docs/**/*.md cypress/**/*.{ts,json}",
     "generate-api": "npx @rtk-query/codegen-openapi ./src/app/services/openapi-config.json",
+    "generate-api-local": "npx @rtk-query/codegen-openapi ./src/app/services/openapi-config.local.json",
     "e2e:ci": "cypress run --config screenshotOnRunFailure=false"
   },
   "devDependencies": {
