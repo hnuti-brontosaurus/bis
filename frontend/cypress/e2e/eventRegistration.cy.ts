@@ -20,7 +20,7 @@ describe('Standard event registration form', () => {
       cy.get('[name=birthday-year]').type('1995')
       cy.get('[name=phone]').type('601001002')
       cy.get('[name=email]').type('test@example.com')
-      cy.get('[name=note]').type('note')
+      cy.get('[name=applicant_note]').type('note')
 
       // fill questionnaire
       cy.get('[name="answers.0.answer"]').type('answer first question')
@@ -69,7 +69,7 @@ describe('Standard event registration form', () => {
           last_name: 'FamilyName',
           phone: '601001002',
           email: 'test@example.com',
-          note: 'note',
+          applicant_note: 'note',
           birthday: '1995-05-12',
           address: null,
           state: 'pending',
@@ -105,7 +105,7 @@ describe('Standard event registration form', () => {
       cy.get('[name=birthday-day]').type('12')
       cy.get('[name=birthday-month]').type('05')
       cy.get('[name=birthday-year]').type('2015')
-      cy.get('[name=note]').type('note')
+      cy.get('[name=applicant_note]').type('note')
 
       // fill questionnaire
       cy.get('[name="answers.0.answer"]').type('answer first question')
@@ -159,7 +159,7 @@ describe('Standard event registration form', () => {
           last_name: 'FamilyName',
           phone: '',
           email: '',
-          note: 'note',
+          applicant_note: 'note',
           birthday: '2015-05-12',
           address: null,
           state: 'pending',
