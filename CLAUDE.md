@@ -47,9 +47,10 @@ docker exec -u $(id -u):$(id -g) bis-backend python manage.py makemigrations
 
 ### Frontend-specific
 ```bash
-yarn --cwd frontend generate-api     # Regenerate RTK-Query types from OpenAPI
-yarn --cwd frontend lint             # Run ESLint
-yarn --cwd frontend format           # Run Prettier
+yarn --cwd frontend generate-api       # Regenerate RTK-Query types from the deployed dev backend (https://dev.bis.brontosaurus.cz/api/schema/) — needs internet
+yarn --cwd frontend generate-api-local # Regenerate RTK-Query types from the local backend (http://localhost/api/schema/) — needs `make backend` running, no internet required
+yarn --cwd frontend lint               # Run ESLint
+yarn --cwd frontend format             # Run Prettier
 ```
 
 ### Pre-commit hooks
