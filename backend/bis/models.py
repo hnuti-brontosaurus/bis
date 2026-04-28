@@ -832,9 +832,9 @@ class Membership(Model):
                 user=user,
                 administration_unit=administration_unit,
             ).first()
-            assert (
-                previous
-            ), f"Nelze prodloužit členství pro {user}, neb ještě nebyl členem {administration_unit}"
+            assert previous, (
+                f"Nelze prodloužit členství pro {user}, neb ještě nebyl členem {administration_unit}"
+            )
 
             slug = previous.category.slug
             if slug in ["kid", "student", "adult"]:
@@ -843,9 +843,9 @@ class Membership(Model):
         if slug == "individual":
             slug = MembershipCategory.get_individual(user.birthday)
 
-            assert (
-                slug
-            ), f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk"
+            assert slug, (
+                f"Nelze nastavit individuální členství pro {user}, neb není znám jeho/její věk"
+            )
 
         Membership.objects.update_or_create(
             user=user,
@@ -1084,7 +1084,7 @@ class Qualification(Model):
                 ]
                 raise ValidationError(
                     f"Hlavní organizátor {main_organizer} musí mít kvalifikaci "
-                    f'{" nebo ".join(categories)} nebo kvalifikací nadřazenou.'
+                    f"{' nebo '.join(categories)} nebo kvalifikací nadřazenou."
                 )
 
 

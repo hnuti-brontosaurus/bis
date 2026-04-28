@@ -217,19 +217,15 @@ class AgeStats:
         data = self.get_data()
 
         def make_cell(item):
-            return f'<td>{item.replace(" - ", "<br>")}</td>'
+            return f"<td>{item.replace(' - ', '<br>')}</td>"
 
         def make_row(items):
-            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+            return f"<tr>{''.join(make_cell(item) for item in items)}</tr>"
 
         header = f"<tr><th colspan={len(data)}>{self.get_header()}</th></tr>"
 
         return mark_safe(
-            f"<table>"
-            f"{header}"
-            f"{make_row(data.keys())}"
-            f"{make_row(data.values())}"
-            f"</table>"
+            f"<table>{header}{make_row(data.keys())}{make_row(data.values())}</table>"
         )
 
 
@@ -264,18 +260,14 @@ class MembershipStats:
         data = self.get_data()
 
         def make_cell(item):
-            return f'<td>{item.replace(" - ", "<br>")}</td>'
+            return f"<td>{item.replace(' - ', '<br>')}</td>"
 
         def make_row(items):
-            return f'<tr>{"".join(make_cell(item) for item in items)}</tr>'
+            return f"<tr>{''.join(make_cell(item) for item in items)}</tr>"
 
         header = f"<tr><th colspan={len(data)}>{self.get_header()}</th></tr>"
         return mark_safe(
-            f"<table>"
-            f"{header}"
-            f"{make_row(data.keys())}"
-            f"{make_row(data.values())}"
-            f"</table>"
+            f"<table>{header}{make_row(data.keys())}{make_row(data.values())}</table>"
         )
 
 

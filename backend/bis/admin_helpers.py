@@ -102,12 +102,12 @@ class RawRangeNumericFilter(ListFilter):
                 "form": SliderNumericForm(
                     name=self.parameter_name,
                     data={
-                        self.parameter_name
-                        + "_from": self.used_parameters.get(
+                        self.parameter_name + "_from": self.used_parameters.get(
                             self.parameter_name + "_from"
                         ),
-                        self.parameter_name
-                        + "_to": self.used_parameters.get(self.parameter_name + "_to"),
+                        self.parameter_name + "_to": self.used_parameters.get(
+                            self.parameter_name + "_to"
+                        ),
                     },
                 ),
             },

@@ -135,6 +135,6 @@ class Command(BaseCommand):
                         donated_at=isoparse(transaction["receivedAt"]),
                         amount=transaction["sentAmount"]["cents"] / 100,
                         donation_source=donation_source,
-                        info=f'přeposlaná částka: {transaction["outgoingAmount"]["cents"] / 100}',
+                        info=f"přeposlaná částka: {transaction['outgoingAmount']['cents'] / 100}",
                     ),
                 )

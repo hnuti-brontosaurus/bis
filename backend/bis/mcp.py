@@ -110,9 +110,7 @@ class BISTools(MCPToolset):
                 _export_executor.submit(_export_and_email, qs, user_email, label)
 
             exported = ", ".join(context["_export_qs"].keys())
-            return (
-                f"Exporting {exported}. " f"You will receive an email at {user_email}."
-            )
+            return f"Exporting {exported}. You will receive an email at {user_email}."
 
         return result.data
 

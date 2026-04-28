@@ -54,9 +54,9 @@ class Base64FieldMixin:
             assert isinstance(base64_data, str), "Expects base64 string"
             assert ";base64," in base64_data, '";base64," not in data'
             header, base64_data = base64_data.split(";base64,", 1)
-            assert re.match(
-                r"data:\w+/\w+;filename=.*", header
-            ), f'{header=} does not match "data:\\w+/\\w+;filename=.*"'
+            assert re.match(r"data:\w+/\w+;filename=.*", header), (
+                f'{header=} does not match "data:\\w+/\\w+;filename=.*"'
+            )
             header = header[5:]
             content_type, filename = header.split(";")
             filename = filename.split("=", 1)[1]
@@ -133,7 +133,7 @@ class Base64FileField(Base64FieldMixin, FileField):
 
 
 ModelSerializer.serializer_field_mapping[models.ImageField] = Base64ImageField
-ModelSerializer.serializer_field_mapping[
-    ThumbnailImageField
-] = ThumbnailedBase64ImageField
+ModelSerializer.serializer_field_mapping[ThumbnailImageField] = (
+    ThumbnailedBase64ImageField
+)
 ModelSerializer.serializer_field_mapping[models.FileField] = Base64FileField

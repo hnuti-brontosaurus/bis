@@ -7,7 +7,7 @@ class DonationConfig(AppConfig):
     verbose_name = "Dary"
 
     def ready(self):
-        import donations.signals # noqa
+        import donations.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Dary"

@@ -9,6 +9,7 @@ To avoid fighting prettier on every run, the script embeds a hash of the
 source yamls in the generated file and skips rewriting when the hash
 already matches.
 """
+
 import hashlib
 import json
 from pathlib import Path

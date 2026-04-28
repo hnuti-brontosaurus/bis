@@ -7,7 +7,7 @@ class BISConfig(AppConfig):
     verbose_name = "Hnutí Brontosaurus"
 
     def ready(self):
-        import administration_units.signals # noqa
+        import administration_units.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Hnutí Brontosaurus"
