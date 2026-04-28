@@ -33,6 +33,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        if settings.ENVIRONMENT != "prod":
+            return
+
         service = build_drive_service()
 
         root_id = get_or_create_folder(
