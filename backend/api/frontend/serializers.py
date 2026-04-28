@@ -1021,7 +1021,7 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def update(self, instance, validated_data):
-        if not all([key in ["user", "state", "paid_for"] for key in validated_data]):
+        if not all(key in ["user", "state", "paid_for"] for key in validated_data):
             raise ValidationError("Only user, state and paid_for are editable")
         return super().update(instance, validated_data)
 

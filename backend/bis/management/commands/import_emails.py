@@ -46,7 +46,7 @@ class Command(BaseCommand):
         bis_emails = set(User.objects.values_list("email", flat=True))
         data_emails = [u for u in data if "+" not in u["email"]]
         data_emails = [u for u in data_emails if u["status"] == 1]
-        data_emails = set([u["email"] for u in data_emails])
+        data_emails = {u["email"] for u in data_emails}
         logging.info(
             "BIS emails: %d, Data emails: %d, Intersection: %d, BIS only: %d, Data only: %d",
             len(bis_emails),

@@ -286,7 +286,7 @@ class Command(BaseCommand):
             if user:
                 user.nickname = item["prezdivka"] or user.nickname
                 user.phone = item["telefon"] or user.phone
-                _import_ids = set(_id for _id in user._import_id.split(",") if _id)
+                _import_ids = {_id for _id in user._import_id.split(",") if _id}
                 _import_ids.add(str(id))
                 user._import_id = ",".join(_import_ids)
                 user.save()

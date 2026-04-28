@@ -205,7 +205,7 @@ class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
 @admin.action(description="Označ vybrané mužským oslovením")
 def mark_as_man(model_admin, request, queryset):
     perms = Permissions(request.user, User, "backend")
-    if not all([perms.has_change_permission(obj) for obj in queryset]):
+    if not all(perms.has_change_permission(obj) for obj in queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
@@ -215,7 +215,7 @@ def mark_as_man(model_admin, request, queryset):
 @admin.action(description="Označ vybrané ženským oslovením")
 def mark_as_woman(model_admin, request, queryset):
     perms = Permissions(request.user, User, "backend")
-    if not all([perms.has_change_permission(obj) for obj in queryset]):
+    if not all(perms.has_change_permission(obj) for obj in queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
@@ -579,7 +579,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
 @admin.action(description="Prodluž členství")
 def extend_memberships(model_admin, request, queryset):
     perms = Permissions(request.user, Membership, "backend")
-    if not all([perms.has_change_permission(obj.user) for obj in queryset]):
+    if not all(perms.has_change_permission(obj.user) for obj in queryset):
         return messages.error(request, "Nemáš právo editovat vybrané uživatele")
 
     for membership in queryset.all():

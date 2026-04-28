@@ -245,7 +245,7 @@ class XLSXWriter:
         return fields
 
     def write_values(self, values):
-        values = {key: value for key, value in values}
+        values = dict(values)
         height = 0
         for i, key in enumerate(self.header_keys):
             value = values.get(key)
@@ -378,7 +378,7 @@ class XLSXWriter:
                 else:
                     row += [item]
 
-            row = {a: b for a, b in zip(self.header_keys, row)}
+            row = dict(zip(self.header_keys, row))
             self.write_row(row)
 
         for i in [0, 1, 3, 4, 6, 7]:

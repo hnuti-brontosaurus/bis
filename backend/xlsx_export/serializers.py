@@ -570,7 +570,7 @@ class EventApplicationExportSerializer(ModelSerializer):
         )
 
     def get_state(self, instance):
-        return {k: v for k, v in instance.states}[instance.state]
+        return dict(instance.states)[instance.state]
 
     def to_representation(self, instance):
         result = super().to_representation(instance)

@@ -135,7 +135,7 @@ class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
 
 def mark_with_pronoun(model_admin, request, queryset, pronoun):
     perms = Permissions(request.user, Donor, "backend")
-    if not all([perms.has_change_permission(obj) for obj in queryset]):
+    if not all(perms.has_change_permission(obj) for obj in queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )
@@ -160,7 +160,7 @@ def mark_as_woman(model_admin, request, queryset):
 @admin.action(description="Zašli potvrzení o daru")
 def send_donation_confirmation(model_admin, request, queryset):
     perms = Permissions(request.user, Donor, "backend")
-    if not all([perms.has_change_permission(obj) for obj in queryset]):
+    if not all(perms.has_change_permission(obj) for obj in queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )

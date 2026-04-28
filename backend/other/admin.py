@@ -75,7 +75,7 @@ class DuplicateUserAdmin(PermissionMixin, NestedModelAdmin):
 
 @admin.action(description="Označit za zpracovné")
 def mark_as_resolved(model_admin, request, queryset):
-    if not all([obj.has_edit_permission(request.user) for obj in queryset]):
+    if not all(obj.has_edit_permission(request.user) for obj in queryset):
         return model_admin.message_user(
             request, "Nemáš právo editovat vybrané objekty", ERROR
         )

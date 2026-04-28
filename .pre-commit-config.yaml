@@ -16,9 +16,9 @@ repos:
           [
             --fix,
             --select,
-            "E,F,W,I,UP,DJ,B,PERF,FURB,PIE",
+            "E,F,W,I,UP,DJ,B,PERF,FURB,PIE,C4",
             --extend-ignore,
-            "E501,B007,B011,B905,B904,FURB171",
+            "E501,B007,B011,B905,B904,FURB171,C408",
             --target-version,
             "py312",
           ]
