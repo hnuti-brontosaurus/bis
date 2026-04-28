@@ -78,9 +78,7 @@ class Donor(m.Model):
                 )
 
         for relation in self._meta.related_objects:
-            if isinstance(relation, m.ManyToOneRel) or isinstance(
-                relation, m.OneToOneRel
-            ):
+            if isinstance(relation, (m.ManyToOneRel, m.OneToOneRel)):
                 for obj in relation.field.model.objects.filter(
                     **{relation.field.name: other}
                 ):

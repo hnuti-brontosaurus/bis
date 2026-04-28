@@ -406,7 +406,8 @@ def send_later(request, result):
         file = result.result()
         saved_file = SavedFile.objects.create(name=file.name)
         name = f"saved_file_{saved_file.id}.xlsx"
-        saved_file.file.save(name, open(file.name, "rb"), save=False)
+        with open(file.name, "rb") as f:
+            saved_file.file.save(name, f, save=False)
         emails.text(
             [request.user.email],
             "Vygenerovaný export",

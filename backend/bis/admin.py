@@ -247,7 +247,7 @@ def get_add_members_actions(administration_units):
             f"pro aktuální rok pod {administration_unit.abbreviation}"
         )(get_member_action(membership_category, administration_unit))
         for administration_unit in administration_units
-        for membership_category in translate.keys()
+        for membership_category in translate
     ]
 
 

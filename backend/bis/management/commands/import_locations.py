@@ -1,3 +1,4 @@
+import contextlib
 import re
 from os import makedirs
 from os.path import basename, exists, join
@@ -210,10 +211,8 @@ class Command(BaseCommand):
 
                 file_path = join(dir_path, file_name)
                 if not exists(file_path):
-                    try:
+                    with contextlib.suppress(HTTPError):
                         urlretrieve(path, file_path)
-                    except HTTPError:
-                        pass
                 if exists(file_path):
                     LocationPhoto.objects.get_or_create(
                         location=location, photo=join("location_photos", file_name)

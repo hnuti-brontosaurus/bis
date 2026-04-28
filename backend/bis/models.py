@@ -162,9 +162,7 @@ class Location(SearchMixin, m.Model):
                             obj.location = first
                             obj.save()
 
-                    elif isinstance(relation, m.ManyToOneRel) or isinstance(
-                        relation, m.OneToOneRel
-                    ):
+                    elif isinstance(relation, (m.ManyToOneRel, m.OneToOneRel)):
                         for obj in relation.field.model.objects.filter(
                             **{relation.field.name: other}
                         ):
@@ -536,9 +534,7 @@ class User(SearchMixin, AbstractBaseUser):
                             email=obj.email, user=self, order=max_order + i + 1
                         )
 
-                elif isinstance(relation, m.ManyToOneRel) or isinstance(
-                    relation, m.OneToOneRel
-                ):
+                elif isinstance(relation, (m.ManyToOneRel, m.OneToOneRel)):
                     for obj in relation.field.model.objects.filter(
                         **{relation.field.name: other}
                     ):
@@ -562,10 +558,7 @@ class User(SearchMixin, AbstractBaseUser):
     def get_name(self, show_nickname=True):
         name = f"{self.first_name} {self.last_name}".strip()
         if self.nickname and show_nickname:
-            if name:
-                name = f"{self.nickname} ({name})"
-            else:
-                name = self.nickname
+            name = f"{self.nickname} ({name})" if name else self.nickname
 
         if not name.strip():
             return f"{self.email}"
@@ -892,7 +885,7 @@ class Membership(m.Model):
 
     @classmethod
     def process_action(cls, request):
-        for key in request.POST.keys():
+        for key in request.POST:
             if key.startswith("_extend_membership_"):
                 membership_id = int(key.split("_")[3])
                 membership = cls.objects.get(id=membership_id)

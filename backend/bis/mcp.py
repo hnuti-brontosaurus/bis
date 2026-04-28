@@ -25,7 +25,8 @@ def _export_and_email(queryset, user_email, subject_label):
         file = do_export_to_xlsx(queryset)
         saved_file = SavedFile.objects.create(name=file.name)
         name = f"saved_file_{saved_file.id}.xlsx"
-        saved_file.file.save(name, open(file.name, "rb"), save=False)
+        with open(file.name, "rb") as f:
+            saved_file.file.save(name, f, save=False)
         emails.text(
             [user_email],
             f"Export: {subject_label}",

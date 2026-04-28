@@ -42,10 +42,7 @@ def is_running_under_server():
         return True
 
     # Check for runserver in command line args
-    if len(sys.argv) > 1 and "runserver" in sys.argv[1]:
-        return True
-
-    return False
+    return len(sys.argv) > 1 and "runserver" in sys.argv[1]
 
 
 def run_daily_command():

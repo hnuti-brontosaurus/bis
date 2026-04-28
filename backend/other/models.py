@@ -1,5 +1,5 @@
 from datetime import timedelta
-from tempfile import NamedTemporaryFile
+from io import BytesIO
 
 import openpyxl
 from administration_units.models import AdministrationUnit
@@ -271,15 +271,10 @@ class DonationPoints(m.Model):
             for c, cell in enumerate(row):
                 ws.cell(4 + r, 1 + c).value = cell
 
-        tmp_file = NamedTemporaryFile(
-            mode="w",
-            suffix=".xlsx",
-            newline="",
-            encoding="utf8",
-            prefix="donation_points_",
-        )
-        wb.save(tmp_file.name)
-        return open(tmp_file.name, "rb")
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        return buffer
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

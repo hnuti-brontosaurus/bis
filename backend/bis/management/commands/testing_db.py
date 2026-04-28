@@ -57,10 +57,7 @@ class Command(BaseCommand):
         """
         if birthday is None:
             birthday = date(1980, 1, 1)
-        if sex_slug:
-            ctg_sex = PronounCategory.objects.get(slug=sex_slug)
-        else:
-            ctg_sex = None
+        ctg_sex = PronounCategory.objects.get(slug=sex_slug) if sex_slug else None
         new_user = User.objects.create(
             first_name=first_name,
             last_name=last_name,
