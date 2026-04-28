@@ -631,7 +631,7 @@ class User(SearchMixin, AbstractBaseUser):
     def get_donor(self):
         if not hasattr(self, "donor"):
             return "Neexistuje"
-        return get_admin_edit_url(getattr(self, "donor"))
+        return get_admin_edit_url(self.donor)
 
     @classmethod
     def filter_queryset(cls, queryset, perm):

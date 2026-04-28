@@ -241,7 +241,7 @@ class DonationPointsAggregation(m.Model):
         if slug == "members_27_and_more":
             return age_stats.age_count(27, age_stats.oldest)
 
-        raise "unknown slug"
+        assert False, "unknown slug"
 
     def get_count(self, since, till, administration_unit):
         return self.do_get_count(self.slug, since, till, administration_unit)

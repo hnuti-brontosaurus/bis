@@ -200,7 +200,7 @@ def event_of_administration_unit_filter_factory(
                     datetime_query[key.replace(prefix + "__", "")] = value
                     del datetime_query[key]
                 if parameter_name == "memberships__administration_unit":
-                    setattr(request, "membership_stats_query", datetime_query)
+                    request.membership_stats_query = datetime_query
 
                 queryset = queryset.filter(**count_query)
                 return queryset.model.objects.filter(id__in=queryset.values_list("id"))
@@ -323,7 +323,7 @@ class LatestMembershipOnlyFilter(SimpleListFilter):
         return (("no", "Zobrazit všechna členství"),)
 
     def queryset(self, request, queryset):
-        setattr(request, "only_latest_members_filter", self.value())
+        request.only_latest_members_filter = self.value()
         return queryset
 
     def choices(self, changelist):

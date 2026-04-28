@@ -10,7 +10,7 @@ def migrate(apps, schema_editor):
     EventPropagationImage = apps.get_model("event", "EventPropagationImage")
 
     for image in EventPropagationImage.objects.all():
-        if file := getattr(image, "image"):
+        if file := image.image:
             file_path = join(settings.MEDIA_ROOT, file.name)
             try:
                 image = Image.open(file_path)
