@@ -8,7 +8,8 @@ Read and improve the documentation in the [`docs` folder](docs)
 
 1. Prerequisity: have Node.js and yarn installed
 1. Clone this repository
-1. Go to working directory: `cd bis-frontend`
+1. Install pre-commit `pre-commit install` (pre-commit is normally installed on system level)
+1. Go to working directory: `cd frontend`
 1. Install dependencies: `yarn`
 1. Run development version: `VITE_API_BASE_URL="https://dev.bis.brontosaurus.cz/api/" VITE_CORS_PROXY="https://bis.proxy.mrkvon.org/" yarn dev`
 
@@ -16,7 +17,7 @@ Read and improve the documentation in the [`docs` folder](docs)
 
 1. Prerequisity: have Node.js and yarn installed
 1. Clone this repository
-1. Go to working directory: `cd bis-frontend`
+1. Go to working directory: `cd frontend`
 1. Install dependencies: `yarn`
 1. Build production version (make sure to setup or omit variables as you need): `VITE_API_BASE_URL="https://dev.bis.brontosaurus.cz/api/" VITE_CORS_PROXY="https://bis.proxy.mrkvon.org/" yarn build`
 1. A `build/` folder should have been created in the root of your project. Copy the files from `build/` to your production server, and [serve as single page application for example with nginx](https://gist.github.com/huangzhuolin/24f73163e3670b1cd327f2b357fd456a).
