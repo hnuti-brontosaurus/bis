@@ -254,7 +254,7 @@ class Command(BaseCommand):
             logging.warning("%s does not exist", self.file_path)
             return
 
-        with open(self.file_path, "r", encoding="utf-8") as file:
+        with open(self.file_path, encoding="utf-8") as file:
             raw_data = json.loads(file.read())
 
         data = {}

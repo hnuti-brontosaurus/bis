@@ -85,8 +85,8 @@ class RawRangeNumericFilter(ListFilter):
 
     def expected_parameters(self):
         return [
-            "{}_from".format(self.parameter_name),
-            "{}_to".format(self.parameter_name),
+            f"{self.parameter_name}_from",
+            f"{self.parameter_name}_to",
         ]
 
     def has_output(self):
@@ -149,7 +149,7 @@ class CustomDateRangeFilter(DateRangeFilter):
     def _get_expected_fields(self):
         if self.single_date_only:
             return [self.lookup_kwarg_gte]
-        return super(CustomDateRangeFilter, self)._get_expected_fields()
+        return super()._get_expected_fields()
 
     def _get_form_fields(self):
         if self.single_date_only:
@@ -166,7 +166,7 @@ class CustomDateRangeFilter(DateRangeFilter):
                     ),
                 )
             )
-        return super(CustomDateRangeFilter, self)._get_form_fields()
+        return super()._get_form_fields()
 
 
 def event_of_administration_unit_filter_factory(

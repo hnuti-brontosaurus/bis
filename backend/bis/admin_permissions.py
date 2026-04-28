@@ -55,7 +55,7 @@ class PermissionMixin:
 
             class NoValidationForm(self.form):
                 def full_clean(_self):
-                    super(NoValidationForm, _self).full_clean()
+                    super().full_clean()
                     _self._errors = {}
 
             kwargs["form"] = NoValidationForm

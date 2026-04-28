@@ -1,4 +1,3 @@
-import typing as t
 from datetime import date, timedelta
 from os.path import join
 
@@ -50,7 +49,7 @@ class Command(BaseCommand):
         sex_slug: str = None,
         birthday: date = None,
         password="password",
-        qualification: t.Tuple[str, date, User] = None,
+        qualification: tuple[str, date, User] = None,
     ):
         """Create users, optionally with qualification.
 
@@ -124,7 +123,7 @@ class Command(BaseCommand):
         chairman: User,
         slug_category: str = "basic_section",
         manager: User = None,
-        address: t.Tuple[str, str, str] = None,
+        address: tuple[str, str, str] = None,
     ):
         """Create new administration unit.
 
@@ -159,7 +158,7 @@ class Command(BaseCommand):
         self,
         administration_unit: AdministrationUnit,
         user: User,
-        membership: t.Tuple[str, int],
+        membership: tuple[str, int],
     ):
         """Add user to administration unit as a member.
 
@@ -183,14 +182,14 @@ class Command(BaseCommand):
         name: str,
         start: date,
         end: date,
-        administration_units: t.Union[AdministrationUnit, t.List[AdministrationUnit]],
+        administration_units: AdministrationUnit | list[AdministrationUnit],
         main_organizer: User,
         participants=None,
         group_slug: str = "weekend_event",
         category_slug: str = "public__volunteering",
         program_slug: str = "nature",
         intended_for_slug: str = "for_all",
-        other_organizers: t.List[User] = None,
+        other_organizers: list[User] = None,
         location_name: str = "Online",
         is_canceled: bool = False,
         is_closed: bool = None,

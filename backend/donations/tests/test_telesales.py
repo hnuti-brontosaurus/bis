@@ -281,7 +281,7 @@ def test_call_form_rejects_postponed_with_past_reminder(
     )
 
     assert response.status_code == 200
-    assert "budoucnosti".encode() in response.content
+    assert b"budoucnosti" in response.content
 
 
 @pytest.mark.django_db

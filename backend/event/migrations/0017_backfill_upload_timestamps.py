@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from django.db import migrations
 
-LEGACY_UPLOAD_TIMESTAMP = datetime(2020, 1, 1, tzinfo=timezone.utc)
+LEGACY_UPLOAD_TIMESTAMP = datetime(2020, 1, 1, tzinfo=UTC)
 
 
 def backfill_legacy_timestamps(apps, schema_editor):

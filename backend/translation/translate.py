@@ -7,9 +7,9 @@ from django.db.models.query_utils import DeferredAttribute
 from phonenumber_field.modelfields import PhoneNumberDescriptor
 from project.settings import BASE_DIR
 
-with open(join(BASE_DIR, "translation", "model_translations.yaml"), "r") as f:
+with open(join(BASE_DIR, "translation", "model_translations.yaml")) as f:
     model_translations = yaml.safe_load(f)
-with open(join(BASE_DIR, "translation", "string_translations.yaml"), "r") as f:
+with open(join(BASE_DIR, "translation", "string_translations.yaml")) as f:
     string_translations = yaml.safe_load(f)
 
 ignored_attr_names = [

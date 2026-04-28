@@ -35,7 +35,7 @@ class Command(BaseCommand):
         path = Path("data.json")
 
         if path.exists():
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
         else:
             data = self.get_subscribers()

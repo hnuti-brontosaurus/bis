@@ -10,7 +10,7 @@ from regions.models import Region, ZipCode
 class Command(BaseCommand):
     def handle(self, *args, **options):
         path = join(settings.BASE_DIR, "regions", "zip_codes", "zv_cobce_psc.csv")
-        with open(path, "r", encoding="windows-1250") as file:
+        with open(path, encoding="windows-1250") as file:
             data = StringIO(file.read().strip())
 
         data = list(csv.reader(data, delimiter=";"))[1:]

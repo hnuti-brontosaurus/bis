@@ -12,7 +12,7 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 def load_environment_variables_from_docker_compose_file():
     try:
-        with open(join(dirname(BASE_DIR), "docker-compose/.dev.yaml"), "r") as stream:
+        with open(join(dirname(BASE_DIR), "docker-compose/.dev.yaml")) as stream:
             content = yaml.safe_load(stream)
             for key, value in content["services"]["backend"]["environment"].items():
                 if key not in environ:

@@ -79,7 +79,7 @@ class PermissionViewSetBase(ModelViewSet):
             )
 
     def get_queryset(self):
-        queryset = super(PermissionViewSetBase, self).get_queryset()
+        queryset = super().get_queryset()
         perms = Permissions(
             self.request.user, self.serializer_class.Meta.model, "frontend"
         )

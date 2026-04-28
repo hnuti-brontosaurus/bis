@@ -18,10 +18,10 @@ _lock = threading.Lock()
 def get_memory_usage():
     """Get current memory usage from cgroup (for Docker containers)."""
     try:
-        with open("/sys/fs/cgroup/memory.current", "r") as f:
+        with open("/sys/fs/cgroup/memory.current") as f:
             current_bytes = int(f.read().strip())
 
-        with open("/sys/fs/cgroup/memory.max", "r") as f:
+        with open("/sys/fs/cgroup/memory.max") as f:
             max_value = f.read().strip()
             if max_value == "max":
                 max_str = "unlimited"

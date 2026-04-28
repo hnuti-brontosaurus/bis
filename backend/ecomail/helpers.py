@@ -1,7 +1,6 @@
 import re
 import time
 from functools import lru_cache
-from typing import List, Union
 
 import requests
 from django.conf import settings
@@ -14,7 +13,7 @@ from urllib3.util import Retry
 BASE_URI = "https://api2.ecomailapp.cz/"
 
 
-def send(contacts: Union[Contact, List[Contact]], method, uri, data=None, params=None):
+def send(contacts: Contact | list[Contact], method, uri, data=None, params=None):
     if data is None:
         data = {}
     if params is None:
