@@ -1,4 +1,5 @@
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, PROTECT
 
 from bis.models import User
 from event.models import Event
@@ -6,14 +7,14 @@ from translation.translate import translate_model
 
 
 @translate_model
-class EventFeedback(Model):
-    event = ForeignKey(Event, related_name="feedbacks", on_delete=PROTECT)
-    user = ForeignKey(
+class EventFeedback(m.Model):
+    event = m.ForeignKey(Event, related_name="feedbacks", on_delete=PROTECT)
+    user = m.ForeignKey(
         User, related_name="feedbacks", on_delete=PROTECT, null=True, blank=True
     )
-    name = CharField(max_length=63, blank=True)
-    email = EmailField(blank=True, null=True)
-    created_at = DateTimeField(auto_now_add=True)
+    name = m.CharField(max_length=63, blank=True)
+    email = m.EmailField(blank=True, null=True)
+    created_at = m.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ("id",)
@@ -31,12 +32,12 @@ class EventFeedback(Model):
 
 
 @translate_model
-class FeedbackForm(Model):
-    event = OneToOneField(Event, related_name="feedback_form", on_delete=CASCADE)
-    email_content = TextField(blank=True)
-    introduction = TextField(blank=True)
-    after_submit_text = TextField(blank=True)
-    sent_at = DateField(null=True, blank=True)
+class FeedbackForm(m.Model):
+    event = m.OneToOneField(Event, related_name="feedback_form", on_delete=CASCADE)
+    email_content = m.TextField(blank=True)
+    introduction = m.TextField(blank=True)
+    after_submit_text = m.TextField(blank=True)
+    sent_at = m.DateField(null=True, blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -49,13 +50,13 @@ class FeedbackForm(Model):
 
 
 @translate_model
-class Inquiry(Model):
-    inquiry = CharField(max_length=255)
-    slug = SlugField(blank=True, max_length=255)
-    data = JSONField(default=dict)
-    is_required = BooleanField(default=True)
-    order = PositiveIntegerField(default=0)
-    feedback_form = ForeignKey(
+class Inquiry(m.Model):
+    inquiry = m.CharField(max_length=255)
+    slug = m.SlugField(blank=True, max_length=255)
+    data = m.JSONField(default=dict)
+    is_required = m.BooleanField(default=True)
+    order = m.PositiveIntegerField(default=0)
+    feedback_form = m.ForeignKey(
         FeedbackForm, on_delete=CASCADE, related_name="inquiries"
     )
 
@@ -75,12 +76,12 @@ class Inquiry(Model):
 
 
 @translate_model
-class Reply(Model):
-    inquiry = ForeignKey(Inquiry, on_delete=CASCADE, related_name="replies")
-    feedback = ForeignKey(EventFeedback, on_delete=CASCADE, related_name="replies")
-    reply = TextField()
-    value = JSONField(default=None, null=True)
-    data = JSONField(default=dict)
+class Reply(m.Model):
+    inquiry = m.ForeignKey(Inquiry, on_delete=CASCADE, related_name="replies")
+    feedback = m.ForeignKey(EventFeedback, on_delete=CASCADE, related_name="replies")
+    reply = m.TextField()
+    value = m.JSONField(default=None, null=True)
+    data = m.JSONField(default=dict)
 
     class Meta:
         ordering = ("inquiry__order",)

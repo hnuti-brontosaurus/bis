@@ -1,4 +1,5 @@
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, PROTECT
 from phonenumber_field.modelfields import PhoneNumberField
 
 from bis.models import User
@@ -9,11 +10,11 @@ from translation.translate import translate_model
 
 
 @translate_model
-class EventApplication(Model):
-    event_registration = ForeignKey(
+class EventApplication(m.Model):
+    event_registration = m.ForeignKey(
         EventRegistration, related_name="applications", on_delete=PROTECT
     )
-    user = ForeignKey(
+    user = m.ForeignKey(
         User, related_name="applications", on_delete=PROTECT, null=True, blank=True
     )
     states = [
@@ -23,20 +24,20 @@ class EventApplication(Model):
         ("rejected", "Zamítnuta"),
         ("approved", "Potvrzena"),
     ]
-    state = CharField(
+    state = m.CharField(
         max_length=15,
         choices=states,
     )
 
-    is_child_application = BooleanField(default=False)
-    first_name = CharField(max_length=63)
-    last_name = CharField(max_length=63)
-    nickname = CharField(max_length=63, blank=True)
+    is_child_application = m.BooleanField(default=False)
+    first_name = m.CharField(max_length=63)
+    last_name = m.CharField(max_length=63)
+    nickname = m.CharField(max_length=63, blank=True)
     phone = PhoneNumberField(blank=True)
-    email = EmailField(blank=True, null=True)
-    birthday = DateField(blank=True, null=True)
-    health_issues = TextField(blank=True)
-    pronoun = ForeignKey(
+    email = m.EmailField(blank=True, null=True)
+    birthday = m.DateField(blank=True, null=True)
+    health_issues = m.TextField(blank=True)
+    pronoun = m.ForeignKey(
         PronounCategory,
         on_delete=PROTECT,
         null=True,
@@ -44,9 +45,9 @@ class EventApplication(Model):
         related_name="applications",
     )
 
-    created_at = DateTimeField(auto_now_add=True)
-    applicant_note = TextField(blank=True)
-    paid_for = BooleanField(default=False)
+    created_at = m.DateTimeField(auto_now_add=True)
+    applicant_note = m.TextField(blank=True)
+    paid_for = m.BooleanField(default=False)
 
     class Meta:
         ordering = ("id",)
@@ -65,27 +66,27 @@ class EventApplication(Model):
 
 @translate_model
 class EventApplicationClosePerson(BaseContact):
-    application = OneToOneField(
+    application = m.OneToOneField(
         EventApplication, related_name="close_person", on_delete=CASCADE
     )
 
 
 @translate_model
 class EventApplicationAddress(BaseAddress):
-    application = OneToOneField(
+    application = m.OneToOneField(
         EventApplication, related_name="address", on_delete=CASCADE
     )
 
 
 @translate_model
-class Questionnaire(Model):
+class Questionnaire(m.Model):
     # one-to-one relationship to event
     # holds relations to its questions and answers
-    event_registration = OneToOneField(
+    event_registration = m.OneToOneField(
         EventRegistration, on_delete=CASCADE, related_name="questionnaire"
     )
-    introduction = TextField(blank=True)
-    after_submit_text = TextField(blank=True)
+    introduction = m.TextField(blank=True)
+    after_submit_text = m.TextField(blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -100,12 +101,12 @@ class Questionnaire(Model):
 
 
 @translate_model
-class Question(Model):
-    question = CharField(max_length=255)
-    data = JSONField(default=dict)
-    is_required = BooleanField(default=True)
-    order = PositiveIntegerField(default=0)
-    questionnaire = ForeignKey(
+class Question(m.Model):
+    question = m.CharField(max_length=255)
+    data = m.JSONField(default=dict)
+    is_required = m.BooleanField(default=True)
+    order = m.PositiveIntegerField(default=0)
+    questionnaire = m.ForeignKey(
         Questionnaire, on_delete=CASCADE, related_name="questions"
     )
 
@@ -125,14 +126,14 @@ class Question(Model):
 
 
 @translate_model
-class Answer(Model):
+class Answer(m.Model):
     # holds answer for specific question
-    question = ForeignKey(Question, on_delete=CASCADE, related_name="answers")
-    application = ForeignKey(
+    question = m.ForeignKey(Question, on_delete=CASCADE, related_name="answers")
+    application = m.ForeignKey(
         EventApplication, on_delete=CASCADE, related_name="answers"
     )
-    answer = TextField()
-    data = JSONField(default=dict)
+    answer = m.TextField()
+    data = m.JSONField(default=dict)
 
     class Meta:
         ordering = ("question__order",)

@@ -1,5 +1,6 @@
 from django.contrib.admin import display
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, Index, PROTECT
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
@@ -14,53 +15,57 @@ from translation.translate import _, translate_model
 
 
 @translate_model
-class AdministrationUnit(SearchMixin, Model):
-    name = CharField(max_length=255, unique=True)
-    abbreviation = CharField(max_length=63, unique=True)
-    description = TextField(blank=True, max_length=400)
+class AdministrationUnit(SearchMixin, m.Model):
+    name = m.CharField(max_length=255, unique=True)
+    abbreviation = m.CharField(max_length=63, unique=True)
+    description = m.TextField(blank=True, max_length=400)
     image = ThumbnailImageField(upload_to="administration_unit_images", blank=True)
 
-    is_for_kids = BooleanField()
+    is_for_kids = m.BooleanField()
 
     phone = PhoneNumberField()
-    email = EmailField()
-    www = URLField(blank=True)
-    facebook = URLField(blank=True)
-    instagram = URLField(blank=True)
-    ic = CharField(max_length=15, blank=True)
-    bank_account_number = CharField(max_length=63, blank=True)
-    data_box = CharField(max_length=63, blank=True)
-    custom_statues = FileField(upload_to="custom_statues", blank=True)
-    gps_location = PointField(null=True)
+    email = m.EmailField()
+    www = m.URLField(blank=True)
+    facebook = m.URLField(blank=True)
+    instagram = m.URLField(blank=True)
+    ic = m.CharField(max_length=15, blank=True)
+    bank_account_number = m.CharField(max_length=63, blank=True)
+    data_box = m.CharField(max_length=63, blank=True)
+    custom_statues = m.FileField(upload_to="custom_statues", blank=True)
+    gps_location = m.PointField(null=True)
 
-    existed_since = DateField(null=True)
-    existed_till = DateField(null=True, blank=True)
+    existed_since = m.DateField(null=True)
+    existed_till = m.DateField(null=True, blank=True)
 
-    category = ForeignKey(
+    category = m.ForeignKey(
         AdministrationUnitCategory,
         related_name="administration_units",
         on_delete=PROTECT,
     )
-    chairman = ForeignKey(
+    chairman = m.ForeignKey(
         "bis.User", related_name="chairman_of", on_delete=PROTECT, null=True
     )
-    vice_chairman = ForeignKey(
+    vice_chairman = m.ForeignKey(
         "bis.User",
         related_name="vice_chairman_of",
         on_delete=PROTECT,
         null=True,
         blank=True,
     )
-    manager = ForeignKey(
-        "bis.User", related_name="manager_of", on_delete=PROTECT, null=True, blank=True
+    manager = m.ForeignKey(
+        "bis.User",
+        related_name="manager_of",
+        on_delete=PROTECT,
+        null=True,
+        blank=True,
     )
-    board_members = ManyToManyField(
+    board_members = m.ManyToManyField(
         "bis.User", related_name="administration_units", blank=True
     )
 
-    _import_id = CharField(max_length=15, default="")
-    _history = JSONField(default=dict)
-    _search_field = CharField(max_length=1024, blank=True)
+    _import_id = m.CharField(max_length=15, default="")
+    _history = m.JSONField(default=dict)
+    _search_field = m.CharField(max_length=1024, blank=True)
     search_fields = [
         "abbreviation",
         "name",
@@ -121,26 +126,26 @@ class AdministrationUnit(SearchMixin, Model):
 
 @translate_model
 class AdministrationUnitAddress(BaseAddress):
-    administration_unit = OneToOneField(
+    administration_unit = m.OneToOneField(
         AdministrationUnit, on_delete=CASCADE, related_name="address"
     )
 
 
 @translate_model
 class AdministrationUnitContactAddress(BaseAddress):
-    administration_unit = OneToOneField(
+    administration_unit = m.OneToOneField(
         AdministrationUnit, on_delete=CASCADE, related_name="contact_address"
     )
 
 
 @translate_model
-class GeneralMeeting(Model):
-    administration_unit = ForeignKey(
+class GeneralMeeting(m.Model):
+    administration_unit = m.ForeignKey(
         AdministrationUnit, related_name="general_meetings", on_delete=CASCADE
     )
 
-    date = DateField()
-    place = CharField(max_length=63)
+    date = m.DateField()
+    place = m.CharField(max_length=63)
 
     def __str__(self):
         return f"Valná hromada {self.place} - {self.date}"
@@ -150,28 +155,30 @@ class GeneralMeeting(Model):
 
 
 @translate_model
-class AdministrationSubUnit(Model):
-    administration_unit = ForeignKey(
+class AdministrationSubUnit(m.Model):
+    administration_unit = m.ForeignKey(
         AdministrationUnit, related_name="sub_units", on_delete=PROTECT
     )
-    name = CharField(max_length=255, unique=True)
-    description = TextField(blank=True, max_length=400)
+    name = m.CharField(max_length=255, unique=True)
+    description = m.TextField(blank=True, max_length=400)
 
-    is_for_kids = BooleanField()
-    is_active = BooleanField(default=True)
+    is_for_kids = m.BooleanField()
+    is_active = m.BooleanField(default=True)
 
     phone = PhoneNumberField()
-    email = EmailField()
-    www = URLField(blank=True)
-    facebook = URLField(blank=True)
-    instagram = URLField(blank=True)
-    gps_location = PointField(null=True)
-    _history = JSONField(default=dict)
+    email = m.EmailField()
+    www = m.URLField(blank=True)
+    facebook = m.URLField(blank=True)
+    instagram = m.URLField(blank=True)
+    gps_location = m.PointField(null=True)
+    _history = m.JSONField(default=dict)
 
-    main_leader = ForeignKey(
+    main_leader = m.ForeignKey(
         "bis.User", related_name="main_leader_of", on_delete=PROTECT
     )
-    sub_leaders = ManyToManyField("bis.User", related_name="sub_leader_of", blank=True)
+    sub_leaders = m.ManyToManyField(
+        "bis.User", related_name="sub_leader_of", blank=True
+    )
 
     class Meta:
         ordering = ("name",)
@@ -194,24 +201,24 @@ class AdministrationSubUnit(Model):
 
 @translate_model
 class AdministrationSubUnitAddress(BaseAddress):
-    sub_unit = OneToOneField(
+    sub_unit = m.OneToOneField(
         AdministrationSubUnit, on_delete=CASCADE, related_name="address"
     )
 
 
 @translate_model
 class BrontosaurusMovement(SingletonModel):
-    director = ForeignKey("bis.User", related_name="director_of", on_delete=PROTECT)
-    finance_director = ForeignKey(
+    director = m.ForeignKey("bis.User", related_name="director_of", on_delete=PROTECT)
+    finance_director = m.ForeignKey(
         "bis.User", related_name="finance_director_of", on_delete=PROTECT
     )
-    bis_administrators = ManyToManyField("bis.User", related_name="+", blank=True)
-    office_workers = ManyToManyField("bis.User", related_name="+", blank=True)
-    audit_committee = ManyToManyField("bis.User", related_name="+", blank=True)
-    executive_committee = ManyToManyField("bis.User", related_name="+", blank=True)
-    education_members = ManyToManyField("bis.User", related_name="+", blank=True)
-    fundraisers = ManyToManyField("bis.User", related_name="+", blank=True)
-    _history = JSONField(default=dict)
+    bis_administrators = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    office_workers = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    audit_committee = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    executive_committee = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    education_members = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    fundraisers = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    _history = m.JSONField(default=dict)
 
     @update_roles("director", "finance_director")
     def save(self, *args, **kwargs):

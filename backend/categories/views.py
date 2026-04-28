@@ -1,6 +1,49 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from categories.serializers import *
+from categories.models import (
+    AdministrationUnitCategory,
+    DietCategory,
+    DonationSourceCategory,
+    EventCategory,
+    EventGroupCategory,
+    EventIntendedForCategory,
+    EventProgramCategory,
+    EventTag,
+    GrantCategory,
+    HealthInsuranceCompany,
+    LocationAccessibilityCategory,
+    LocationProgramCategory,
+    MembershipCategory,
+    OpportunityCategory,
+    OpportunityPriority,
+    OrganizerRoleCategory,
+    PronounCategory,
+    QualificationCategory,
+    RoleCategory,
+    TeamRoleCategory,
+)
+from categories.serializers import (
+    AdministrationUnitCategorySerializer,
+    DietCategorySerializer,
+    DonationSourceCategorySerializer,
+    EventCategorySerializer,
+    EventGroupCategorySerializer,
+    EventIntendedForCategorySerializer,
+    EventProgramCategorySerializer,
+    EventTagSerializer,
+    GrantCategorySerializer,
+    HealthInsuranceCompanySerializer,
+    LocationAccessibilityCategorySerializer,
+    LocationProgramCategorySerializer,
+    MembershipCategorySerializer,
+    OpportunityCategorySerializer,
+    OpportunityPrioritySerializer,
+    OrganizerRoleCategorySerializer,
+    PronounCategorySerializer,
+    QualificationCategorySerializer,
+    RoleCategorySerializer,
+    TeamRoleCategorySerializer,
+)
 
 
 class GrantCategoryViewSet(ReadOnlyModelViewSet):

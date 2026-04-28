@@ -2,7 +2,8 @@ from os.path import basename
 
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, Index, PROTECT, Q
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -34,9 +35,9 @@ from common.thumbnails import ThumbnailImageField
 from translation.translate import translate_model
 
 
-class EventDraft(Model):
-    owner = ForeignKey(User, related_name="event_drafts", on_delete=CASCADE)
-    data = JSONField()
+class EventDraft(m.Model):
+    owner = m.ForeignKey(User, related_name="event_drafts", on_delete=CASCADE)
+    data = m.JSONField()
 
     @permission_cache
     def has_edit_permission(self, user):
@@ -48,50 +49,52 @@ class EventDraft(Model):
 
 
 @translate_model
-class Event(SearchMixin, Model):
+class Event(SearchMixin, m.Model):
     # general
-    name = CharField(max_length=63)
-    is_canceled = BooleanField(default=False)
-    is_closed = BooleanField(default=False)
-    is_archived = BooleanField(default=False)
-    start = DateField()
-    start_time = TimeField(blank=True, null=True)
-    end = DateField()
-    number_of_sub_events = PositiveIntegerField(default=1)
-    location = ForeignKey(Location, on_delete=PROTECT, related_name="events")
-    online_link = URLField(blank=True)
+    name = m.CharField(max_length=63)
+    is_canceled = m.BooleanField(default=False)
+    is_closed = m.BooleanField(default=False)
+    is_archived = m.BooleanField(default=False)
+    start = m.DateField()
+    start_time = m.TimeField(blank=True, null=True)
+    end = m.DateField()
+    number_of_sub_events = m.PositiveIntegerField(default=1)
+    location = m.ForeignKey(Location, on_delete=PROTECT, related_name="events")
+    online_link = m.URLField(blank=True)
 
-    group = ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name="events")
-    category = ForeignKey(EventCategory, on_delete=PROTECT, related_name="events")
-    tags = ManyToManyField(EventTag, related_name="events", blank=True)
-    program = ForeignKey(EventProgramCategory, on_delete=PROTECT, related_name="events")
-    intended_for = ForeignKey(
+    group = m.ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name="events")
+    category = m.ForeignKey(EventCategory, on_delete=PROTECT, related_name="events")
+    tags = m.ManyToManyField(EventTag, related_name="events", blank=True)
+    program = m.ForeignKey(
+        EventProgramCategory, on_delete=PROTECT, related_name="events"
+    )
+    intended_for = m.ForeignKey(
         EventIntendedForCategory, on_delete=PROTECT, related_name="events"
     )
 
-    administration_units = ManyToManyField(AdministrationUnit, related_name="events")
-    main_organizer = ForeignKey(
+    administration_units = m.ManyToManyField(AdministrationUnit, related_name="events")
+    main_organizer = m.ForeignKey(
         User,
         on_delete=PROTECT,
         related_name="events_where_was_as_main_organizer",
         null=True,
     )
-    other_organizers = ManyToManyField(
+    other_organizers = m.ManyToManyField(
         User, related_name="events_where_was_organizer", blank=True
     )
-    created_by = ForeignKey(
+    created_by = m.ForeignKey(
         User, on_delete=PROTECT, related_name="created_events", null=True
     )
-    created_at = DateField(auto_now_add=True)
-    closed_at = DateField(blank=True, null=True)
+    created_at = m.DateField(auto_now_add=True)
+    closed_at = m.DateField(blank=True, null=True)
 
-    is_attendance_list_required = BooleanField(default=False)
-    organizers_note = TextField(blank=True)
+    is_attendance_list_required = m.BooleanField(default=False)
+    organizers_note = m.TextField(blank=True)
 
-    _import_id = CharField(max_length=15, default="")
-    _search_field = CharField(max_length=128, blank=True)
+    _import_id = m.CharField(max_length=15, default="")
+    _search_field = m.CharField(max_length=128, blank=True)
     search_fields = ["name"]
-    duration = PositiveIntegerField()
+    duration = m.PositiveIntegerField()
 
     class Meta:
         ordering = ("-start",)
@@ -175,17 +178,17 @@ class Event(SearchMixin, Model):
 
 
 @translate_model
-class EventFinance(Model):
-    event = OneToOneField(Event, related_name="finance", on_delete=PROTECT)
+class EventFinance(m.Model):
+    event = m.OneToOneField(Event, related_name="finance", on_delete=PROTECT)
 
-    bank_account_number = CharField(max_length=63, blank=True)
+    bank_account_number = m.CharField(max_length=63, blank=True)
 
-    grant_category = ForeignKey(
+    grant_category = m.ForeignKey(
         GrantCategory, on_delete=PROTECT, related_name="events", null=True, blank=True
     )
-    grant_amount = PositiveIntegerField(null=True, blank=True)
-    total_event_cost = PositiveIntegerField(null=True, blank=True)
-    budget = FileField(upload_to="budgets", blank=True)
+    grant_amount = m.PositiveIntegerField(null=True, blank=True)
+    total_event_cost = m.PositiveIntegerField(null=True, blank=True)
+    budget = m.FileField(upload_to="budgets", blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -198,9 +201,9 @@ class EventFinance(Model):
 
 
 @translate_model
-class EventFinanceReceipt(Model):
-    finance = ForeignKey(EventFinance, on_delete=CASCADE, related_name="receipts")
-    receipt = FileField(upload_to="receipts")
+class EventFinanceReceipt(m.Model):
+    finance = m.ForeignKey(EventFinance, on_delete=CASCADE, related_name="receipts")
+    receipt = m.FileField(upload_to="receipts")
 
     class Meta:
         ordering = ("id",)
@@ -219,21 +222,21 @@ class EventFinanceReceipt(Model):
 
 
 @translate_model
-class EventPropagation(Model):
-    event = OneToOneField(Event, related_name="propagation", on_delete=CASCADE)
+class EventPropagation(m.Model):
+    event = m.OneToOneField(Event, related_name="propagation", on_delete=CASCADE)
 
-    is_shown_on_web = BooleanField()
+    is_shown_on_web = m.BooleanField()
 
-    minimum_age = PositiveIntegerField(null=True, blank=True)
-    maximum_age = PositiveIntegerField(null=True, blank=True)
-    cost = CharField(max_length=12)
-    accommodation = CharField(max_length=255, blank=True)
-    working_hours = PositiveSmallIntegerField(null=True, blank=True)
-    working_days = PositiveSmallIntegerField(null=True, blank=True)
-    diets = ManyToManyField(DietCategory, related_name="events", blank=True)
-    organizers = CharField(max_length=255)
-    web_url = URLField(blank=True)
-    _contact_url = URLField(blank=True)
+    minimum_age = m.PositiveIntegerField(null=True, blank=True)
+    maximum_age = m.PositiveIntegerField(null=True, blank=True)
+    cost = m.CharField(max_length=12)
+    accommodation = m.CharField(max_length=255, blank=True)
+    working_hours = m.PositiveSmallIntegerField(null=True, blank=True)
+    working_days = m.PositiveSmallIntegerField(null=True, blank=True)
+    diets = m.ManyToManyField(DietCategory, related_name="events", blank=True)
+    organizers = m.CharField(max_length=255)
+    web_url = m.URLField(blank=True)
+    _contact_url = m.URLField(blank=True)
 
     invitation_text_introduction = HTMLField()
     invitation_text_practical_information = HTMLField()
@@ -241,9 +244,9 @@ class EventPropagation(Model):
     invitation_text_about_us = HTMLField(blank=True)
     # propagation_images as Model below
 
-    contact_name = CharField(max_length=63)
+    contact_name = m.CharField(max_length=63)
     contact_phone = PhoneNumberField(blank=True)
-    contact_email = EmailField(blank=True)
+    contact_email = m.EmailField(blank=True)
 
     def clean(self):
         if self.event.is_volunteering():
@@ -287,25 +290,29 @@ class EventPropagation(Model):
 
 
 @translate_model
-class VIPEventPropagation(Model):
-    event = OneToOneField(
-        Event, related_name="vip_propagation", on_delete=CASCADE, blank=True, null=True
+class VIPEventPropagation(m.Model):
+    event = m.OneToOneField(
+        Event,
+        related_name="vip_propagation",
+        on_delete=CASCADE,
+        blank=True,
+        null=True,
     )
 
-    goals_of_event = TextField(blank=True)
-    program = TextField(blank=True)
-    short_invitation_text = TextField(max_length=200, blank=True)
+    goals_of_event = m.TextField(blank=True)
+    program = m.TextField(blank=True)
+    short_invitation_text = m.TextField(max_length=200, blank=True)
 
-    rover_propagation = BooleanField(default=False)
+    rover_propagation = m.BooleanField(default=False)
 
 
 @translate_model
-class EventRegistration(Model):
-    event = OneToOneField(Event, related_name="registration", on_delete=CASCADE)
+class EventRegistration(m.Model):
+    event = m.OneToOneField(Event, related_name="registration", on_delete=CASCADE)
 
-    is_registration_required = BooleanField(default=True)
-    alternative_registration_link = URLField(blank=True)
-    is_event_full = BooleanField(default=False)
+    is_registration_required = m.BooleanField(default=True)
+    alternative_registration_link = m.URLField(blank=True)
+    is_event_full = m.BooleanField(default=False)
 
     class Meta:
         ordering = ("id",)
@@ -318,16 +325,16 @@ class EventRegistration(Model):
 
 
 @translate_model
-class EventRecord(Model):
-    event = OneToOneField(Event, related_name="record", on_delete=PROTECT)
+class EventRecord(m.Model):
+    event = m.OneToOneField(Event, related_name="record", on_delete=PROTECT)
 
-    total_hours_worked = PositiveIntegerField(null=True, blank=True)
-    comment_on_work_done = TextField(blank=True)
-    participants = ManyToManyField(User, "participated_in_events", blank=True)
-    number_of_participants = PositiveIntegerField(null=True, blank=True)
-    number_of_participants_under_26 = PositiveIntegerField(null=True, blank=True)
+    total_hours_worked = m.PositiveIntegerField(null=True, blank=True)
+    comment_on_work_done = m.TextField(blank=True)
+    participants = m.ManyToManyField(User, "participated_in_events", blank=True)
+    number_of_participants = m.PositiveIntegerField(null=True, blank=True)
+    number_of_participants_under_26 = m.PositiveIntegerField(null=True, blank=True)
 
-    is_event_closed_email_enabled = BooleanField(default=True)
+    is_event_closed_email_enabled = m.BooleanField(default=True)
 
     class Meta:
         ordering = ("-event__start",)
@@ -385,7 +392,7 @@ class EventRecord(Model):
 
 @translate_model
 class EventContact(BaseContact):
-    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name="contacts")
+    record = m.ForeignKey(EventRecord, on_delete=CASCADE, related_name="contacts")
 
     def has_edit_permission(self, user):
         return self.record.has_edit_permission(user)
@@ -395,9 +402,11 @@ class EventContact(BaseContact):
 
 
 @translate_model
-class EventPropagationImage(Model):
-    propagation = ForeignKey(EventPropagation, on_delete=CASCADE, related_name="images")
-    order = PositiveIntegerField()
+class EventPropagationImage(m.Model):
+    propagation = m.ForeignKey(
+        EventPropagation, on_delete=CASCADE, related_name="images"
+    )
+    order = m.PositiveIntegerField()
     image = ThumbnailImageField(upload_to="event_propagation_images", max_length=200)
 
     @admin.display(description="Náhled")
@@ -420,12 +429,12 @@ class EventPropagationImage(Model):
 
 
 @translate_model
-class EventAttendanceListPage(Model):
-    record = ForeignKey(
+class EventAttendanceListPage(m.Model):
+    record = m.ForeignKey(
         EventRecord, on_delete=CASCADE, related_name="attendance_list_pages"
     )
-    page = FileField(upload_to="attendance_list_pages", null=True, blank=True)
-    created_at = DateTimeField(auto_now_add=True)
+    page = m.FileField(upload_to="attendance_list_pages", null=True, blank=True)
+    created_at = m.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ("id",)
@@ -443,10 +452,10 @@ class EventAttendanceListPage(Model):
 
 
 @translate_model
-class EventPhoto(Model):
-    record = ForeignKey(EventRecord, on_delete=CASCADE, related_name="photos")
+class EventPhoto(m.Model):
+    record = m.ForeignKey(EventRecord, on_delete=CASCADE, related_name="photos")
     photo = ThumbnailImageField(upload_to="event_photos")
-    created_at = DateTimeField(auto_now_add=True)
+    created_at = m.DateTimeField(auto_now_add=True)
 
     @admin.display(description="Náhled")
     def photo_tag(self):

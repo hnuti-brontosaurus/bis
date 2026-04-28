@@ -1,12 +1,13 @@
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import PROTECT
 
 from translation.translate import translate_model
 
 
 @translate_model
-class Region(Model):
-    name = CharField(max_length=63)
-    area = PolygonField()
+class Region(m.Model):
+    name = m.CharField(max_length=63)
+    area = m.PolygonField()
 
     def __str__(self):
         return self.name
@@ -16,9 +17,9 @@ class Region(Model):
 
 
 @translate_model
-class ZipCode(Model):
-    zip_code = CharField(max_length=5, unique=True)
-    region = ForeignKey(
+class ZipCode(m.Model):
+    zip_code = m.CharField(max_length=5, unique=True)
+    region = m.ForeignKey(
         Region, related_name="zip_code", on_delete=PROTECT, null=True, blank=True
     )
 

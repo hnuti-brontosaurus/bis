@@ -3,7 +3,8 @@ from tempfile import NamedTemporaryFile
 
 import openpyxl
 from dateutil.utils import today
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, Index, PROTECT, UniqueConstraint
 from django.core.files import File
 from tinymce.models import HTMLField
 
@@ -16,17 +17,17 @@ from translation.translate import translate_model
 
 
 @translate_model
-class Announcement(Model):
+class Announcement(m.Model):
     SEVERITY_CHOICES = [
         ("info", "Info"),
         ("warning", "Varování"),
         ("error", "Chyba"),
     ]
 
-    text = TextField()
-    severity = CharField(max_length=7, choices=SEVERITY_CHOICES, default="info")
-    start = DateTimeField()
-    end = DateTimeField()
+    text = m.TextField()
+    severity = m.CharField(max_length=7, choices=SEVERITY_CHOICES, default="info")
+    start = m.DateTimeField()
+    end = m.DateTimeField()
 
     class Meta:
         ordering = ("-start",)
@@ -36,9 +37,9 @@ class Announcement(Model):
 
 
 @translate_model
-class DuplicateUser(Model):
-    user = ForeignKey(User, on_delete=CASCADE, related_name="duplicates")
-    other = ForeignKey(User, on_delete=CASCADE, related_name="other_duplicates")
+class DuplicateUser(m.Model):
+    user = m.ForeignKey(User, on_delete=CASCADE, related_name="duplicates")
+    other = m.ForeignKey(User, on_delete=CASCADE, related_name="other_duplicates")
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -77,14 +78,14 @@ class DuplicateUser(Model):
 
 
 @translate_model
-class DashboardItem(Model):
-    date = DateField()
+class DashboardItem(m.Model):
+    date = m.DateField()
     visible_date = HTMLField(max_length=63, blank=True)
     name = HTMLField(max_length=63)
     description = HTMLField(blank=True)
-    repeats_every_year = BooleanField(default=False)
+    repeats_every_year = m.BooleanField(default=False)
 
-    for_roles = ManyToManyField(RoleCategory, related_name="dashboard_items")
+    for_roles = m.ManyToManyField(RoleCategory, related_name="dashboard_items")
 
     def __str__(self):
         return self.name
@@ -142,10 +143,10 @@ class DashboardItem(Model):
 
 
 @translate_model
-class DonationPointsAggregation(Model):
-    name = CharField(max_length=127)
-    slug = SlugField(unique=True)
-    description = TextField()
+class DonationPointsAggregation(m.Model):
+    name = m.CharField(max_length=127)
+    slug = m.SlugField(unique=True)
+    description = m.TextField()
 
     class Meta:
         ordering = ("id",)
@@ -248,11 +249,11 @@ class DonationPointsAggregation(Model):
 
 
 @translate_model
-class DonationPoints(Model):
-    name = CharField(max_length=255)
-    since = DateField()
-    till = DateField()
-    file = FileField(upload_to="donation_points", blank=True)
+class DonationPoints(m.Model):
+    name = m.CharField(max_length=255)
+    since = m.DateField()
+    till = m.DateField()
+    file = m.FileField(upload_to="donation_points", blank=True)
 
     def __str__(self):
         return self.name
@@ -324,8 +325,8 @@ class DonationPoints(Model):
 
 
 @translate_model
-class DonationPointsSection(Model):
-    donation_points = ForeignKey(
+class DonationPointsSection(m.Model):
+    donation_points = m.ForeignKey(
         DonationPoints, on_delete=CASCADE, related_name="sections"
     )
 
@@ -362,10 +363,10 @@ class DonationPointsSection(Model):
 
 
 @translate_model
-class DonationPointsColumn(Model):
-    aggregation = ForeignKey(DonationPointsAggregation, on_delete=PROTECT)
-    points_per_each = FloatField()
-    section = ForeignKey(
+class DonationPointsColumn(m.Model):
+    aggregation = m.ForeignKey(DonationPointsAggregation, on_delete=PROTECT)
+    points_per_each = m.FloatField()
+    section = m.ForeignKey(
         DonationPointsSection, on_delete=CASCADE, related_name="columns"
     )
 
@@ -373,10 +374,10 @@ class DonationPointsColumn(Model):
         return f"Sloupec {self.aggregation}"
 
 
-class SavedFile(Model):
-    name = CharField(max_length=63)
-    file = FileField(upload_to="saved_files")
-    created_at = DateField(auto_now_add=True)
+class SavedFile(m.Model):
+    name = m.CharField(max_length=63)
+    file = m.FileField(upload_to="saved_files")
+    created_at = m.DateField(auto_now_add=True)
 
     @classmethod
     def remove_old(cls):

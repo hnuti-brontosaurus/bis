@@ -1,9 +1,11 @@
 from contextlib import nullcontext
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
+from django.contrib import admin
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.http import HttpResponseRedirect
+from django.utils.safestring import mark_safe
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from rangefilter.filters import DateRangeFilter
 
@@ -12,7 +14,8 @@ from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import paused_validation
-from event.models import *
+from bis.models import User
+from event.models import Event
 from feedback.models import EventFeedback
 from translation.translate import _
 from xlsx_export.export import (

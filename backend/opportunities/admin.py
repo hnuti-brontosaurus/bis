@@ -1,8 +1,8 @@
+from django.contrib import admin
 from nested_admin.nested import NestedModelAdmin
 from rangefilter.filters import DateRangeFilter
 
 from bis.admin_permissions import PermissionMixin
-from event.models import *
 from opportunities.models import Opportunity
 
 

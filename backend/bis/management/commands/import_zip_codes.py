@@ -14,8 +14,7 @@ class Command(BaseCommand):
         with open(path, "r", encoding="windows-1250") as file:
             data = StringIO(file.read().strip())
 
-        data = list(csv.reader(data, delimiter=";"))
-        header, data = data[0], data[1:]
+        data = list(csv.reader(data, delimiter=";"))[1:]
         region_to_zip_codes = {}
         for line in data:
             region_to_zip_codes.setdefault(line[8], []).append(line[2])

@@ -220,7 +220,7 @@ class ModelSerializer(DRFModelSerializer):
             serializer = serializer_class(
                 data=self.initial_data[field],
                 context=self.context,
-                many=type(value) == list,
+                many=isinstance(value, list),
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(**{reverse_field: instance})
@@ -255,7 +255,7 @@ class ModelSerializer(DRFModelSerializer):
                 instance=nested_instance,
                 data=self.initial_data[field],
                 context=self.context,
-                many=type(value) == list,
+                many=isinstance(value, list),
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(**{reverse_field: instance})

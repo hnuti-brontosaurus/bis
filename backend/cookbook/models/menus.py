@@ -1,4 +1,5 @@
-from django.db.models import *
+from django.db import models as m
+from django.db.models import PROTECT
 
 from bis.models import User
 from cookbook.models.base import BaseModel, ChangeMixin
@@ -10,33 +11,33 @@ from translation.translate import translate_model
 
 @translate_model
 class Menu(ChangeMixin, BaseModel):
-    name = CharField(max_length=31)
-    description = TextField(blank=True)
-    user = ForeignKey(User, related_name="menus", on_delete=PROTECT)
-    is_shared = BooleanField(default=False)
-    is_starred = BooleanField(default=False)
+    name = m.CharField(max_length=31)
+    description = m.TextField(blank=True)
+    user = m.ForeignKey(User, related_name="menus", on_delete=PROTECT)
+    is_shared = m.BooleanField(default=False)
+    is_starred = m.BooleanField(default=False)
 
 
 @translate_model
 class MenuRecipe(BaseModel):
-    menu = ForeignKey(Menu, related_name="menu_recipes", on_delete=PROTECT)
-    name = CharField(max_length=31)
-    original = ForeignKey(
+    menu = m.ForeignKey(Menu, related_name="menu_recipes", on_delete=PROTECT)
+    name = m.CharField(max_length=31)
+    original = m.ForeignKey(
         Recipe, related_name="menu_recipes", on_delete=PROTECT, blank=True, null=True
     )
-    note = TextField(blank=True)
-    served_at = DateTimeField(blank=True, null=True)
+    note = m.TextField(blank=True)
+    served_at = m.DateTimeField(blank=True, null=True)
 
 
 @translate_model
 class MenuRecipeIngredient(BaseModel):
-    menu_recipe = ForeignKey(
+    menu_recipe = m.ForeignKey(
         MenuRecipe, related_name="menu_recipe_ingredients", on_delete=PROTECT
     )
-    ingredient = ForeignKey(
+    ingredient = m.ForeignKey(
         Ingredient, related_name="menu_recipe_ingredients", on_delete=PROTECT
     )
-    unit = ForeignKey(Unit, related_name="menu_recipe_ingredients", on_delete=PROTECT)
-    amount = FloatField()
-    is_used = BooleanField()
-    comment = TextField(blank=True)
+    unit = m.ForeignKey(Unit, related_name="menu_recipe_ingredients", on_delete=PROTECT)
+    amount = m.FloatField()
+    is_used = m.BooleanField()
+    comment = m.TextField(blank=True)

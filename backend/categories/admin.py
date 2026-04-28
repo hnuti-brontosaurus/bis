@@ -1,7 +1,29 @@
 from django.contrib import admin
 
 from bis.admin_permissions import PermissionMixin
-from categories.models import *
+from categories.models import (
+    AdministrationUnitCategory,
+    DietCategory,
+    DonationSourceCategory,
+    DonorEventCategory,
+    EventCategory,
+    EventGroupCategory,
+    EventIntendedForCategory,
+    EventProgramCategory,
+    EventTag,
+    GrantCategory,
+    HealthInsuranceCompany,
+    LocationAccessibilityCategory,
+    LocationProgramCategory,
+    MembershipCategory,
+    OpportunityCategory,
+    OpportunityPriority,
+    OrganizerRoleCategory,
+    PronounCategory,
+    QualificationCategory,
+    RoleCategory,
+    TeamRoleCategory,
+)
 
 
 @admin.register(GrantCategory)

@@ -4,7 +4,15 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
 from bis.admin_permissions import PermissionMixin
-from game_book.models import *
+from game_book.models import (
+    Comment,
+    CommentFile,
+    Game,
+    GameFile,
+    GameList,
+    PlayedAt,
+    PlayedAtFile,
+)
 
 
 class CommentFileAdmin(PermissionMixin, NestedTabularInline):

@@ -1,10 +1,11 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Exists, Max, Min, OuterRef, Q
 from django.http import FileResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -45,7 +46,7 @@ from donations.models import (
     UploadBankRecords,
     VariableSymbol,
 )
-from event.models import *
+from bis.models import User
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 

@@ -1,8 +1,8 @@
+from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
 from nested_admin.nested import NestedModelAdmin
 
 from bis.admin_permissions import PermissionMixin
-from event.models import *
 from regions.models import Region, ZipCode
 
 

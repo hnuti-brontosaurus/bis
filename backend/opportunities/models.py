@@ -1,4 +1,5 @@
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, PROTECT, Q
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
@@ -18,19 +19,19 @@ from translation.translate import translate_model
 
 
 @translate_model
-class Opportunity(SearchMixin, Model):
-    category = ForeignKey(
+class Opportunity(SearchMixin, m.Model):
+    category = m.ForeignKey(
         OpportunityCategory, on_delete=PROTECT, related_name="opportunities"
     )
-    priority = ForeignKey(
+    priority = m.ForeignKey(
         OpportunityPriority, on_delete=PROTECT, related_name="opportunities"
     )
-    name = CharField(max_length=63)
-    start = DateField()
-    end = DateField()
-    on_web_start = DateField()
-    on_web_end = DateField()
-    location = ForeignKey(Location, on_delete=PROTECT, related_name="opportunities")
+    name = m.CharField(max_length=63)
+    start = m.DateField()
+    end = m.DateField()
+    on_web_start = m.DateField()
+    on_web_end = m.DateField()
+    location = m.ForeignKey(Location, on_delete=PROTECT, related_name="opportunities")
 
     introduction = HTMLField()
     description = HTMLField()
@@ -38,14 +39,14 @@ class Opportunity(SearchMixin, Model):
     personal_benefits = HTMLField()
     requirements = HTMLField(blank=True)
 
-    contact_person = ForeignKey(User, on_delete=PROTECT, related_name="opportunities")
-    contact_name = CharField(max_length=63, blank=True)
+    contact_person = m.ForeignKey(User, on_delete=PROTECT, related_name="opportunities")
+    contact_name = m.CharField(max_length=63, blank=True)
     contact_phone = PhoneNumberField(blank=True)
-    contact_email = EmailField(blank=True)
+    contact_email = m.EmailField(blank=True)
     image = ThumbnailImageField(upload_to="opportunity_images")
-    created_at = DateField(auto_now_add=True)
+    created_at = m.DateField(auto_now_add=True)
 
-    _search_field = CharField(max_length=1024, blank=True)
+    _search_field = m.CharField(max_length=1024, blank=True)
     search_fields = ["name", "introduction"]
 
     def clean(self):
@@ -78,25 +79,25 @@ class Opportunity(SearchMixin, Model):
 
 
 @translate_model
-class OfferedHelp(Model):
-    user = OneToOneField(User, on_delete=CASCADE, related_name="offers")
+class OfferedHelp(m.Model):
+    user = m.OneToOneField(User, on_delete=CASCADE, related_name="offers")
 
-    programs = ManyToManyField(
+    programs = m.ManyToManyField(
         EventProgramCategory,
         related_name="offered_help",
         blank=True,
         limit_choices_to=~Q(slug="none"),
     )
-    organizer_roles = ManyToManyField(
+    organizer_roles = m.ManyToManyField(
         OrganizerRoleCategory, related_name="offered_help", blank=True
     )
-    additional_organizer_role = CharField(max_length=63, blank=True)
-    team_roles = ManyToManyField(
+    additional_organizer_role = m.CharField(max_length=63, blank=True)
+    team_roles = m.ManyToManyField(
         TeamRoleCategory, related_name="offered_help", blank=True
     )
-    additional_team_role = CharField(max_length=63, blank=True)
+    additional_team_role = m.CharField(max_length=63, blank=True)
 
-    info = TextField(blank=True)
+    info = m.TextField(blank=True)
 
     def __str__(self):
         return f"Nabízená pomoc od {self.user}"

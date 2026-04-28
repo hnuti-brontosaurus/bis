@@ -1,6 +1,8 @@
+from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from nested_admin.nested import (
     NestedModelAdmin,
     NestedStackedInline,
@@ -8,7 +10,7 @@ from nested_admin.nested import (
 )
 
 from bis.admin_permissions import PermissionMixin
-from event.models import *
+from bis.models import User
 from other.models import (
     Announcement,
     DashboardItem,

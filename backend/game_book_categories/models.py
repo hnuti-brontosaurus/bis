@@ -1,14 +1,14 @@
-from django.db.models import *
+from django.db import models as m
 
 from translation.translate import translate_model
 
 
 @translate_model
-class BaseCategory(Model):
-    name = CharField(max_length=30)
-    slug = SlugField()
-    description = CharField(max_length=120, blank=True)
-    emoji = CharField(max_length=3)
+class BaseCategory(m.Model):
+    name = m.CharField(max_length=30)
+    slug = m.SlugField()
+    description = m.CharField(max_length=120, blank=True)
+    emoji = m.CharField(max_length=3)
 
     class Meta:
         ordering = ("id",)
@@ -20,7 +20,7 @@ class BaseCategory(Model):
 
 @translate_model
 class Tag(BaseCategory):
-    name = CharField(max_length=15)
+    name = m.CharField(max_length=15)
 
 
 @translate_model

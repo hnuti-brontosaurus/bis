@@ -1,15 +1,16 @@
-from django.db.models import *
+from django.db import models as m
+from django.db.models import CASCADE
 
 from bis.models import User
 
 
-class ChangeMixin(Model):
-    created_at = DateTimeField(auto_now_add=True)
-    updated_at = DateTimeField(auto_now=True)
-    created_by = ForeignKey(
+class ChangeMixin(m.Model):
+    created_at = m.DateTimeField(auto_now_add=True)
+    updated_at = m.DateTimeField(auto_now=True)
+    created_by = m.ForeignKey(
         User, related_name="+", on_delete=CASCADE, null=True, blank=True
     )
-    updated_by = ForeignKey(
+    updated_by = m.ForeignKey(
         User, related_name="+", on_delete=CASCADE, null=True, blank=True
     )
     fields = [
@@ -23,7 +24,7 @@ class ChangeMixin(Model):
         abstract = True
 
 
-class BaseModel(Model):
+class BaseModel(m.Model):
     class Meta:
         ordering = ("-id",)
         abstract = True

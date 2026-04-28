@@ -1,4 +1,4 @@
-from django.db.models import *
+from django.db import models as m
 
 from cookbook.models.base import BaseModel, ChangeMixin
 from translation.translate import translate_model
@@ -6,13 +6,13 @@ from translation.translate import translate_model
 
 @translate_model
 class Ingredient(ChangeMixin, BaseModel):
-    name = CharField(max_length=31, unique=True)
-    state = CharField(
+    name = m.CharField(max_length=31, unique=True)
+    state = m.CharField(
         max_length=13,
         choices=[("solid", "Pevná"), ("liquid", "Tekuté")],
         default="solid",
     )
-    g_per_piece = PositiveSmallIntegerField(blank=True, null=True)
-    g_per_liter = PositiveSmallIntegerField(blank=True, null=True)
-    g_per_serving = PositiveSmallIntegerField(blank=True, null=True)
-    reasoning = TextField(blank=True)
+    g_per_piece = m.PositiveSmallIntegerField(blank=True, null=True)
+    g_per_liter = m.PositiveSmallIntegerField(blank=True, null=True)
+    g_per_serving = m.PositiveSmallIntegerField(blank=True, null=True)
+    reasoning = m.TextField(blank=True)

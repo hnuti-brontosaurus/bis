@@ -1,4 +1,4 @@
-from django.db.models import *
+from django.db import models as m
 from django.db.models import CharField, SlugField
 
 from cookbook.models.base import BaseModel
@@ -8,7 +8,7 @@ from translation.translate import translate_model
 class BaseCategory(BaseModel):
     name = CharField(max_length=31)
     slug = SlugField()
-    order = PositiveSmallIntegerField()
+    order = m.PositiveSmallIntegerField()
 
     class Meta:
         ordering = ("order",)

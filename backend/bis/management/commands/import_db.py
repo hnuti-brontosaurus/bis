@@ -247,7 +247,7 @@ class Command(BaseCommand):
         self.administration_unit_map = {
             au._import_id: au for au in AdministrationUnit.objects.all()
         }
-        self.location_map = {l._import_id: l for l in Location.objects.all()}
+        self.location_map = {loc._import_id: loc for loc in Location.objects.all()}
         self.event_map = {e._import_id: e for e in Event.objects.all()}
 
     def load_data(self):

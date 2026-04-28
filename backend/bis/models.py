@@ -10,7 +10,8 @@ from django.apps import apps
 from django.contrib import admin, messages
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, Index, PROTECT, Q, UniqueConstraint
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -45,28 +46,28 @@ from translation.translate import translate_model
 
 
 @translate_model
-class Location(SearchMixin, Model):
-    name = CharField(max_length=63)
-    description = TextField(blank=True)
-    address = CharField(max_length=255, blank=True)
-    gps_location = PointField(null=True)
+class Location(SearchMixin, m.Model):
+    name = m.CharField(max_length=63)
+    description = m.TextField(blank=True)
+    address = m.CharField(max_length=255, blank=True)
+    gps_location = m.PointField(null=True)
 
-    is_traditional = BooleanField(default=False)
-    for_beginners = BooleanField(default=False)
-    is_full = BooleanField(default=False)
-    is_unexplored = BooleanField(default=False)
+    is_traditional = m.BooleanField(default=False)
+    for_beginners = m.BooleanField(default=False)
+    is_full = m.BooleanField(default=False)
+    is_unexplored = m.BooleanField(default=False)
 
-    program = ForeignKey(
+    program = m.ForeignKey(
         LocationProgramCategory, on_delete=PROTECT, null=True, blank=True
     )
-    accessibility_from_prague = ForeignKey(
+    accessibility_from_prague = m.ForeignKey(
         LocationAccessibilityCategory,
         on_delete=PROTECT,
         related_name="+",
         null=True,
         blank=True,
     )
-    accessibility_from_brno = ForeignKey(
+    accessibility_from_brno = m.ForeignKey(
         LocationAccessibilityCategory,
         on_delete=PROTECT,
         related_name="+",
@@ -74,14 +75,14 @@ class Location(SearchMixin, Model):
         blank=True,
     )
 
-    volunteering_work = TextField(blank=True)
-    volunteering_work_done = TextField(blank=True)
-    volunteering_work_goals = TextField(blank=True)
-    options_around = TextField(blank=True)
-    facilities = TextField(blank=True)
+    volunteering_work = m.TextField(blank=True)
+    volunteering_work_done = m.TextField(blank=True)
+    volunteering_work_goals = m.TextField(blank=True)
+    options_around = m.TextField(blank=True)
+    facilities = m.TextField(blank=True)
 
-    web = URLField(blank=True)
-    region = ForeignKey(
+    web = m.URLField(blank=True)
+    region = m.ForeignKey(
         "regions.Region",
         related_name="locations",
         on_delete=PROTECT,
@@ -89,8 +90,8 @@ class Location(SearchMixin, Model):
         editable=False,
     )
 
-    _import_id = CharField(max_length=15, default="")
-    _search_field = CharField(max_length=1024, blank=True)
+    _import_id = m.CharField(max_length=15, default="")
+    _search_field = m.CharField(max_length=1024, blank=True)
     search_fields = ["name", "description"]
 
     class Meta:
@@ -162,8 +163,8 @@ class Location(SearchMixin, Model):
                             obj.location = first
                             obj.save()
 
-                    elif isinstance(relation, ManyToOneRel) or isinstance(
-                        relation, OneToOneRel
+                    elif isinstance(relation, m.ManyToOneRel) or isinstance(
+                        relation, m.OneToOneRel
                     ):
                         for obj in relation.field.model.objects.filter(
                             **{relation.field.name: other}
@@ -171,7 +172,7 @@ class Location(SearchMixin, Model):
                             setattr(obj, relation.field.name, first)
                             obj.save()
 
-                    elif isinstance(relation, ManyToManyRel):
+                    elif isinstance(relation, m.ManyToManyRel):
                         for obj in relation.field.model.objects.filter(
                             **{relation.field.name: other}
                         ):
@@ -188,8 +189,8 @@ class Location(SearchMixin, Model):
 
 
 @translate_model
-class LocationPhoto(Model):
-    location = ForeignKey(Location, on_delete=CASCADE, related_name="photos")
+class LocationPhoto(m.Model):
+    location = m.ForeignKey(Location, on_delete=CASCADE, related_name="photos")
     photo = ThumbnailImageField(upload_to="location_photos")
 
     @admin.display(description="Náhled")
@@ -211,7 +212,9 @@ class LocationPhoto(Model):
 
 @translate_model
 class LocationContactPerson(BaseContact):
-    location = OneToOneField(Location, on_delete=CASCADE, related_name="contact_person")
+    location = m.OneToOneField(
+        Location, on_delete=CASCADE, related_name="contact_person"
+    )
 
     @permission_cache
     def has_edit_permission(self, user):
@@ -220,7 +223,7 @@ class LocationContactPerson(BaseContact):
 
 @translate_model
 class LocationPatron(BaseContact):
-    location = OneToOneField(Location, on_delete=CASCADE, related_name="patron")
+    location = m.OneToOneField(Location, on_delete=CASCADE, related_name="patron")
 
     @permission_cache
     def has_edit_permission(self, user):
@@ -231,15 +234,15 @@ class LocationPatron(BaseContact):
 class User(SearchMixin, AbstractBaseUser):
     USERNAME_FIELD = "email"
 
-    id = UUIDField(
+    id = m.UUIDField(
         primary_key=True,
         verbose_name="ID",
         default=uuid4,
         auto_created=True,
         editable=False,
     )
-    _search_id = UUIDField(default=uuid4, auto_created=True, editable=False)
-    _search_field = CharField(max_length=1024, blank=True)
+    _search_id = m.UUIDField(default=uuid4, auto_created=True, editable=False)
+    _search_field = m.CharField(max_length=1024, blank=True)
     search_fields = [
         "all_emails__email",
         "phone",
@@ -249,40 +252,44 @@ class User(SearchMixin, AbstractBaseUser):
         "birth_name",
     ]
 
-    first_name = CharField(max_length=63)
-    last_name = CharField(max_length=63)
-    nickname = CharField(max_length=63, blank=True)
-    birth_name = CharField(max_length=63, blank=True)
+    first_name = m.CharField(max_length=63)
+    last_name = m.CharField(max_length=63)
+    nickname = m.CharField(max_length=63, blank=True)
+    birth_name = m.CharField(max_length=63, blank=True)
     phone = PhoneNumberField(blank=True)
-    email = EmailField(unique=True, blank=True, null=True)
-    birthday = DateField(null=True)
+    email = m.EmailField(unique=True, blank=True, null=True)
+    birthday = m.DateField(null=True)
     photo = ThumbnailImageField(upload_to="user_photos", null=True, blank=True)
 
-    subscribed_to_newsletter = BooleanField(default=True)
+    subscribed_to_newsletter = m.BooleanField(default=True)
 
-    health_insurance_company = ForeignKey(
+    health_insurance_company = m.ForeignKey(
         HealthInsuranceCompany,
         related_name="users",
         on_delete=PROTECT,
         null=True,
         blank=True,
     )
-    health_issues = TextField(blank=True)
-    pronoun = ForeignKey(
-        PronounCategory, on_delete=PROTECT, null=True, blank=True, related_name="users"
+    health_issues = m.TextField(blank=True)
+    pronoun = m.ForeignKey(
+        PronounCategory,
+        on_delete=PROTECT,
+        null=True,
+        blank=True,
+        related_name="users",
     )
-    behaviour_issues = TextField(blank=True)
+    behaviour_issues = m.TextField(blank=True)
 
-    is_active = BooleanField(default=True)
-    date_joined = DateField(default=datetime.date.today)
-    last_after_event_email = DateField(blank=True, null=True)
-    is_contact_information_verified = BooleanField(default=False)
-    office_workers_note = TextField(blank=True)
+    is_active = m.BooleanField(default=True)
+    date_joined = m.DateField(default=datetime.date.today)
+    last_after_event_email = m.DateField(blank=True, null=True)
+    is_contact_information_verified = m.BooleanField(default=False)
+    office_workers_note = m.TextField(blank=True)
 
-    _import_id = CharField(max_length=255, default="")
-    _str = CharField(max_length=255)
-    roles = ManyToManyField(RoleCategory, related_name="users")
-    vokativ = CharField(max_length=63, blank=True)
+    _import_id = m.CharField(max_length=255, default="")
+    _str = m.CharField(max_length=255)
+    roles = m.ManyToManyField(RoleCategory, related_name="users")
+    vokativ = m.CharField(max_length=63, blank=True)
 
     objects = UserManager()
 
@@ -530,8 +537,8 @@ class User(SearchMixin, AbstractBaseUser):
                             email=obj.email, user=self, order=max_order + i + 1
                         )
 
-                elif isinstance(relation, ManyToOneRel) or isinstance(
-                    relation, OneToOneRel
+                elif isinstance(relation, m.ManyToOneRel) or isinstance(
+                    relation, m.OneToOneRel
                 ):
                     for obj in relation.field.model.objects.filter(
                         **{relation.field.name: other}
@@ -539,7 +546,7 @@ class User(SearchMixin, AbstractBaseUser):
                         setattr(obj, relation.field.name, self)
                         obj.save()
 
-                elif isinstance(relation, ManyToManyRel):
+                elif isinstance(relation, m.ManyToManyRel):
                     for obj in relation.field.model.objects.filter(
                         **{relation.field.name: other}
                     ):
@@ -730,10 +737,10 @@ class User(SearchMixin, AbstractBaseUser):
 
 
 @translate_model
-class UserEmail(Model):
-    user = ForeignKey(User, related_name="all_emails", on_delete=CASCADE)
-    email = EmailField(unique=True)
-    order = PositiveSmallIntegerField(default=0)
+class UserEmail(m.Model):
+    user = m.ForeignKey(User, related_name="all_emails", on_delete=CASCADE)
+    email = m.EmailField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -750,26 +757,26 @@ class UserEmail(Model):
 
 @translate_model
 class UserAddress(BaseAddress):
-    user = OneToOneField(User, on_delete=CASCADE, related_name="address")
+    user = m.OneToOneField(User, on_delete=CASCADE, related_name="address")
 
 
 @translate_model
 class UserContactAddress(BaseAddress):
-    user = OneToOneField(User, on_delete=CASCADE, related_name="contact_address")
+    user = m.OneToOneField(User, on_delete=CASCADE, related_name="contact_address")
 
 
 @translate_model
 class UserClosePerson(BaseContact):
-    user = OneToOneField(User, on_delete=CASCADE, related_name="close_person")
+    user = m.OneToOneField(User, on_delete=CASCADE, related_name="close_person")
 
 
 @translate_model
-class EYCACard(Model):
-    user = OneToOneField(User, on_delete=CASCADE, related_name="eyca_card")
-    number = CharField(max_length=63)
-    submitted_for_creation = BooleanField(default=False)
-    sent_to_user = BooleanField(default=False)
-    valid_till = DateField(blank=True)
+class EYCACard(m.Model):
+    user = m.OneToOneField(User, on_delete=CASCADE, related_name="eyca_card")
+    number = m.CharField(max_length=63)
+    submitted_for_creation = m.BooleanField(default=False)
+    sent_to_user = m.BooleanField(default=False)
+    valid_till = m.DateField(blank=True)
 
     def __str__(self):
         return f"EYCA {self.number}"
@@ -780,18 +787,18 @@ def this_year():
 
 
 @translate_model
-class Membership(Model):
-    user = ForeignKey(User, on_delete=PROTECT, related_name="memberships")
-    category = ForeignKey(
+class Membership(m.Model):
+    user = m.ForeignKey(User, on_delete=PROTECT, related_name="memberships")
+    category = m.ForeignKey(
         MembershipCategory, on_delete=PROTECT, related_name="memberships"
     )
-    administration_unit = ForeignKey(
+    administration_unit = m.ForeignKey(
         AdministrationUnit, on_delete=PROTECT, related_name="memberships"
     )
-    year = PositiveIntegerField(default=this_year)
+    year = m.PositiveIntegerField(default=this_year)
 
-    _year = DateField()
-    _import_id = CharField(max_length=15, default="")
+    _year = m.DateField()
+    _import_id = m.CharField(max_length=15, default="")
 
     class Meta:
         ordering = ("-year", "user__last_name", "user__first_name")
@@ -933,18 +940,18 @@ class Membership(Model):
 
 
 @translate_model
-class Qualification(Model):
-    user = ForeignKey(User, on_delete=CASCADE, related_name="qualifications")
-    category = ForeignKey(
+class Qualification(m.Model):
+    user = m.ForeignKey(User, on_delete=CASCADE, related_name="qualifications")
+    category = m.ForeignKey(
         QualificationCategory, on_delete=PROTECT, related_name="qualifications"
     )
-    valid_since = DateField()
-    valid_till = DateField()
-    approved_by = ForeignKey(
+    valid_since = m.DateField()
+    valid_till = m.DateField()
+    approved_by = m.ForeignKey(
         User, on_delete=PROTECT, related_name="approved_qualifications"
     )
 
-    _import_id = CharField(max_length=15, default="")
+    _import_id = m.CharField(max_length=15, default="")
 
     class Meta:
         ordering = ("id",)
@@ -1089,11 +1096,11 @@ class Qualification(Model):
 
 
 @translate_model
-class QualificationNote(Model):
-    user = ForeignKey(User, on_delete=CASCADE, related_name="qualification_notes")
-    created_by = ForeignKey(User, on_delete=CASCADE, related_name="+")
-    education_members_note = TextField()
-    created_at = DateField(auto_now_add=True)
+class QualificationNote(m.Model):
+    user = m.ForeignKey(User, on_delete=CASCADE, related_name="qualification_notes")
+    created_by = m.ForeignKey(User, on_delete=CASCADE, related_name="+")
+    education_members_note = m.TextField()
+    created_at = m.DateField(auto_now_add=True)
 
     class Meta:
         ordering = ("id",)

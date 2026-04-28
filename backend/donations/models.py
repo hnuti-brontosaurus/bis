@@ -1,5 +1,6 @@
 from dateutil.utils import today
-from django.contrib.gis.db.models import *
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, Index, PROTECT, Q, TextChoices
 from solo.models import SingletonModel
 
 from administration_units.models import AdministrationUnit
@@ -14,17 +15,17 @@ def get_today():
 
 
 @translate_model
-class Donor(Model):
-    user = OneToOneField(User, related_name="donor", on_delete=PROTECT)
-    formal_vokativ = CharField(max_length=63, blank=True)
-    subscribed_to_newsletter = BooleanField(default=True)
-    is_public = BooleanField(default=True)
-    fundraisers_note = TextField(blank=True)
-    do_not_call = BooleanField(default=False)
-    do_not_solicit = BooleanField(default=False)
+class Donor(m.Model):
+    user = m.OneToOneField(User, related_name="donor", on_delete=PROTECT)
+    formal_vokativ = m.CharField(max_length=63, blank=True)
+    subscribed_to_newsletter = m.BooleanField(default=True)
+    is_public = m.BooleanField(default=True)
+    fundraisers_note = m.TextField(blank=True)
+    do_not_call = m.BooleanField(default=False)
+    do_not_solicit = m.BooleanField(default=False)
 
-    date_joined = DateField(default=get_today)
-    regional_center_support = ForeignKey(
+    date_joined = m.DateField(default=get_today)
+    regional_center_support = m.ForeignKey(
         AdministrationUnit,
         related_name="supported_as_regional_center",
         on_delete=PROTECT,
@@ -32,7 +33,7 @@ class Donor(Model):
         blank=True,
         limit_choices_to={"category__slug": "regional_center"},
     )
-    basic_section_support = ForeignKey(
+    basic_section_support = m.ForeignKey(
         AdministrationUnit,
         related_name="supported_as_basic_section",
         on_delete=PROTECT,
@@ -78,14 +79,16 @@ class Donor(Model):
                 )
 
         for relation in self._meta.related_objects:
-            if isinstance(relation, ManyToOneRel) or isinstance(relation, OneToOneRel):
+            if isinstance(relation, m.ManyToOneRel) or isinstance(
+                relation, m.OneToOneRel
+            ):
                 for obj in relation.field.model.objects.filter(
                     **{relation.field.name: other}
                 ):
                     setattr(obj, relation.field.name, self)
                     obj.save()
 
-            elif isinstance(relation, ManyToManyRel):
+            elif isinstance(relation, m.ManyToManyRel):
                 for obj in relation.field.model.objects.filter(
                     **{relation.field.name: other}
                 ):
@@ -126,11 +129,11 @@ class Donor(Model):
 
 
 @translate_model
-class Company(Model):
-    donor = OneToOneField(Donor, related_name="company", on_delete=CASCADE)
-    name = CharField(max_length=255)
-    ico = CharField(max_length=15)
-    address = CharField(max_length=255)
+class Company(m.Model):
+    donor = m.OneToOneField(Donor, related_name="company", on_delete=CASCADE)
+    name = m.CharField(max_length=255)
+    ico = m.CharField(max_length=15)
+    address = m.CharField(max_length=255)
 
     def __str__(self):
         return self.name
@@ -140,9 +143,9 @@ class Company(Model):
 
 
 @translate_model
-class VariableSymbol(Model):
-    donor = ForeignKey(Donor, related_name="variable_symbols", on_delete=CASCADE)
-    variable_symbol = PositiveBigIntegerField(unique=True)
+class VariableSymbol(m.Model):
+    donor = m.ForeignKey(Donor, related_name="variable_symbols", on_delete=CASCADE)
+    variable_symbol = m.PositiveBigIntegerField(unique=True)
 
     def __str__(self):
         return str(self.variable_symbol)
@@ -159,35 +162,35 @@ class RecurrentState(TextChoices):
 
 
 @translate_model
-class Pledge(Model):
+class Pledge(m.Model):
     """Only for donations from Darujme API."""
 
-    id = PositiveIntegerField(primary_key=True)  # comes from Darujme API
+    id = m.PositiveIntegerField(primary_key=True)  # comes from Darujme API
 
-    donor = ForeignKey(Donor, on_delete=PROTECT, related_name="pledges")
+    donor = m.ForeignKey(Donor, on_delete=PROTECT, related_name="pledges")
 
-    donation_source = ForeignKey(
+    donation_source = m.ForeignKey(
         DonationSourceCategory,
         on_delete=PROTECT,
         related_name="pledges",
     )
 
-    is_recurrent = BooleanField(default=False)
-    recurrent_state = CharField(
+    is_recurrent = m.BooleanField(default=False)
+    recurrent_state = m.CharField(
         max_length=32,
         choices=RecurrentState.choices,
         default=RecurrentState.UNKNOWN,
     )
-    pledged_at = DateField()
+    pledged_at = m.DateField()
 
     class Meta:
         ordering = ("-pledged_at",)
 
 
 @translate_model
-class FundraisingCampaign(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class FundraisingCampaign(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -197,19 +200,19 @@ class FundraisingCampaign(Model):
 
 
 @translate_model
-class DonorEvent(Model):
-    donor = ForeignKey(Donor, on_delete=CASCADE, related_name="events")
-    event_type = ForeignKey(DonorEventCategory, on_delete=PROTECT)
-    created_at = DateTimeField(auto_now_add=True)
-    campaign = ForeignKey(
+class DonorEvent(m.Model):
+    donor = m.ForeignKey(Donor, on_delete=CASCADE, related_name="events")
+    event_type = m.ForeignKey(DonorEventCategory, on_delete=PROTECT)
+    created_at = m.DateTimeField(auto_now_add=True)
+    campaign = m.ForeignKey(
         FundraisingCampaign,
         on_delete=PROTECT,
         related_name="events",
     )
-    fundraisers_note = TextField(blank=True)
-    pledge = TextField(blank=True)
-    reminder = DateTimeField(null=True, blank=True)
-    created_by = ForeignKey(
+    fundraisers_note = m.TextField(blank=True)
+    pledge = m.TextField(blank=True)
+    reminder = m.DateTimeField(null=True, blank=True)
+    created_by = m.ForeignKey(
         User,
         on_delete=PROTECT,
         null=True,
@@ -219,19 +222,19 @@ class DonorEvent(Model):
 
 
 @translate_model
-class Donation(Model):
-    donor = ForeignKey(Donor, on_delete=PROTECT, related_name="donations", null=True)
-    pledge = ForeignKey(Pledge, null=True, blank=True, on_delete=PROTECT)
+class Donation(m.Model):
+    donor = m.ForeignKey(Donor, on_delete=PROTECT, related_name="donations", null=True)
+    pledge = m.ForeignKey(Pledge, null=True, blank=True, on_delete=PROTECT)
 
-    donated_at = DateField()
-    amount = IntegerField()
-    donation_source = ForeignKey(
+    donated_at = m.DateField()
+    amount = m.IntegerField()
+    donation_source = m.ForeignKey(
         DonationSourceCategory, related_name="donations", on_delete=PROTECT
     )
 
-    _variable_symbol = PositiveBigIntegerField(null=True)
-    _import_id = PositiveIntegerField(null=True)
-    info = TextField()
+    _variable_symbol = m.PositiveBigIntegerField(null=True)
+    _import_id = m.PositiveIntegerField(null=True)
+    info = m.TextField()
 
     def __str__(self):
         return f"{self.amount} Kč"
@@ -257,7 +260,7 @@ class Donation(Model):
 
 @translate_model
 class UploadBankRecords(SingletonModel):
-    file = FileField(upload_to="bank_records")
+    file = m.FileField(upload_to="bank_records")
 
     def __str__(self):
         return "Nahrání bankovního záznamu"

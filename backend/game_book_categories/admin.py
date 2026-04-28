@@ -2,7 +2,18 @@ from django.contrib import admin
 from nested_admin.nested import NestedModelAdmin
 
 from bis.admin_permissions import PermissionMixin
-from game_book_categories.models import *
+from game_book_categories.models import (
+    GameLengthCategory,
+    LocationCategory,
+    MaterialRequirementCategory,
+    MentalCategory,
+    OrganizersNumberCategory,
+    ParticipantAgeCategory,
+    ParticipantNumberCategory,
+    PhysicalCategory,
+    PreparationLengthCategory,
+    Tag,
+)
 
 
 @admin.register(Tag)

@@ -1,7 +1,14 @@
 from nested_admin.nested import NestedStackedInline, NestedTabularInline
 
 from bis.admin_permissions import ReadonlyMixin
-from questionnaire.models import *
+from questionnaire.models import (
+    Answer,
+    EventApplication,
+    EventApplicationAddress,
+    EventApplicationClosePerson,
+    Question,
+    Questionnaire,
+)
 
 
 class QuestionAdmin(ReadonlyMixin, NestedTabularInline):

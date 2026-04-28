@@ -14,13 +14,10 @@ class Command(BaseCommand):
             data[user.get_name(show_nickname=False)].append(user)
 
         for users in data.values():
-            if len(users) == 1:
-                fn = lambda _: _.get_name()
-            else:
-                fn = lambda _: _.get_extended_name()
+            extended = len(users) > 1
 
             for user in users:
-                _str = fn(user)
+                _str = user.get_extended_name() if extended else user.get_name()
                 if user._str != _str:
                     user._str = _str
                     to_update.append(user)

@@ -2,7 +2,8 @@ from os.path import basename
 from uuid import uuid4
 
 from django.core.exceptions import ValidationError
-from django.db.models import *
+from django.db import models as m
+from django.db.models import CASCADE, PROTECT, SET_NULL
 from django.urls import reverse
 from tinymce.models import HTMLField
 
@@ -24,7 +25,7 @@ from game_book_categories.models import (
 from translation.translate import translate_model
 
 
-class BaseModel(Model):
+class BaseModel(m.Model):
     class Meta:
         ordering = ("-id",)
         abstract = True
@@ -35,20 +36,20 @@ class BaseModel(Model):
 
 @translate_model
 class Game(BaseModel):
-    name = CharField(max_length=60)
+    name = m.CharField(max_length=60)
 
     # internal
-    is_hidden = BooleanField(default=False)
-    game_id = UUIDField(
+    is_hidden = m.BooleanField(default=False)
+    game_id = m.UUIDField(
         default=uuid4, editable=False
     )  # revisions of same game have different id, same game_id
-    created_at = DateTimeField(auto_now_add=True)
+    created_at = m.DateTimeField(auto_now_add=True)
 
     # origin
-    contributor = ForeignKey(User, on_delete=PROTECT, related_name="games")
-    is_original = BooleanField(default=False)
-    origin = TextField(blank=True)
-    administration_unit = ForeignKey(
+    contributor = m.ForeignKey(User, on_delete=PROTECT, related_name="games")
+    is_original = m.BooleanField(default=False)
+    origin = m.TextField(blank=True)
+    administration_unit = m.ForeignKey(
         AdministrationUnit,
         blank=True,
         null=True,
@@ -56,55 +57,55 @@ class Game(BaseModel):
         related_name="games",
     )
     # rating
-    thumbs_up = ManyToManyField(User, related_name="thumbed_up_games", blank=True)
-    favourites = ManyToManyField(User, related_name="favourite_games", blank=True)
-    watchers = ManyToManyField(User, related_name="watched_games", blank=True)
-    stars = PositiveSmallIntegerField(
+    thumbs_up = m.ManyToManyField(User, related_name="thumbed_up_games", blank=True)
+    favourites = m.ManyToManyField(User, related_name="favourite_games", blank=True)
+    watchers = m.ManyToManyField(User, related_name="watched_games", blank=True)
+    stars = m.PositiveSmallIntegerField(
         choices=[(i, "★" * i) for i in range(1, 6)], blank=True, null=True
     )
-    is_verified = BooleanField(default=False)
-    is_draft = BooleanField(default=True)
+    is_verified = m.BooleanField(default=False)
+    is_draft = m.BooleanField(default=True)
 
     # categories
-    tags = ManyToManyField(Tag, related_name="games", blank=True)
-    physical_category = ForeignKey(
+    tags = m.ManyToManyField(Tag, related_name="games", blank=True)
+    physical_category = m.ForeignKey(
         PhysicalCategory, on_delete=PROTECT, related_name="games"
     )
-    physical_note = TextField(blank=True)
-    mental_category = ForeignKey(
+    physical_note = m.TextField(blank=True)
+    mental_category = m.ForeignKey(
         MentalCategory, on_delete=PROTECT, related_name="games"
     )
-    mental_note = TextField(blank=True)
-    location_category = ManyToManyField(LocationCategory, related_name="games")
-    location_note = TextField(blank=True)
-    participant_number_category = ManyToManyField(
+    mental_note = m.TextField(blank=True)
+    location_category = m.ManyToManyField(LocationCategory, related_name="games")
+    location_note = m.TextField(blank=True)
+    participant_number_category = m.ManyToManyField(
         ParticipantNumberCategory, related_name="games"
     )
-    participant_number_note = TextField(blank=True)
-    participant_age_category = ManyToManyField(
+    participant_number_note = m.TextField(blank=True)
+    participant_age_category = m.ManyToManyField(
         ParticipantAgeCategory, related_name="games"
     )
-    participant_age_note = TextField(blank=True)
-    game_length_category = ForeignKey(
+    participant_age_note = m.TextField(blank=True)
+    game_length_category = m.ForeignKey(
         GameLengthCategory, on_delete=PROTECT, related_name="games"
     )
-    game_length_note = TextField(blank=True)
-    preparation_length_category = ForeignKey(
+    game_length_note = m.TextField(blank=True)
+    preparation_length_category = m.ForeignKey(
         PreparationLengthCategory, on_delete=PROTECT, related_name="games"
     )
-    preparation_length_note = TextField(blank=True)
-    material_requirement_category = ForeignKey(
+    preparation_length_note = m.TextField(blank=True)
+    material_requirement_category = m.ForeignKey(
         MaterialRequirementCategory, on_delete=PROTECT, related_name="games"
     )
-    material_requirement_note = TextField(blank=True)
-    organizers_number_category = ForeignKey(
+    material_requirement_note = m.TextField(blank=True)
+    organizers_number_category = m.ForeignKey(
         OrganizersNumberCategory, on_delete=PROTECT, related_name="games"
     )
-    organizers_number_note = TextField(blank=True)
+    organizers_number_note = m.TextField(blank=True)
 
     # description
     goal = HTMLField(blank=True)
-    short_description = CharField(max_length=250)
+    short_description = m.CharField(max_length=250)
     motivation = HTMLField(blank=True)
     description = HTMLField()
     material = HTMLField(blank=True)
@@ -126,7 +127,7 @@ class Game(BaseModel):
 
 @translate_model
 class BaseFile(BaseModel):
-    file = FileField(upload_to="game_files")
+    file = m.FileField(upload_to="game_files")
 
     def __str__(self):
         return self.file.name
@@ -141,16 +142,16 @@ class BaseFile(BaseModel):
 
 @translate_model
 class GameFile(BaseFile):
-    game = ForeignKey(Game, on_delete=CASCADE, related_name="files")
+    game = m.ForeignKey(Game, on_delete=CASCADE, related_name="files")
 
 
 @translate_model
 class Comment(BaseModel):
-    game = ForeignKey(Game, on_delete=CASCADE, related_name="comments")
-    author = ForeignKey(User, on_delete=PROTECT, related_name="game_comments")
-    is_hidden = BooleanField(default=False)
-    created_at = DateTimeField(auto_now_add=True)
-    comment = TextField()
+    game = m.ForeignKey(Game, on_delete=CASCADE, related_name="comments")
+    author = m.ForeignKey(User, on_delete=PROTECT, related_name="game_comments")
+    is_hidden = m.BooleanField(default=False)
+    created_at = m.DateTimeField(auto_now_add=True)
+    comment = m.TextField()
 
     def __str__(self):
         return "Komentář"
@@ -161,14 +162,14 @@ class Comment(BaseModel):
 
 @translate_model
 class CommentFile(BaseFile):
-    comment = ForeignKey(Comment, on_delete=CASCADE, related_name="files")
+    comment = m.ForeignKey(Comment, on_delete=CASCADE, related_name="files")
 
 
 @translate_model
 class PlayedAt(BaseModel):
-    game = ForeignKey(Game, on_delete=CASCADE, related_name="played_at")
-    event = ForeignKey(Event, on_delete=CASCADE, related_name="played_games")
-    comment = TextField()
+    game = m.ForeignKey(Game, on_delete=CASCADE, related_name="played_at")
+    event = m.ForeignKey(Event, on_delete=CASCADE, related_name="played_games")
+    comment = m.TextField()
 
     def __str__(self):
         return "Uvedení na akci"
@@ -176,11 +177,11 @@ class PlayedAt(BaseModel):
 
 @translate_model
 class PlayedAtFile(BaseFile):
-    played_at = ForeignKey(PlayedAt, on_delete=CASCADE, related_name="files")
+    played_at = m.ForeignKey(PlayedAt, on_delete=CASCADE, related_name="files")
 
 
 @translate_model
 class GameList(BaseModel):
-    name = CharField(max_length=60)
-    owner = ForeignKey(User, on_delete=CASCADE, related_name="game_lists")
-    games = ManyToManyField(Game, related_name="game_lists", blank=True)
+    name = m.CharField(max_length=60)
+    owner = m.ForeignKey(User, on_delete=CASCADE, related_name="game_lists")
+    games = m.ManyToManyField(Game, related_name="game_lists", blank=True)

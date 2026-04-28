@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from cookbook.models import *
 from cookbook.models.ingredients import Ingredient
 
 # https://console.groq.com/playground

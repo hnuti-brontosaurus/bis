@@ -2,15 +2,15 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
-from django.db.models import *
+from django.db import models as m
 
 from translation.translate import translate_model
 
 
 @translate_model
-class GrantCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class GrantCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -20,9 +20,9 @@ class GrantCategory(Model):
 
 
 @translate_model
-class EventIntendedForCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class EventIntendedForCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -32,9 +32,9 @@ class EventIntendedForCategory(Model):
 
 
 @translate_model
-class DietCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class DietCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -44,13 +44,13 @@ class DietCategory(Model):
 
 
 @translate_model
-class QualificationCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
-    parents = ManyToManyField(
+class QualificationCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    parents = m.ManyToManyField(
         "QualificationCategory", related_name="included_qualifications"
     )
-    can_approve = ManyToManyField(
+    can_approve = m.ManyToManyField(
         "QualificationCategory", related_name="can_be_approved_with"
     )
 
@@ -67,9 +67,9 @@ class QualificationCategory(Model):
 
 
 @translate_model
-class AdministrationUnitCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class AdministrationUnitCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -79,9 +79,9 @@ class AdministrationUnitCategory(Model):
 
 
 @translate_model
-class MembershipCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class MembershipCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -118,9 +118,9 @@ class MembershipCategory(Model):
 
 
 @translate_model
-class EventGroupCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class EventGroupCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -130,12 +130,12 @@ class EventGroupCategory(Model):
 
 
 @translate_model
-class EventCategory(Model):
-    name = CharField(max_length=63)
-    description = TextField(blank=True)
-    slug = SlugField(unique=True)
-    order = PositiveSmallIntegerField(default=0)
-    is_active = BooleanField(default=True)
+class EventCategory(m.Model):
+    name = m.CharField(max_length=63)
+    description = m.TextField(blank=True)
+    slug = m.SlugField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
+    is_active = m.BooleanField(default=True)
 
     class Meta:
         ordering = ("order",)
@@ -145,11 +145,11 @@ class EventCategory(Model):
 
 
 @translate_model
-class EventTag(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
-    description = TextField(blank=True)
-    is_active = BooleanField(default=True)
+class EventTag(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    description = m.TextField(blank=True)
+    is_active = m.BooleanField(default=True)
 
     class Meta:
         ordering = ("id",)
@@ -159,10 +159,10 @@ class EventTag(Model):
 
 
 @translate_model
-class EventProgramCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
-    email = EmailField()
+class EventProgramCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    email = m.EmailField()
 
     class Meta:
         ordering = ("id",)
@@ -172,10 +172,10 @@ class EventProgramCategory(Model):
 
 
 @translate_model
-class DonationSourceCategory(Model):
-    _import_id = CharField(max_length=7)
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class DonationSourceCategory(m.Model):
+    _import_id = m.CharField(max_length=7)
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -185,9 +185,9 @@ class DonationSourceCategory(Model):
 
 
 @translate_model
-class OrganizerRoleCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class OrganizerRoleCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -197,9 +197,9 @@ class OrganizerRoleCategory(Model):
 
 
 @translate_model
-class TeamRoleCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class TeamRoleCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -209,10 +209,10 @@ class TeamRoleCategory(Model):
 
 
 @translate_model
-class OpportunityCategory(Model):
-    name = CharField(max_length=63)
-    description = CharField(max_length=255)
-    slug = SlugField(unique=True)
+class OpportunityCategory(m.Model):
+    name = m.CharField(max_length=63)
+    description = m.CharField(max_length=255)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -222,9 +222,9 @@ class OpportunityCategory(Model):
 
 
 @translate_model
-class OpportunityPriority(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class OpportunityPriority(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -234,9 +234,9 @@ class OpportunityPriority(Model):
 
 
 @translate_model
-class LocationProgramCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class LocationProgramCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -246,9 +246,9 @@ class LocationProgramCategory(Model):
 
 
 @translate_model
-class LocationAccessibilityCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class LocationAccessibilityCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -258,9 +258,9 @@ class LocationAccessibilityCategory(Model):
 
 
 @translate_model
-class RoleCategory(Model):
-    name = CharField(max_length=63)
-    slug = SlugField(unique=True)
+class RoleCategory(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -270,9 +270,9 @@ class RoleCategory(Model):
 
 
 @translate_model
-class HealthInsuranceCompany(Model):
-    name = CharField(max_length=127)
-    slug = SlugField(unique=True)
+class HealthInsuranceCompany(m.Model):
+    name = m.CharField(max_length=127)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -282,9 +282,9 @@ class HealthInsuranceCompany(Model):
 
 
 @translate_model
-class PronounCategory(Model):
-    name = CharField(max_length=127)
-    slug = SlugField(unique=True)
+class PronounCategory(m.Model):
+    name = m.CharField(max_length=127)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)
@@ -299,9 +299,9 @@ class PronounCategory(Model):
 
 
 @translate_model
-class DonorEventCategory(Model):
-    description = CharField(max_length=127)
-    slug = SlugField(unique=True)
+class DonorEventCategory(m.Model):
+    description = m.CharField(max_length=127)
+    slug = m.SlugField(unique=True)
 
     class Meta:
         ordering = ("id",)

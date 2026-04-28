@@ -1,7 +1,8 @@
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from questionnaire.models import *
+from bis.models import User
+from questionnaire.models import EventApplication
 
 
 @receiver(pre_save, sender=EventApplication, dispatch_uid="set_event_application_user")

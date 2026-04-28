@@ -1,11 +1,7 @@
-try:
-    from project.global_settings import *  # nopycln: import
-except ImportError:
-    pass
-
 from glob import glob
 from os import environ
 from os.path import abspath, dirname, join
+from pathlib import Path
 
 import sentry_sdk
 import yaml
@@ -385,9 +381,6 @@ LOGIN_URL = "/logout"
 # Logging configuration
 LOG_DIR = join(BASE_DIR, "logs")
 LOG_FILE = join(LOG_DIR, "bis.log")
-
-# Create logs directory if it doesn't exist
-from pathlib import Path
 
 Path(LOG_DIR).mkdir(parents=True, exist_ok=True)
 

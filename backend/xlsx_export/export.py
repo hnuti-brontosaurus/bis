@@ -314,7 +314,7 @@ class XLSXWriter:
             # Merge consecutive header cells with the same non-empty value
             header_row = self.row - 1
             groups = []
-            for col, (_, value) in enumerate(row_data):
+            for col, (__, value) in enumerate(row_data):
                 if groups and groups[-1][2] == value and value != "":
                     groups[-1] = (groups[-1][0], col, value)
                 else:
@@ -420,7 +420,7 @@ def send_later(request, result):
 @admin.action(description="Exportuj data")
 def export_to_xlsx(model_admin, request, queryset):
     result = executor.submit(do_export_to_xlsx, queryset)
-    for _ in range(20):
+    for __ in range(20):
         sleep(1)
         if result.done():
             file = result.result()
