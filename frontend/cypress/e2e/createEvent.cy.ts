@@ -719,6 +719,8 @@ const fillForm = () => {
     .should('be.visible')
     .check('false')
 
+  cy.get('[name=registrationMethod]').should('be.visible').check('none')
+
   next()
 
   cy.get('#react-select-7-input')

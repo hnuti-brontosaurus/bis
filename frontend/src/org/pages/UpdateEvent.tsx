@@ -104,7 +104,6 @@ export const UpdateEvent = () => {
   if (isSubmitting) return <Loading>Ukládáme změny</Loading>
 
   const { images, questions } = event
-  const initialEvent = event
 
   const handleSubmit: Parameters<typeof EventForm>[0]['onSubmit'] = async ({
     main_image: updatedMainImage,
@@ -122,13 +121,6 @@ export const UpdateEvent = () => {
         delete event.record.comment_on_work_done
       if (event.record?.total_hours_worked === null)
         delete event.record.total_hours_worked
-
-      // make sure we save initial registration data when is_event_full
-      if (event.registration?.is_event_full) {
-        event.registration = merge({}, initialEvent.registration, {
-          is_event_full: true,
-        })
-      }
 
       // update event
       const updatedEvent = await updateEvent({

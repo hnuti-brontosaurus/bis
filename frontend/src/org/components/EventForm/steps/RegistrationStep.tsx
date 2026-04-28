@@ -27,7 +27,9 @@ export const RegistrationStep = ({
 }) => {
   const { control, register, watch } = methods
 
-  const isNotOnWeb = watch('propagation.is_shown_on_web') === false
+  const registrationMethod = watch('registrationMethod')
+  const canBeFull =
+    registrationMethod === 'standard' || registrationMethod === 'other'
 
   const [showInfo, setShowInfo] = useState(false)
   const handleClickShowInfo = () => {
@@ -83,48 +85,58 @@ export const RegistrationStep = ({
             </FormInputError>
           </FormSection>
 
-          {!isNotOnWeb && (
-            <>
-              <FormSection
-                header="Způsob přihlášení"
-                required
-                onWeb
-                help={formTexts.registrationMethod.help}
-              >
-                <FormInputError name="registrationMethod">
-                  <fieldset>
-                    {[
-                      {
-                        name: 'Standardní přihláška na brontowebu',
-                        value: 'standard',
-                      },
-                      { name: 'Jiná elektronická přihláška', value: 'other' },
-                      {
-                        name: 'Registrace není potřeba, stačí přijít',
-                        value: 'none',
-                      },
-                      {
-                        name: 'Máme bohužel plno, zkuste jinou z našich akcí',
-                        value: 'full',
-                      },
-                    ].map(({ name, value }) => (
-                      <label key={value} className="radioLabel">
-                        <input
-                          type="radio"
-                          value={value}
-                          id={`registration-method-${value}`}
-                          {...register('registrationMethod', {
-                            required: messages.required,
-                          })}
-                        />{' '}
-                        {name}
-                      </label>
-                    ))}
-                  </fieldset>
-                </FormInputError>
-              </FormSection>
+          <FormSection
+            header="Způsob přihlášení"
+            required
+            help={formTexts.registrationMethod.help}
+          >
+            <FormInputError name="registrationMethod">
+              <fieldset>
+                {[
+                  {
+                    name: 'Standardní přihláška na brontowebu',
+                    value: 'standard',
+                  },
+                  { name: 'Jiná elektronická přihláška', value: 'other' },
+                  {
+                    name: 'Registrace není potřeba, stačí přijít',
+                    value: 'none',
+                  },
+                ].map(({ name, value }) => (
+                  <label key={value} className="radioLabel">
+                    <input
+                      type="radio"
+                      value={value}
+                      id={`registration-method-${value}`}
+                      {...register('registrationMethod', {
+                        required: messages.required,
+                      })}
+                    />{' '}
+                    {name}
+                  </label>
+                ))}
+              </fieldset>
+            </FormInputError>
+          </FormSection>
 
-              {watch('registrationMethod') === 'other' && (
+          {canBeFull && (
+            <FormSection
+              header={formTexts.registration.is_event_full.name}
+              help={formTexts.registration.is_event_full.help}
+            >
+              <FormInputError>
+                <label className="checkboxLabel">
+                  <input
+                    type="checkbox"
+                    {...register('registration.is_event_full')}
+                  />{' '}
+                  Máme bohužel plno, zkuste jinou z našich akcí
+                </label>
+              </FormInputError>
+            </FormSection>
+          )}
+
+          {watch('registrationMethod') === 'other' && (
                 <InlineSection>
                   <InfoBox>
                     Opravdu nechcete použít Standardní přihlášku?
@@ -260,8 +272,6 @@ export const RegistrationStep = ({
                   <QuestionsFormSection methods={methods} />
                 </FormSubsection>
               )}
-            </>
-          )}
         </FormSectionGroup>
       </form>
     </FormProvider>

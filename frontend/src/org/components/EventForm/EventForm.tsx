@@ -81,7 +81,7 @@ export type EventFormShape = Assign<
     // we only keep track of whether to save location or online_link
     online: boolean
     // registrationMethod is internal, doesn't get sent to API
-    registrationMethod: 'standard' | 'other' | 'none' | 'full'
+    registrationMethod: 'standard' | 'other' | 'none'
     location: Location | NewLocation
   }
 >
@@ -189,7 +189,7 @@ const initialData2form = (
     data,
   ) as Partial<EventFormShape>
 
-  const registrationMethod = getRegistrationMethod(
+  const registrationMethod = getRegistrationMethodBeforeFull(
     merge({ registration: null }, data),
   )
 
@@ -249,7 +249,6 @@ const form2finalData = (data: EventFormShape): SubmitShape => {
         break
       case 'standard':
         finalData.registration.is_registration_required = true
-        finalData.registration.is_event_full = false
         finalData.registration.alternative_registration_link = ''
         // keep questionnaire set
         // set default value on questionnaire fields (can't be null)
@@ -262,15 +261,8 @@ const form2finalData = (data: EventFormShape): SubmitShape => {
         break
       case 'other':
         finalData.registration.is_registration_required = true
-        finalData.registration.is_event_full = false
         // keep alternative registration link set
         finalData.registration.questionnaire = null
-        break
-      case 'full':
-        finalData.registration.is_event_full = true
-        // everything else should equal initial data
-        // we need to take care of that in UpdateEvent
-        // or whatever component updates the data
         break
       default:
         break
@@ -309,7 +301,6 @@ const form2finalData = (data: EventFormShape): SubmitShape => {
 
   // data when not shown on web
   if (!data.propagation?.is_shown_on_web) {
-    finalData.registration = null
     finalData.propagation = null
   }
 
@@ -333,11 +324,21 @@ export const EventForm: FC<{
     | Partial<EventFormShape>
     | undefined
 
-  const initialAndSavedData: Partial<EventFormShape> = useMemo(
-    () =>
-      mergeWith(initialData2form(initialData), savedData, withOverwriteArray),
-    [initialData, savedData],
-  )
+  const initialAndSavedData: Partial<EventFormShape> = useMemo(() => {
+    const merged = mergeWith(
+      initialData2form(initialData),
+      savedData,
+      withOverwriteArray,
+    ) as Partial<EventFormShape>
+    // 'full' is no longer a valid registrationMethod — drop it from
+    // stale localStorage so the form re-derives from registration data
+    if ((merged.registrationMethod as string) === 'full') {
+      merged.registrationMethod = getRegistrationMethodBeforeFull(
+        merged as Pick<Event, 'registration'>,
+      ) as EventFormShape['registrationMethod']
+    }
+    return merged
+  }, [initialData, savedData])
 
   const groupForm = useForm({
     defaultValues: pick(initialAndSavedData, shapes.group),
