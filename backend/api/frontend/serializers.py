@@ -450,7 +450,7 @@ class UserSerializer(ModelSerializer):
             "birthday",
             "photo",
             "close_person",
-            "subscribed_to_newsletter",
+            "subscription_status",
             "health_insurance_company",
             "health_issues",
             "behaviour_issues",

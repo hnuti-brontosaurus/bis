@@ -312,7 +312,11 @@ class Command(BaseCommand):
                         nickname=item["prezdivka"] or "",
                         phone=item["telefon"] or "",
                         birthday=birthday,
-                        subscribed_to_newsletter=item["spam"] == "1",
+                        subscription_status=(
+                            User.SubscriptionStatus.SUBSCRIBED
+                            if item["spam"] == "1"
+                            else User.SubscriptionStatus.UNSUBSCRIBED
+                        ),
                     ),
                 )[0]
 

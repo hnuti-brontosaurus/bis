@@ -45,6 +45,7 @@ class Command(BaseCommand):
         try_to_run(call_command, "record_history")
         try_to_run(call_command, "import_locations")
         try_to_run(call_command, "import_donations")
+        try_to_run(call_command, "sync_ecomail")
         try_to_run(call_command, "set_unique_user_str")
         try_to_run(call_command, "set_date_joined")
         try_to_run(call_command, "export_events")

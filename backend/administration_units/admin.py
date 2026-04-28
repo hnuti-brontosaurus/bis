@@ -26,7 +26,6 @@ from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats, make_br
 from bis.models import Membership, User
 from common.history import show_history
-from ecomail.sync_ecomail import create_tmp_tag
 from xlsx_export.export import export_to_xlsx
 
 
@@ -65,7 +64,7 @@ class AdministrationSubUnitAdmin(PermissionMixin, NestedStackedInline):
 
 @admin.register(AdministrationUnit)
 class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
-    actions = [export_to_xlsx, create_tmp_tag]
+    actions = [export_to_xlsx]
     list_display = (
         "abbreviation",
         "get_links",

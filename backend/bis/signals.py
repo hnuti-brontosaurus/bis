@@ -10,6 +10,7 @@ from vokativ import vokativ
 
 from bis import emails
 from bis.models import Location, Qualification, User, UserEmail
+from ecomail.sync import bulk_subscribe, get_session
 from project import settings
 from regions.models import Region
 
@@ -104,3 +105,17 @@ def set_users_primary_email(instance: UserEmail, **kwargs):
 @receiver(post_save, sender=User, dispatch_uid="update_roles")
 def update_roles(instance: User, **kwargs):
     instance.update_roles()
+
+
+@receiver(post_save, sender=User, dispatch_uid="push_to_ecomail")
+def push_to_ecomail(instance: User, created, **kwargs):
+    if cache.get("skip_ecomail_push"):
+        return
+    if not instance.email:
+        return
+    old = getattr(instance, "_original_subscription_status", None)
+    new = instance.subscription_status
+    if not created and old == new:
+        return
+    bulk_subscribe(get_session(), settings.ECOMAIL_LIST_ID, [instance])
+    instance._original_subscription_status = new

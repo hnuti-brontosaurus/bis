@@ -120,7 +120,7 @@ class UserExportSerializer(ModelSerializer):
             "behaviour_issues",
             "date_joined",
             "roles",
-            "subscribed_to_newsletter",
+            "subscription_status",
             "eyca_card",
             "pronoun",
             "close_person",

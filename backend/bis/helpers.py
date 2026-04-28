@@ -137,6 +137,17 @@ def with_paused_emails(f):
     return wrapper
 
 
+class skip_ecomail_push:
+    def __enter__(self):
+        self.skip = not cache.get("skip_ecomail_push")
+        if self.skip:
+            cache.set("skip_ecomail_push", True)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.skip:
+            cache.set("skip_ecomail_push", False)
+
+
 def on_save(fn, when="always"):
     def decorator(f):
         @wraps(f)

@@ -258,7 +258,15 @@ class User(SearchMixin, AbstractBaseUser):
     birthday = DateField(null=True)
     photo = ThumbnailImageField(upload_to="user_photos", null=True, blank=True)
 
-    subscribed_to_newsletter = BooleanField(default=True)
+    class SubscriptionStatus(IntegerChoices):
+        SUBSCRIBED = 1, "Odebírá"
+        UNSUBSCRIBED = 2, "Neodebírá"
+        HARD_BOUNCE = 4, "Nedoručitelný"
+
+    subscription_status = IntegerField(
+        choices=SubscriptionStatus.choices,
+        default=SubscriptionStatus.SUBSCRIBED,
+    )
 
     health_insurance_company = ForeignKey(
         HealthInsuranceCompany,
@@ -285,6 +293,10 @@ class User(SearchMixin, AbstractBaseUser):
     vokativ = CharField(max_length=63, blank=True)
 
     objects = UserManager()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_subscription_status = self.subscription_status
 
     @cached_property
     def is_director(self):
@@ -485,7 +497,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "health_issues",
                     "behaviour_issues",
                     "pronoun",
-                    "subscribed_to_newsletter",
+                    "subscription_status",
                     "office_workers_note",
                     "photo",
                     "last_after_event_email",
