@@ -188,8 +188,10 @@ class XLSXWriter:
                         "event": event.name,
                         "event_group": event.group,
                         "event_category": event.category,
-                        "event_participants": hasattr(event, "record")
-                        and event.record.get_participants_count()
+                        "event_participants": (
+                            hasattr(event, "record")
+                            and event.record.get_participants_count()
+                        )
                         or 0,
                         "event_feedbacks": event.feedbacks.count(),
                     }
@@ -439,7 +441,7 @@ def export_to_xlsx_response(queryset):
 
 
 def do_export_to_xlsx(queryset):
-    serializer_class = [
+    serializer_class = next(
         s
         for s in [
             UserExportSerializer,
@@ -453,7 +455,7 @@ def do_export_to_xlsx(queryset):
             LocationExportSerializer,
         ]
         if s.Meta.model is queryset.model
-    ][0]
+    )
     writer = XLSXWriter(queryset.model._meta.verbose_name_plural)
     writer.from_queryset(queryset, serializer_class)
     if queryset.model is Event:
@@ -531,10 +533,8 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
     if formatting == "xlsx":
         if use_participants:
             queryset = (
-                hasattr(event, "record")
-                and event.record.get_all_participants()
-                or event.other_organizers.all()
-            )
+                hasattr(event, "record") and event.record.get_all_participants()
+            ) or event.other_organizers.all()
         else:
             queryset = EventApplication.objects.filter(
                 state__in=["pending", "approved"], event_registration__event=event

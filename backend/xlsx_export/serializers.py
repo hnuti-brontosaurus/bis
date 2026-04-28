@@ -191,7 +191,8 @@ class DonorExportSerializer(BaseDonorExportSerializer):
 
     class Meta(BaseDonorExportSerializer.Meta):
         model = Donor
-        fields = BaseDonorExportSerializer.Meta.fields + (
+        fields = (
+            *BaseDonorExportSerializer.Meta.fields,
             "donations_sum",
             "first_donation",
             "last_donation",

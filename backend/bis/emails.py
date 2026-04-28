@@ -756,7 +756,7 @@ def donated_10k():
 
 
 def donates_for_years():
-    """Email 30 – donor has been donating recurrently for N years -> Notify coordinator."""
+    """Email 30 - donor has been donating recurrently for N years -> Notify coordinator."""
     years = {5: "let", 4: "roky", 3: "roky", 2: "roky", 1: "rok"}
 
     today = timezone.now().date()

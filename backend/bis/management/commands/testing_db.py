@@ -46,10 +46,10 @@ class Command(BaseCommand):
         first_name: str,
         last_name: str,
         email: str,
-        sex_slug: str = None,
-        birthday: date = None,
+        sex_slug: str | None = None,
+        birthday: date | None = None,
         password="password",
-        qualification: tuple[str, date, User] = None,
+        qualification: tuple[str, date, User] | None = None,
     ):
         """Create users, optionally with qualification.
 
@@ -119,8 +119,8 @@ class Command(BaseCommand):
         existed_since: date,
         chairman: User,
         slug_category: str = "basic_section",
-        manager: User = None,
-        address: tuple[str, str, str] = None,
+        manager: User | None = None,
+        address: tuple[str, str, str] | None = None,
     ):
         """Create new administration unit.
 
@@ -186,11 +186,11 @@ class Command(BaseCommand):
         category_slug: str = "public__volunteering",
         program_slug: str = "nature",
         intended_for_slug: str = "for_all",
-        other_organizers: list[User] = None,
+        other_organizers: list[User] | None = None,
         location_name: str = "Online",
         is_canceled: bool = False,
-        is_closed: bool = None,
-        is_archived: bool = None,
+        is_closed: bool | None = None,
+        is_archived: bool | None = None,
     ):
         ctg_group = EventGroupCategory.objects.get(slug=group_slug)
         ctg_category = EventCategory.objects.get(slug=category_slug)
@@ -629,9 +629,10 @@ class Command(BaseCommand):
             main_organizer = organizers[event_number % len(organizers)]
             event_name = f"Událost od {main_organizer.last_name} ({event_number})"
             # Max 3 other organizers
-            other_organizers = organizers[
-                event_number % 3 : event_number % 3 + (event_number % 4)
-            ] + [main_organizer]
+            other_organizers = [
+                *organizers[event_number % 3 : event_number % 3 + (event_number % 4)],
+                main_organizer,
+            ]
             participants = all_members[event_number % 8 :: event_number % 4 + 2]
             self.create_event(
                 event_name,

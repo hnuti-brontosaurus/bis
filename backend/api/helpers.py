@@ -100,7 +100,7 @@ class Base64ImageField(Base64FieldMixin, ImageField):
 class ThumbnailedBase64ImageField(Base64ImageField):
     UrlsType = TypedDict(
         "UrlsType",
-        dict.fromkeys(list(settings.THUMBNAIL_SIZES.keys()) + ["original"], str),
+        dict.fromkeys([*settings.THUMBNAIL_SIZES, "original"], str),
     )
 
     def to_representation(self, value) -> UrlsType:

@@ -357,7 +357,7 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         )
         annotate_filter = None
         if source_ids := donations_source_filter.used_parameters.values():
-            source_ids = list(source_ids)[0]
+            source_ids = next(iter(source_ids))
             annotate_filter = Q(donations__donation_source_id__in=source_ids)
 
         queryset = queryset.annotate(

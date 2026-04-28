@@ -8,13 +8,17 @@ from questionnaire.models import EventApplication
 def set_event_application_user(instance: EventApplication, **kwargs):
     instance.user = (
         instance.user
-        or instance.birthday
-        and User.objects.filter(
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            birthday=instance.birthday,
-        ).first()
-        or instance.email
-        and User.objects.filter(all_emails__email=instance.email).first()
+        or (
+            instance.birthday
+            and User.objects.filter(
+                first_name=instance.first_name,
+                last_name=instance.last_name,
+                birthday=instance.birthday,
+            ).first()
+        )
+        or (
+            instance.email
+            and User.objects.filter(all_emails__email=instance.email).first()
+        )
         or None
     )

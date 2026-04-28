@@ -205,15 +205,13 @@ class EventAdmin(PermissionMixin, admin.ModelAdmin):
                 return get_attendance_list(obj, "xlsx", True)
             if "_attendance_list_emails_export" in request.POST:
                 participants = (
-                    has_record and obj.record.participants.all() or User.objects.none()
-                )
+                    has_record and obj.record.participants.all()
+                ) or User.objects.none()
                 return export_emails(..., ..., participants)
             if "_attendance_list_all_emails_export" in request.POST:
                 participants = (
-                    has_record
-                    and obj.record.get_all_participants()
-                    or obj.other_organizers.all()
-                )
+                    has_record and obj.record.get_all_participants()
+                ) or obj.other_organizers.all()
                 return export_emails(..., ..., participants)
             if "_redirect_to_fe" in request.POST:
                 return HttpResponseRedirect(f"/org/akce/{object_id}")

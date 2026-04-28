@@ -8,7 +8,9 @@ from feedback.models import EventFeedback
 def set_feedback_form_user(instance: EventFeedback, **kwargs):
     instance.user = (
         instance.user
-        or instance.email
-        and User.objects.filter(all_emails__email=instance.email).first()
+        or (
+            instance.email
+            and User.objects.filter(all_emails__email=instance.email).first()
+        )
         or None
     )

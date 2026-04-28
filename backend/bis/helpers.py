@@ -18,7 +18,7 @@ class SearchMixin:
 
     @classmethod
     def get_search_fields(cls, prefix=""):
-        return [prefix + f for f in cls.search_fields + ["_search_field"]]
+        return [prefix + f for f in [*cls.search_fields, "_search_field"]]
 
     @classmethod
     def get_nested_attr(cls, obj, fields):
@@ -175,7 +175,7 @@ class AgeStats:
         self.unborn = len([age for age in ages if age < 0])
 
         ages = [age for age in ages if age >= 0]
-        self.oldest = max(ages + [0])
+        self.oldest = max([*ages, 0])
         self.birthdays_stats = Counter(ages)
 
     def age_count(self, low, high):

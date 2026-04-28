@@ -27,7 +27,7 @@ def try_to_run(fn, *args, **kwargs):
 
 
 def check_disk_space():
-    total, used, free = shutil.disk_usage("/app/media")
+    total, used, _free = shutil.disk_usage("/app/media")
     used = used / total * 100
     if used > 90:
         emails.text(
