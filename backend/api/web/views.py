@@ -33,9 +33,7 @@ class EventViewSet(ReadOnlyModelViewSet):
         try:
             obj = get_object_or_404(queryset, **filter_kwargs)
         except Http404:
-            obj = get_object_or_404(
-                queryset, **{"_import_id": self.kwargs[lookup_url_kwarg]}
-            )
+            obj = get_object_or_404(queryset, _import_id=self.kwargs[lookup_url_kwarg])
 
         self.check_object_permissions(self.request, obj)
         return obj

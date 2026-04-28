@@ -16,7 +16,7 @@ repos:
           [
             --fix,
             --select,
-            "E,F,W,I,UP,DJ,B,PERF,FURB",
+            "E,F,W,I,UP,DJ,B,PERF,FURB,PIE",
             --extend-ignore,
             "E501,B007,B011,B905,B904,FURB171",
             --target-version,

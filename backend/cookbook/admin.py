@@ -50,12 +50,10 @@ class RecipeIngredientAdmin(PermissionMixin, NestedTabularInline):
 
 class RecipeStepAdmin(PermissionMixin, NestedTabularInline):
     model = RecipeStep
-    pass
 
 
 class RecipeTipAdmin(PermissionMixin, NestedTabularInline):
     model = RecipeTip
-    pass
 
 
 class RecipeCommentAdmin(PermissionMixin, NestedTabularInline):
