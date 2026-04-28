@@ -1,3 +1,5 @@
+@use 'styles/colors';
+
 .bar {
   position: relative;
   display: flex;
@@ -15,18 +17,18 @@
 }
 
 .info {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: colors.$opportunities-100;
+  color: colors.$opportunities-500;
 }
 
 .warning {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: colors.$yellow;
+  color: colors.$gray-500;
 }
 
 .error {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: colors.$error-light;
+  color: colors.$error-400;
 }
 
 .closeButton {
