@@ -73,8 +73,8 @@ export const form = {
             Standardní přihláška na brontowebu (doporučujeme!) - Je jednotná pro
             celé HB. Do této přihlášky si můžete přidat vlastní otázky. Vyplněné
             údaje se pak rovnou zobrazí v BIS, což tobě i kanceláři ulehčí
-            práci. Funguje i u akcí, které nezveřejňujete na webu - stačí
-            sdílet odkaz na přihlášku.
+            práci. Funguje i u akcí, které nezveřejňujete na webu - stačí sdílet
+            odkaz na přihlášku.
           </li>
           <li>
             Jiná elektronická přihláška - Při přihlašování budou zájemci rovnou
