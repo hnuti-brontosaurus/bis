@@ -9,11 +9,11 @@ def record_history(history: dict, date, user, position):
         return
     user_id = str(user.id)
     date_ranges = history.setdefault(position, {}).setdefault(user_id, [])
-    for range in date_ranges:
-        if range[1] == str(date - timedelta(days=1)):
-            range[1] = str(date)
+    for date_range in date_ranges:
+        if date_range[1] == str(date - timedelta(days=1)):
+            date_range[1] = str(date)
             break
-        if range[1] == str(date):
+        if date_range[1] == str(date):
             return
     else:
         date_ranges.append([str(date), str(date)])

@@ -273,7 +273,7 @@ class Command(BaseCommand):
         return data
 
     def import_users(self, data):
-        for i, (id, item) in enumerate(data["adresa"].items()):
+        for i, (user_id, item) in enumerate(data["adresa"].items()):
             print_progress("importing users", i, len(data["adresa"]))
 
             birthday = parse_date(item["datum_narozeni"])
@@ -287,13 +287,13 @@ class Command(BaseCommand):
                 user.nickname = item["prezdivka"] or user.nickname
                 user.phone = item["telefon"] or user.phone
                 _import_ids = {_id for _id in user._import_id.split(",") if _id}
-                _import_ids.add(str(id))
+                _import_ids.add(str(user_id))
                 user._import_id = ",".join(_import_ids)
                 user.save()
 
             else:
                 user = User.objects.update_or_create(
-                    _import_id=id,
+                    _import_id=user_id,
                     defaults=dict(
                         first_name=item["jmeno"],
                         last_name=item["prijmeni"],
@@ -336,7 +336,7 @@ class Command(BaseCommand):
 
     def import_qualifications(self, data):
         logging.info("importing qualifications")
-        for id, item in data["qal"].items():
+        for qualification_id, item in data["qal"].items():
             if not item["od"]:
                 continue
 
@@ -353,7 +353,7 @@ class Command(BaseCommand):
                 till = since + timedelta(days=365)
 
             Qualification.objects.update_or_create(
-                _import_id="a" + id,
+                _import_id="a" + qualification_id,
                 defaults=dict(
                     user=self.user_map[item["kdo"]],
                     category=category,
@@ -363,9 +363,9 @@ class Command(BaseCommand):
                 ),
             )
 
-        for id, item in data["ohb_instruktor"].items():
+        for qualification_id, item in data["ohb_instruktor"].items():
             Qualification.objects.update_or_create(
-                _import_id="b" + id,
+                _import_id="b" + qualification_id,
                 defaults=dict(
                     user=self.user_map[item["kdo"]],
                     category=self.qualification_category_map["Instruktor"],
@@ -375,9 +375,9 @@ class Command(BaseCommand):
                 ),
             )
 
-        for id, item in data["ohb_konzultant"].items():
+        for qualification_id, item in data["ohb_konzultant"].items():
             Qualification.objects.update_or_create(
-                _import_id="c" + id,
+                _import_id="c" + qualification_id,
                 defaults=dict(
                     user=self.user_map[item["kdo"]],
                     category=self.qualification_category_map["Konzultant"],
@@ -389,7 +389,7 @@ class Command(BaseCommand):
 
     def import_administration_units(self, data):
         logging.info("importing administration units")
-        for id, item in data["klub"].items():
+        for unit_id, item in data["klub"].items():
             since, till = item["reg_od"], item["reg_do"]
             if since:
                 since += "-01-01"
@@ -404,17 +404,19 @@ class Command(BaseCommand):
             board_members = []
             ic = None
             bank_account_number = None
-            if id in data["zc"]:
-                if data["zc"][id]["hospodar"] in self.user_map:
-                    manager = self.user_map[data["zc"][id]["hospodar"]]
+            if unit_id in data["zc"]:
+                if data["zc"][unit_id]["hospodar"] in self.user_map:
+                    manager = self.user_map[data["zc"][unit_id]["hospodar"]]
 
-                if data["zc"][id]["statutar"] in self.user_map:
-                    vice_chairman = self.user_map[data["zc"][id]["statutar"]]
-                if data["zc"][id]["statutar2"] in self.user_map:
-                    board_members.append(self.user_map[data["zc"][id]["statutar2"]])
+                if data["zc"][unit_id]["statutar"] in self.user_map:
+                    vice_chairman = self.user_map[data["zc"][unit_id]["statutar"]]
+                if data["zc"][unit_id]["statutar2"] in self.user_map:
+                    board_members.append(
+                        self.user_map[data["zc"][unit_id]["statutar2"]]
+                    )
 
-                ic = data["zc"][id]["ic"]
-                bank_account_number = data["zc"][id]["ucet"]
+                ic = data["zc"][unit_id]["ic"]
+                bank_account_number = data["zc"][unit_id]["ucet"]
 
             if AdministrationUnit.objects.filter(abbreviation=item["zkratka"]).count():
                 AdministrationUnit.objects.filter(abbreviation=item["zkratka"]).update(
@@ -422,7 +424,7 @@ class Command(BaseCommand):
                 )
 
             administration_unit = AdministrationUnit.objects.update_or_create(
-                _import_id=id,
+                _import_id=unit_id,
                 defaults=dict(
                     name=item["nazev"],
                     abbreviation=item["zkratka"],
@@ -460,12 +462,12 @@ class Command(BaseCommand):
         self.reset_cache()
 
     def import_donors(self, data):
-        for i, (id, item) in enumerate(data["darce"].items()):
+        for i, (user_id, item) in enumerate(data["darce"].items()):
             print_progress("importing donors", i, len(data["darce"]))
-            if id not in self.user_map:
+            if user_id not in self.user_map:
                 continue
 
-            user = self.user_map[id]
+            user = self.user_map[user_id]
             donor = Donor.objects.update_or_create(
                 user=user,
                 defaults=dict(
@@ -487,7 +489,7 @@ class Command(BaseCommand):
 
     def import_locations(self, data):
         logging.info("importing locations")
-        for id, item in data["lokalita"].items():
+        for location_id, item in data["lokalita"].items():
             patron = self.user_map.get(item["patron"], None)
             if patron:
                 patron = LocationPatron(
@@ -497,7 +499,7 @@ class Command(BaseCommand):
                     phone=patron.phone,
                 )
             Location.objects.update_or_create(
-                _import_id=id,
+                _import_id=location_id,
                 defaults=dict(
                     name=item["nazev"],
                     patron=patron,
@@ -509,7 +511,7 @@ class Command(BaseCommand):
         self.reset_cache()
 
     def import_memberships(self, data):
-        for i, (id, item) in enumerate(data["clen"].items()):
+        for i, (membership_id, item) in enumerate(data["clen"].items()):
             print_progress("importing memberships", i, len(data["clen"]))
 
             if (
@@ -519,7 +521,7 @@ class Command(BaseCommand):
                 continue
 
             Membership.objects.update_or_create(
-                _import_id=id,
+                _import_id=membership_id,
                 defaults=dict(
                     user=self.user_map[item["adresa"]],
                     category=self.membership_category_map[item["typ"]],
@@ -547,7 +549,7 @@ class Command(BaseCommand):
                 self.administration_unit_map[item["klub"]]
             )
 
-        for i, (id, item) in enumerate(data["akce"].items()):
+        for i, (event_id, item) in enumerate(data["akce"].items()):
             print_progress("importing events", i, len(data["akce"]))
             # attachments = self.get_attachments(item)
             # group = None
@@ -604,7 +606,7 @@ class Command(BaseCommand):
             #     number_of_sub_events=item['pocet'],
             #     organizers_note=item['poznamka'] or '',
             # ))[0]
-            event = Event.objects.filter(_import_id=id).first()
+            event = Event.objects.filter(_import_id=event_id).first()
 
             # for au in event_organizer_map.get(id, [self.administration_unit_map[self.headquarters_id]]):
             #     event.administration_units.add(au)
@@ -709,11 +711,11 @@ class Command(BaseCommand):
 
         data = self.load_data()
 
-        for id in data["zc"]:
-            assert id in data["klub"]
+        for unit_id in data["zc"]:
+            assert unit_id in data["klub"]
 
-        for id in data["tabor"]:
-            assert id in data["akce"]
+        for event_id in data["tabor"]:
+            assert event_id in data["akce"]
 
         # to_print = [item for item in data['darce'].values()]
         #

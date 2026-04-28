@@ -192,10 +192,10 @@ class Query:
     def event(
         self,
         info: strawberry.types.Info,
-        id: int,
+        event_id: int,
     ) -> EventType | None:
         """Get a single event by ID."""
-        return _permitted_events(info).filter(id=id).first()
+        return _permitted_events(info).filter(id=event_id).first()
 
     @strawberry.field
     def feedbacks(

@@ -84,9 +84,9 @@ class LoginView(FormView):
     def form_valid(self, form):
         email = form.cleaned_data["email"]
         args = {"email": email}
-        next = self.request.GET.get(REDIRECT_FIELD_NAME)
-        if next:
-            args[REDIRECT_FIELD_NAME] = next
+        next_url = self.request.GET.get(REDIRECT_FIELD_NAME)
+        if next_url:
+            args[REDIRECT_FIELD_NAME] = next_url
 
         url = reverse("code")
         query_string = urlencode(args)
@@ -112,16 +112,16 @@ class CodeView(FormView):
     def form_valid(self, form):
         email = self.request.GET["email"]
         code = form.cleaned_data["code"]
-        next = self.request.GET.get(REDIRECT_FIELD_NAME, "/admin/")
-        if not next:
-            next = "/admin/"
+        next_url = self.request.GET.get(REDIRECT_FIELD_NAME, "/admin/")
+        if not next_url:
+            next_url = "/admin/"
 
         user = User.objects.get(all_emails__email=email)
         try:
             LoginCode.is_valid(user, code)
             login(self.request, user)
 
-            return HttpResponseRedirect(next)
+            return HttpResponseRedirect(next_url)
 
         except Throttled:
             form.add_error("code", _("login.too_many_retries"))

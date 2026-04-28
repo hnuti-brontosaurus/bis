@@ -86,11 +86,11 @@ class Command(BaseCommand):
     def get_locations(self):
         return requests.get(self.base_url + "pois.geojson/").json()
 
-    def get_location_data(self, id):
-        return requests.get(self.base_url + f"public-pois/{id}/").json()
+    def get_location_data(self, location_id):
+        return requests.get(self.base_url + f"public-pois/{location_id}/").json()
 
-    def get_images(self, id):
-        return requests.get(self.base_url + f"pois/{id}/images/").json()
+    def get_images(self, location_id):
+        return requests.get(self.base_url + f"pois/{location_id}/images/").json()
 
     def parse_attribute(self, attr):
         if attr["attribute"]["id"] == 2259:
