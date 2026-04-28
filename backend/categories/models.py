@@ -53,16 +53,16 @@ class QualificationCategory(m.Model):
         "QualificationCategory", related_name="can_be_approved_with"
     )
 
-    def get_slugs(self):
-        yield self.slug
-        for child in self.included_qualifications.all():
-            yield from child.get_slugs()
-
     class Meta:
         ordering = ("id",)
 
     def __str__(self):
         return self.name
+
+    def get_slugs(self):
+        yield self.slug
+        for child in self.included_qualifications.all():
+            yield from child.get_slugs()
 
 
 @translate_model

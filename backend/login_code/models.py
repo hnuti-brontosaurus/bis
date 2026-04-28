@@ -19,6 +19,9 @@ class ThrottleLog(models.Model):
     key = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"throttle_log.{self.id}"
+
     @classmethod
     def check_throttled(cls, prefix, key, max_count, timedelta_hours):
         if (
@@ -39,6 +42,9 @@ class LoginCode(models.Model):
     code = models.CharField(max_length=4, default=get_code)
     valid_till = models.DateTimeField(default=one_hour_later)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="login_codes")
+
+    def __str__(self):
+        return f"login_code.{self.id}"
 
     @classmethod
     def check_throttled(cls, user):

@@ -110,10 +110,6 @@ class Game(BaseModel):
     material = HTMLField(blank=True)
     notes = HTMLField(blank=True)
 
-    def clean(self):
-        if not self.is_original and not self.origin:
-            raise ValidationError("Původ hry musí být vyplněn, pokud nejsi autorem")
-
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
@@ -123,20 +119,24 @@ class Game(BaseModel):
     def get_absolute_url(self):
         return reverse("game", kwargs={"pk": self.pk})
 
+    def clean(self):
+        if not self.is_original and not self.origin:
+            raise ValidationError("Původ hry musí být vyplněn, pokud nejsi autorem")
+
 
 @translate_model
 class BaseFile(BaseModel):
     file = m.FileField(upload_to="game_files")
+
+    class Meta:
+        ordering = ("id",)
+        abstract = True
 
     def __str__(self):
         return self.file.name
 
     def filename(self):
         return basename(self.file.name)
-
-    class Meta:
-        ordering = ("id",)
-        abstract = True
 
 
 @translate_model

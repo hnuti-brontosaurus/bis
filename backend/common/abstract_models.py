@@ -18,9 +18,12 @@ class BaseContact(Model):
     phone = PhoneNumberField(blank=True)
     email = EmailField(blank=True)
 
-    def clean(self):
-        if not self.phone and not self.email:
-            raise ValidationError("Je třeba vyplnit e-mail nebo telefon")
+    class Meta:
+        ordering = ("id",)
+        abstract = True
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -29,15 +32,12 @@ class BaseContact(Model):
             self.clean()
         super().save(force_insert, force_update, using, update_fields)
 
-    class Meta:
-        ordering = ("id",)
-        abstract = True
+    def clean(self):
+        if not self.phone and not self.email:
+            raise ValidationError("Je třeba vyplnit e-mail nebo telefon")
 
     def get_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.email
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
 
 
 @translate_model
