@@ -68,4 +68,3 @@ rm /app/media/bis.db
 
 uv
 `docker compose  run -it --rm -v ./backend/:/app backend uv lock`
-

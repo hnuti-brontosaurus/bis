@@ -61,4 +61,3 @@ describe('Add opportunity', () =>
         // TODO: Add a photo and submit
     })
 )
-

@@ -2557,7 +2557,7 @@ export type WebAdministrationUnitsListApiResponse =
   /** status 200  */ PaginatedAdministrationUnitList
 export type WebAdministrationUnitsListApiArg = {
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `basic_section` - Základní článek
     * `headquarter` - Ústředí
     * `regional_center` - Regionální centrum
@@ -2579,13 +2579,13 @@ export type WebAdministrationUnitsRetrieveApiArg = {
 export type WebEventsListApiResponse = /** status 200  */ PaginatedEventList
 export type WebEventsListApiArg = {
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `1` - Brontík
     * `2` - Dobrovolně
     * `3` - pokus */
   administrationUnit?: (1 | 2 | 3)[]
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `internal__general_meeting` - Interní - Valná hromada
     * `internal__volunteer_meeting` - Interní - Schůzka dobrovolníků, týmovka
     * `internal__section_meeting` - Interní - Oddílová, družinová schůzka
@@ -2631,13 +2631,13 @@ export type WebEventsListApiArg = {
   endGte?: string
   endLte?: string
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `camp` - Tábor
     * `weekend_event` - Víkendovka (Brďo schůzka)
     * `other` - Jednodenní (bez adresáře) */
   group?: ('camp' | 'other' | 'weekend_event')[]
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `for_all` - pro všechny
     * `for_young_and_adult` - pro mládež a dospělé
     * `for_kids` - pro děti
@@ -2651,7 +2651,7 @@ export type WebEventsListApiArg = {
     | 'for_young_and_adult'
   )[]
   /** Řazení
-    
+
     * `start` - Start
     * `-start` - Start (sestupně)
     * `end` - End
@@ -2662,7 +2662,7 @@ export type WebEventsListApiArg = {
   /** Number of results to return per page. */
   pageSize?: number
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `monuments` - Akce památky
     * `nature` - Akce příroda
     * `kids` - BRĎO
@@ -2695,7 +2695,7 @@ export type WebOpportunitiesListApiResponse =
   /** status 200  */ PaginatedOpportunityList
 export type WebOpportunitiesListApiArg = {
   /** Více hodnot lze oddělit čárkami.
-    
+
     * `organizing` - Organizování akcí
     * `collaboration` - Spolupráce
     * `location_help` - Pomoc lokalitě */

@@ -50,5 +50,3 @@ describe('Edit events', () =>
     }),
 
 )
-
-

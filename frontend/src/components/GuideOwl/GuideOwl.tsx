@@ -103,7 +103,7 @@ export const GuideOwl = ({ children, id, left }: GuideOwlProps) => {
             />
             {/* ↑↑↑↑↑↑↑↑↑
               Using the second brontosaurus in this design would detract from the overall aesthetic and disrupt the visual harmony.
-              So, please, don't change the icon to brontosaurus. - Talita 
+              So, please, don't change the icon to brontosaurus. - Talita
              */}
             <div
               className={classNames(

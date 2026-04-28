@@ -70,5 +70,3 @@ describe("Clone event", () =>
         cy.get('button[type="submit"]').first().click({ force: true })
     })
 )
-
-

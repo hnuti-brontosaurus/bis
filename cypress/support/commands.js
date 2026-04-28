@@ -134,5 +134,3 @@ function login(email, password) {
 Cypress.Commands.add('login', login)
 Cypress.Commands.add('create_one_day_event', create_one_day_event)
 Cypress.Commands.add('create_weekend_event', create_weekend_event)
-
-

@@ -59,5 +59,3 @@ describe('View events', () =>
     })
 
 )
-
-
