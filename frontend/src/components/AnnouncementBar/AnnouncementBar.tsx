@@ -1,7 +1,12 @@
 import { api } from 'app/services/bis'
 import { Announcement } from 'app/services/bisTypes'
 import { useCallback, useEffect, useState } from 'react'
-import { MdClose, MdError, MdInfo, MdWarning } from 'react-icons/md'
+import {
+  MdClose,
+  MdOutlineError,
+  MdOutlineInfo,
+  MdOutlineWarning,
+} from 'react-icons/md'
 import styles from './AnnouncementBar.module.scss'
 
 const STORAGE_KEY = 'dismissedAnnouncements'
@@ -21,9 +26,9 @@ const severityClasses: Record<Announcement['severity'], string> = {
 }
 
 const severityIcons: Record<Announcement['severity'], JSX.Element> = {
-  info: <MdInfo size={20} />,
-  warning: <MdWarning size={20} />,
-  error: <MdError size={20} />,
+  info: <MdOutlineInfo size={20} />,
+  warning: <MdOutlineWarning size={20} />,
+  error: <MdOutlineError size={20} />,
 }
 
 export const AnnouncementBar = () => {
