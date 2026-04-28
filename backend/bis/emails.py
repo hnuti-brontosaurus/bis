@@ -574,7 +574,7 @@ def expressed_engagement_in_feedback():
         feedback_groups[reply.feedback_id]["feedback_obj"] = reply.feedback
 
     items = []
-    for feedback_id, data in feedback_groups.items():
+    for data in feedback_groups.values():
         involvement = data.get("involvement_means", "")
         if involvement and "nechci" not in involvement.lower():
             fb = data["feedback_obj"]

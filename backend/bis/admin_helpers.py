@@ -342,8 +342,11 @@ class MembershipYearFilter(ListAwareRangeNumericFilter):
         if "_year__year" in request.GET:
             queryset = queryset.filter(_year__year=request.GET["_year__year"])
 
-        id_map = {}
-        for membership_id, user_id in reversed(queryset.values_list("id", "user_id")):
-            id_map[user_id] = membership_id
+        id_map = {
+            user_id: membership_id
+            for membership_id, user_id in reversed(
+                queryset.values_list("id", "user_id")
+            )
+        }
 
         return queryset.filter(id__in=id_map.values())

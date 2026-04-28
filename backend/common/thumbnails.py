@@ -103,7 +103,7 @@ class ThumbnailImageField(ImageField):
         if not file:
             return
 
-        for size_name, size in settings.THUMBNAIL_SIZES.items():
+        for size_name in settings.THUMBNAIL_SIZES:
             thumbnail_path = join(
                 settings.MEDIA_ROOT, get_thumbnail_path(file.name, size_name)
             )

@@ -29,8 +29,7 @@ def show_history(history: dict):
                 user_map[user_id] = User.objects.filter(id=user_id).first() or user_id
             user = user_map[user_id]
 
-            for interval in user_data:
-                result.append([position, user, interval])
+            result.extend([position, user, interval] for interval in user_data)
 
     result.sort(key=lambda x: x[2][1], reverse=True)
 

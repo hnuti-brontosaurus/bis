@@ -107,8 +107,7 @@ def get_event_start(item):
 
 
 def get_comment_on_work_done(event):
-    comment = []
-    for key in [
+    keys = [
         "prace_stromy",
         "prace_kere",
         "prace_louky",
@@ -117,9 +116,8 @@ def get_comment_on_work_done(event):
         "prace_invaze",
         "prace_pamatky",
         "prace_jine",
-    ]:
-        if value := event[key]:
-            comment.append(value)
+    ]
+    comment = [value for key in keys if (value := event[key])]
 
     return "\n\n".join(comment)
 
