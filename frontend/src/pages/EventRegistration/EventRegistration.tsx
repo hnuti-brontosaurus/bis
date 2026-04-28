@@ -84,6 +84,11 @@ export const EventRegistration = () => {
 
   const registrationMethod = getRegistrationMethod(event)
 
+  if (registrationMethod === 'none')
+    return (
+      <Error message="Na tuto akci se nemusíte přihlašovat. Stačí přijít."></Error>
+    )
+
   if (registrationMethod === 'full')
     return (
       <Error message="Tato akce je plná">
@@ -91,11 +96,6 @@ export const EventRegistration = () => {
           Zkuste jinou z našich akcí
         </a>
       </Error>
-    )
-
-  if (registrationMethod === 'none')
-    return (
-      <Error message="Na tuto akci se nemusíte přihlašovat. Stačí přijít."></Error>
     )
 
   // when alternative registration link is set, redirect there
