@@ -1,6 +1,3 @@
-from django.db import models as m
-from django.db.models import CASCADE, PROTECT
-
 from bis.models import User
 from common.thumbnails import ThumbnailImageField
 from cookbook.models.base import BaseModel, ChangeMixin
@@ -12,6 +9,8 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
+from django.db import models as m
+from django.db.models import CASCADE, PROTECT
 from translation.translate import translate_model
 
 

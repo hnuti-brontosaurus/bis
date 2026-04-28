@@ -2,9 +2,6 @@ import logging
 import os
 import time
 
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from bis.drive import (
     build_drive_service,
     get_existing_names,
@@ -13,6 +10,8 @@ from bis.drive import (
     sanitize_name,
     upload_file,
 )
+from django.conf import settings
+from django.core.management.base import BaseCommand
 from event.models import Event
 
 

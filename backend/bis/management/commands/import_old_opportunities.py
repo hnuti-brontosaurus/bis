@@ -1,8 +1,7 @@
 from collections import OrderedDict
 
-from django.core.management.base import BaseCommand
-
 from bis.models import Location, User
+from django.core.management.base import BaseCommand
 from opportunities.models import Opportunity
 
 data = [

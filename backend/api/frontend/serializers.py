@@ -1,24 +1,5 @@
 from datetime import date
 
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
-from django.db.models import ManyToManyField
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import (
-    CharField,
-    ChoiceField,
-    DateField,
-    IntegerField,
-    SerializerMethodField,
-    UUIDField,
-)
-from rest_framework.permissions import SAFE_METHODS
-from rest_framework.relations import SlugRelatedField
-from rest_framework.serializers import ListSerializer
-from rest_framework.serializers import ModelSerializer as DRFModelSerializer
-from rest_framework.serializers import Serializer
-from rest_framework.utils import model_meta
-
 from api.helpers import catch_related_object_does_not_exist
 from bis import emails
 from bis.helpers import AgeStats, get_locked_year
@@ -56,6 +37,9 @@ from categories.serializers import (
     RoleCategorySerializer,
     TeamRoleCategorySerializer,
 )
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
+from django.db.models import ManyToManyField
 from donations.models import Donation, Donor
 from event.models import (
     Event,
@@ -83,6 +67,20 @@ from questionnaire.models import (
     Questionnaire,
 )
 from regions.serializers import RegionSerializer
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import (
+    CharField,
+    ChoiceField,
+    DateField,
+    IntegerField,
+    SerializerMethodField,
+    UUIDField,
+)
+from rest_framework.permissions import SAFE_METHODS
+from rest_framework.relations import SlugRelatedField
+from rest_framework.serializers import ListSerializer, Serializer
+from rest_framework.serializers import ModelSerializer as DRFModelSerializer
+from rest_framework.utils import model_meta
 
 
 class ModelSerializer(DRFModelSerializer):

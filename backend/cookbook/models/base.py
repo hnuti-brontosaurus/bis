@@ -1,7 +1,6 @@
+from bis.models import User
 from django.db import models as m
 from django.db.models import CASCADE
-
-from bis.models import User
 
 
 class ChangeMixin(m.Model):

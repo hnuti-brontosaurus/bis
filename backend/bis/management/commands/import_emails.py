@@ -2,9 +2,8 @@ import json
 import logging
 from pathlib import Path
 
-from django.core.management.base import BaseCommand
-
 from bis.models import User
+from django.core.management.base import BaseCommand
 from ecomail.helpers import send
 
 

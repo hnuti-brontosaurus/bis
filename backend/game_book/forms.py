@@ -1,10 +1,9 @@
+from administration_units.models import AdministrationUnit
+from bis.models import User
 from django import forms
 from django.forms import Form, ModelForm, TextInput
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
-
-from administration_units.models import AdministrationUnit
-from bis.models import User
 from game_book.models import Comment, Game
 from game_book_categories.models import (
     GameLengthCategory,

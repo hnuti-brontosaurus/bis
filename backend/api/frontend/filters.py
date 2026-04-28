@@ -1,5 +1,4 @@
 import django_filters
-
 from bis.models import Location, User
 from event.models import Event
 

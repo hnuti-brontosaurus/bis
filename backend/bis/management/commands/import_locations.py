@@ -5,11 +5,6 @@ from urllib import request
 from urllib.request import urlretrieve
 
 import requests
-from django.conf import settings
-from django.contrib.gis.geos import Point
-from django.core.management.base import BaseCommand
-from requests import HTTPError
-
 from bis.helpers import print_progress
 from bis.models import (
     Location,
@@ -18,6 +13,10 @@ from bis.models import (
     LocationPhoto,
 )
 from categories.models import LocationAccessibilityCategory, LocationProgramCategory
+from django.conf import settings
+from django.contrib.gis.geos import Point
+from django.core.management.base import BaseCommand
+from requests import HTTPError
 
 
 class Command(BaseCommand):

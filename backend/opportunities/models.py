@@ -1,10 +1,3 @@
-from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, PROTECT, Q
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from phonenumber_field.modelfields import PhoneNumberField
-from tinymce.models import HTMLField
-
 from bis.helpers import SearchMixin
 from bis.models import Location, User
 from categories.models import (
@@ -15,6 +8,12 @@ from categories.models import (
     TeamRoleCategory,
 )
 from common.thumbnails import ThumbnailImageField
+from django.contrib.gis.db import models as m
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.db.models import CASCADE, PROTECT, Q
+from phonenumber_field.modelfields import PhoneNumberField
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 

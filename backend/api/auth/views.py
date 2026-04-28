@@ -1,8 +1,19 @@
+from api.auth.serializers import (
+    LoginRequestSerializer,
+    ResetPasswordRequestSerializer,
+    SendVerificationLinkRequestSerializer,
+    TokenResponse,
+    UserIdResponse,
+)
+from api.helpers import parse_request_data
+from bis import emails
+from bis.models import User
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from login_code.models import LoginCode
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -14,18 +25,6 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
     HTTP_429_TOO_MANY_REQUESTS,
 )
-
-from api.auth.serializers import (
-    LoginRequestSerializer,
-    ResetPasswordRequestSerializer,
-    SendVerificationLinkRequestSerializer,
-    TokenResponse,
-    UserIdResponse,
-)
-from api.helpers import parse_request_data
-from bis import emails
-from bis.models import User
-from login_code.models import LoginCode
 
 
 def login_and_return_token(request, user):

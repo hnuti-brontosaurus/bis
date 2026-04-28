@@ -1,6 +1,3 @@
-from django.urls import include, path
-from rest_framework import routers
-
 from bis.helpers import to_snake_case
 from categories.views import (
     AdministrationUnitCategoryViewSet,
@@ -24,7 +21,9 @@ from categories.views import (
     RoleCategoryViewSet,
     TeamRoleCategoryViewSet,
 )
+from django.urls import include, path
 from regions.views import RegionViewSet
+from rest_framework import routers
 
 router = routers.DefaultRouter()
 

@@ -1,6 +1,5 @@
-from django.urls import path
-
 import game_book
+from django.urls import path
 
 # from game_book.filters import AdministrationUnitAutocomplete
 from game_book.views import EditGameView, GameBookView, GameView, NewGameView

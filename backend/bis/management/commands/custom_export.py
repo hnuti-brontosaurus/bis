@@ -1,14 +1,13 @@
 import logging
 
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from bis.drive import (
     build_drive_service,
     get_existing_names,
     get_or_create_folder,
     upload_file,
 )
+from django.conf import settings
+from django.core.management.base import BaseCommand
 from event.models import Event
 
 

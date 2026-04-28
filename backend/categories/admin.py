@@ -1,5 +1,3 @@
-from django.contrib import admin
-
 from bis.admin_permissions import PermissionMixin
 from categories.models import (
     AdministrationUnitCategory,
@@ -24,6 +22,7 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
+from django.contrib import admin
 
 
 @admin.register(GrantCategory)

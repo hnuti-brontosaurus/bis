@@ -1,5 +1,3 @@
-from rest_framework.viewsets import ModelViewSet
-
 from api.cookbook.permissions import CookbookAccessPermission
 from cookbook_categories.models import (
     RecipeDifficulty,
@@ -13,6 +11,7 @@ from cookbook_categories.serializers import (
     RecipeTagSerializer,
     UnitSerializer,
 )
+from rest_framework.viewsets import ModelViewSet
 
 
 class RecipeDifficultyViewSet(ModelViewSet):

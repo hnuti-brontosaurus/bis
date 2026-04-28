@@ -1,7 +1,6 @@
+from bis.models import User
 from django.contrib.gis.db import models as m
 from django.db.models import CASCADE, PROTECT
-
-from bis.models import User
 from event.models import Event
 from translation.translate import translate_model
 

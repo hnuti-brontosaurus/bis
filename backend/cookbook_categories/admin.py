@@ -1,14 +1,13 @@
-from django.contrib import admin
-from nested_admin.nested import (
-    NestedModelAdmin,
-)
-
 from bis.admin_permissions import PermissionMixin
 from cookbook_categories.models import (
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
     Unit,
+)
+from django.contrib import admin
+from nested_admin.nested import (
+    NestedModelAdmin,
 )
 
 

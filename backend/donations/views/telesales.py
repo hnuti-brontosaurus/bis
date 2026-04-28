@@ -1,3 +1,4 @@
+from categories.models import DonorEventCategory
 from django import forms
 from django.contrib import messages
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -5,8 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
-
-from categories.models import DonorEventCategory
 from donations.models import Donor, DonorEvent, FundraisingCampaign
 from donations.telesales import (
     get_donor_campaign_context,

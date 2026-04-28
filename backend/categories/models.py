@@ -3,7 +3,6 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.db import models as m
-
 from translation.translate import translate_model
 
 

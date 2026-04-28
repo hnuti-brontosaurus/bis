@@ -1,17 +1,5 @@
 from os.path import basename
 
-from dateutil.relativedelta import relativedelta
-from django.contrib import admin
-from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, Index, PROTECT, Q
-from django.contrib.gis.geos import Point
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.utils.safestring import mark_safe
-from geopy.distance import distance
-from phonenumber_field.modelfields import PhoneNumberField
-from tinymce.models import HTMLField
-
 from administration_units.models import AdministrationUnit
 from bis.helpers import (
     SearchMixin,
@@ -32,6 +20,17 @@ from categories.models import (
 from common.abstract_models import BaseContact
 from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
+from dateutil.relativedelta import relativedelta
+from django.contrib import admin
+from django.contrib.gis.db import models as m
+from django.contrib.gis.geos import Point
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.db.models import CASCADE, PROTECT, Index, Q
+from django.utils.safestring import mark_safe
+from geopy.distance import distance
+from phonenumber_field.modelfields import PhoneNumberField
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 

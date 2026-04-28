@@ -2,6 +2,11 @@ from base64 import b64encode
 from collections import defaultdict
 from datetime import date, timedelta
 
+from administration_units.models import AdministrationUnit
+from bis.helpers import make_a, make_ul
+from bis.models import Qualification
+from categories.models import DonorEventCategory, EventProgramCategory, PronounCategory
+from common.helpers import get_date_range
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db.models import (
@@ -17,18 +22,12 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast
 from django.utils import timezone
-from vokativ import vokativ
-
-from administration_units.models import AdministrationUnit
-from bis.helpers import make_a, make_ul
-from bis.models import Qualification
-from categories.models import DonorEventCategory, EventProgramCategory, PronounCategory
-from common.helpers import get_date_range
 from donations.models import Donor, DonorEvent, RecurrentState
 from ecomail import ecomail
 from event.models import Event
 from feedback.models import Reply
 from opportunities.models import Opportunity
+from vokativ import vokativ
 
 emails = {
     "bis": ("BIS", "bis@brontosaurus.cz"),

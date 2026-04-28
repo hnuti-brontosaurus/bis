@@ -1,7 +1,6 @@
+from cookbook.models.base import BaseModel
 from django.db import models as m
 from django.db.models import CharField, SlugField
-
-from cookbook.models.base import BaseModel
 from translation.translate import translate_model
 
 

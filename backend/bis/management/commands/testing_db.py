@@ -2,9 +2,6 @@ import typing as t
 from datetime import date, timedelta
 from os.path import join
 
-from django.core.management import call_command
-from django.core.management.base import BaseCommand
-
 from administration_units.models import (
     AdministrationUnit,
     AdministrationUnitAddress,
@@ -21,6 +18,8 @@ from categories.models import (
     PronounCategory,
     QualificationCategory,
 )
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
 from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
 from project.settings import BASE_DIR
 

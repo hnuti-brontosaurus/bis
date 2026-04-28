@@ -1,6 +1,5 @@
-from nested_admin.nested import NestedStackedInline, NestedTabularInline
-
 from bis.admin_permissions import ReadonlyMixin
+from nested_admin.nested import NestedStackedInline, NestedTabularInline
 from questionnaire.models import (
     Answer,
     EventApplication,

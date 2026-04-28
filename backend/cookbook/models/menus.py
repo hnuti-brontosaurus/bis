@@ -1,11 +1,10 @@
-from django.db import models as m
-from django.db.models import PROTECT
-
 from bis.models import User
 from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.recipes import Recipe
 from cookbook_categories.models import Unit
+from django.db import models as m
+from django.db.models import PROTECT
 from translation.translate import translate_model
 
 

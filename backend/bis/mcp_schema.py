@@ -4,10 +4,6 @@ from __future__ import annotations
 
 import strawberry
 import strawberry_django
-from django.core.exceptions import FieldError
-from strawberry.scalars import JSON
-from strawberry_django.optimizer import DjangoOptimizerExtension
-
 from administration_units.models import AdministrationUnit
 from bis.models import Location
 from bis.permissions import Permissions
@@ -18,9 +14,12 @@ from categories.models import (
     EventProgramCategory,
     EventTag,
 )
+from django.core.exceptions import FieldError
 from event.models import Event, EventRecord
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from regions.models import Region
+from strawberry.scalars import JSON
+from strawberry_django.optimizer import DjangoOptimizerExtension
 
 # ---------------------------------------------------------------------------
 # Types

@@ -11,7 +11,6 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce, Greatest
-
 from donations.models import Donor, DonorEvent
 
 CALL_OUTCOME_SLUGS = frozenset(

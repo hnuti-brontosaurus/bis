@@ -2,17 +2,16 @@ from datetime import timedelta
 from tempfile import NamedTemporaryFile
 
 import openpyxl
-from dateutil.utils import today
-from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, Index, PROTECT, UniqueConstraint
-from django.core.files import File
-from tinymce.models import HTMLField
-
 from administration_units.models import AdministrationUnit
 from bis.helpers import AgeStats
 from bis.models import User
 from categories.models import RoleCategory
+from dateutil.utils import today
+from django.contrib.gis.db import models as m
+from django.core.files import File
+from django.db.models import CASCADE, PROTECT, Index, UniqueConstraint
 from donations.models import Donation
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 

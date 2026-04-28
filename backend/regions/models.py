@@ -1,6 +1,5 @@
 from django.contrib.gis.db import models as m
 from django.db.models import PROTECT
-
 from translation.translate import translate_model
 
 

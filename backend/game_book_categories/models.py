@@ -1,5 +1,4 @@
 from django.db import models as m
-
 from translation.translate import translate_model
 
 

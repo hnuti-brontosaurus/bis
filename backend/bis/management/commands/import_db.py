@@ -5,8 +5,6 @@ from os import mkdir
 from os.path import exists, join
 from zoneinfo import ZoneInfo
 
-from django.core.management.base import BaseCommand
-
 from administration_units.models import (
     AdministrationUnit,
     AdministrationUnitAddress,
@@ -33,6 +31,7 @@ from categories.models import (
     MembershipCategory,
     QualificationCategory,
 )
+from django.core.management.base import BaseCommand
 from donations.models import Donor, VariableSymbol
 from event.models import (
     Event,

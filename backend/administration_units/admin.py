@@ -1,16 +1,5 @@
 from datetime import date
 
-from dateutil.utils import today
-from django.contrib import admin
-from django.contrib.gis.db.models import PointField
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import (
-    NestedModelAdmin,
-    NestedStackedInline,
-    NestedTabularInline,
-)
-from solo.admin import SingletonModelAdmin
-
 from administration_units.models import (
     AdministrationSubUnit,
     AdministrationSubUnitAddress,
@@ -26,6 +15,16 @@ from bis.admin_permissions import PermissionMixin
 from bis.helpers import MembershipStats, make_br
 from bis.models import Membership, User
 from common.history import show_history
+from dateutil.utils import today
+from django.contrib import admin
+from django.contrib.gis.db.models import PointField
+from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
+from solo.admin import SingletonModelAdmin
 from xlsx_export.export import export_to_xlsx
 
 

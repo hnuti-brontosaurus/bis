@@ -1,7 +1,6 @@
+from bis.models import User
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-
-from bis.models import User
 from feedback.models import EventFeedback
 
 

@@ -115,10 +115,9 @@ class BISTools(MCPToolset):
         return result.data
 
 
-from mcp_server.djangomcp import global_mcp_server  # noqa: E402
-
 # Append GraphQL schema SDL to MCP server instructions so the LLM knows
 # which types and fields are available when writing queries.
 from bis.mcp_schema import schema as _schema  # noqa: E402
+from mcp_server.djangomcp import global_mcp_server  # noqa: E402
 
 global_mcp_server.append_instructions("GRAPHQL SCHEMA:\n" + _schema.as_str())

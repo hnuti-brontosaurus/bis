@@ -1,7 +1,6 @@
+from api.web.views import AdministrationUnitViewSet, EventViewSet, OpportunityViewSet
 from django.urls import include, path
 from rest_framework import routers
-
-from api.web.views import AdministrationUnitViewSet, EventViewSet, OpportunityViewSet
 
 router = routers.DefaultRouter()
 

@@ -1,7 +1,6 @@
-from nested_admin.nested import NestedStackedInline, NestedTabularInline
-
 from bis.admin_permissions import ReadonlyMixin
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
+from nested_admin.nested import NestedStackedInline, NestedTabularInline
 
 
 class InquiryAdmin(ReadonlyMixin, NestedTabularInline):

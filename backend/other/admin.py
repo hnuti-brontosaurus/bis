@@ -1,3 +1,5 @@
+from bis.admin_permissions import PermissionMixin
+from bis.models import User
 from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.http import HttpResponseRedirect
@@ -8,9 +10,6 @@ from nested_admin.nested import (
     NestedStackedInline,
     NestedTabularInline,
 )
-
-from bis.admin_permissions import PermissionMixin
-from bis.models import User
 from other.models import (
     Announcement,
     DashboardItem,

@@ -1,20 +1,4 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.contrib import admin, messages
-from django.contrib.admin import helpers
-from django.contrib.admin.options import TO_FIELD_VAR
-from django.contrib.admin.utils import unquote
-from django.contrib.messages import ERROR, INFO
-from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Exists, Max, Min, OuterRef, Q
-from django.http import FileResponse, HttpResponseRedirect
-from django.template.response import TemplateResponse
-from django.urls import reverse
-from django.utils.html import format_html
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedModelAdmin, NestedTabularInline
-from rangefilter.filters import DateRangeFilter
-from solo.admin import SingletonModelAdmin
-
 from bis.admin_filters import (
     DonationSumAmountFilter,
     DonationSumRangeFilter,
@@ -33,8 +17,20 @@ from bis.admin_helpers import (
 )
 from bis.admin_permissions import PermissionMixin
 from bis.emails import donation_confirmation
+from bis.models import User
 from bis.permissions import Permissions
 from categories.models import DonorEventCategory, PronounCategory
+from django.contrib import admin, messages
+from django.contrib.admin import helpers
+from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib.admin.utils import unquote
+from django.contrib.messages import ERROR, INFO
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Exists, Max, Min, OuterRef, Q
+from django.http import FileResponse, HttpResponseRedirect
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.html import format_html
 from donations.helpers import upload_bank_records
 from donations.models import (
     Company,
@@ -46,7 +42,10 @@ from donations.models import (
     UploadBankRecords,
     VariableSymbol,
 )
-from bis.models import User
+from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.nested import NestedModelAdmin, NestedTabularInline
+from rangefilter.filters import DateRangeFilter
+from solo.admin import SingletonModelAdmin
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 
@@ -61,7 +60,6 @@ class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
 
     def get_urls(self):
         from django.urls import path
-
         from donations.views.telesales import (
             telesales_call_view,
             telesales_worklist_view,

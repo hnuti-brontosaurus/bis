@@ -4,25 +4,6 @@ from functools import cached_property
 from os.path import basename
 from uuid import uuid4
 
-from dateutil.relativedelta import relativedelta
-from dateutil.utils import today
-from django.apps import apps
-from django.contrib import admin, messages
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import UserManager
-from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, Index, PROTECT, Q, UniqueConstraint
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.utils import timezone
-from django.utils.formats import date_format
-from django.utils.safestring import mark_safe
-from django.utils.timezone import now
-from phonenumber_field.modelfields import PhoneNumberField
-
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
 from bis.helpers import (
@@ -42,6 +23,24 @@ from categories.models import (
 )
 from common.abstract_models import BaseAddress, BaseContact
 from common.thumbnails import ThumbnailImageField
+from dateutil.relativedelta import relativedelta
+from dateutil.utils import today
+from django.apps import apps
+from django.contrib import admin, messages
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import UserManager
+from django.contrib.gis.db import models as m
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import CASCADE, PROTECT, Index, Q, UniqueConstraint
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.formats import date_format
+from django.utils.safestring import mark_safe
+from django.utils.timezone import now
+from phonenumber_field.modelfields import PhoneNumberField
 from translation.translate import translate_model
 
 

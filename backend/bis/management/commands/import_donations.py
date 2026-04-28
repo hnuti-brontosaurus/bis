@@ -1,15 +1,14 @@
 import logging
 
 import requests
-from dateutil.parser import isoparse
-from django.conf import settings
-from django.core.management.base import BaseCommand
-from django.utils.text import slugify
-
 from administration_units.models import AdministrationUnit
 from bis.helpers import print_progress
 from bis.models import User, UserAddress
 from categories.models import DonationSourceCategory
+from dateutil.parser import isoparse
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from donations.models import Donation, Donor, Pledge
 
 

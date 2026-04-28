@@ -1,9 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from django.contrib import admin
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedModelAdmin, NestedTabularInline
-
 from bis.admin_permissions import PermissionMixin
+from django.contrib import admin
 from game_book.models import (
     Comment,
     CommentFile,
@@ -13,6 +10,8 @@ from game_book.models import (
     PlayedAt,
     PlayedAtFile,
 )
+from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
 
 class CommentFileAdmin(PermissionMixin, NestedTabularInline):

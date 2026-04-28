@@ -1,5 +1,7 @@
 from urllib.parse import urlencode
 
+from bis import emails
+from bis.models import User
 from django import forms
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, login
@@ -9,12 +11,9 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.views.generic import FormView
+from login_code.models import LoginCode
 from oauth_dcr.views import DynamicClientRegistrationView
 from rest_framework.exceptions import AuthenticationFailed, Throttled
-
-from bis import emails
-from bis.models import User
-from login_code.models import LoginCode
 from translation.translate import _
 
 

@@ -1,14 +1,3 @@
-from django.core.validators import EMPTY_VALUES
-from django.db.utils import ProgrammingError
-from django_filters import (
-    BaseInFilter,
-    ChoiceFilter,
-    DateFilter,
-    FilterSet,
-    NumberFilter,
-    OrderingFilter,
-)
-
 from administration_units.models import AdministrationUnit
 from categories.models import (
     AdministrationUnitCategory,
@@ -18,6 +7,16 @@ from categories.models import (
     EventProgramCategory,
     EventTag,
     OpportunityCategory,
+)
+from django.core.validators import EMPTY_VALUES
+from django.db.utils import ProgrammingError
+from django_filters import (
+    BaseInFilter,
+    ChoiceFilter,
+    DateFilter,
+    FilterSet,
+    NumberFilter,
+    OrderingFilter,
 )
 from event.models import Event
 from opportunities.models import Opportunity

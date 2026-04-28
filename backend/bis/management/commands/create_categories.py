@@ -1,8 +1,6 @@
 import zoneinfo
 from datetime import datetime
 
-from django.core.management.base import BaseCommand
-
 from bis.models import Location
 from categories.models import (
     AdministrationUnitCategory,
@@ -33,6 +31,7 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
+from django.core.management.base import BaseCommand
 from game_book_categories.models import (
     GameLengthCategory,
     LocationCategory,

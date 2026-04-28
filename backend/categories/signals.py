@@ -1,9 +1,8 @@
+from administration_units.models import AdministrationUnit
+from bis.models import Location
 from django.conf import settings
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-
-from administration_units.models import AdministrationUnit
-from bis.models import Location
 from event.models import Event
 from opportunities.models import Opportunity
 

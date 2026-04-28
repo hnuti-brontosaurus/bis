@@ -1,7 +1,6 @@
+from categories.models import EventCategory
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-
-from categories.models import EventCategory
 from event.models import Event
 
 old_to_new_mapping = {

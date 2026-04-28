@@ -1,6 +1,5 @@
-from django.db import models as m
-
 from cookbook.models.base import BaseModel, ChangeMixin
+from django.db import models as m
 from translation.translate import translate_model
 
 

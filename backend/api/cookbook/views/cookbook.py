@@ -1,5 +1,3 @@
-from rest_framework.viewsets import ModelViewSet
-
 from api.cookbook.filters import MenuFilter, RecipeFilter
 from api.cookbook.permissions import CookbookAccessPermission
 from api.cookbook.serializers import (
@@ -12,6 +10,7 @@ from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
+from rest_framework.viewsets import ModelViewSet
 
 
 class ChangeViewSetMixin:

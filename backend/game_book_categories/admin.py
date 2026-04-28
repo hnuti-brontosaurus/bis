@@ -1,7 +1,5 @@
-from django.contrib import admin
-from nested_admin.nested import NestedModelAdmin
-
 from bis.admin_permissions import PermissionMixin
+from django.contrib import admin
 from game_book_categories.models import (
     GameLengthCategory,
     LocationCategory,
@@ -14,6 +12,7 @@ from game_book_categories.models import (
     PreparationLengthCategory,
     Tag,
 )
+from nested_admin.nested import NestedModelAdmin
 
 
 @admin.register(Tag)

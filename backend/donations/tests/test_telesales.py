@@ -1,12 +1,11 @@
 from datetime import timedelta
 
 import pytest
+from bis.models import User
+from categories.models import DonorEventCategory, RoleCategory
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-
-from bis.models import User
-from categories.models import DonorEventCategory, RoleCategory
 from donations.models import Donor, DonorEvent, FundraisingCampaign
 from donations.telesales import get_reminders_due, get_worklist
 

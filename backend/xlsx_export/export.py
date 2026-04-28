@@ -13,6 +13,9 @@ from time import sleep
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import xlsxwriter
+from bis import emails
+from bis.helpers import print_progress
+from bis.models import User
 from django.conf import settings
 from django.contrib import admin, messages
 from django.core.files.temp import NamedTemporaryFile
@@ -21,17 +24,13 @@ from django.db.models import Count
 from django.http import FileResponse
 from django.template import Context, Template
 from django.utils.formats import date_format
-from rest_framework.serializers import ModelSerializer
-from weasyprint import HTML
-
-from bis import emails
-from bis.helpers import print_progress
-from bis.models import User
 from event.models import Event
 from feedback.models import EventFeedback
 from other.models import SavedFile
 from questionnaire.models import EventApplication
+from rest_framework.serializers import ModelSerializer
 from translation.translate import _
+from weasyprint import HTML
 from xlsx_export.serializers import (
     AdministrationUnitExportSerializer,
     DonationExportSerializer,

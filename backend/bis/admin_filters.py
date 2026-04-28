@@ -1,13 +1,3 @@
-from dateutil.relativedelta import relativedelta
-from django.contrib import admin
-from django.contrib.admin.options import IncorrectLookupParameters
-from django.core.exceptions import ValidationError
-from django.db.models import Min, Q, Sum, Value
-from django.db.models.functions import Coalesce
-from django.utils import timezone
-from django.utils.timezone import now
-from more_admin_filters import MultiSelectRelatedDropdownFilter
-
 from bis.admin_helpers import (
     CacheRangeNumericFilter,
     CustomDateRangeFilter,
@@ -17,6 +7,15 @@ from bis.admin_helpers import (
     event_of_administration_unit_filter_factory,
 )
 from bis.models import Qualification
+from dateutil.relativedelta import relativedelta
+from django.contrib import admin
+from django.contrib.admin.options import IncorrectLookupParameters
+from django.core.exceptions import ValidationError
+from django.db.models import Min, Q, Sum, Value
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from django.utils.timezone import now
+from more_admin_filters import MultiSelectRelatedDropdownFilter
 
 
 class HasDonorFilter(YesNoFilter):

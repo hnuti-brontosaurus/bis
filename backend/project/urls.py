@@ -1,3 +1,9 @@
+from bis.views import (
+    CodeView,
+    LoginView,
+    MCPClientRegistrationView,
+    OAuthAuthorizationServerMetadataView,
+)
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -6,13 +12,6 @@ from django.views.generic import RedirectView
 from mcp_server.views import MCPServerStreamableHttpView
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.permissions import BasePermission
-
-from bis.views import (
-    CodeView,
-    LoginView,
-    MCPClientRegistrationView,
-    OAuthAuthorizationServerMetadataView,
-)
 
 
 class MCPPermission(BasePermission):

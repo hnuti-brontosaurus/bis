@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-
 from translation.translate import _
 
 

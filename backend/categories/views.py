@@ -1,5 +1,3 @@
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
 from categories.models import (
     AdministrationUnitCategory,
     DietCategory,
@@ -44,6 +42,7 @@ from categories.serializers import (
     RoleCategorySerializer,
     TeamRoleCategorySerializer,
 )
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
 class GrantCategoryViewSet(ReadOnlyModelViewSet):

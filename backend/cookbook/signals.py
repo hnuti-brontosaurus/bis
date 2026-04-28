@@ -2,11 +2,10 @@ import json
 import logging
 
 import groq
+from cookbook.models.ingredients import Ingredient
 from django.conf import settings
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-
-from cookbook.models.ingredients import Ingredient
 
 # https://console.groq.com/playground
 ingredient_system_prompt = """

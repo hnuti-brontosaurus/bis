@@ -1,7 +1,6 @@
-from django.core.management import BaseCommand
-
 from bis.helpers import print_progress
 from bis.models import User
+from django.core.management import BaseCommand
 from other.models import DuplicateUser
 
 

@@ -1,6 +1,3 @@
-from django.urls import include, path
-from rest_framework_nested import routers
-
 from api import frontend
 from api.frontend.views import (
     AnnouncementViewSet,
@@ -26,6 +23,8 @@ from api.frontend.views import (
     UserViewSet,
     WhereWasOrganizerViewSet,
 )
+from django.urls import include, path
+from rest_framework_nested import routers
 
 router = routers.DefaultRouter()
 

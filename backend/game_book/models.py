@@ -1,14 +1,12 @@
 from os.path import basename
 from uuid import uuid4
 
+from administration_units.models import AdministrationUnit
+from bis.models import User
 from django.core.exceptions import ValidationError
 from django.db import models as m
 from django.db.models import CASCADE, PROTECT, SET_NULL
 from django.urls import reverse
-from tinymce.models import HTMLField
-
-from administration_units.models import AdministrationUnit
-from bis.models import User
 from event.models import Event
 from game_book_categories.models import (
     GameLengthCategory,
@@ -22,6 +20,7 @@ from game_book_categories.models import (
     PreparationLengthCategory,
     Tag,
 )
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 

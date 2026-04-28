@@ -1,11 +1,10 @@
-from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, PROTECT
-from phonenumber_field.modelfields import PhoneNumberField
-
 from bis.models import User
 from categories.models import PronounCategory
 from common.abstract_models import BaseAddress, BaseContact
+from django.contrib.gis.db import models as m
+from django.db.models import CASCADE, PROTECT
 from event.models import Event, EventRegistration
+from phonenumber_field.modelfields import PhoneNumberField
 from translation.translate import translate_model
 
 
