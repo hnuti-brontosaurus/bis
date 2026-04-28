@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from event.models import Event, EventPropagation
+from event.models import Event
 
 
 @receiver(post_save, sender=Event, dispatch_uid="add_main_organizer_as_organizer")

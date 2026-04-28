@@ -77,7 +77,7 @@ def main():
             print(f"Latest tag: {latest_tag}")
 
     run(f"git tag {new_tag}")
-    run(f"git push --tags")
+    run("git push --tags")
 
     print(f"Successfully created and pushed {new_tag}")
 

@@ -7,7 +7,7 @@ class BISConfig(AppConfig):
     verbose_name = "Příležitost"
 
     def ready(self):
-        import opportunities.signals
+        import opportunities.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Příležitosti"

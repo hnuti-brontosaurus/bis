@@ -52,7 +52,7 @@ class EventApplication(Model):
         ordering = ("id",)
 
     def __str__(self):
-        return f"Přihláška na akci"
+        return "Přihláška na akci"
 
     @classmethod
     def filter_queryset(cls, queryset, perm):

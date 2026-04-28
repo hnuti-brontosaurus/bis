@@ -1,8 +1,4 @@
-from dal import autocomplete
 from django_bootstrap5.renderers import FieldRenderer
-
-from administration_units.models import AdministrationUnit
-from game_book.models import Game
 
 
 class GameBookFieldRenderer(FieldRenderer):

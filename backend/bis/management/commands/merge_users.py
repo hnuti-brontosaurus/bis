@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from django.core.management import BaseCommand
 
 from bis.helpers import print_progress

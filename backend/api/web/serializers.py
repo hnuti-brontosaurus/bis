@@ -22,7 +22,6 @@ from event.models import (
     Event,
     EventPropagation,
     EventPropagationImage,
-    EventRecord,
     EventRegistration,
 )
 from feedback.models import FeedbackForm, Inquiry

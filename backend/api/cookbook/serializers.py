@@ -1,9 +1,8 @@
-from rest_framework.fields import CharField, FloatField
+from rest_framework.fields import CharField
 
 from api.frontend.serializers import (
     ModelSerializer,
     SmartUpdatableListSerializer,
-    UpdatableListSerializer,
 )
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient

@@ -1,6 +1,5 @@
 from os.path import basename
 
-import geopy.distance
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.gis.db.models import *

@@ -1,4 +1,4 @@
-from django.contrib.messages import ERROR, INFO
+from django.contrib.messages import ERROR
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from nested_admin.nested import (

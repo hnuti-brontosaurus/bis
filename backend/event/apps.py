@@ -9,7 +9,7 @@ class BISConfig(AppConfig):
     verbose_name = _("models.Event.name_plural")
 
     def ready(self):
-        import event.signals
+        import event.signals  # noqa
 
     class Meta:
         verbose_name_plural = _("models.Event.name_plural")

@@ -1,9 +1,8 @@
 from dateutil.relativedelta import relativedelta
-from django.apps import apps
 from django.contrib import admin
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.exceptions import ValidationError
-from django.db.models import Max, Min, Q, Sum, Value
+from django.db.models import Min, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.timezone import now

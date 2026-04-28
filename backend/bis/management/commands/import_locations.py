@@ -16,7 +16,6 @@ from bis.models import (
     LocationContactPerson,
     LocationPatron,
     LocationPhoto,
-    User,
 )
 from categories.models import LocationAccessibilityCategory, LocationProgramCategory
 

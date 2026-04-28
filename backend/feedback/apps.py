@@ -7,7 +7,7 @@ class FeedbackConfig(AppConfig):
     verbose_name = "Zpětné vazby"
 
     def ready(self):
-        import feedback.signals
+        import feedback.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Zpětné vazby"

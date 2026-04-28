@@ -13,14 +13,11 @@ from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import paused_validation
 from event.models import *
-from feedback.admin import EventFeedbackAdmin, FeedbackFormAdmin
 from feedback.models import EventFeedback
 from translation.translate import _
 from xlsx_export.export import (
-    do_export_to_xlsx,
     export_files,
     export_to_xlsx,
-    export_to_xlsx_response,
     get_attendance_list,
 )
 

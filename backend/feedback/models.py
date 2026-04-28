@@ -1,10 +1,7 @@
 from django.contrib.gis.db.models import *
-from phonenumber_field.modelfields import PhoneNumberField
 
 from bis.models import User
-from categories.models import PronounCategory
-from common.abstract_models import BaseAddress, BaseContact
-from event.models import Event, EventRecord, EventRegistration
+from event.models import Event
 from translation.translate import translate_model
 
 
@@ -22,7 +19,7 @@ class EventFeedback(Model):
         ordering = ("id",)
 
     def __str__(self):
-        return f"Zpětná vazba k akci"
+        return "Zpětná vazba k akci"
 
     @classmethod
     def filter_queryset(cls, queryset, perm):

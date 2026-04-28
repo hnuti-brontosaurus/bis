@@ -1,8 +1,4 @@
 import os
-import re
-from os import walk
-from pathlib import Path
-from shutil import rmtree
 
 import requests
 from django.core.management.base import BaseCommand

@@ -63,7 +63,6 @@ from opportunities.models import Opportunity
 from other.models import Announcement, DashboardItem
 from questionnaire.models import EventApplication, Question
 from xlsx_export import export
-from xlsx_export.export import export_to_xlsx
 
 safe_http_methods = [m.lower() for m in SAFE_METHODS]
 

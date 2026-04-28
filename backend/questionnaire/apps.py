@@ -7,7 +7,7 @@ class QuestionnaireConfig(AppConfig):
     verbose_name = "Dotazníky"
 
     def ready(self):
-        import questionnaire.signals
+        import questionnaire.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Dotazníky"

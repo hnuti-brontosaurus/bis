@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.gis.db.models import *
 from django.core.cache import cache
 from django.core.exceptions import ValidationError

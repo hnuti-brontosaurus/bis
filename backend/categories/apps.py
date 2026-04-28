@@ -7,7 +7,7 @@ class CategoriesConfig(AppConfig):
     verbose_name = "Kategorie"
 
     def ready(self):
-        import categories.signals
+        import categories.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Kategorie"

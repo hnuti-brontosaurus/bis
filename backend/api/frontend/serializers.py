@@ -1,6 +1,5 @@
 from datetime import date
 
-from dateutil.utils import today
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import ManyToManyField
@@ -44,7 +43,6 @@ from categories.serializers import (
     EventGroupCategorySerializer,
     EventIntendedForCategorySerializer,
     EventProgramCategorySerializer,
-    EventTagSerializer,
     GrantCategorySerializer,
     HealthInsuranceCompanySerializer,
     LocationAccessibilityCategorySerializer,

@@ -1,18 +1,17 @@
 from datetime import timedelta
 
-from django.db.models import Count, Exists, F, Min, OuterRef, Subquery, Value
+from django.db.models import Count, Exists, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from rest_framework.fields import (
     CharField,
     DateField,
-    DateTimeField,
     IntegerField,
     ListField,
     ReadOnlyField,
     SerializerMethodField,
 )
 from rest_framework.relations import StringRelatedField
-from rest_framework.serializers import BooleanField, ModelSerializer
+from rest_framework.serializers import ModelSerializer
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
@@ -678,7 +677,7 @@ class EventFeedbackExportSerializer(ModelSerializer):
             if key not in keys:
                 keys.add(key)
                 yield f"{key}", inquiry.inquiry
-                yield f"{key}__stat", f"Hodnota"
+                yield f"{key}__stat", "Hodnota"
                 if inquiry.data.get("type") != "scale":
                     self._hidden_first_sheet_keys.add(f"{key}__stat")
 

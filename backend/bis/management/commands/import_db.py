@@ -3,9 +3,6 @@ import logging
 from datetime import date, datetime, timedelta
 from os import mkdir
 from os.path import exists, join
-from urllib.error import HTTPError
-from urllib.parse import quote
-from urllib.request import urlretrieve
 from zoneinfo import ZoneInfo
 
 from django.core.management.base import BaseCommand
@@ -13,7 +10,6 @@ from django.core.management.base import BaseCommand
 from administration_units.models import (
     AdministrationUnit,
     AdministrationUnitAddress,
-    BrontosaurusMovement,
 )
 from bis.helpers import print_progress, with_paused_validation
 from bis.models import (
@@ -40,12 +36,7 @@ from categories.models import (
 from donations.models import Donor, VariableSymbol
 from event.models import (
     Event,
-    EventFinance,
-    EventPropagation,
-    EventPropagationImage,
-    EventRecord,
     EventRegistration,
-    VIPEventPropagation,
 )
 from project.settings import BASE_DIR
 
@@ -300,7 +291,7 @@ class Command(BaseCommand):
                 user.phone = item["telefon"] or user.phone
                 _import_ids = set(_id for _id in user._import_id.split(",") if _id)
                 _import_ids.add(str(id))
-                user._import_id = f",".join(_import_ids)
+                user._import_id = ",".join(_import_ids)
                 user.save()
 
             else:
@@ -670,7 +661,7 @@ class Command(BaseCommand):
                 defaults=dict(
                     is_registration_required=item["prihlaska"] != "4",
                     is_event_full=item["prihlaska"] == "5",
-                    alternative_registration_link=alternative_registration_link
+                    alternative_registration_link=alternative_registration_link,
                     # 'add_info_title': None,
                     # 'add_info_title_2': None,
                     # 'add_info_title_3': None,

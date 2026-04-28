@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.db.models import (
     CharField,
     Count,
@@ -13,7 +11,6 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce, Greatest
-from django.utils import timezone
 
 from donations.models import Donor, DonorEvent
 

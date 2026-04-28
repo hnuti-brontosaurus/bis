@@ -1,12 +1,9 @@
 from collections import OrderedDict
 
-from dateutil.relativedelta import relativedelta
-from dateutil.utils import today
 from django.core.management.base import BaseCommand
 
 from bis.models import Location, User
 from opportunities.models import Opportunity
-from other.models import DashboardItem
 
 data = [
     OrderedDict(

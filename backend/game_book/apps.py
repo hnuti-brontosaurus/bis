@@ -7,7 +7,7 @@ class CategoriesConfig(AppConfig):
     verbose_name = "Sborník her"
 
     def ready(self):
-        import game_book.signals
+        import game_book.signals  # noqa
 
     class Meta:
         verbose_name_plural = "Sborník her"

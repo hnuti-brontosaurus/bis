@@ -153,7 +153,7 @@ class Comment(BaseModel):
     comment = TextField()
 
     def __str__(self):
-        return f"Komentář"
+        return "Komentář"
 
     def get_absolute_url(self):
         return reverse("game", kwargs={"pk": self.game.pk})
@@ -171,7 +171,7 @@ class PlayedAt(BaseModel):
     comment = TextField()
 
     def __str__(self):
-        return f"Uvedení na akci"
+        return "Uvedení na akci"
 
 
 @translate_model

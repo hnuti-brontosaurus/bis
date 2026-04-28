@@ -1,4 +1,3 @@
-from time import sleep
 
 import requests
 from django.conf import settings
@@ -6,8 +5,8 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import AuthenticationFailed, NotFound, ValidationError
-from rest_framework.fields import CharField, EmailField, IntegerField
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
+from rest_framework.fields import CharField, EmailField
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 

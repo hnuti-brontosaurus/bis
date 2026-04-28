@@ -25,7 +25,6 @@ from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
 from rest_framework.exceptions import Throttled
 
-from administration_units.models import AdministrationUnit
 from bis.admin_filters import (
     AgeFilter,
     EventsWhereWasAsMainOrganizerCountFilter,

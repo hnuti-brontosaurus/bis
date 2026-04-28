@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import timedelta
 from tempfile import NamedTemporaryFile
 
 import openpyxl
@@ -8,7 +8,7 @@ from django.core.files import File
 from tinymce.models import HTMLField
 
 from administration_units.models import AdministrationUnit
-from bis.helpers import AgeStats, filter_queryset_with_multiple_or_queries
+from bis.helpers import AgeStats
 from bis.models import User
 from categories.models import RoleCategory
 from donations.models import Donation
@@ -330,7 +330,7 @@ class DonationPointsSection(Model):
     )
 
     def __str__(self):
-        return f"Sekce"
+        return "Sekce"
 
     def get_header(self):
         return [

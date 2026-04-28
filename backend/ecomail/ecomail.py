@@ -110,7 +110,7 @@ def send_email(
     res = send(
         contacts,
         "POST",
-        f"transactional/send-template",
+        "transactional/send-template",
         {
             "message": {
                 "template_id": template_id,

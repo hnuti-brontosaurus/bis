@@ -33,7 +33,7 @@ def check_disk_space():
     if used > 90:
         emails.text(
             ["bis@brontosaurus.cz", "lamanchy@gmail.com"],
-            f"BIS disk usage is high",
+            "BIS disk usage is high",
             f"{used}% today ;)",
         )
 
