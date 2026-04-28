@@ -157,8 +157,7 @@ class Command(BaseCommand):
                     image_response = session.get(image_url, stream=True)
                     image_response.raise_for_status()
                     with open(filepath, "wb") as f:
-                        for chunk in image_response.iter_content(chunk_size=8192):
-                            f.write(chunk)
+                        f.writelines(image_response.iter_content(chunk_size=8192))
                     downloaded_count += 1
                 except requests.exceptions.RequestException as e:
                     self.stdout.write(

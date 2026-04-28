@@ -45,8 +45,7 @@ def translate_model(model):
                 if not isinstance(attr, PhoneNumberDescriptor):
                     continue
 
-        if attr_name.endswith("_id"):
-            attr_name = attr_name[:-3]
+        attr_name = attr_name.removesuffix("_id")
 
         if attr_name in ignored_attr_names:
             continue
