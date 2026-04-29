@@ -8,9 +8,27 @@ from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.core.cache import cache
+from django.db import connection
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from unidecode import unidecode
+
+
+def try_to_run(fn, *args, **kwargs):
+    try:
+        fn(*args, **kwargs)
+    except Exception as e:
+        logging.exception(
+            e,
+            extra={
+                "fn": str(fn),
+                "data": {
+                    "args": args,
+                    "kwargs": kwargs,
+                },
+            },
+        )
+        connection.close()  # Close stale connection to force reconnect on next query
 
 
 class SearchMixin:

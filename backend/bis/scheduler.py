@@ -1,5 +1,5 @@
 """
-Simple background scheduler that runs the daily command at 7 AM Prague time.
+Simple background scheduler that runs scheduled commands at fixed times Prague time.
 This replaces django-q2 with a lightweight custom solution.
 """
 
@@ -45,40 +45,25 @@ def is_running_under_server():
     return len(sys.argv) > 1 and "runserver" in sys.argv[1]
 
 
-def run_daily_command():
-    """Run the daily management command."""
+def run_command(name):
+    """Run a management command, logging success/failure."""
     from django.core.management import call_command
 
-    logging.info("Running daily command...")
+    logging.info("Running %s command...", name)
     try:
-        call_command("daily")
-        logging.info("Daily command completed successfully")
+        call_command(name)
+        logging.info("%s command completed successfully", name)
     except Exception as e:
-        logging.exception("Daily command failed: %s", e)
-
-
-def run_category_migration():
-    """One-time: migrate and recreate categories on 2026-04-23 12:30 Prague time."""
-    from django.core.management import call_command
-
-    logging.info("Running one-time category migration...")
-    try:
-        call_command("migrate_categories")
-        logging.info("migrate_categories completed successfully")
-        call_command("create_categories")
-        logging.info("create_categories completed successfully")
-    except Exception as e:
-        logging.exception("Category migration failed: %s", e)
+        logging.exception("%s command failed: %s", name, e)
 
 
 def scheduler_loop():
-    """Main scheduler loop that runs daily task at exactly 7:00 AM."""
+    """Main scheduler loop: nightly at 5:00, daily at 7:00 Prague time."""
     import zoneinfo
 
     tz = zoneinfo.ZoneInfo(settings.TIME_ZONE)
     logging.info(
-        "Scheduler started, will run daily command at %d:00 %s",
-        7,
+        "Scheduler started: nightly at 5:00, daily at 7:00 %s",
         settings.TIME_ZONE,
     )
 
@@ -94,17 +79,11 @@ def scheduler_loop():
                 if current:
                     logging.info("Memory: %s / %s", current, limit)
 
-            if now.hour == 7 and now.minute == 0:
-                run_daily_command()
+            if now.hour == 5 and now.minute == 0:
+                run_command("nightly")
 
-            if (
-                now.year == 2026
-                and now.month == 4
-                and now.day == 23
-                and now.hour == 12
-                and now.minute == 30
-            ):
-                run_category_migration()
+            if now.hour == 7 and now.minute == 0:
+                run_command("daily")
 
         except Exception as e:
             logging.exception("Scheduler error: %s", e)
@@ -122,8 +101,6 @@ def start_scheduler():
             return
         _scheduler_started = True
 
-    thread = threading.Thread(
-        target=scheduler_loop, daemon=True, name="daily-scheduler"
-    )
+    thread = threading.Thread(target=scheduler_loop, daemon=True, name="bis-scheduler")
     thread.start()
     logging.info("Background scheduler thread started")
