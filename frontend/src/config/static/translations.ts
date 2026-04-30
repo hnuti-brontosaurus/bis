@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: ef325adcb2d879dd
+// source-hash: 453b6a5e0e154ba1
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1192,13 +1192,46 @@ export const cookbook = {
     registration_error: 'Chyba při registraci',
     login_error: 'Chyba při přihlášení',
   },
+  recipes: {
+    create: 'nový recept',
+    edit: 'upravit',
+    chef: 'Autorstvo',
+    difficulty: 'Obtížnost',
+    tags: 'Tagy',
+    steps: 'Postup',
+    tips: 'Tipy a triky',
+    comments: 'Komentáře',
+    sources: 'Zdroje',
+    ingredients: 'Ingredience',
+    servings: 'Porcí',
+    select_all: 'Vyber vše',
+    select_default: 'Vyber výchozí',
+  },
+  edit_recipe: {
+    title_edit: 'Úprava receptu',
+    title_new: 'Nový recept',
+    save: 'Uložit',
+    save_error: 'Chyba při uložení',
+    add: 'Přidat',
+  },
+  home: {
+    title: 'Veganská Brontosauří kuchařka',
+    subtitle: '*nejen pro Brontosaury',
+  },
+  section: { tips: 'tip', steps: 'krok', ingredients: 'přísada' },
+  ingredients: {
+    new: 'Nová přísada',
+    create_title: 'Vytvořit přísadu',
+    create_content: 'Opravdu chceš vytvořit novou přísadu?',
+    create: 'Vytvořit',
+    go_back: 'Zpět',
+    upsert_error: 'Chyba při ukládání přísady',
+  },
+  chefs: { title: 'Kuchařstvo' },
   profile: {
     new: 'Vytvoření profilu',
     title: 'Můj profil',
     error_saving: 'Chyba při ukládání profilu',
+    saved: 'Uloženo',
   },
-  recipes: { create: 'nový recept' },
-  edit_recipe: null,
-  section: { tips: 'iip', steps: 'krok', ingredients: 'přísada' },
-  ingredients: { new: 'Nová přísada' },
 } as const

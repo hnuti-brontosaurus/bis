@@ -121,22 +121,50 @@ cookbook:
     registration_error: Chyba při registraci
     login_error: Chyba při přihlášení
 
-  profile:
-    new: Vytvoření profilu
-    title: Můj profil
-    error_saving: Chyba při ukládání profilu
-
   recipes:
     create: nový recept
+    edit: upravit
+    chef: Autorstvo
+    difficulty: Obtížnost
+    tags: Tagy
+    steps: Postup
+    tips: Tipy a triky
+    comments: Komentáře
+    sources: Zdroje
+    ingredients: Ingredience
+    servings: Porcí
+    select_all: Vyber vše
+    select_default: Vyber výchozí
 
   edit_recipe:
+    title_edit: Úprava receptu
+    title_new: Nový recept
+    save: Uložit
+    save_error: Chyba při uložení
+    add: Přidat
 
-
+  home:
+    title: Veganská Brontosauří kuchařka
+    subtitle: '*nejen pro Brontosaury'
 
   section:
-    tips: iip
+    tips: tip
     steps: krok
     ingredients: přísada
 
   ingredients:
     new: Nová přísada
+    create_title: Vytvořit přísadu
+    create_content: Opravdu chceš vytvořit novou přísadu?
+    create: Vytvořit
+    go_back: Zpět
+    upsert_error: Chyba při ukládání přísady
+
+  chefs:
+    title: Kuchařstvo
+
+  profile:
+    new: Vytvoření profilu
+    title: Můj profil
+    error_saving: Chyba při ukládání profilu
+    saved: Uloženo

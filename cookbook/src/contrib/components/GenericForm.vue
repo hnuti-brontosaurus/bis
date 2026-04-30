@@ -264,7 +264,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
           v-bind="input.extra"
           :max="1"
           :show-preview-button="false"
-          >Přidat
+          >{{ _.edit_recipe.add }}
         </n-upload>
 
         <n-collapse v-if="input.type === 'section'">

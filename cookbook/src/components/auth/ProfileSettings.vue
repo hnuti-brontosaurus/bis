@@ -38,7 +38,7 @@ const save = async () => {
     await form.value.validate()
     await chefsStore.save(me.value.chef)
     await auth.whoami()
-    message.info("Uloženo")
+    message.info(_.value.profile.saved)
     router.back()
   } catch (e) {
     handleAxiosError(_.value.profile.error_saving)(e)

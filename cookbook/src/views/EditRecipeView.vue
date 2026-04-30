@@ -162,7 +162,7 @@ const save = async () => {
 </script>
 
 <template>
-  <AppPage :title="recipe_id ? 'Úprava receptu' : 'Nový recept'">
+  <AppPage :title="recipe_id ? _.edit_recipe.title_edit : _.edit_recipe.title_new">
     <template #actions>
       <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
     </template>

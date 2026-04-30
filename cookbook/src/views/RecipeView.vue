@@ -23,6 +23,7 @@ import { useUnitsStore } from "@/data/units.js"
 import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
+import { _ } from "@/composables/translations.js"
 
 const route = useRoute()
 const recipesStore = useRecipesStore()
@@ -48,7 +49,7 @@ const recipe = useRecipe(recipeId)
     <template #actions>
       <n-button
         @click="$router.push({ name: 'edit_recipe', params: { id: $route.params.id } })"
-        >upravit</n-button
+        >{{ _.recipes.edit }}</n-button
       >
     </template>
 
@@ -57,13 +58,14 @@ const recipe = useRecipe(recipeId)
         <n-image :src="recipe.photo.large" :alt="recipe.name" height="300" />
         <n-list>
           <n-list-item v-if="recipe.chef">
-            <template #prefix>Autorstvo:</template>{{ recipe.chef.name }}
+            <template #prefix>{{ _.recipes.chef }}:</template>{{ recipe.chef.name }}
           </n-list-item>
           <n-list-item v-if="recipe.difficulty">
-            <template #prefix>Obtížnost:</template>{{ recipe.difficulty.name }}
+            <template #prefix>{{ _.recipes.difficulty }}:</template
+            >{{ recipe.difficulty.name }}
           </n-list-item>
           <n-list-item>
-            <template #prefix>Tagy:</template>
+            <template #prefix>{{ _.recipes.tags }}:</template>
             <n-flex size="small">
               <n-tag v-for="tag in recipe.tags" :key="tag.id" round>{{
                 tag.name
@@ -83,7 +85,7 @@ const recipe = useRecipe(recipeId)
         <RecipeIngrediences :recipe="recipe"></RecipeIngrediences>
       </n-grid-item>
       <n-grid-item>
-        <n-h2>Postup</n-h2>
+        <n-h2>{{ _.recipes.steps }}</n-h2>
         <CollapseList :data="recipe.steps" checked-key="done">
           <template #header="{ item, i }"> {{ i + 1 }}. {{ item.name }} </template>
           <template #default="{ item }">
@@ -101,7 +103,7 @@ const recipe = useRecipe(recipeId)
         </CollapseList>
       </n-grid-item>
       <n-grid-item v-if="recipe.tips.length">
-        <n-h2>Tipy a triky</n-h2>
+        <n-h2>{{ _.recipes.tips }}</n-h2>
         <CollapseList :data="recipe.tips">
           <template #default="{ item }">
             {{ item.description }}
@@ -109,11 +111,11 @@ const recipe = useRecipe(recipeId)
         </CollapseList>
       </n-grid-item>
       <n-grid-item>
-        <n-h2>Komentáře</n-h2>
+        <n-h2>{{ _.recipes.comments }}</n-h2>
         <CollapseList :data="recipe.comments" />
       </n-grid-item>
       <n-grid-item span="2">
-        <n-h2>Zdroje</n-h2>
+        <n-h2>{{ _.recipes.sources }}</n-h2>
         <n-text>{{ recipe.sources }}</n-text>
       </n-grid-item>
     </n-grid>

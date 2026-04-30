@@ -16,6 +16,7 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
+import { _ } from "@/composables/translations.js"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
@@ -47,29 +48,29 @@ const columns = computed(() => {
       options: [
         {
           key: "all",
-          label: "Vyber vše",
-          onSelect: () => (selected.value = recipe.value.ingredients.map(_ => _.id)),
+          label: _.value.recipes.select_all,
+          onSelect: () => (selected.value = recipe.value.ingredients.map(i => i.id)),
         },
         {
           key: "default",
-          label: "Vyber výchozí",
+          label: _.value.recipes.select_default,
           onSelect: () =>
             (selected.value = recipe.value.ingredients
-              .filter(_ => _.is_required)
-              .map(_ => _.id)),
+              .filter(i => i.is_required)
+              .map(i => i.id)),
         },
       ],
     },
   ]
 })
 
-const selected = ref(recipe.value.ingredients.filter(_ => _.is_required).map(_ => _.id))
+const selected = ref(recipe.value.ingredients.filter(i => i.is_required).map(i => i.id))
 const expanded = ref([])
 const expandAll = () => {
   if (expanded.value.length) {
     expanded.value = []
   } else {
-    expanded.value = recipe.value.ingredients.filter(expandable).map(_ => _.id)
+    expanded.value = recipe.value.ingredients.filter(expandable).map(i => i.id)
   }
 }
 
@@ -83,9 +84,9 @@ const data = computed(() => {
 
 <template>
   <n-flex align="end" justify="space-between" :style="{ 'margin-bottom': '30px' }">
-    <n-h2 style="margin-bottom: 0">Ingredience</n-h2>
+    <n-h2 style="margin-bottom: 0">{{ _.recipes.ingredients }}</n-h2>
     <n-flex align="baseline" :wrap="false">
-      <n-text>Porcí:</n-text>
+      <n-text>{{ _.recipes.servings }}:</n-text>
       <n-input-group>
         <n-input-number
           size="small"
