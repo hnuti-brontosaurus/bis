@@ -1,6 +1,6 @@
 import { computed } from "vue"
 import { createSharedComposable, useLocalStorage } from "@vueuse/core"
-import axios from "axios"
+import { fetch as fetchTranslations } from "@/api/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 
 const translations = useLocalStorage(
@@ -59,9 +59,8 @@ export const _ = computed(() => {
 })
 
 export const useTranslations = createSharedComposable(() => {
-  axios
-    .get("/extras/translations/")
-    .then(({ data }) => (translations.value = data))
+  fetchTranslations()
+    .then(data => (translations.value = data))
     .catch(handleAxiosError("Failed to fetch translations"))
 })
 

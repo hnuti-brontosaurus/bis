@@ -1,38 +1,17 @@
 import axios, { AxiosError } from "axios"
 import { useNotification } from "naive-ui"
-import { ConcurrencyManager } from "@/contrib/composables/concurrencyManager.js"
 import { getCurrentInstance } from "vue"
 import { createSharedComposable } from "@vueuse/core"
-import { me } from "@/composables/auth.js"
 
 let notification
 
 export const useSetup = createSharedComposable(() => {
   notification = useNotification()
 
-  // setup axios
-  axios.defaults.baseURL = "/api/cookbook"
-  ConcurrencyManager(axios, 5)
-
-  axios.interceptors.request.use(
-    config => {
-      if (me.value.user?.token)
-        config.headers["Authorization"] = `Token ${me.value.user.token}`
-      return config
-    },
-    error => {
-      return Promise.reject(error)
-    },
-  )
-
-  // setup error handler
+  // Surface uncaught component errors as notifications.
   const app = getCurrentInstance().appContext.app
-
   app.config.errorHandler = (error, instance, info) => {
-    console.error("Global error:", error)
-    console.log("Vue instance:", instance)
-    console.log("Error info:", info)
-
+    console.error("Global error:", error, instance, info)
     notification.error({ title: String(error), content: info })
   }
 })
@@ -58,10 +37,8 @@ export const handleError = (message, reason, obj = undefined) => {
     })
     params.description = reason.message
 
-    if (reason instanceof AxiosError) {
-      if (reason.response?.data) {
-        obj = reason.response.data
-      }
+    if (reason instanceof AxiosError && reason.response?.data) {
+      obj = reason.response.data
     }
   } else {
     obj = reason
