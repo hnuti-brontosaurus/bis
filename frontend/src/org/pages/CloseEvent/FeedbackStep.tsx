@@ -31,8 +31,10 @@ export const FeedbackStep: FC<Props> = ({
   <FormProvider {...methods}>
     <form>
       <FormSectionGroup startIndex={firstIndex}>
-        <FormSection header="zpětná vazba">
-          <FeedbackStepInfo feedbackRequired={feedbackRequired} />
+        <FormSection
+          header="e-mail po akci"
+          help="Po akci se automaticky posílá e-mail se zpětnou vazbou. Tady si můžete upravit jeho znění."
+        >
           <FormSubsection header="Text e-mailu">
             <FormInputError isBlock>
               <Controller
@@ -42,6 +44,9 @@ export const FeedbackStep: FC<Props> = ({
               />
             </FormInputError>
           </FormSubsection>
+        </FormSection>
+        <FormSection header="zpětná vazba">
+          <FeedbackStepInfo feedbackRequired={feedbackRequired} />
           <FormSubsection
             header="Úvod k dotazníku"
             required
