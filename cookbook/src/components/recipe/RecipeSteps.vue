@@ -1,22 +1,6 @@
 <script setup>
-import {
-  NCollapse,
-  NCollapseItem,
-  NCheckbox,
-  NPageHeader,
-  NButton,
-  NH2,
-  NGridItem,
-  NGrid,
-  NCard,
-  NDataTable,
-  useThemeVars,
-} from "naive-ui"
-import { rand } from "@vueuse/core"
-import { useConnector } from "@/composables/connector.js"
-import { useRoute } from "vue-router"
-import { computed, onMounted, ref } from "vue"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import { NCollapse, NCollapseItem, NCheckbox, NH2 } from "naive-ui"
+import { computed } from "vue"
 import { theme } from "@/composables/theme.js"
 
 const props = defineProps(["recipe"])

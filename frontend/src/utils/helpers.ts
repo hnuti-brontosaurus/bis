@@ -321,12 +321,12 @@ export const checkVipPropagationFilled = (
 ): boolean =>
   Boolean(
     vipPropagation &&
-      vipPropagation.goals_of_event &&
-      vipPropagation.program &&
-      vipPropagation.short_invitation_text &&
-      vipPropagation.goals_of_event.trim() &&
-      vipPropagation.program.trim() &&
-      vipPropagation.short_invitation_text.trim(),
+    vipPropagation.goals_of_event &&
+    vipPropagation.program &&
+    vipPropagation.short_invitation_text &&
+    vipPropagation.goals_of_event.trim() &&
+    vipPropagation.program.trim() &&
+    vipPropagation.short_invitation_text.trim(),
   )
 
 /**

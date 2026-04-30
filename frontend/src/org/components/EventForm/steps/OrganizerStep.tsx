@@ -165,9 +165,9 @@ export const OrganizerStep = ({
   const sectionStartIndex = isNotOnWeb
     ? 11
     : (isWeekendEvent || isCamp) &&
-      !(isWeekendEvent && isInternalSectionMeeting)
-    ? 22
-    : 20
+        !(isWeekendEvent && isInternalSectionMeeting)
+      ? 22
+      : 20
 
   return (
     <FormProvider {...methods}>

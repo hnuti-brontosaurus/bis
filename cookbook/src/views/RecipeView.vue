@@ -1,44 +1,28 @@
 <script setup>
 import {
   NFlex,
-  NH1,
   NTag,
   NList,
   NText,
-  NPageHeader,
   NButton,
   NListItem,
-  NButtonGroup,
-  NCard,
-  NInputGroup,
   NImage,
   NH2,
   NGridItem,
   NGrid,
-  NInputNumber,
-  NDataTable,
-  useThemeVars,
 } from "naive-ui"
-import { rand } from "@vueuse/core"
 import { useConnector } from "@/composables/connector.js"
 import { useRoute } from "vue-router"
-import { computed, onMounted } from "vue"
+import { computed } from "vue"
 import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
-import RecipeSteps from "@/components/recipe/RecipeSteps.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
-import { useRender } from "@/contrib/composables/render.js"
-import { faCartPlus } from "@fortawesome/free-solid-svg-icons"
 import AppPage from "@/components/app/AppPage.vue"
 
 const route = useRoute()
-const { icon } = useRender()
 
 const { recipes, refresh } = useConnector("recipes", false)
 refresh(route.params.id)
 const recipe = computed(() => recipes.value[route.params.id])
-
-const getIngredientTitle = ingredient =>
-  `${ingredient.amount * servings.value} ${ingredient.unit.name} ${ingredient.ingredient.name}`
 </script>
 
 <template>

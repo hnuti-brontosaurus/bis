@@ -1,19 +1,6 @@
 <script setup>
-import { NInputGroup, NSelect, NText, NInputNumber, NInput } from "naive-ui"
-import { useWindowSize } from "@vueuse/core"
-import { propertyRef, toValueLabel } from "@/contrib/composables/helpers.js"
-import {
-  chefs,
-  dataIdMapping,
-  dataOptions,
-  ingredients,
-  units,
-} from "@/composables/connector.js"
-import { _ } from "@/composables/translations.js"
 import { computed } from "vue"
 import GenericForm from "@/contrib/components/GenericForm.vue"
-
-const { width } = useWindowSize()
 
 const value = defineModel("value")
 defineProps(["index"])

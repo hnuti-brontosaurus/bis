@@ -1,5 +1,4 @@
-import { computed, onMounted, toRef, unref } from "vue"
-import { useMessage } from "naive-ui"
+import { computed } from "vue"
 import { toRefs, useLocalStorage, useThrottleFn } from "@vueuse/core"
 import axios from "axios"
 import { mapping, propertyRef } from "@/contrib/composables/helpers.js"
@@ -21,7 +20,6 @@ const storage = useLocalStorage(
 )
 
 export const useConnector = (name, auto_fetch = true) => {
-  const message = useMessage()
   const local_data = propertyRef(storage, name)
 
   const do_get = (name, url, ids = []) => {
@@ -69,8 +67,6 @@ export const useConnector = (name, auto_fetch = true) => {
     )
 
   const mapNewFiles = ([key, value]) => [key, value?.base64data || value]
-  const removeUploadedImages = ([key, value]) =>
-    !(value?.small && value?.medium && value?.large && value?.original)
 
   const normalizeNested = ([key, value]) => [
     key,

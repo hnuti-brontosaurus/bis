@@ -1,29 +1,5 @@
 <script setup>
-import {
-  NFlex,
-  NH1,
-  NForm,
-  NFormItem,
-  NTag,
-  NList,
-  NText,
-  NSelect,
-  NPageHeader,
-  NButton,
-  NListItem,
-  NButtonGroup,
-  NCard,
-  NInput,
-  NInputGroup,
-  NImage,
-  NH2,
-  NGridItem,
-  NGrid,
-  NInputNumber,
-  NDataTable,
-  useThemeVars,
-} from "naive-ui"
-import { rand, refDefault, toRefs } from "@vueuse/core"
+import { NForm, NButton } from "naive-ui"
 import {
   chefs,
   dataIdMapping,
@@ -35,23 +11,15 @@ import {
   useConnector,
 } from "@/composables/connector.js"
 import { useRoute, useRouter } from "vue-router"
-import { computed, onMounted, ref, toRef } from "vue"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
-import RecipeSteps from "@/components/recipe/RecipeSteps.vue"
-import { servings } from "@/composables/servings.js"
-import CollapseList from "@/contrib/components/CollapseList.vue"
-import { useRender } from "@/contrib/composables/render.js"
-import { faCartPlus } from "@fortawesome/free-solid-svg-icons"
+import { computed, ref } from "vue"
 import AppPage from "@/components/app/AppPage.vue"
 import { propertyRef } from "@/contrib/composables/helpers.js"
 import GenericForm from "@/contrib/components/GenericForm.vue"
-import { me } from "@/composables/auth.js"
 import { _ } from "@/composables/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 
 const route = useRoute()
 const router = useRouter()
-const { icon } = useRender()
 const form = ref()
 
 const recipe_id = route.params.id

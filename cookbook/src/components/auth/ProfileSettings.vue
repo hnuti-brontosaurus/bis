@@ -1,22 +1,7 @@
 <script setup>
-import {
-  NButton,
-  NButtonGroup,
-  NDropdown,
-  NFlex,
-  NForm,
-  NGrid,
-  NGridItem,
-  NImage,
-  useMessage,
-  useThemeVars,
-} from "naive-ui"
-import { useRender } from "@/contrib/composables/render.js"
-import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars } from "@fortawesome/free-solid-svg-icons"
+import { NForm, useMessage } from "naive-ui"
 import { useRouter } from "vue-router"
-import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
+import { _ } from "@/composables/translations.js"
 import { me, useAuth } from "@/composables/auth.js"
 import { computed, ref } from "vue"
 import { useDarkTheme } from "@/composables/settings.js"

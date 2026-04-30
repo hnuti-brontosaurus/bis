@@ -1,25 +1,9 @@
 <script setup>
-import {
-  NCollapse,
-  NCollapseItem,
-  NCheckbox,
-  NPageHeader,
-  NButton,
-  NH2,
-  NGridItem,
-  NGrid,
-  NCard,
-  NDataTable,
-  useThemeVars,
-} from "naive-ui"
-import { rand } from "@vueuse/core"
-import { useConnector } from "@/composables/connector.js"
-import { useRoute } from "vue-router"
-import { computed, onMounted, ref, useSlots } from "vue"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import { NCollapse, NCollapseItem, NCheckbox } from "naive-ui"
+import { useSlots } from "vue"
 import { isEmptyVNode } from "@/contrib/composables/helpers.js"
 
-const props = defineProps({
+defineProps({
   data: {},
   columns: {},
   getKey: { default: () => item => item.id },
@@ -30,7 +14,7 @@ const slots = useSlots()
 const hasNoContent = item => {
   try {
     return slots.default?.(item).every(isEmptyVNode)
-  } catch (e) {
+  } catch {
     return true
   }
 }

@@ -28,7 +28,7 @@ export function useQueries<
   D extends EndpointDefinitions,
 >(
   query: ApiEndpointQuery<Q, D>,
-  params: Parameters<typeof query['initiate']>[0][],
+  params: Parameters<(typeof query)['initiate']>[0][],
 ) {
   useEffect(() => {
     const results: QueryActionCreatorResult<any>[] = params.map(param =>

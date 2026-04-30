@@ -1,9 +1,7 @@
 <script setup>
-import { NInputGroup, NSelect, NText, NInputNumber, NButton, useDialog } from "naive-ui"
-import { useWindowSize } from "@vueuse/core"
-import { propertyRef, textFilter, toValueLabel } from "@/contrib/composables/helpers.js"
+import { NInputGroup, NSelect, NInputNumber, NButton, useDialog } from "naive-ui"
+import { propertyRef } from "@/contrib/composables/helpers.js"
 import {
-  chefs,
   dataIdMapping,
   dataOptions,
   ingredients,
@@ -14,7 +12,6 @@ import { _ } from "@/composables/translations.js"
 import { ref } from "vue"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 
-const { width } = useWindowSize()
 const connector = useConnector("ingredients", false)
 
 const value = defineModel("value")
@@ -39,7 +36,7 @@ const createIngredient = () => {
       loading.value = true
       try {
         value.value.ingredient = await connector.upsert({ name: input.value })
-      } catch (e) {
+      } catch {
         handleAxiosError(_.value.ingredients.upsert_error)
       } finally {
         loading.value = false

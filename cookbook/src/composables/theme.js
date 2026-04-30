@@ -1,14 +1,7 @@
-import { computed, ref, toRef } from "vue"
-import { darkTheme, lightTheme, useMessage } from "naive-ui"
-import {
-  createSharedComposable,
-  toRefs,
-  useLocalStorage,
-  useStorage,
-  useThrottleFn,
-} from "@vueuse/core"
-import axios from "axios"
-import { settings, useDarkTheme } from "@/composables/settings.js"
+import { computed } from "vue"
+import { darkTheme, lightTheme } from "naive-ui"
+
+import { useDarkTheme } from "@/composables/settings.js"
 
 const primary = "#239d46"
 const lighter = "#39a759"

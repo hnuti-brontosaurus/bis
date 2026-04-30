@@ -1,8 +1,6 @@
 <script setup>
 import {
   NFlex,
-  NH1,
-  NText,
   NButtonGroup,
   NPageHeader,
   NButton,
@@ -10,10 +8,8 @@ import {
   NGridItem,
   NCard,
 } from "naive-ui"
-import { rand } from "@vueuse/core"
 import { recipes, useConnector } from "@/composables/connector.js"
 import { useRouter } from "vue-router"
-import { onMounted } from "vue"
 import { _ } from "@/composables/translations.js"
 
 useConnector("recipes")

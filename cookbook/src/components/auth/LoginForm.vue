@@ -1,24 +1,10 @@
 <script setup>
-import { useRender } from "@/contrib/composables/render.js"
-import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars } from "@fortawesome/free-solid-svg-icons"
 import { useRoute, useRouter } from "vue-router"
-import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
-import { me, useAuth } from "@/composables/auth.js"
-import { computed, onMounted, ref, watch } from "vue"
-import {
-  NForm,
-  NFormItem,
-  NInput,
-  NH6,
-  NButton,
-  NGrid,
-  NFormItemGi,
-  NGridItem,
-} from "naive-ui"
+import { _ } from "@/composables/translations.js"
+import { me } from "@/composables/auth.js"
+import { computed, ref, watch } from "vue"
+import { NForm } from "naive-ui"
 import { watchDebounced } from "@vueuse/core"
-import { propertyRef } from "@/contrib/composables/helpers.js"
 import axios from "axios"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import AppPage from "@/components/app/AppPage.vue"

@@ -400,7 +400,7 @@ export const api = createApi({
                 ({
                   type: 'Location' as const,
                   id: location.id,
-                } as { type: 'Location'; id: 'LOCATION_LIST' | number }),
+                }) as { type: 'Location'; id: 'LOCATION_LIST' | number },
             )
           : []
         ).concat([{ type: 'Location' as const, id: 'LOCATION_LIST' }]),
@@ -453,7 +453,7 @@ export const api = createApi({
                 ({
                   type: 'Opportunity' as const,
                   id: opportunity.id,
-                } as { type: 'Opportunity'; id: 'OPPORTUNITY_LIST' | number }),
+                }) as { type: 'Opportunity'; id: 'OPPORTUNITY_LIST' | number },
             )
           : []
         ).concat([{ type: 'Opportunity' as const, id: 'OPPORTUNITY_LIST' }]),
@@ -928,7 +928,7 @@ export const api = createApi({
                 ({
                   type: 'Application' as const,
                   id: application.id,
-                } as { type: 'Application'; id: 'APPLICATION_LIST' | number }),
+                }) as { type: 'Application'; id: 'APPLICATION_LIST' | number },
             )
           : []
         ).concat([{ type: 'Application' as const, id: 'APPLICATION_LIST' }]),
@@ -998,7 +998,7 @@ export const api = createApi({
                 ({
                   type: 'Participant' as const,
                   id: participant.id,
-                } as { type: 'Participant'; id: 'PARTICIPANT_LIST' | number }),
+                }) as { type: 'Participant'; id: 'PARTICIPANT_LIST' | number },
             )
           : []
         ).concat([{ type: 'Participant' as const, id: 'PARTICIPANT_LIST' }]),

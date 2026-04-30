@@ -1,13 +1,6 @@
 <script setup>
 import { RouterView } from "vue-router"
-import {
-  NLayout,
-  NLayoutContent,
-  NLayoutFooter,
-  NLayoutHeader,
-  NFlex,
-  useThemeVars,
-} from "naive-ui"
+import { NLayout, NLayoutContent, NLayoutFooter, NLayoutHeader, NFlex } from "naive-ui"
 import AppHeader from "@/components/app/AppHeader.vue"
 import { theme } from "@/composables/theme.js"
 </script>

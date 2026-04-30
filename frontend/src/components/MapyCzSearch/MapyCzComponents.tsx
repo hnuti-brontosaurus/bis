@@ -32,13 +32,12 @@ type CreateOptionLabelType = <Option>(
 
 export const createOptionLabel: CreateOptionLabelType =
   (getName, getSpecific) =>
-  (option, { context }) =>
-    (
-      <OptionLabel
-        name={getName(option)}
-        specific={context === 'menu' ? getSpecific(option) : undefined}
-      />
-    )
+  (option, { context }) => (
+    <OptionLabel
+      name={getName(option)}
+      specific={context === 'menu' ? getSpecific(option) : undefined}
+    />
+  )
 
 export const loadingMessage = () => <>Hledám&hellip;</>
 

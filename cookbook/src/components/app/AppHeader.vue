@@ -7,14 +7,13 @@ import {
   NGrid,
   NGridItem,
   NImage,
-  useThemeVars,
 } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
 import { faBars } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "vue-router"
 import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
+import { translatedKey } from "@/composables/translations.js"
 import { me } from "@/composables/auth.js"
 import { computed } from "vue"
 

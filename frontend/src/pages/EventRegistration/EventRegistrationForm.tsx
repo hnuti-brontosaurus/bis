@@ -85,7 +85,7 @@ const initialData2form = (
           question: question.id,
           answer: '',
           is_required: question.is_required,
-        } as AnswerPayload),
+        }) as AnswerPayload,
     ),
   }
 

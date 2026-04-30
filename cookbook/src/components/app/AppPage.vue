@@ -1,10 +1,9 @@
 <script setup>
-import { NButton, NH1, NFlex, useMessage, NButtonGroup } from "naive-ui"
+import { NButton, NH1, NFlex, NButtonGroup } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
-import { faChevronLeft, faGear } from "@fortawesome/free-solid-svg-icons"
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons"
 
 const { icon } = useRender()
-const message = useMessage()
 
 defineProps(["title"])
 </script>

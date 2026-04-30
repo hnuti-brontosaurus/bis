@@ -41,7 +41,10 @@
           height: calc(120px + 0.6rem);
         }
 
-        transition: width 0.2s, height 0.2s, margin 0.2s;
+        transition:
+          width 0.2s,
+          height 0.2s,
+          margin 0.2s;
       }
     }
 

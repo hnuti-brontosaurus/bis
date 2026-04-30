@@ -36,22 +36,6 @@ export function textFilter(value, array, get_choices = item => [item]) {
 
 export const today = () => new Date().toISOString().split("T")[0]
 
-const getIconColumn = (key, fn, row, header) => {
-  return {
-    key,
-    render: row,
-    fixed: "left",
-    width: 31,
-    sorter: !!header,
-    renderSorter: header ? function () {} : undefined,
-    title: header,
-    cellProps: rowData => ({
-      style: { cursor: "pointer", textAlign: "center" },
-      onClick: () => fn(rowData),
-    }),
-  }
-}
-
 export const isEmptyVNode = vnode => {
   if (!isVNode(vnode)) return true
 

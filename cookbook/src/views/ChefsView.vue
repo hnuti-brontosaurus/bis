@@ -1,18 +1,8 @@
 <script setup>
-import {
-  NFlex,
-  NH1,
-  NText,
-  NPageHeader,
-  NButton,
-  NGrid,
-  NGridItem,
-  NCard,
-} from "naive-ui"
-import { rand } from "@vueuse/core"
+import { NFlex, NPageHeader, NGrid, NGridItem, NCard } from "naive-ui"
 import { useConnector } from "@/composables/connector.js"
 
-const { chefs, refresh } = useConnector("chefs")
+const { chefs } = useConnector("chefs")
 </script>
 
 <template>

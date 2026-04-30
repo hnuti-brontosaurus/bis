@@ -20,7 +20,7 @@ import {
   NH6,
   NButtonGroup,
 } from "naive-ui"
-import { computed, isRef, onMounted, ref, toValue, watch } from "vue"
+import { computed, isRef, onMounted, toValue, watch } from "vue"
 
 import { textFilter, toValueLabel } from "@/contrib/composables/helpers.js"
 import WithHint from "@/contrib/components/WithHint.vue"
@@ -65,7 +65,7 @@ const getRule = input => {
 
           reader.onload = () => {
             const result = reader.result
-            const [prefix, base64Data] = result.split(",")
+            const [, base64Data] = result.split(",")
 
             value.base64data = `data:${value.type};filename=${value.name};base64,${base64Data}`
             resolve()

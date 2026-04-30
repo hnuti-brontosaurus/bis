@@ -1,31 +1,14 @@
 <script setup>
 import {
   NFlex,
-  NH1,
   NText,
-  NPageHeader,
   NButton,
   NH2,
-  NH3,
-  NH4,
-  NH5,
-  NH6,
-  NCollapse,
-  NCollapseItem,
-  NGridItem,
-  NGrid,
-  NCard,
   NDataTable,
-  useThemeVars,
   NInputNumber,
   NInputGroup,
-  NCheckbox,
 } from "naive-ui"
-import { rand } from "@vueuse/core"
-import { useConnector } from "@/composables/connector.js"
-import { useRoute } from "vue-router"
-import { computed, h, onMounted, ref } from "vue"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import { computed, h, ref } from "vue"
 import { servings } from "@/composables/servings.js"
 import {
   faCartPlus,
