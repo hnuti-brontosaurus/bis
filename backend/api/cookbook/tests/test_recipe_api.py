@@ -1,11 +1,10 @@
 """Round-trip and write-shape tests for the cookbook recipe API.
 
-The base ModelSerializer in api/frontend/serializers.py replaces nested
-serializers with PrimaryKeyRelatedField on writes via get_fields(). That
-means a GET response returns nested objects (e.g. {"chef": {...}}) but a
-PATCH wants {"chef": <id>}, not the nested object.
+Field shape rule: non-owned FK / M2M relations are exposed only as `_id`
+on both read and write. Owned children (recipe ingredients/steps/tips)
+nest fully on both sides.
 
-These tests pin down that contract end-to-end.
+Round-trip becomes trivial: GET -> data; PATCH(data) -> 200.
 """
 
 import pytest
@@ -16,17 +15,27 @@ def test_recipe_get(api_client, recipe):
     response = api_client.get(f"/api/cookbook/recipes/{recipe.id}/")
     assert response.status_code == 200, response.data
     body = response.data
-    # FK fields come back as nested objects.
-    assert isinstance(body["chef"], dict)
-    assert body["chef"]["id"] == recipe.chef_id
-    assert isinstance(body["difficulty"], dict)
-    assert isinstance(body["required_time"], dict)
-    assert isinstance(body["tags"], list)
-    assert all(isinstance(t, dict) for t in body["tags"])
+    # FK fields come back as ids only.
+    assert body["chef_id"] == recipe.chef_id
+    assert body["difficulty_id"] == recipe.difficulty_id
+    assert body["required_time_id"] == recipe.required_time_id
+    assert isinstance(body["tag_ids"], list)
+    assert all(isinstance(t, int) for t in body["tag_ids"])
+    assert "chef" not in body
+    assert "difficulty" not in body
+    assert "required_time" not in body
+    assert "tags" not in body
     # Owned children come back as nested arrays of objects.
     assert isinstance(body["ingredients"], list)
     assert isinstance(body["steps"], list)
     assert isinstance(body["tips"], list)
+    # Through rows also flatten FKs to _id.
+    if body["ingredients"]:
+        ing = body["ingredients"][0]
+        assert "ingredient_id" in ing
+        assert "unit_id" in ing
+        assert "ingredient" not in ing
+        assert "unit" not in ing
 
 
 @pytest.mark.django_db
@@ -37,7 +46,7 @@ def test_recipe_patch_with_fk_id(api_client, recipe, difficulty):
     )
     response = api_client.patch(
         f"/api/cookbook/recipes/{recipe.id}/",
-        {"difficulty": new_difficulty.id},
+        {"difficulty_id": new_difficulty.id},
         format="json",
     )
     assert response.status_code == 200, response.data
@@ -47,11 +56,7 @@ def test_recipe_patch_with_fk_id(api_client, recipe, difficulty):
 
 @pytest.mark.django_db
 def test_recipe_patch_returns_read_shape(api_client, recipe, difficulty):
-    """After Phase 3 refactor, a PATCH response keeps the nested read shape
-    (chef/difficulty/etc as objects). Currently the base ModelSerializer
-    swaps fields to PrimaryKeyRelatedField on writes and the response thus
-    returns ints instead of objects. This test pins the desired contract.
-    """
+    """A PATCH response keeps the read shape — _id fields only."""
     new_difficulty = difficulty.__class__.objects.create(
         name="hard", slug="hard", order=2
     )
@@ -61,10 +66,9 @@ def test_recipe_patch_returns_read_shape(api_client, recipe, difficulty):
         format="json",
     )
     assert response.status_code == 200, response.data
-    assert isinstance(response.data["difficulty"], dict)
-    assert response.data["difficulty"]["id"] == new_difficulty.id
-    assert isinstance(response.data["chef"], dict)
-    assert isinstance(response.data["required_time"], dict)
+    assert response.data["difficulty_id"] == new_difficulty.id
+    assert isinstance(response.data["chef_id"], int)
+    assert isinstance(response.data["required_time_id"], int)
 
 
 @pytest.mark.django_db
@@ -87,7 +91,7 @@ def test_recipe_patch_tags_with_ids(api_client, recipe, tag):
     )
     response = api_client.patch(
         f"/api/cookbook/recipes/{recipe.id}/",
-        {"tags": [tag.id, other.id]},
+        {"tag_ids": [tag.id, other.id]},
         format="json",
     )
     assert response.status_code == 200, response.data
@@ -105,16 +109,16 @@ def test_recipe_nested_ingredient_roundtrip(api_client, recipe, ingredient, unit
             "ingredients": [
                 {
                     "order": 0,
-                    "ingredient": ingredient.id,
-                    "unit": unit.id,
+                    "ingredient_id": ingredient.id,
+                    "unit_id": unit.id,
                     "amount": 2.0,
                     "is_required": True,
                     "comment": "first",
                 },
                 {
                     "order": 1,
-                    "ingredient": other.id,
-                    "unit": unit.id,
+                    "ingredient_id": other.id,
+                    "unit_id": unit.id,
                     "amount": 3.0,
                     "is_required": False,
                     "comment": "",
@@ -156,6 +160,20 @@ def test_recipe_nested_steps_and_tips_roundtrip(api_client, recipe):
         "Second",
     ]
     assert set(recipe.tips.values_list("name", flat=True)) == {"Tip A", "Tip B"}
+
+
+@pytest.mark.django_db
+def test_recipe_get_then_patch_roundtrip(api_client, recipe):
+    """The full contract in one shot: GET payload -> PATCH it back -> 200."""
+    response = api_client.get(f"/api/cookbook/recipes/{recipe.id}/")
+    assert response.status_code == 200, response.data
+    body = response.data
+    # Strip the photo dict (write side wants either no key or a fresh upload).
+    body.pop("photo", None)
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/", body, format="json"
+    )
+    assert response.status_code == 200, response.data
 
 
 @pytest.mark.django_db
