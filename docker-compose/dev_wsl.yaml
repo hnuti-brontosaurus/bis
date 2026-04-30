@@ -1,9 +1,0 @@
-services:
-  nginx:
-    extra_hosts:
-      - host.docker.internal:host-gateway
-  postgres:
-    volumes:
-      - postgresqldata:/var/lib/postgresql/data
-volumes:
-  postgresqldata:

@@ -4,25 +4,9 @@ from os.path import abspath, dirname, join
 from pathlib import Path
 
 import sentry_sdk
-import yaml
 from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
-
-
-def load_environment_variables_from_docker_compose_file():
-    try:
-        with open(join(dirname(BASE_DIR), "docker-compose/.dev.yaml")) as stream:
-            content = yaml.safe_load(stream)
-            for key, value in content["services"]["backend"]["environment"].items():
-                if key not in environ:
-                    environ[key] = str(value)
-
-    except FileNotFoundError:
-        pass  # Expected when using docker-compose
-
-
-load_environment_variables_from_docker_compose_file()
 
 SECRET_KEY = environ["SECRET_KEY"]
 

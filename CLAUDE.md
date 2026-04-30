@@ -17,9 +17,9 @@ BIS (Brontosaurus Information System) is a full-stack web application for managi
 ### Development
 ```bash
 make build            # Build all Docker images (run first)
-make dev              # Start all services with live-reload (auto-detects OS)
+make dev              # Start all services with live-reload
 make backend          # Run backend only
-make frontend         # Run frontend only
+make frontend         # Run frontend + cookbook only
 make clean            # Stop all containers and remove orphans
 ```
 
@@ -40,10 +40,7 @@ docker exec -it bis-backend python manage.py reset      # Import old database
 docker exec -it bis-backend python manage.py testing_db # Create test database
 ```
 
-**IMPORTANT:** Always pass `-u $(id -u):$(id -g)` to `docker exec`/`docker run` so any files written (migrations, fixtures, etc.) are owned by your host user and editable without `sudo chown`:
-```bash
-docker exec -u $(id -u):$(id -g) bis-backend python manage.py makemigrations
-```
+Containers run as the host UID/GID (`user: ${UID}:${GID}` in `docker-compose.yaml`, exported by the Makefile), so files written from inside (migrations, fixtures, build output) are owned by your host user. No `-u` flag or `sudo chown` needed.
 
 ### Frontend-specific
 ```bash
