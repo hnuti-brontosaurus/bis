@@ -7,7 +7,10 @@ SHELL := bash
 export UID := $(shell id -u)
 export GID := $(shell id -g)
 
-CLEANUP := docker compose down -t 0 --remove-orphans
+# `--profile dev` makes `down` see profiled services too (backend/frontend/cookbook),
+# so they're cleaned up along with nginx/postgres. Without it compose only acts on
+# services that have no profile, leaving stale profiled containers behind.
+CLEANUP := docker compose --profile dev down -t 0 --remove-orphans
 TEST_FILES := -f docker-compose.yaml -f docker-compose.override.yaml -f docker-compose.test.yaml
 
 .PHONY: build dev backend frontend clean test test_backend test_frontend test_e2e \
