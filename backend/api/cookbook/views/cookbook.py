@@ -10,6 +10,7 @@ from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
+from cookbook.services.ingredient_enrichment import enrich_ingredient
 from rest_framework.viewsets import ModelViewSet
 
 
@@ -76,3 +77,9 @@ class IngredientViewSet(ChangeViewSetMixin, ModelViewSet):
     search_fields = ["name"]
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        instance = serializer.instance
+        if enrich_ingredient(instance):
+            instance.save()
