@@ -35,6 +35,16 @@ export const FeedbackStep: FC<Props> = ({
           header="e-mail po akci"
           help="Po akci se automaticky posílá e-mail se zpětnou vazbou. Tady si můžete upravit jeho znění."
         >
+          <FormSubsection header="Předmět e-mailu">
+            <FormInputError isBlock>
+              <FullSizeElement>
+                <input
+                  type="text"
+                  {...methods.register('feedback_form.email_subject')}
+                />
+              </FullSizeElement>
+            </FormInputError>
+          </FormSubsection>
           <FormSubsection header="Text e-mailu">
             <FormInputError isBlock>
               <Controller
