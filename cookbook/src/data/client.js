@@ -15,12 +15,25 @@ export { client }
 
 /**
  * Walk a paginated DRF list endpoint, returning all results.
+ *
+ * DRF returns absolute `next` URLs built from the request's Host header,
+ * which can point to a different origin/port than the SPA (matters under
+ * cypress where the test stack runs on a non-default port and the dev
+ * stack might also be up). Strip scheme+host AND the axios baseURL prefix
+ * so axios re-prepends the right one.
  */
+const baseURL = client.defaults.baseURL ?? ""
+const toRelative = url => {
+  const noOrigin = url.replace(/^https?:\/\/[^/]+/, "")
+  return baseURL && noOrigin.startsWith(baseURL)
+    ? noOrigin.slice(baseURL.length)
+    : noOrigin
+}
 export const fetchAll = async url => {
   const out = []
   let next = url
   while (next) {
-    const { data } = await client.get(next)
+    const { data } = await client.get(toRelative(next))
     if (!Array.isArray(data.results)) return [data]
     out.push(...data.results)
     next = data.next
@@ -48,3 +61,13 @@ export const upsert = async (basePath, payload) => {
   const { data } = await client[method](url, stripFileWrappers(payload))
   return data
 }
+
+/**
+ * Build a default `{ list, get, save }` namespace for an entity that lives
+ * at `${path}/`. Saves PATCH for existing rows, POST for new ones.
+ */
+export const crudApi = path => ({
+  list: () => fetchAll(`${path}/`),
+  get: id => client.get(`${path}/${id}/`).then(r => r.data),
+  save: payload => upsert(path, payload),
+})

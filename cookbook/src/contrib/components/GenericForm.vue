@@ -183,7 +183,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
     <n-form-item-gi
       v-for="input in shownInputs"
       :key="input.key"
-      :path="`${prefix}${input.key}`"
+      :path="`${prefix}${input.path ?? input.key}`"
       :rule="getRule(input)"
       :show-feedback="!input.hide_feedback"
       :show-label="!!input.label"

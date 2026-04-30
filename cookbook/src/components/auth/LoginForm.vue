@@ -5,7 +5,7 @@ import { me } from "@/composables/auth.js"
 import { computed, ref, watch } from "vue"
 import { NForm } from "naive-ui"
 import { watchDebounced } from "@vueuse/core"
-import axios from "axios"
+import { authApi } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import AppPage from "@/components/app/AppPage.vue"
 import { useDarkTheme } from "@/composables/settings.js"
@@ -40,13 +40,9 @@ watchDebounced(
     controller?.abort()
     controller = new AbortController()
     try {
-      const response = await axios.post(
-        "/auth/check_email/",
-        { email: user.value.email },
-        { signal: controller.signal },
-      )
-
-      emailExists.value = response.data
+      emailExists.value = await authApi.checkEmail(user.value.email, {
+        signal: controller.signal,
+      })
     } catch (e) {
       if (e.status === 400) {
         emailProps.value.feedback = _.value.login.bad_email
@@ -66,8 +62,7 @@ const register = async () => {
   try {
     await form.value.validate()
     const { response } = await hcaptcha.value.executeAsync()
-    const { data } = await axios.post("/auth/register/", { ...user.value, response })
-    me.value = data
+    me.value = await authApi.register({ ...user.value, response })
   } catch (e) {
     handleAxiosError(_.value.login.registration_error)(e)
   } finally {
@@ -79,8 +74,7 @@ const login = async () => {
   registerLoading.value = true
   try {
     await form.value.validate()
-    const { data } = await axios.post("/auth/login/", { ...user.value })
-    me.value = data
+    me.value = await authApi.login({ ...user.value })
     if (me.value.is_chef && route.query.next) router.push(route.query.next)
   } catch (e) {
     handleAxiosError(_.value.login.login_error)(e)
@@ -120,7 +114,7 @@ const inputs = computed(() => {
               trigger: "change",
               validator: async (_, value) => {
                 try {
-                  await axios.post("/auth/validate_password/", { password: value })
+                  await authApi.validatePassword(value)
                   return true
                 } catch (e) {
                   throw new Error(e.response.data.join(" "), { cause: e })

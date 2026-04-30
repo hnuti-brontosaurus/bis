@@ -11,22 +11,40 @@ import {
   NGridItem,
   NGrid,
 } from "naive-ui"
-import { useConnector } from "@/composables/connector.js"
+import { computed, onMounted, watch } from "vue"
 import { useRoute } from "vue-router"
-import { computed } from "vue"
+import { useRecipesStore, useRecipe } from "@/data/recipes.js"
+import { useChefsStore } from "@/data/chefs.js"
+import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
+import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
+import { useRecipeTagsStore } from "@/data/recipeTags.js"
+import { useIngredientsStore } from "@/data/ingredients.js"
+import { useUnitsStore } from "@/data/units.js"
 import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 
 const route = useRoute()
+const recipesStore = useRecipesStore()
 
-const { recipes, refresh } = useConnector("recipes", false)
-refresh(route.params.id)
-const recipe = computed(() => recipes.value[route.params.id])
+// Reference data — needed to resolve `_id` fields into objects.
+useChefsStore().fetchAll()
+useRecipeDifficultiesStore().fetchAll()
+useRecipeRequiredTimesStore().fetchAll()
+useRecipeTagsStore().fetchAll()
+useIngredientsStore().fetchAll()
+useUnitsStore().fetchAll()
+
+const ensureLoaded = id => recipesStore.fetchOne(id)
+onMounted(() => ensureLoaded(route.params.id))
+watch(() => route.params.id, ensureLoaded)
+
+const recipeId = computed(() => route.params.id)
+const recipe = useRecipe(recipeId)
 </script>
 
 <template>
-  <AppPage vertical :title="recipe.name">
+  <AppPage v-if="recipe" vertical :title="recipe.name">
     <template #actions>
       <n-button
         @click="$router.push({ name: 'edit_recipe', params: { id: $route.params.id } })"
@@ -38,10 +56,10 @@ const recipe = computed(() => recipes.value[route.params.id])
       <n-flex>
         <n-image :src="recipe.photo.large" :alt="recipe.name" height="300" />
         <n-list>
-          <n-list-item>
+          <n-list-item v-if="recipe.chef">
             <template #prefix>Autorstvo:</template>{{ recipe.chef.name }}
           </n-list-item>
-          <n-list-item>
+          <n-list-item v-if="recipe.difficulty">
             <template #prefix>Obtížnost:</template>{{ recipe.difficulty.name }}
           </n-list-item>
           <n-list-item>

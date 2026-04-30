@@ -1,152 +1,161 @@
 <script setup>
 import { NForm, NButton } from "naive-ui"
-import {
-  chefs,
-  dataIdMapping,
-  dataOptions,
-  recipe_difficulties,
-  recipe_required_times,
-  recipe_tags,
-  recipes,
-  useConnector,
-} from "@/composables/connector.js"
+import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { computed, ref } from "vue"
 import AppPage from "@/components/app/AppPage.vue"
 import { propertyRef } from "@/contrib/composables/helpers.js"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import { _ } from "@/composables/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { useRecipesStore } from "@/data/recipes.js"
+import { useChefsStore } from "@/data/chefs.js"
+import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
+import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
+import { useRecipeTagsStore } from "@/data/recipeTags.js"
+import { useUnitsStore } from "@/data/units.js"
+import { useIngredientsStore } from "@/data/ingredients.js"
+import { storeOptions } from "@/data/helpers.js"
 
 const route = useRoute()
 const router = useRouter()
 const form = ref()
 
+const recipesStore = useRecipesStore()
+const chefsStore = useChefsStore()
+const difficultiesStore = useRecipeDifficultiesStore()
+const requiredTimesStore = useRecipeRequiredTimesStore()
+const tagsStore = useRecipeTagsStore()
+useUnitsStore().fetchAll()
+useIngredientsStore().fetchAll()
+
 const recipe_id = route.params.id
 
-if (recipe_id) useConnector("recipes", route.params.id)
-useConnector("recipe_difficulties")
-useConnector("recipe_required_times")
-useConnector("recipe_tags")
-useConnector("chefs")
-useConnector("units")
-useConnector("ingredients")
-const connector = useConnector("recipes", false)
+// A local working copy of the recipe (shallow ref). Initialised after
+// fetchOne settles for edit mode, or pre-populated for create mode.
+const recipe = ref(
+  recipe_id ? null : { tag_ids: [], ingredients: [], steps: [], tips: [] },
+)
 
-const recipe = recipe_id
-  ? propertyRef(recipes, recipe_id)
-  : ref({
-      tags: [],
-    })
+onMounted(async () => {
+  await Promise.all([
+    chefsStore.fetchAll(),
+    difficultiesStore.fetchAll(),
+    requiredTimesStore.fetchAll(),
+    tagsStore.fetchAll(),
+  ])
+  if (recipe_id) {
+    const fresh = await recipesStore.fetchOne(recipe_id)
+    // Local working copy — deep-cloned so edits don't mutate cache directly.
+    recipe.value = JSON.parse(JSON.stringify(fresh))
+  }
+})
 
-const tagIds = computed(() => recipe.value.tags.map(_ => _.id))
+const tagIds = computed(() => recipe.value?.tag_ids ?? [])
 const tagGroups = computed(() => [
   ...new Set(
-    Object.values(recipe_tags.value)
+    tagsStore.list
+      .slice()
       .sort((a, b) => a.order - b.order)
       .map(tag => tag.group),
   ),
 ])
-const inputs = computed(() => [
-  { type: "text", key: "name", required: true },
-  {
-    type: "select",
-    key: "chef",
-    required: "object",
-    options: dataOptions(chefs),
-    value: dataIdMapping(chefs, propertyRef(recipe, "chef")),
-  },
-  {
-    type: "select",
-    key: "difficulty",
-    required: "object",
-    options: dataOptions(recipe_difficulties),
-    value: dataIdMapping(recipe_difficulties, propertyRef(recipe, "difficulty")),
-  },
-  {
-    type: "select",
-    key: "required_time",
-    required: "object",
-    options: dataOptions(recipe_required_times),
-    value: dataIdMapping(recipe_required_times, propertyRef(recipe, "required_time")),
-  },
-  {
-    type: "image",
-    key: "photo",
-    required: true,
-  },
-  {
-    type: "checkboxes",
-    checkboxes: [
-      {
-        key: "is_public",
-        label: _.value.Recipe.is_public,
-      },
-    ],
-  },
-  ...tagGroups.value.map(group => ({
-    type: "checkboxes",
-    vertical: true,
-    title: group,
-    checkboxes: Object.values(recipe_tags.value)
-      .filter(tag => tag.group === group)
-      .map(tag => ({
-        key: tag.id,
-        label: tag.name,
-        value: computed({
-          get: () => tagIds.value.includes(tag.id),
-          set: value => {
-            if (value && !tagIds.value.includes(tag.id)) recipe.value.tags.push(tag)
-            if (!value)
-              recipe.value.tags = recipe.value.tags.filter(_ => _.id !== tag.id)
-          },
-        }),
-      })),
-  })),
-  {
-    type: "text",
-    key: "intro",
-    required: true,
-    new_line: true,
-    extra: { type: "textarea" },
-  },
-  {
-    type: "text",
-    key: "sources",
-    required: true,
-    extra: { type: "textarea" },
-  },
-  {
-    title: _.value.Recipe.ingredients,
-    hide_label: true,
-    type: "section",
-    key: "ingredients",
-    span: 2,
-  },
-  {
-    title: _.value.Recipe.steps,
-    hide_label: true,
-    type: "section",
-    key: "steps",
-    span: 2,
-  },
-  {
-    title: _.value.Recipe.tips,
-    hide_label: true,
-    type: "section",
-    key: "tips",
-    span: 2,
-  },
-])
+
+const inputs = computed(() => {
+  if (!recipe.value) return []
+  return [
+    { type: "text", key: "name", required: true },
+    {
+      type: "select",
+      key: "chef",
+      path: "chef_id",
+      required: "number",
+      options: storeOptions(chefsStore).value,
+      value: propertyRef(recipe, "chef_id"),
+    },
+    {
+      type: "select",
+      key: "difficulty",
+      path: "difficulty_id",
+      required: "number",
+      options: storeOptions(difficultiesStore).value,
+      value: propertyRef(recipe, "difficulty_id"),
+    },
+    {
+      type: "select",
+      key: "required_time",
+      path: "required_time_id",
+      required: "number",
+      options: storeOptions(requiredTimesStore).value,
+      value: propertyRef(recipe, "required_time_id"),
+    },
+    { type: "image", key: "photo", required: true },
+    {
+      type: "checkboxes",
+      checkboxes: [{ key: "is_public", label: _.value.Recipe.is_public }],
+    },
+    ...tagGroups.value.map(group => ({
+      type: "checkboxes",
+      vertical: true,
+      title: group,
+      checkboxes: tagsStore.list
+        .filter(tag => tag.group === group)
+        .map(tag => ({
+          key: tag.id,
+          label: tag.name,
+          value: computed({
+            get: () => tagIds.value.includes(tag.id),
+            set: value => {
+              if (value && !tagIds.value.includes(tag.id))
+                recipe.value.tag_ids.push(tag.id)
+              if (!value)
+                recipe.value.tag_ids = recipe.value.tag_ids.filter(id => id !== tag.id)
+            },
+          }),
+        })),
+    })),
+    {
+      type: "text",
+      key: "intro",
+      required: true,
+      new_line: true,
+      extra: { type: "textarea" },
+    },
+    {
+      type: "text",
+      key: "sources",
+      required: true,
+      extra: { type: "textarea" },
+    },
+    {
+      title: _.value.Recipe.ingredients,
+      hide_label: true,
+      type: "section",
+      key: "ingredients",
+      span: 2,
+    },
+    {
+      title: _.value.Recipe.steps,
+      hide_label: true,
+      type: "section",
+      key: "steps",
+      span: 2,
+    },
+    {
+      title: _.value.Recipe.tips,
+      hide_label: true,
+      type: "section",
+      key: "tips",
+      span: 2,
+    },
+  ]
+})
 
 const save = async () => {
   try {
     await form.value.validate()
-    const response = await connector.upsert(recipe.value)
-    await connector.refresh(response.id)
-    router.push({ name: "recipe", params: { id: response.id } })
+    const saved = await recipesStore.save(recipe.value)
+    router.push({ name: "recipe", params: { id: saved.id } })
   } catch (e) {
-    console.log(e)
     handleAxiosError(_.value.edit_recipe.save_error)(e)
   }
 }
@@ -157,7 +166,7 @@ const save = async () => {
     <template #actions>
       <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
     </template>
-    <n-form ref="form" :model="recipe" @keydown.enter="save">
+    <n-form v-if="recipe" ref="form" :model="recipe" @keydown.enter="save">
       <GenericForm v-model:data="recipe" :inputs="inputs" group="Recipe" />
     </n-form>
   </AppPage>

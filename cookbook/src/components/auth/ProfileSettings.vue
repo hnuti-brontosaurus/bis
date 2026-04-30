@@ -8,12 +8,13 @@ import { useDarkTheme } from "@/composables/settings.js"
 import AppPage from "@/components/app/AppPage.vue"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
-import { useConnector } from "@/composables/connector.js"
+import { useChefsStore } from "@/data/chefs.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+
 const router = useRouter()
 const form = ref()
 const auth = useAuth()
-const chefs = useConnector("chefs", 0)
+const chefsStore = useChefsStore()
 const loading = ref(false)
 const message = useMessage()
 const inputs = computed(() => [
@@ -35,7 +36,7 @@ const save = async () => {
   loading.value = true
   try {
     await form.value.validate()
-    await chefs.upsert(me.value.chef)
+    await chefsStore.save(me.value.chef)
     await auth.whoami()
     message.info("Uloženo")
     router.back()

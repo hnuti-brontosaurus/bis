@@ -8,15 +8,24 @@ import {
   NGridItem,
   NCard,
 } from "naive-ui"
-import { recipes, useConnector } from "@/composables/connector.js"
+import { computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
+import { useRecipesStore } from "@/data/recipes.js"
+import { useChefsStore } from "@/data/chefs.js"
 import { _ } from "@/composables/translations.js"
 
-useConnector("recipes")
+const recipesStore = useRecipesStore()
+const chefsStore = useChefsStore()
+onMounted(() => {
+  recipesStore.fetchAll()
+  chefsStore.fetchAll()
+})
 
 const router = useRouter()
 
-const onClick = value => router.push({ name: "recipe", params: { id: value } })
+const onClick = id => router.push({ name: "recipe", params: { id } })
+
+const chefNameFor = chef_id => computed(() => chefsStore.byId[chef_id]?.name ?? "")
 </script>
 
 <template>
@@ -33,14 +42,14 @@ const onClick = value => router.push({ name: "recipe", params: { id: value } })
     </n-page-header>
 
     <n-grid cols="1 s:2 m:3" x-gap="32" y-gap="32" responsive="screen">
-      <n-grid-item v-for="(recipe, id) in recipes" :key="id">
-        <router-link :to="{ name: 'recipe', params: { id } }" custom>
+      <n-grid-item v-for="recipe in recipesStore.list" :key="recipe.id">
+        <router-link :to="{ name: 'recipe', params: { id: recipe.id } }" custom>
           <n-card
             :title="recipe.name"
             embedded
             hoverable
             style="cursor: pointer"
-            @click="onClick(id)"
+            @click="onClick(recipe.id)"
           >
             <template #cover>
               <img
@@ -49,7 +58,7 @@ const onClick = value => router.push({ name: "recipe", params: { id: value } })
                 style="object-fit: cover; height: 200px"
               />
             </template>
-            {{ recipe.chef.name }}
+            {{ chefNameFor(recipe.chef_id).value }}
           </n-card>
         </router-link>
       </n-grid-item>
