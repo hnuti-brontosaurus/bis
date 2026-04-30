@@ -1,17 +1,78 @@
-services:
-  backend:
-    environment:
-      TEST: 1
-      ALLOWED_HOSTS: '*'
+# Isolated test stack — runs alongside `make dev` without colliding.
+#
+# Use with `docker compose -p bis-test -f docker-compose.yaml \
+# -f docker-compose.test.yaml ...`. The project name `bis-test` keeps
+# container/network names distinct from the dev stack.
+#
+# Services bind to no host ports (except a single test-only nginx port,
+# 8090, used by host-side cypress when explicitly opted in via the
+# `cypress` profile). The DB runs on its own named volume so dev data
+# is not touched.
 
-  frontend:
-    environment:
-      VITE_CYPRESS: 'true'
+services:
+  nginx:
+    container_name: bis-test-nginx
+    ports: !override
+      - 8090:80
+    volumes: !override
+      - ./nginx/test.conf:/etc/nginx/templates/default.conf.template
+      - ./logs:/app/logs
+      - ./backend/media:/app/media
 
   postgres:
-    volumes:
+    container_name: bis-test-postgres
+    ports: !override []
+    volumes: !override
       - postgresqldata_test:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DATABASE: bis_test
+      POSTGRES_DB: bis_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+
+  backend:
+    image: bis-backend:latest
+    container_name: bis-test-backend
+    ports: !override []
+    restart: "no"
+    # Idle entrypoint — the make targets run migrate + testing_db + dev
+    # server explicitly so we can sequence them safely.
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      DB_NAME: bis_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: 123
+      GROQ_API_KEY: ""
+      TEST: 1
+      ALLOWED_HOSTS: "*"
+      DEBUG: 1
+
+  frontend:
+    image: bis-frontend:latest
+    container_name: bis-test-frontend
+    restart: "no"
+    ports: !override []
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      HOST: 0.0.0.0
+      DEBUG: 1
+      NODE_ENV: development
+      VITE_CYPRESS: "true"
+    profiles:
+      - frontend
+      - dev
+
+  cookbook:
+    image: bis-cookbook:latest
+    container_name: bis-test-cookbook
+    restart: "no"
+    ports: !override []
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      HOST: 0.0.0.0
+    profiles:
+      - cookbook
+      - dev
 
 volumes:
   postgresqldata_test:
-    external: true

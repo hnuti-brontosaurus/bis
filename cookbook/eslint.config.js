@@ -5,10 +5,39 @@ import unusedImports from "eslint-plugin-unused-imports"
 import globals from "globals"
 
 export default [
-  { ignores: ["dist/**", "node_modules/**"] },
+  {
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "cypress/screenshots/**",
+      "cypress/videos/**",
+    ],
+  },
   js.configs.recommended,
   ...pluginVue.configs["flat/essential"],
   skipFormatting,
+  {
+    files: ["**/cypress/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        cy: "readonly",
+        Cypress: "readonly",
+        expect: "readonly",
+        describe: "readonly",
+        it: "readonly",
+        before: "readonly",
+        beforeEach: "readonly",
+        after: "readonly",
+        afterEach: "readonly",
+        context: "readonly",
+        specify: "readonly",
+      },
+    },
+  },
   {
     plugins: { "unused-imports": unusedImports },
     languageOptions: {

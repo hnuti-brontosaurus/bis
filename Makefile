@@ -11,10 +11,17 @@ export GID := $(shell id -g)
 # so they're cleaned up along with nginx/postgres. Without it compose only acts on
 # services that have no profile, leaving stale profiled containers behind.
 CLEANUP := docker compose --profile dev down -t 0 --remove-orphans
-TEST_FILES := -f docker-compose.yaml -f docker-compose.override.yaml -f docker-compose.test.yaml
 
-.PHONY: build dev backend frontend clean test test_backend test_frontend test_e2e \
-        open_cypress init_test_db build_frontend build_cookbook _prepare_test_env
+# Isolated test stack — separate compose project (`bis-test`), separate
+# network and DB volume, no shared host ports. All test targets can run
+# while `make dev` is up.
+TEST_PROJECT := bis-test
+TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
+TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
+TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend down -t 0 -v --remove-orphans
+
+.PHONY: build dev backend frontend clean test test_backend test_frontend test_cookbook \
+        open_cypress build_frontend build_cookbook
 
 build: .env
 	docker compose build
@@ -37,36 +44,47 @@ frontend:
 clean:
 	$(CLEANUP)
 
-test: test_backend test_frontend
+test: test_backend test_frontend test_cookbook
 
-test_backend: _prepare_test_env
-	trap '$(CLEANUP)' EXIT
-	docker compose $(TEST_FILES) run --rm --quiet-pull backend sh docker-entrypoint.sh test
+# Backend pytest. Brings up only postgres + backend in the bis-test project,
+# runs the entrypoint's `test` mode (pytest), tears down with the volume.
+test_backend:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) run --rm --quiet-pull backend sh docker-entrypoint.sh test
 
+# Frontend cypress. Brings up backend + frontend + nginx in bis-test, seeds
+# the testing_db, then runs cypress on the host pointed at http://localhost:8090.
 test_frontend: node_modules/cypress/bin/cypress
 	yarn --cwd frontend run test:types
 	yarn --cwd frontend run test:unit
-	trap '$(CLEANUP)' EXIT
-	docker compose --profile frontend $(TEST_FILES) up --quiet-pull -d
-	yarn --cwd frontend run wait-on http-get://localhost:3000
-	yarn --cwd frontend run e2e:ci $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
+	npx --yes wait-on http-get://localhost:8090/api/
+	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
+	yarn --cwd frontend run wait-on http-get://localhost:8090
+	yarn --cwd frontend run cypress run --config baseUrl=http://localhost:8090 \
+		$(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
-test_e2e: node_modules/cypress/bin/cypress _prepare_test_env
-	trap '$(CLEANUP)' EXIT
-	docker compose --profile dev $(TEST_FILES) up --quiet-pull -d
-	yarn --cwd frontend run wait-on http-get://localhost/api/
-	yarn --cwd frontend run wait-on http-get://localhost:3000
-	yarn --cwd frontend run cypress run
+# Cookbook cypress. Same shape as test_frontend but with the cookbook service.
+# Uses the testing_db-seeded `office_worker@hb.nope` user; the cypress spec
+# auto-creates a Chef + Recipe row if none exists.
+test_cookbook:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
+	npx --yes wait-on http-get://localhost:8090/api/
+	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
+	npx --yes wait-on http-get://localhost:8090/cookbook/
+	(cd cookbook && npx cypress run \
+		--config baseUrl=http://localhost:8090/cookbook/ \
+		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
 
-open_cypress: node_modules/cypress/bin/cypress _prepare_test_env
-	trap '$(CLEANUP)' EXIT
-	docker compose --profile dev $(TEST_FILES) up --quiet-pull -d
-	yarn --cwd frontend run wait-on http-get://localhost/api/
-	yarn --cwd frontend run cypress open
-
-init_test_db:
-	docker compose run --rm backend sh docker-entrypoint.sh manage migrate
-	docker compose run --rm backend sh docker-entrypoint.sh manage testing_db
+open_cypress: node_modules/cypress/bin/cypress
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile dev up --quiet-pull -d
+	npx --yes wait-on http-get://localhost:8090/api/
+	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
+	yarn --cwd frontend run wait-on http-get://localhost:8090
+	yarn --cwd frontend run cypress open --config baseUrl=http://localhost:8090
 
 build_frontend:
 	docker compose run --rm frontend sh docker-entrypoint.sh build
@@ -76,8 +94,3 @@ build_cookbook:
 
 node_modules/cypress/bin/cypress:
 	yarn --cwd frontend install --frozen-lockfile
-
-_prepare_test_env:
-	rm -Rf ./*data_test
-	docker volume rm -f postgresqldata_test
-	docker volume create postgresqldata_test
