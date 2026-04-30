@@ -3,26 +3,27 @@
 from django.db import migrations
 
 
-def merge_record_note_into_event_internal_note(apps, schema_editor):
+def merge_record_note_into_event_organizers_note(apps, schema_editor):
     EventRecord = apps.get_model("event", "EventRecord")
     for record in EventRecord.objects.exclude(note="").select_related("event"):
         event = record.event
-        existing = event.internal_note or ""
+        existing = event.organizers_note or ""
         if existing:
-            event.internal_note = existing.rstrip() + "\n\n" + record.note
+            event.organizers_note = existing.rstrip() + "\n\n" + record.note
         else:
-            event.internal_note = record.note
-        event.save(update_fields=["internal_note"])
+            event.organizers_note = record.note
+        event.save(update_fields=["organizers_note"])
 
 
 class Migration(migrations.Migration):
     dependencies = [
         ("event", "0018_make_upload_timestamps_required"),
+        ("bis", "0055_rename_internal_note_event_organizers_note"),
     ]
 
     operations = [
         migrations.RunPython(
-            merge_record_note_into_event_internal_note,
+            merge_record_note_into_event_organizers_note,
             migrations.RunPython.noop,
         ),
         migrations.RemoveField(
