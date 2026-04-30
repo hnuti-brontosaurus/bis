@@ -75,7 +75,12 @@ const createIngredient = () => {
         <div class="input_empty_hide"></div>
       </template>
     </n-select>
-    <n-input-number v-model:value="value.amount" :show-button="false" :format="v => v != null ? String(Math.round(v * 100) / 100) : ''" :parse="parseFloat"/>
+    <n-input-number
+      v-model:value="value.amount"
+      :show-button="false"
+      :format="v => (v != null ? String(Math.round(v * 100) / 100) : '')"
+      :parse="parseFloat"
+    />
     <n-select
       v-model:value="unitValue"
       :options="unitOptions"

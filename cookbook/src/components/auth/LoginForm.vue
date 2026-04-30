@@ -2,7 +2,7 @@
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
 import { faBars } from "@fortawesome/free-solid-svg-icons"
-import {useRoute, useRouter} from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import { theme } from "@/composables/theme.js"
 import { _, translatedKey } from "@/composables/translations.js"
 import { me, useAuth } from "@/composables/auth.js"

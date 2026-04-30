@@ -54,7 +54,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(to => {
   if (to.meta.requiresAuth && !me.value?.is_chef) {
     return { name: "me", query: { next: to.fullPath } }
   }
