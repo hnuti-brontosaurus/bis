@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 6c116e8db4e2f7b4
+// source-hash: ef325adcb2d879dd
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -461,6 +461,7 @@ export const feedbackForm = {
   _name: 'Formulář zpětné vazby',
   _name_plural: 'Formulář zpětné vazby',
   event_record: 'Záznam z akce',
+  email_subject: 'Předmět e-mailu',
   email_content: 'Text e-mailu',
   introduction: 'Úvodní text zpětné vazby',
   after_submit_text: 'Text po zodpovězení zpětné vazby',

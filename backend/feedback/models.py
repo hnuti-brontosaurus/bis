@@ -33,6 +33,7 @@ class EventFeedback(m.Model):
 @translate_model
 class FeedbackForm(m.Model):
     event = m.OneToOneField(Event, related_name="feedback_form", on_delete=CASCADE)
+    email_subject = m.TextField(blank=True)
     email_content = m.TextField(blank=True)
     introduction = m.TextField(blank=True)
     after_submit_text = m.TextField(blank=True)

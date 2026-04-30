@@ -77,15 +77,6 @@ backend/              # Django application
 └── project/          # Django settings & URL config
 
 frontend/             # React SPA
-├── src/
-│   ├── app/          # Redux store and RTK-Query services
-│   ├── pages/        # Public pages (login, event registration, feedback)
-│   ├── org/pages/    # Organizer pages (event management)
-│   ├── user/pages/   # User profile pages
-│   ├── components/   # Reusable React components
-│   ├── features/     # Redux slices (auth, form, systemMessage, ui)
-│   └── hooks/        # Custom React hooks
-
 cookbook/             # Vue 3 SPA (separate from main frontend)
 ```
 
