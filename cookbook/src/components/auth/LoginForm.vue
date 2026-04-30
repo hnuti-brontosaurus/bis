@@ -123,7 +123,7 @@ const inputs = computed(() => {
                   await axios.post("/auth/validate_password/", { password: value })
                   return true
                 } catch (e) {
-                  throw new Error(e.response.data.join(" "))
+                  throw new Error(e.response.data.join(" "), { cause: e })
                 }
               },
             },
