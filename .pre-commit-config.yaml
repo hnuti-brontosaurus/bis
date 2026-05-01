@@ -69,13 +69,15 @@ repos:
       - id: eslint
         alias: cookbook-eslint
         name: eslint (cookbook)
-        # @eslint/js 9.x uses package "exports" — pre-commit's bundled node
-        # is too old to honour it, so the import in eslint.config.js fails
-        # with ERR_MODULE_NOT_FOUND. Pin a recent node so the resolver works.
+        # Pre-commit installs additional_dependencies into its own node_env
+        # and exposes them via NODE_PATH. NODE_PATH is honored by CommonJS
+        # require() but NOT by ESM `import`, so the config file must be
+        # `.cjs` and use require() — otherwise resolution from
+        # cookbook/eslint.config.js fails with ERR_MODULE_NOT_FOUND.
         language_version: "22.11.0"
         files: ^cookbook/.*\.(vue|js|jsx|cjs|mjs)$
         types: [file]
-        args: ["--config", "cookbook/eslint.config.js", "--fix"]
+        args: ["--config", "cookbook/eslint.config.cjs", "--fix"]
         additional_dependencies:
           - eslint@9.39.2
           - eslint-plugin-vue@10.6.2

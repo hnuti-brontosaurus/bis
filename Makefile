@@ -18,7 +18,8 @@ TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
 TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend down -t 0 -v --remove-orphans
 
 .PHONY: build dev clean test test_backend test_frontend test_cookbook \
-        open_cypress build_frontend build_cookbook
+        open_cypress build_frontend build_cookbook \
+        install_frontend install_cookbook
 
 build: .env
 	docker compose build
@@ -43,7 +44,7 @@ test_backend:
 
 # Frontend cypress. Brings up backend + frontend + nginx in bis-test, seeds
 # the testing_db, then runs cypress on the host pointed at http://localhost:8090.
-test_frontend: node_modules/cypress/bin/cypress
+test_frontend: install_frontend
 	yarn --cwd frontend run test:types
 	yarn --cwd frontend run test:unit
 	trap '$(TEST_CLEANUP)' EXIT
@@ -57,7 +58,7 @@ test_frontend: node_modules/cypress/bin/cypress
 # Cookbook cypress. Same shape as test_frontend but with the cookbook service.
 # Uses the testing_db-seeded `office_worker@hb.nope` user; the cypress spec
 # auto-creates a Chef + Recipe row if none exists.
-test_cookbook:
+test_cookbook: install_cookbook
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
 	npx --yes wait-on http-get://localhost:8090/api/
@@ -67,7 +68,7 @@ test_cookbook:
 		--config baseUrl=http://localhost:8090/cookbook/ \
 		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
 
-open_cypress: node_modules/cypress/bin/cypress
+open_cypress: install_frontend
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile dev up --quiet-pull -d
 	npx --yes wait-on http-get://localhost:8090/api/
@@ -81,5 +82,11 @@ build_frontend:
 build_cookbook:
 	docker compose run --rm cookbook sh docker-entrypoint.sh build
 
-node_modules/cypress/bin/cypress:
+# Always run yarn install — cypress's postinstall downloads its binary into
+# ~/.cache/Cypress (not part of node_modules), so a cached node_modules alone
+# is not enough for `cypress run` on a fresh CI runner.
+install_frontend:
 	yarn --cwd frontend install --frozen-lockfile
+
+install_cookbook:
+	yarn --cwd cookbook install --frozen-lockfile

@@ -1,10 +1,13 @@
-import js from "@eslint/js"
-import pluginVue from "eslint-plugin-vue"
-import skipFormatting from "@vue/eslint-config-prettier/skip-formatting"
-import unusedImports from "eslint-plugin-unused-imports"
-import globals from "globals"
+// CommonJS so require() honours NODE_PATH set by pre-commit's node env.
+// ESM `import` ignores NODE_PATH and would fail with ERR_MODULE_NOT_FOUND
+// when this config is loaded by an eslint installed outside cookbook/.
+const js = require("@eslint/js")
+const pluginVue = require("eslint-plugin-vue")
+const skipFormatting = require("@vue/eslint-config-prettier/skip-formatting")
+const unusedImports = require("eslint-plugin-unused-imports")
+const globals = require("globals")
 
-export default [
+module.exports = [
   {
     ignores: [
       "dist/**",
