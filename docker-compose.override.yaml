@@ -8,9 +8,6 @@ services:
     command: ["sh", "docker-entrypoint.sh", "dev"]
     ports:
       - 8000:8000
-    profiles:
-      - backend
-      - dev
     environment:
       DEBUG: 1
       ALLOWED_HOSTS: 'localhost,backend,frontend,192.168.2.3'
@@ -20,9 +17,6 @@ services:
     command: ["sh", "docker-entrypoint.sh", "dev"]
     ports:
       - 3000:3000
-    profiles:
-      - frontend
-      - dev
     environment:
       HOST: 0.0.0.0
       DEBUG: 1
@@ -33,8 +27,5 @@ services:
     command: ["sh", "docker-entrypoint.sh", "dev"]
     ports:
       - 3001:3001
-    profiles:
-      - frontend
-      - dev
     environment:
       HOST: 0.0.0.0

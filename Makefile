@@ -7,10 +7,7 @@ SHELL := bash
 export UID := $(shell id -u)
 export GID := $(shell id -g)
 
-# `--profile dev` makes `down` see profiled services too (backend/frontend/cookbook),
-# so they're cleaned up along with nginx/postgres. Without it compose only acts on
-# services that have no profile, leaving stale profiled containers behind.
-CLEANUP := docker compose --profile dev down -t 0 --remove-orphans
+CLEANUP := docker compose down -t 0 --remove-orphans
 
 # Isolated test stack — separate compose project (`bis-test`), separate
 # network and DB volume, no shared host ports. All test targets can run
@@ -20,7 +17,7 @@ TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
 TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
 TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend down -t 0 -v --remove-orphans
 
-.PHONY: build dev backend frontend clean test test_backend test_frontend test_cookbook \
+.PHONY: build dev clean test test_backend test_frontend test_cookbook \
         open_cypress build_frontend build_cookbook
 
 build: .env
@@ -31,15 +28,7 @@ build: .env
 
 dev: clean
 	trap '$(CLEANUP)' EXIT
-	docker compose --profile dev up
-
-backend:
-	trap '$(CLEANUP)' EXIT
-	docker compose --profile backend up
-
-frontend:
-	trap '$(CLEANUP)' EXIT
-	docker compose --profile frontend up
+	docker compose up
 
 clean:
 	$(CLEANUP)

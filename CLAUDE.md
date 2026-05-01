@@ -18,8 +18,6 @@ BIS (Brontosaurus Information System) is a full-stack web application for managi
 ```bash
 make build            # Build all Docker images (run first)
 make dev              # Start all services with live-reload
-make backend          # Run backend only
-make frontend         # Run frontend + cookbook only
 make clean            # Stop all containers and remove orphans
 ```
 
