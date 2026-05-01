@@ -69,11 +69,6 @@ repos:
       - id: eslint
         alias: cookbook-eslint
         name: eslint (cookbook)
-        # Pre-commit installs additional_dependencies into its own node_env
-        # and exposes them via NODE_PATH. NODE_PATH is honored by CommonJS
-        # require() but NOT by ESM `import`, so the config file must be
-        # `.cjs` and use require() — otherwise resolution from
-        # cookbook/eslint.config.js fails with ERR_MODULE_NOT_FOUND.
         language_version: "22.11.0"
         files: ^cookbook/.*\.(vue|js|jsx|cjs|mjs)$
         types: [file]

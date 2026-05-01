@@ -1,6 +1,7 @@
 <script setup>
 import { NForm, useMessage } from "naive-ui"
 import { useRouter } from "vue-router"
+import axios from "axios"
 import { _ } from "@/composables/translations.js"
 import { useAuthStore } from "@/data/auth.js"
 import { computed, ref } from "vue"
@@ -10,6 +11,7 @@ import GenericForm from "@/contrib/components/GenericForm.vue"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
 import { useChefsStore } from "@/data/chefs.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import { storeToRefs } from "pinia"
 
 const router = useRouter()
@@ -52,8 +54,10 @@ const inputs = computed(() => [
     ],
   },
 ])
+const backendErrors = ref({})
 const save = async () => {
   loading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
     await chefsStore.save(me.value.chef)
@@ -61,6 +65,11 @@ const save = async () => {
     message.info(_.value.profile.saved)
     router.back()
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.profile.error_saving)(e)
   } finally {
     loading.value = false
@@ -71,7 +80,12 @@ const save = async () => {
 <template>
   <AppPage :title="isChef ? _.profile.title : _.profile.new">
     <n-form ref="form" :model="me.chef" @keydown.enter="save">
-      <GenericForm v-model:data="me.chef" :inputs="inputs" group="Chef" />
+      <GenericForm
+        v-model:data="me.chef"
+        :inputs="inputs"
+        :backend-errors="backendErrors"
+        group="Chef"
+      />
       <vue-hcaptcha
         ref="hcaptcha"
         sitekey="12a8ba44-b54e-4346-b426-585e191acf7c"

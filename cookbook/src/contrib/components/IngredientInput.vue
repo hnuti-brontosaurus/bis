@@ -31,8 +31,8 @@ const createIngredient = () => {
       try {
         const created = await ingredientsStore.save({ name: input.value })
         value.value.ingredient_id = created.id
-      } catch {
-        handleAxiosError(_.value.ingredients.upsert_error)
+      } catch (e) {
+        handleAxiosError(_.value.ingredients.upsert_error)(e)
       } finally {
         loading.value = false
       }

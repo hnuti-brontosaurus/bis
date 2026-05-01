@@ -1,5 +1,6 @@
 <script setup>
 import {
+  NAlert,
   NButton,
   NCascader,
   NCheckbox,
@@ -22,7 +23,11 @@ import {
 } from "naive-ui"
 import { computed, isRef, onMounted, toValue, watch } from "vue"
 
-import { textFilter, toValueLabel } from "@/contrib/composables/helpers.js"
+import {
+  scrollToFirstFormError,
+  textFilter,
+  toValueLabel,
+} from "@/contrib/composables/helpers.js"
 import WithHint from "@/contrib/components/WithHint.vue"
 import { _ } from "@/composables/translations.js"
 import IngredientInput from "@/contrib/components/IngredientInput.vue"
@@ -44,16 +49,58 @@ const props = defineProps({
 })
 const data = defineModel("data")
 
-// DRF returns `{field: ["msg", ...]}` — flatten into a single string
-// suitable for the n-form-item feedback slot. Returns "" when there is
-// no error so n-form-item shows no feedback.
-const backendErrorFor = key => {
-  const value = key && props.backendErrors?.[key]
-  if (!value) return ""
-  if (Array.isArray(value)) return value.join(" ")
+// Flatten a DRF error shape into one human-readable line for the
+// n-form-item feedback slot. DRF can return:
+//   - "msg"                                     (string)
+//   - ["msg1", "msg2"]                          (list of strings, plain field)
+//   - {field: [...], non_field_errors: [...]}   (nested serializer)
+//   - [{}, {field: [...]}, {}]                  (writable-nested list, parallel
+//                                                to the input array)
+const formatErrors = value => {
+  if (value === null || value === undefined || value === "") return ""
   if (typeof value === "string") return value
-  return JSON.stringify(value)
+  if (Array.isArray(value)) {
+    return value
+      .map((item, idx) => {
+        const formatted = formatErrors(item)
+        if (!formatted) return ""
+        // Index-prefix object items so users can locate the offending row;
+        // skip the prefix for plain string lists where it would just be noise.
+        const isItemObject = item && typeof item === "object" && !Array.isArray(item)
+        return isItemObject ? `#${idx + 1}: ${formatted}` : formatted
+      })
+      .filter(Boolean)
+      .join(" ")
+  }
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .map(([k, v]) => {
+        const formatted = formatErrors(v)
+        return formatted ? `${k}: ${formatted}` : ""
+      })
+      .filter(Boolean)
+      .join(" ")
+  }
+  return String(value)
 }
+const backendErrorFor = key => formatErrors(key && props.backendErrors?.[key])
+
+// `non_field_errors` are not bound to any input — surface them as an alert
+// above the form fields. Scroll the first invalid field into view whenever
+// the backend supplies a fresh error payload so users see what to fix.
+const formError = computed(() => {
+  const nfe = props.backendErrors?.non_field_errors
+  return Array.isArray(nfe) ? nfe.join(" ") : null
+})
+watch(
+  () => props.backendErrors,
+  () => {
+    if (props.backendErrors && Object.keys(props.backendErrors).length) {
+      scrollToFirstFormError()
+    }
+  },
+  { deep: true },
+)
 const getRule = input => {
   const rules = []
   if (input.required) {
@@ -195,6 +242,9 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
 </script>
 
 <template>
+  <n-alert v-if="formError" type="error" style="margin-bottom: 1rem">{{
+    formError
+  }}</n-alert>
   <n-grid cols="2 s:4" x-gap="32" responsive="screen">
     <n-form-item-gi
       v-for="input in shownInputs"

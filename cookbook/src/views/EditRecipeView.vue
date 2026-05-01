@@ -1,10 +1,10 @@
 <script setup>
-import { NForm, NButton, NAlert } from "naive-ui"
+import { NForm, NButton } from "naive-ui"
 import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import axios from "axios"
 import AppPage from "@/components/app/AppPage.vue"
-import { propertyRef } from "@/contrib/composables/helpers.js"
+import { propertyRef, scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import { _ } from "@/composables/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
@@ -151,15 +151,10 @@ const inputs = computed(() => {
   ]
 })
 
-// Per-field backend errors keyed by field name. DRF returns 400 with
-// `{field: ["msg", ...], non_field_errors: [...]}`. We surface field
-// errors below their inputs (via GenericForm's :backend-errors prop)
-// and non_field_errors as an alert above the form.
+// Per-field backend errors keyed by field name. GenericForm renders
+// non_field_errors as an alert and scrolls to the first invalid field
+// whenever this object changes.
 const backendErrors = ref({})
-const formError = computed(() => {
-  const nfe = backendErrors.value.non_field_errors
-  return Array.isArray(nfe) ? nfe.join(" ") : null
-})
 
 const save = async () => {
   backendErrors.value = {}
@@ -170,6 +165,10 @@ const save = async () => {
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
       backendErrors.value = e.response.data
+    } else {
+      // Client-side validation failure — backendErrors watcher won't fire,
+      // scroll explicitly so the user sees the offending field.
+      scrollToFirstFormError()
     }
     handleAxiosError(_.value.edit_recipe.save_error)(e)
   }
@@ -181,9 +180,6 @@ const save = async () => {
     <template #actions>
       <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
     </template>
-    <n-alert v-if="formError" type="error" style="margin-bottom: 1rem">{{
-      formError
-    }}</n-alert>
     <n-form v-if="recipe" ref="form" :model="recipe" @keydown.enter="save">
       <GenericForm
         v-model:data="recipe"

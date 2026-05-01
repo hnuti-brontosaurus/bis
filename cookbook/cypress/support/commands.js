@@ -15,26 +15,15 @@ Cypress.Commands.add("loginAsChef", email => {
   const container = Cypress.env("BACKEND_CONTAINER") || "bis-backend"
   const apiBase = Cypress.env("API_BASE_URL") || "http://localhost/api/cookbook"
 
-  // Ensure a chef row exists for this user (idempotent — testing_db seeds
-  // the user but not the cookbook Chef).
+  // Fetch the chef's auth token. The chef is seeded by testing_db
+  // (see backend/bis/management/commands/testing_db.create_cookbook_chef).
   const py = [
-    "from io import BytesIO",
-    "from PIL import Image",
-    "from django.core.files.uploadedfile import SimpleUploadedFile",
     "from bis.models import User",
-    "from cookbook.models.chefs import Chef",
-    "from rest_framework.authtoken.models import Token",
-    `u, _ = User.objects.get_or_create(email='${email}', defaults={'first_name': 'Cypress', 'last_name': 'Tester'})`,
-    "Token.objects.get_or_create(user=u)",
-    `c, _ = Chef.objects.get_or_create(user=u, defaults={'name': 'Cypress Chef', 'email': u.email})`,
-    "buf = BytesIO()",
-    "Image.new('RGB', (32, 32), 'red').save(buf, format='PNG')",
-    "c.photo or c.photo.save('chef.png', SimpleUploadedFile('chef.png', buf.getvalue(), 'image/png'))",
-    "print(u.auth_token.key)",
+    `print(User.objects.get(email='${email}').auth_token.key)`,
   ].join("; ")
-  const ensureChef = `docker exec ${container} python manage.py shell -c "${py}"`
+  const fetchToken = `docker exec ${container} python manage.py shell -c "${py}"`
 
-  cy.exec(ensureChef).then(({ stdout }) => {
+  cy.exec(fetchToken).then(({ stdout }) => {
     const token = stdout.trim().split(/\s+/).pop()
     expect(token, "auth token").to.match(/^[a-f0-9]{40}$/)
 

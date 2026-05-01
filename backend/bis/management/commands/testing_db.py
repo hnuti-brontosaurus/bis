@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from io import BytesIO
 from os.path import join
 
 from administration_units.models import (
@@ -17,10 +18,18 @@ from categories.models import (
     PronounCategory,
     QualificationCategory,
 )
+from cookbook.models.chefs import Chef
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
+from PIL import Image
 from project.settings import BASE_DIR
+from rest_framework.authtoken.models import Token
+
+# Email for the seeded cookbook chef used by Cypress smoke tests.
+# Mirrors TEST_USER_EMAIL in the Makefile cypress target.
+CYPRESS_CHEF_EMAIL = "test@test.local"
 
 
 class Command(BaseCommand):
@@ -266,9 +275,32 @@ class Command(BaseCommand):
 
         return event
 
+    def create_cookbook_chef(self):
+        # Cypress smoke tests log in as this chef via a token short-circuit
+        # (see api/cookbook/views/auth.login). Seeded here so the test suite
+        # does not need to mutate the DB on every run.
+        user, _ = User.objects.get_or_create(
+            email=CYPRESS_CHEF_EMAIL,
+            defaults={"first_name": "Cypress", "last_name": "Tester"},
+        )
+        Token.objects.get_or_create(user=user)
+        chef, _ = Chef.objects.get_or_create(
+            user=user,
+            defaults={"name": "Cypress Chef", "email": user.email},
+        )
+        if not chef.photo:
+            buf = BytesIO()
+            Image.new("RGB", (32, 32), "red").save(buf, format="PNG")
+            chef.photo.save(
+                "chef.png",
+                SimpleUploadedFile("chef.png", buf.getvalue(), "image/png"),
+            )
+
     def create_testing_db(self):
         # Brontosaurus movement
         self.create_brontosaurus()
+        # Cookbook chef for Cypress smoke tests
+        self.create_cookbook_chef()
         # Virtual basic section
         zc_chairman = self.create_user("Předseda", "ZC", "chairman@hb.nope")
         zc_manager = self.create_user("Hospodář", "ZC", "manager@hb.nope")

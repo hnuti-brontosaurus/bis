@@ -5,7 +5,9 @@ import { authApi, useAuthStore } from "@/data/auth.js"
 import { computed, ref, watch } from "vue"
 import { NForm } from "naive-ui"
 import { watchDebounced } from "@vueuse/core"
+import axios from "axios"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import AppPage from "@/components/app/AppPage.vue"
 import { useDarkTheme } from "@/composables/settings.js"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
@@ -57,13 +59,21 @@ watchDebounced(
   { debounce: 1000, immediate: true },
 )
 
+const backendErrors = ref({})
+
 const register = async () => {
   registerLoading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
     const { response } = await hcaptcha.value.executeAsync()
     authStore.setMe(await authApi.register({ ...user.value, response }))
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.login.registration_error)(e)
   } finally {
     registerLoading.value = false
@@ -72,11 +82,17 @@ const register = async () => {
 
 const login = async () => {
   registerLoading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
     authStore.setMe(await authApi.login({ ...user.value }))
     if (authStore.isChef && route.query.next) router.push(route.query.next)
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.login.login_error)(e)
   } finally {
     registerLoading.value = false
@@ -172,7 +188,12 @@ const submit = () =>
 <template>
   <AppPage :title="_.login.title">
     <n-form ref="form" :model="user" @keydown.enter="submit">
-      <GenericForm v-model:data="user" :inputs="inputs" group="login" />
+      <GenericForm
+        v-model:data="user"
+        :inputs="inputs"
+        :backend-errors="backendErrors"
+        group="login"
+      />
       <vue-hcaptcha
         ref="hcaptcha"
         sitekey="12a8ba44-b54e-4346-b426-585e191acf7c"
