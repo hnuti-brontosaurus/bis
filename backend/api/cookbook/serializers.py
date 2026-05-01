@@ -10,12 +10,12 @@ Field-shape rules:
   No nested object is rendered for these — the frontend resolves names
   out of sibling stores keyed by id.
 
-- Owned children of Recipe (ingredients, steps, tips) keep nested writes
-  AND nested reads — they only exist as part of the parent recipe and
-  the parent serializer rewrites them on PATCH/POST via NestedParentMixin.
+- Owned children of Recipe / Menu (ingredients, steps, tips,
+  menu_recipes, menu_recipe_ingredients) keep nested writes AND nested
+  reads — they only exist as part of the parent and are rewritten via
+  drf-writable-nested.
 """
 
-from api.frontend.serializers import SmartUpdatableListSerializer
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
@@ -32,96 +32,10 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
-from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
-from django.db.models import ManyToManyField
+from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField
 from rest_framework.relations import PrimaryKeyRelatedField
-from rest_framework.utils import model_meta
-
-
-class NestedParentMixin:
-    """Adds nested-child create/update for owned reverse relations.
-
-    Children declared as nested ModelSerializer fields (with `Meta.nested =
-    True`) are extracted from validated_data and rewritten via the child
-    serializer using SmartUpdatableListSerializer semantics.
-    """
-
-    def save(self, **kwargs):
-        try:
-            return super().save(**kwargs)
-        except DjangoValidationError as e:
-            raise ValidationError(e.messages) from e
-
-    @property
-    def _nested_child_fields(self):
-        """Map of field_name -> (child_serializer_class, reverse_fk_name)."""
-        result = {}
-        for field_name, field in self.fields.items():
-            inner = (
-                field.child if isinstance(field, serializers.ListSerializer) else field
-            )
-            if isinstance(inner, serializers.ModelSerializer) and getattr(
-                inner.Meta, "nested", False
-            ):
-                reverse = self.Meta.model._meta.get_field(field_name).remote_field.name
-                result[field_name] = (type(inner), reverse)
-        return result
-
-    @property
-    def _m2m_field_names(self):
-        info = model_meta.get_field_info(self.Meta.model)
-        return [
-            name
-            for name, rel in info.relations.items()
-            if isinstance(rel.model_field, ManyToManyField)
-        ]
-
-    @staticmethod
-    def _pop_keys(data, keys):
-        return {k: data.pop(k) for k in keys if k in data}
-
-    @transaction.atomic
-    def create(self, validated_data):
-        nested = self._pop_keys(validated_data, self._nested_child_fields.keys())
-        m2m = self._pop_keys(validated_data, self._m2m_field_names)
-        instance = self.Meta.model.objects.create(**validated_data)
-        self._write_nested(instance, nested)
-        for name, value in m2m.items():
-            getattr(instance, name).set(value)
-        return instance
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        nested = self._pop_keys(validated_data, self._nested_child_fields.keys())
-        m2m = self._pop_keys(validated_data, self._m2m_field_names)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        self._write_nested(instance, nested)
-        for name, value in m2m.items():
-            getattr(instance, name).set(value)
-        return instance
-
-    def _write_nested(self, instance, nested_data):
-        for field_name, value in nested_data.items():
-            child_class, reverse = self._nested_child_fields[field_name]
-            current = getattr(instance, field_name, None)
-            if value is None:
-                if current is not None and hasattr(current, "delete"):
-                    current.delete()
-                continue
-            child = child_class(
-                instance=current,
-                data=self.initial_data[field_name],
-                context=self.context,
-                many=isinstance(value, list),
-            )
-            child.is_valid(raise_exception=True)
-            child.save(**{reverse: instance})
 
 
 class ChefSerializer(serializers.ModelSerializer):
@@ -145,7 +59,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
     unit_id = PrimaryKeyRelatedField(source="unit", queryset=Unit.objects.all())
 
     class Meta:
-        nested = True
         model = RecipeIngredient
         fields = (
             "id",
@@ -156,23 +69,18 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             "is_required",
             "comment",
         )
-        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeStepSerializer(serializers.ModelSerializer):
     class Meta:
-        nested = True
         model = RecipeStep
         fields = ("id", "name", "order", "description", "photo")
-        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeTipSerializer(serializers.ModelSerializer):
     class Meta:
-        nested = True
         model = RecipeTip
         fields = ("id", "name", "description")
-        list_serializer_class = SmartUpdatableListSerializer
 
 
 class RecipeCommentSerializer(serializers.ModelSerializer):
@@ -182,7 +90,7 @@ class RecipeCommentSerializer(serializers.ModelSerializer):
         read_only_fields = ("created_at",)
 
 
-class RecipeSerializer(NestedParentMixin, serializers.ModelSerializer):
+class RecipeSerializer(WritableNestedModelSerializer):
     chef_id = PrimaryKeyRelatedField(source="chef", queryset=Chef.objects.all())
     difficulty_id = PrimaryKeyRelatedField(
         source="difficulty", queryset=RecipeDifficulty.objects.all()
@@ -235,7 +143,6 @@ class MenuRecipeIngredientSerializer(serializers.ModelSerializer):
     unit_id = PrimaryKeyRelatedField(source="unit", queryset=Unit.objects.all())
 
     class Meta:
-        nested = True
         model = MenuRecipeIngredient
         fields = (
             "id",
@@ -245,10 +152,9 @@ class MenuRecipeIngredientSerializer(serializers.ModelSerializer):
             "is_used",
             "comment",
         )
-        list_serializer_class = SmartUpdatableListSerializer
 
 
-class MenuRecipeSerializer(NestedParentMixin, serializers.ModelSerializer):
+class MenuRecipeSerializer(WritableNestedModelSerializer):
     original_id = PrimaryKeyRelatedField(
         source="original",
         queryset=Recipe.objects.all(),
@@ -258,7 +164,6 @@ class MenuRecipeSerializer(NestedParentMixin, serializers.ModelSerializer):
     menu_recipe_ingredients = MenuRecipeIngredientSerializer(many=True, required=False)
 
     class Meta:
-        nested = True
         model = MenuRecipe
         fields = (
             "id",
@@ -268,10 +173,9 @@ class MenuRecipeSerializer(NestedParentMixin, serializers.ModelSerializer):
             "served_at",
             "menu_recipe_ingredients",
         )
-        list_serializer_class = SmartUpdatableListSerializer
 
 
-class MenuSerializer(NestedParentMixin, serializers.ModelSerializer):
+class MenuSerializer(WritableNestedModelSerializer):
     menu_recipes = MenuRecipeSerializer(many=True, required=False)
 
     class Meta:
