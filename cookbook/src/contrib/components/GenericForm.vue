@@ -36,8 +36,24 @@ import {
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
 
-const props = defineProps(["inputs", "path_prefix", "group"])
+const props = defineProps({
+  inputs: Array,
+  path_prefix: String,
+  group: String,
+  backendErrors: { type: Object, default: () => ({}) },
+})
 const data = defineModel("data")
+
+// DRF returns `{field: ["msg", ...]}` — flatten into a single string
+// suitable for the n-form-item feedback slot. Returns "" when there is
+// no error so n-form-item shows no feedback.
+const backendErrorFor = key => {
+  const value = key && props.backendErrors?.[key]
+  if (!value) return ""
+  if (Array.isArray(value)) return value.join(" ")
+  if (typeof value === "string") return value
+  return JSON.stringify(value)
+}
 const getRule = input => {
   const rules = []
   if (input.required) {
@@ -185,10 +201,12 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
       :key="input.key"
       :path="`${prefix}${input.path ?? input.key}`"
       :rule="getRule(input)"
-      :show-feedback="!input.hide_feedback"
+      :show-feedback="!input.hide_feedback || !!backendErrorFor(input.key)"
       :show-label="!!input.label"
       :span="(input.span ?? 1) * 2"
       :style="getStyle(input)"
+      :validation-status="backendErrorFor(input.key) ? 'error' : undefined"
+      :feedback="backendErrorFor(input.key) || undefined"
       v-bind="input.item"
       require-mark-placement="left"
     >
