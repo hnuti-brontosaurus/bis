@@ -1,7 +1,8 @@
 <script setup>
-import { NForm, NButton } from "naive-ui"
+import { NForm, NButton, NFlex, useDialog } from "naive-ui"
 import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
+import { storeToRefs } from "pinia"
 import axios from "axios"
 import AppPage from "@/components/app/AppPage.vue"
 import { propertyRef, scrollToFirstFormError } from "@/contrib/composables/helpers.js"
@@ -15,10 +16,12 @@ import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
 import { useRecipeTagsStore } from "@/data/recipeTags.js"
 import { useUnitsStore } from "@/data/units.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
+import { useAuthStore } from "@/data/auth.js"
 import { storeOptions } from "@/data/helpers.js"
 
 const route = useRoute()
 const router = useRouter()
+const dialog = useDialog()
 const form = ref()
 
 const recipesStore = useRecipesStore()
@@ -26,6 +29,7 @@ const chefsStore = useChefsStore()
 const difficultiesStore = useRecipeDifficultiesStore()
 const requiredTimesStore = useRecipeRequiredTimesStore()
 const tagsStore = useRecipeTagsStore()
+const { isEditor, chefId } = storeToRefs(useAuthStore())
 useUnitsStore().fetchAll()
 useIngredientsStore().fetchAll()
 
@@ -33,8 +37,19 @@ const recipe_id = route.params.id
 
 // A local working copy of the recipe (shallow ref). Initialised after
 // fetchOne settles for edit mode, or pre-populated for create mode.
+// On create, default chef_id to the logged-in chef so non-editor chefs
+// don't have to pick (and can't pick a different one — the dropdown is
+// hidden for them, see `inputs` below).
 const recipe = ref(
-  recipe_id ? null : { tag_ids: [], ingredients: [], steps: [], tips: [] },
+  recipe_id
+    ? null
+    : {
+        tag_ids: [],
+        ingredients: [],
+        steps: [],
+        tips: [],
+        chef_id: chefId.value,
+      },
 )
 
 onMounted(async () => {
@@ -46,6 +61,11 @@ onMounted(async () => {
   ])
   if (recipe_id) {
     const fresh = await recipesStore.fetchOne(recipe_id)
+    // Mirror backend _can_write: editor edits any; chef edits only own.
+    if (!isEditor.value && fresh.chef_id !== chefId.value) {
+      router.replace({ name: "recipe", params: { id: recipe_id } })
+      return
+    }
     // Local working copy — deep-cloned so edits don't mutate cache directly.
     recipe.value = JSON.parse(JSON.stringify(fresh))
   }
@@ -65,7 +85,9 @@ const inputs = computed(() => {
   if (!recipe.value) return []
   return [
     { type: "text", key: "name", required: true },
-    {
+    // Only editors get to pick the chef; for plain chefs the field is
+    // hidden and locked to their own chef_id by the onMounted guard.
+    isEditor.value && {
       type: "select",
       key: "chef",
       path: "chef_id",
@@ -148,13 +170,30 @@ const inputs = computed(() => {
       key: "tips",
       span: 2,
     },
-  ]
+  ].filter(Boolean)
 })
 
 // Per-field backend errors keyed by field name. GenericForm renders
 // non_field_errors as an alert and scrolls to the first invalid field
 // whenever this object changes.
 const backendErrors = ref({})
+
+const onDelete = () => {
+  dialog.warning({
+    title: _.value.recipes.delete_title,
+    content: _.value.recipes.delete_content,
+    positiveText: _.value.recipes.delete,
+    negativeText: _.value.common.back,
+    onPositiveClick: async () => {
+      try {
+        await recipesStore.remove(recipe.value.id)
+        router.push({ name: "recipes" })
+      } catch (e) {
+        handleAxiosError(_.value.recipes.delete_error)(e)
+      }
+    },
+  })
+}
 
 const save = async () => {
   backendErrors.value = {}
@@ -178,7 +217,12 @@ const save = async () => {
 <template>
   <AppPage :title="recipe_id ? _.edit_recipe.title_edit : _.edit_recipe.title_new">
     <template #actions>
-      <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
+      <n-flex>
+        <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
+        <n-button v-if="recipe_id" type="error" ghost @click="onDelete">{{
+          _.recipes.delete
+        }}</n-button>
+      </n-flex>
     </template>
     <n-form v-if="recipe" ref="form" :model="recipe" @keydown.enter="save">
       <GenericForm

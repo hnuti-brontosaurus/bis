@@ -1,4 +1,4 @@
-from api.cookbook.permissions import CookbookAccessPermission
+from api.cookbook.permissions import CookbookViewSetMixin
 from cookbook_categories.models import (
     RecipeDifficulty,
     RecipeRequiredTime,
@@ -14,33 +14,29 @@ from cookbook_categories.serializers import (
 from rest_framework.viewsets import ModelViewSet
 
 
-class RecipeDifficultyViewSet(ModelViewSet):
+class RecipeDifficultyViewSet(CookbookViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = RecipeDifficultySerializer
     queryset = RecipeDifficulty.objects.all()
 
 
-class RecipeRequiredTimeViewSet(ModelViewSet):
+class RecipeRequiredTimeViewSet(CookbookViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = RecipeRequiredTimeSerializer
     queryset = RecipeRequiredTime.objects.all()
 
 
-class RecipeTagViewSet(ModelViewSet):
+class RecipeTagViewSet(CookbookViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = RecipeTagSerializer
     queryset = RecipeTag.objects.all()
 
 
-class UnitViewSet(ModelViewSet):
+class UnitViewSet(CookbookViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = UnitSerializer
     queryset = Unit.objects.all()

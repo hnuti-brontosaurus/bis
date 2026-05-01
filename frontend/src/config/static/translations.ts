@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 6ac47cb036f2d060
+// source-hash: 3f9d2449e0422ed1
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1195,6 +1195,11 @@ export const cookbook = {
   recipes: {
     create: 'nový recept',
     edit: 'upravit',
+    delete: 'smazat',
+    delete_title: 'Smazat recept',
+    delete_content: 'Opravdu chceš tento recept smazat?',
+    delete_error: 'Nepodařilo se smazat recept',
+    is_public: 'Veřejný',
     chef: 'Autorstvo',
     difficulty: 'Obtížnost',
     tags: 'Tagy',
@@ -1220,12 +1225,27 @@ export const cookbook = {
   },
   section: { tips: 'tip', steps: 'krok', ingredients: 'přísada' },
   ingredients: {
+    title: 'Přísady',
     new: 'Nová přísada',
     create_title: 'Vytvořit přísadu',
     create_content: 'Opravdu chceš vytvořit novou přísadu?',
     create: 'Vytvořit',
+    edit: 'upravit',
+    delete: 'smazat',
+    delete_title: 'Smazat přísadu',
+    delete_content: 'Opravdu chceš tuto přísadu smazat?',
+    delete_error: 'Nepodařilo se smazat přísadu (možná je použita v receptu).',
     go_back: 'Zpět',
     upsert_error: 'Chyba při ukládání přísady',
+    name: 'Název',
+    state: 'Skupenství',
+    state_solid: 'Pevná',
+    state_liquid: 'Tekuté',
+    g_per_piece: 'g / kus',
+    g_per_liter: 'g / litr',
+    g_per_serving: 'g / porce',
+    edit_title: 'Úprava přísady',
+    new_title: 'Nová přísada',
   },
   chefs: { title: 'Kuchařstvo' },
   profile: {
@@ -1234,5 +1254,9 @@ export const cookbook = {
     error_saving: 'Chyba při ukládání profilu',
     saved: 'Uloženo',
     dark_theme: 'Tmavý režim',
+    chef_required_login:
+      'Přihlas se nebo se zaregistruj — pro přidání receptu pak budeš potřebovat profil kuchařstva.',
+    chef_required_profile:
+      'Pro přidávání receptů je potřeba mít profil kuchařstva. Vyplň ho níže.',
   },
 } as const

@@ -44,6 +44,8 @@ export const useAuthStore = defineStore(
     const token = computed(() => me.value.user?.token ?? null)
     const isAuthenticated = computed(() => !!me.value.is_authenticated)
     const isChef = computed(() => !!me.value.is_chef)
+    const isEditor = computed(() => !!me.value.is_editor)
+    const chefId = computed(() => me.value.chef?.id ?? null)
 
     const setMe = data => {
       me.value = { ...blankAuth(), ...data }
@@ -61,7 +63,17 @@ export const useAuthStore = defineStore(
       me.value = blankAuth()
     }
 
-    return { me, token, isAuthenticated, isChef, setMe, whoami, logout }
+    return {
+      me,
+      token,
+      isAuthenticated,
+      isChef,
+      isEditor,
+      chefId,
+      setMe,
+      whoami,
+      logout,
+    }
   },
   // Versioned key so a shape change here (or the move from the old
   // useStorage("auth", ...) ref) doesn't try to hydrate stale data.

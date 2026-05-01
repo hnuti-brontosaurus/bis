@@ -76,4 +76,5 @@ export const crudApi = path => ({
   list: () => fetchAll(`${path}/`),
   get: id => client.get(`${path}/${id}/`).then(r => r.data),
   save: payload => upsert(path, payload),
+  remove: id => client.delete(`${path}/${id}/`),
 })

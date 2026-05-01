@@ -1,5 +1,5 @@
 from api.cookbook.filters import MenuFilter, RecipeFilter
-from api.cookbook.permissions import CookbookAccessPermission
+from api.cookbook.permissions import CookbookViewSetMixin
 from api.cookbook.serializers import (
     ChefSerializer,
     IngredientSerializer,
@@ -22,9 +22,8 @@ class ChangeViewSetMixin:
         serializer.save(updated_by=self.request.user)
 
 
-class RecipeViewSet(ChangeViewSetMixin, ModelViewSet):
+class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = RecipeSerializer
     filterset_class = RecipeFilter
@@ -44,9 +43,8 @@ class RecipeViewSet(ChangeViewSetMixin, ModelViewSet):
     )
 
 
-class MenuViewSet(ChangeViewSetMixin, ModelViewSet):
+class MenuViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = MenuSerializer
     filterset_class = MenuFilter
@@ -63,17 +61,15 @@ class MenuViewSet(ChangeViewSetMixin, ModelViewSet):
     )
 
 
-class ChefViewSet(ChangeViewSetMixin, ModelViewSet):
+class ChefViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name", "user__first_name", "user__last_name"]
     serializer_class = ChefSerializer
     queryset = Chef.objects.select_related("user").all()
 
 
-class IngredientViewSet(ChangeViewSetMixin, ModelViewSet):
+class IngredientViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     lookup_field = "id"
-    permission_classes = [CookbookAccessPermission]
     search_fields = ["name"]
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()

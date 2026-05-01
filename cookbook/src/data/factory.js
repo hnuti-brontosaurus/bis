@@ -65,7 +65,13 @@ export const defineByIdStore = (id, api, { persist = true, serialize } = {}) => 
         return saved
       }
 
-      return { byId, list, fetchAll, fetchOne, save, upsertLocal }
+      const remove = async itemId => {
+        if (!api.remove) throw new Error(`${id} store: api.remove not provided`)
+        await api.remove(itemId)
+        delete byId.value[itemId]
+      }
+
+      return { byId, list, fetchAll, fetchOne, save, remove, upsertLocal }
     },
     persistConfig,
   )

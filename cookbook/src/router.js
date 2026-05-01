@@ -49,7 +49,19 @@ const router = createRouter({
     {
       path: "/ingredients/",
       name: "ingredients",
-      component: () => import("@/views/TodoView.vue"),
+      component: () => import("@/views/IngredientsView.vue"),
+    },
+    {
+      path: "/ingredient/:id/edit/",
+      name: "edit_ingredient",
+      meta: { requiresAuth: true },
+      component: () => import("@/views/EditIngredientView.vue"),
+    },
+    {
+      path: "/ingredient/create/",
+      name: "create_ingredient",
+      meta: { requiresAuth: true },
+      component: () => import("@/views/EditIngredientView.vue"),
     },
   ],
 })
