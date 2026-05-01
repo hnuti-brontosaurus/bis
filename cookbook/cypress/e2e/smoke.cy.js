@@ -38,25 +38,35 @@ const ensureEditableRecipe = chefId =>
         .then(({ stdout: out }) => parseInt(out.trim().split(/\s+/).pop(), 10))
     })
 
+// Read the whoami payload out of the pinia-persisted auth store.
+const getStoredAuth = () => {
+  const raw = window.localStorage.getItem("cookbook:auth:v1")
+  return raw ? (JSON.parse(raw).me ?? {}) : {}
+}
+
 describe("cookbook smoke", () => {
   beforeEach(() => {
     // Pre-seed localStorage before any page load so the SPA boots authenticated.
-    cy.session(`chef-${TEST_USER_EMAIL}`, () => {
+    // Session id tracks the auth-store key version so a cached session from
+    // the pre-pinia-store world doesn't get restored.
+    cy.session(`chef-${TEST_USER_EMAIL}:auth-v1`, () => {
       // cy.session needs a visit to attach the storage to an origin.
       cy.visit("/")
       cy.loginAsChef(TEST_USER_EMAIL)
     })
     // Drop pinia's persisted store cache between specs so a stale shape from
     // a previous run doesn't leak in.
+    // Auth is also cookbook-prefixed (cookbook:auth:v1) but must survive the
+    // cleanup — it's what cy.session just restored.
     cy.window().then(win => {
       Object.keys(win.localStorage)
-        .filter(k => k.startsWith("cookbook:"))
+        .filter(k => k.startsWith("cookbook:") && k !== "cookbook:auth:v1")
         .forEach(k => win.localStorage.removeItem(k))
     })
   })
 
   it("renders recipes list and a recipe detail", () => {
-    const auth = JSON.parse(window.localStorage.getItem("auth") || "{}")
+    const auth = getStoredAuth()
     ensureEditableRecipe(auth.chef?.id ?? 0).then(() => {
       cy.visit("/recipes/")
       cy.contains("Recepty").should("exist")
@@ -69,7 +79,7 @@ describe("cookbook smoke", () => {
 
   it("opens edit form, mutates description, and persists", () => {
     cy.task("log", "TEST START")
-    const auth = JSON.parse(window.localStorage.getItem("auth") || "{}")
+    const auth = getStoredAuth()
     const token = auth.user?.token
 
     ensureEditableRecipe(auth.chef?.id ?? 0).then(recipeId => {

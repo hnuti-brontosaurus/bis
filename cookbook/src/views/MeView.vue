@@ -1,11 +1,14 @@
 <script setup>
 import ProfileSettings from "@/components/auth/ProfileSettings.vue"
-import { me } from "@/composables/auth.js"
+import { useAuthStore } from "@/data/auth.js"
 import LoginForm from "@/components/auth/LoginForm.vue"
+import { storeToRefs } from "pinia"
+
+const { isAuthenticated } = storeToRefs(useAuthStore())
 </script>
 
 <template>
-  <ProfileSettings v-if="me.is_authenticated" />
+  <ProfileSettings v-if="isAuthenticated" />
   <LoginForm v-else />
 </template>
 

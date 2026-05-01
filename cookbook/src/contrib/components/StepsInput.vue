@@ -19,16 +19,4 @@ const inputs = computed(() => [
     group="RecipeStep"
     :path_prefix="`steps[${index}]`"
   />
-  <!--  <n-input-group>-->
-  <!--    <n-input-->
-  <!--        v-model:value="value.name"-->
-  <!--        :placeholder="_.RecipeStep.name"-->
-  <!--        type="textarea"-->
-  <!--    />-->
-  <!--    <n-input-->
-  <!--        v-model:value="value.description"-->
-  <!--        :placeholder="_.RecipeStep.description"-->
-  <!--        type="textarea"-->
-  <!--    />-->
-  <!--  </n-input-group>-->
 </template>

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
-import { me } from "@/composables/auth.js"
+import { useAuthStore } from "@/data/auth.js"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,7 +55,7 @@ const router = createRouter({
 })
 
 router.beforeEach(to => {
-  if (to.meta.requiresAuth && !me.value?.is_chef) {
+  if (to.meta.requiresAuth && !useAuthStore().isChef) {
     return { name: "me", query: { next: to.fullPath } }
   }
 })

@@ -40,9 +40,6 @@ const columns = computed(() => {
       render: row =>
         `${Math.round(row.amount * servings.value * 100) / 100} ${row.unit.name}`,
     },
-    // {key: "selected", render: row => h(NCheckbox, {checked: row.is_required, 'onUpdate:checked': (val) => {
-    //     recipe.value.ingredients.find(_ => _.id === row.id).is_required = val
-    //     }})},
     {
       type: "selection",
       options: [

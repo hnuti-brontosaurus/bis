@@ -44,8 +44,10 @@ Cypress.Commands.add("loginAsChef", email => {
       email,
       password: `Token ${token}`,
     }).then(({ body }) => {
-      // Match the storage shape that auth.js writes via useStorage("auth", {})
-      window.localStorage.setItem("auth", JSON.stringify(body))
+      // Match the persisted shape pinia-plugin-persistedstate writes for
+      // useAuthStore (data/auth.js): the store has a single state ref `me`,
+      // and the persist config keys it as `cookbook:auth:v1`.
+      window.localStorage.setItem("cookbook:auth:v1", JSON.stringify({ me: body }))
     })
   })
 })

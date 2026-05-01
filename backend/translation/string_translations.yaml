@@ -168,3 +168,4 @@ cookbook:
     title: Můj profil
     error_saving: Chyba při ukládání profilu
     saved: Uloženo
+    dark_theme: Tmavý režim

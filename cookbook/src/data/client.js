@@ -1,12 +1,18 @@
 import axios from "axios"
 import { ConcurrencyManager } from "@/contrib/composables/concurrencyManager.js"
-import { me } from "@/composables/auth.js"
+import { getAuthToken } from "./auth.js"
+
+// Cap simultaneous in-flight requests so a fan-out from one view (e.g.
+// EditRecipeView preloading chefs/difficulties/tags/units/ingredients in
+// parallel) doesn't overwhelm a single shared dev backend. Tune up if it
+// becomes a bottleneck.
+const MAX_CONCURRENT_REQUESTS = 5
 
 const client = axios.create({ baseURL: "/api/cookbook" })
-ConcurrencyManager(client, 5)
+ConcurrencyManager(client, MAX_CONCURRENT_REQUESTS)
 
 client.interceptors.request.use(config => {
-  const token = me.value.user?.token
+  const token = getAuthToken()
   if (token) config.headers["Authorization"] = `Token ${token}`
   return config
 })

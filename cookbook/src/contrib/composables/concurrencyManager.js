@@ -1,6 +1,6 @@
 export const ConcurrencyManager = (axios, MAX_CONCURRENT = 10) => {
   if (MAX_CONCURRENT < 1)
-    throw "Concurrency Manager Error: minimun concurrent requests is 1"
+    throw new Error("ConcurrencyManager: MAX_CONCURRENT must be >= 1")
 
   let instance = {
     queue: [],

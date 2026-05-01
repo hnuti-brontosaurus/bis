@@ -20,7 +20,7 @@ import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
 import { useRecipeTagsStore } from "@/data/recipeTags.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 import { _ } from "@/composables/translations.js"
@@ -82,7 +82,7 @@ const recipe = useRecipe(recipeId)
 
     <n-grid cols="1 m:2" responsive="screen" x-gap="64" y-gap="64">
       <n-grid-item>
-        <RecipeIngrediences :recipe="recipe"></RecipeIngrediences>
+        <RecipeIngredients :recipe="recipe"></RecipeIngredients>
       </n-grid-item>
       <n-grid-item>
         <n-h2>{{ _.recipes.steps }}</n-h2>

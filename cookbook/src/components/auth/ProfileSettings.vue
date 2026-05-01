@@ -2,21 +2,29 @@
 import { NForm, useMessage } from "naive-ui"
 import { useRouter } from "vue-router"
 import { _ } from "@/composables/translations.js"
-import { me, useAuth } from "@/composables/auth.js"
+import { useAuthStore } from "@/data/auth.js"
 import { computed, ref } from "vue"
-import { useDarkTheme } from "@/composables/settings.js"
+import { settings, useDarkTheme } from "@/composables/settings.js"
 import AppPage from "@/components/app/AppPage.vue"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
 import { useChefsStore } from "@/data/chefs.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { storeToRefs } from "pinia"
 
 const router = useRouter()
 const form = ref()
-const auth = useAuth()
+const authStore = useAuthStore()
+const { me, isChef } = storeToRefs(authStore)
 const chefsStore = useChefsStore()
 const loading = ref(false)
 const message = useMessage()
+const darkThemeChecked = computed({
+  get: () => useDarkTheme.value,
+  set: value => {
+    settings.value.darkTheme = value
+  },
+})
 const inputs = computed(() => [
   { type: "text", key: "name", required: true },
   { type: "text", key: "email", required: true },
@@ -31,13 +39,25 @@ const inputs = computed(() => [
       extra: { loading: loading.value, disabled: loading.value },
     },
   },
+  {
+    type: "checkboxes",
+    new_line: true,
+    span: 2,
+    checkboxes: [
+      {
+        key: "darkTheme",
+        label: _.value.profile.dark_theme,
+        value: darkThemeChecked,
+      },
+    ],
+  },
 ])
 const save = async () => {
   loading.value = true
   try {
     await form.value.validate()
     await chefsStore.save(me.value.chef)
-    await auth.whoami()
+    await authStore.whoami()
     message.info(_.value.profile.saved)
     router.back()
   } catch (e) {
@@ -49,7 +69,7 @@ const save = async () => {
 </script>
 
 <template>
-  <AppPage :title="me.is_chef ? _.profile.title : _.profile.new">
+  <AppPage :title="isChef ? _.profile.title : _.profile.new">
     <n-form ref="form" :model="me.chef" @keydown.enter="save">
       <GenericForm v-model:data="me.chef" :inputs="inputs" group="Chef" />
       <vue-hcaptcha

@@ -1,11 +1,10 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router"
 import { _ } from "@/composables/translations.js"
-import { me } from "@/composables/auth.js"
+import { authApi, useAuthStore } from "@/data/auth.js"
 import { computed, ref, watch } from "vue"
 import { NForm } from "naive-ui"
 import { watchDebounced } from "@vueuse/core"
-import { authApi } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import AppPage from "@/components/app/AppPage.vue"
 import { useDarkTheme } from "@/composables/settings.js"
@@ -20,6 +19,7 @@ const form = ref()
 const registerLoading = ref(false)
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 let controller
 
 watch(
@@ -62,7 +62,7 @@ const register = async () => {
   try {
     await form.value.validate()
     const { response } = await hcaptcha.value.executeAsync()
-    me.value = await authApi.register({ ...user.value, response })
+    authStore.setMe(await authApi.register({ ...user.value, response }))
   } catch (e) {
     handleAxiosError(_.value.login.registration_error)(e)
   } finally {
@@ -74,8 +74,8 @@ const login = async () => {
   registerLoading.value = true
   try {
     await form.value.validate()
-    me.value = await authApi.login({ ...user.value })
-    if (me.value.is_chef && route.query.next) router.push(route.query.next)
+    authStore.setMe(await authApi.login({ ...user.value }))
+    if (authStore.isChef && route.query.next) router.push(route.query.next)
   } catch (e) {
     handleAxiosError(_.value.login.login_error)(e)
   } finally {
