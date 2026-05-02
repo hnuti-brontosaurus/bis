@@ -136,6 +136,7 @@ cookbook:
     tags: Tagy
     allergen_warning: Typicky obsahuje alergeny
     steps: Postup
+    cook_mode: Vařím
     tips: Tipy a triky
     comments: Komentáře
     sources: Zdroje

@@ -14,9 +14,10 @@ import {
   NGrid,
   useDialog,
 } from "naive-ui"
-import { computed, onMounted, watch } from "vue"
+import { computed, onMounted, onUnmounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
+import { useWakeLock } from "@vueuse/core"
 import { useRecipesStore, useRecipe } from "@/data/recipes.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
@@ -52,6 +53,18 @@ watch(() => route.params.id, ensureLoaded)
 
 const recipeId = computed(() => route.params.id)
 const recipe = useRecipe(recipeId)
+
+const {
+  isSupported: wakeLockSupported,
+  isActive: cookMode,
+  request,
+  release,
+} = useWakeLock()
+const toggleCookMode = async value => {
+  if (value) await request("screen")
+  else await release()
+}
+onUnmounted(() => release())
 
 // Mirrors the backend's _can_write rule for Recipe: editor can edit any
 // recipe; a chef can edit only their own.
@@ -150,7 +163,18 @@ const onDelete = () => {
         <RecipeIngredients :recipe="recipe"></RecipeIngredients>
       </n-grid-item>
       <n-grid-item>
-        <n-h2>{{ _.recipes.steps }}</n-h2>
+        <n-flex justify="space-between" align="center" :wrap="false">
+          <n-h2>{{ _.recipes.steps }}</n-h2>
+          <n-switch
+            v-if="wakeLockSupported"
+            :value="cookMode"
+            @update:value="toggleCookMode"
+            :round="false"
+          >
+            <template #checked>{{ _.recipes.cook_mode }}</template>
+            <template #unchecked>{{ _.recipes.cook_mode }}</template>
+          </n-switch>
+        </n-flex>
         <CollapseList :data="recipe.steps" checked-key="done">
           <template #header="{ item, i }"> {{ i + 1 }}. {{ item.name }} </template>
           <template #default="{ item }">

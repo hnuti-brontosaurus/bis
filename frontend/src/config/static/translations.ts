@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 950b781b990b835a
+// source-hash: caac1351f1697b75
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1211,6 +1211,7 @@ export const cookbook = {
     tags: 'Tagy',
     allergen_warning: 'Typicky obsahuje alergeny',
     steps: 'Postup',
+    cook_mode: 'Vařím',
     tips: 'Tipy a triky',
     comments: 'Komentáře',
     sources: 'Zdroje',
