@@ -150,10 +150,16 @@ describe("cookbook smoke", () => {
         cy.get(".n-base-selection").eq(0).click({ force: true })
       })
       cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
+      // Guard: the dropdown close event can collapse the section; re-open if needed.
+      cy.contains("h6", "Ingredience", { timeout: 10000 }).then($h6 => {
+        if (!$h6.closest(".n-collapse-item").find(".n-input-number").length) {
+          cy.wrap($h6).click({ force: true })
+        }
+      })
       cy.contains(".n-collapse-item", "Ingredience").within(() => {
         // Amount input. Break clear().type() chain: clear() triggers a Vue
         // re-render via v-model, detaching the element before type() runs.
-        cy.get(".n-input-number input").first().clear({ force: true })
+        cy.get(".n-input-number input", { timeout: 10000 }).first().clear({ force: true })
         cy.get(".n-input-number input").first().type("2")
         // Unit select (second n-select in the row).
         cy.get(".n-base-selection").eq(1).click({ force: true })
