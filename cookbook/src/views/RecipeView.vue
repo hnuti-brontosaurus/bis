@@ -31,6 +31,7 @@ import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
+import LinkifiedText from "@/components/app/LinkifiedText.vue"
 import { _ } from "@/composables/translations.js"
 
 const route = useRoute()
@@ -155,7 +156,7 @@ const onDelete = () => {
     />
 
     <n-text v-if="recipe.intro">
-      {{ recipe.intro }}
+      <LinkifiedText :text="recipe.intro" />
     </n-text>
 
     <n-grid cols="1 m:2" responsive="screen" x-gap="64" y-gap="64">
@@ -179,7 +180,9 @@ const onDelete = () => {
           <template #header="{ item, i }"> {{ i + 1 }}. {{ item.name }} </template>
           <template #default="{ item }">
             <n-flex v-if="item.description || item.photo">
-              <n-text v-if="item.description">{{ item.description }}</n-text>
+              <n-text v-if="item.description"
+                ><LinkifiedText :text="item.description"
+              /></n-text>
               <n-image
                 v-if="item.photo"
                 :preview-src="item.photo.large"
@@ -195,7 +198,7 @@ const onDelete = () => {
         <n-h2>{{ _.recipes.tips }}</n-h2>
         <CollapseList :data="recipe.tips">
           <template #default="{ item }">
-            {{ item.description }}
+            <LinkifiedText :text="item.description" />
           </template>
         </CollapseList>
       </n-grid-item>
@@ -205,7 +208,7 @@ const onDelete = () => {
       </n-grid-item>
       <n-grid-item span="2">
         <n-h2>{{ _.recipes.sources }}</n-h2>
-        <n-text>{{ recipe.sources }}</n-text>
+        <n-text><LinkifiedText :text="recipe.sources" /></n-text>
       </n-grid-item>
     </n-grid>
   </AppPage>
