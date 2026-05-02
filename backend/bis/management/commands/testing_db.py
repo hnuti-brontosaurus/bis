@@ -19,6 +19,7 @@ from categories.models import (
     QualificationCategory,
 )
 from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
 from cookbook.models.recipes import Recipe
 from cookbook_categories.models import RecipeDifficulty, RecipeRequiredTime
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -316,6 +317,11 @@ class Command(BaseCommand):
                 "chef.png",
                 SimpleUploadedFile("chef.png", buf.getvalue(), "image/png"),
             )
+        # A handful of ingredients so cypress specs can pick existing rows
+        # in the recipe edit form without having to also exercise the
+        # "create new ingredient" dialog.
+        for name in ("cukr", "mouka", "máslo"):
+            Ingredient.objects.get_or_create(name=name)
         # One canonical owned recipe so cypress specs can edit a real row
         # without reaching into the ORM. The edit form renders the photo, so
         # the file must actually exist on disk — `chef.recipes` is filtered to

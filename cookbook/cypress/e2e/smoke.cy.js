@@ -108,6 +108,82 @@ describe("cookbook smoke", () => {
     })
   })
 
+  it("adds an ingredient, step, and tip via the form and persists them", () => {
+    // Regression for #order-not-filled: the dynamic-input creates rows as
+    // `{}`, so the frontend must inject `order` from list position before
+    // PATCH or the backend rejects RecipeIngredient/RecipeStep.
+    const auth = getStoredAuth()
+    const token = auth.user?.token
+
+    getOwnedRecipeId(auth.chef?.id, token).then(recipeId => {
+      // Reset the seeded recipe to a known clean slate (no children) so
+      // the section dynamic-inputs render their empty-state create button.
+      cy.request({
+        method: "PATCH",
+        url: `${API_BASE_URL}/recipes/${recipeId}/`,
+        headers: { Authorization: `Token ${token}` },
+        body: { ingredients: [], steps: [], tips: [] },
+      })
+
+      const tag = `cypress-${Date.now()}`
+      const stepName = `step-${tag}`
+      const tipName = `tip-${tag}`
+      const tipDesc = `tip-desc-${tag}`
+
+      cy.visit(`/recipe/${recipeId}/edit/`)
+      cy.location("pathname").should("equal", `/cookbook/recipe/${recipeId}/edit/`)
+      cy.get("textarea", { timeout: 15000 }).should("have.length.gte", 1)
+
+      // Helper: expand a collapsed section by its header text. The header
+      // is an <h6> wrapped inside .n-collapse-item; click it to expand,
+      // then scope subsequent interactions to that collapse item.
+      const openSection = title =>
+        cy.contains("h6", title).click({ force: true }).closest(".n-collapse-item")
+
+      // Ingredience: empty list → click the empty-state create button,
+      // then drive the row's three inputs (ingredient select, amount,
+      // unit select).
+      openSection("Ingredience").within(() => {
+        cy.get(".n-dynamic-input").find("button").first().click({ force: true })
+        // Ingredient select (first n-select in the new row).
+        cy.get(".n-base-selection").eq(0).click({ force: true })
+      })
+      cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
+      openSection("Ingredience").within(() => {
+        // Amount input.
+        cy.get(".n-input-number input").first().clear({ force: true }).type("2")
+        // Unit select (second n-select in the row).
+        cy.get(".n-base-selection").eq(1).click({ force: true })
+      })
+      cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
+
+      // Postup: name + description.
+      openSection("Postup").within(() => {
+        cy.get(".n-dynamic-input").find("button").first().click({ force: true })
+        cy.get('input[type="text"]').first().clear({ force: true }).type(stepName)
+        cy.get("textarea").first().clear({ force: true }).type(`step-desc-${tag}`)
+      })
+
+      // Tipy a triky: name + description.
+      openSection("Tipy a triky").within(() => {
+        cy.get(".n-dynamic-input").find("button").first().click({ force: true })
+        cy.get('input[type="text"]').first().clear({ force: true }).type(tipName)
+        cy.get("textarea").first().clear({ force: true }).type(tipDesc)
+      })
+
+      cy.contains("button", "Uložit").click({ force: true })
+      // Successful save navigates to the detail page; failed save stays on edit.
+      cy.location("pathname", { timeout: 15000 }).should(
+        "equal",
+        `/cookbook/recipe/${recipeId}/`,
+      )
+
+      cy.reload()
+      cy.contains(stepName, { timeout: 10000 }).should("exist")
+      cy.contains(tipDesc).should("exist")
+    })
+  })
+
   it("renders chefs view", () => {
     cy.visit("/chefs/")
     cy.contains("Kuchařstvo").should("exist")
