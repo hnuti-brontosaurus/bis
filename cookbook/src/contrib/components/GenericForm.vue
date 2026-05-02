@@ -35,7 +35,7 @@ import { icon } from "@/contrib/composables/render.js"
 import {
   faArrowDown,
   faArrowUp,
-  faMinus,
+  faTrash,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
@@ -386,7 +386,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
                   <n-button-group style="margin-left: 1rem; align-items: center">
                     <n-button
                       @click="() => remove(index)"
-                      :render-icon="icon(faMinus)"
+                      :render-icon="icon(faTrash)"
                       size="tiny"
                     />
                     <n-button

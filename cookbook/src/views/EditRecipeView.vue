@@ -238,7 +238,7 @@ const save = async () => {
         }}</n-button>
       </n-flex>
     </template>
-    <n-form v-if="recipe" ref="form" :model="recipe" @keydown.enter="save">
+    <n-form v-if="recipe" ref="form" :model="recipe">
       <GenericForm
         v-model:data="recipe"
         :inputs="inputs"

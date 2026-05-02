@@ -114,6 +114,10 @@ const onDelete = () => {
             <template #prefix>{{ _.recipes.difficulty }}:</template
             >{{ recipe.difficulty.name }}
           </n-list-item>
+          <n-list-item v-if="recipe.required_time">
+            <template #prefix>{{ _.recipes.required_time }}:</template
+            >{{ recipe.required_time.name }}
+          </n-list-item>
           <n-list-item>
             <template #prefix>{{ _.recipes.tags }}:</template>
             <n-flex size="small">

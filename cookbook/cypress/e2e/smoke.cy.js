@@ -92,8 +92,6 @@ describe("cookbook smoke", () => {
         .first()
         .then($el => {
           const original = `${$el.val()}`.replace(/\s+$/, "")
-          // Avoid newlines: the form has @keydown.enter="save" which would
-          // submit prematurely. Append the tag with a single space.
           cy.wrap($el).clear().type(`${original} ${tag}`, { delay: 0 })
         })
 

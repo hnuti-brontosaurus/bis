@@ -132,6 +132,7 @@ cookbook:
     is_private: Neveřejný
     chef: Autorstvo
     difficulty: Obtížnost
+    required_time: Časová náročnost
     tags: Tagy
     steps: Postup
     tips: Tipy a triky
