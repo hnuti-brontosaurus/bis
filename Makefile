@@ -56,13 +56,13 @@ test_frontend: install_frontend
 		$(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
 # Cookbook cypress. Same shape as test_frontend but with the cookbook service.
-# Uses the testing_db-seeded `office_worker@hb.nope` user; the cypress spec
-# auto-creates a Chef + Recipe row if none exists.
+# Seeds user test@test.local as a Chef (via testing_db.create_cookbook_chef),
+# then runs Cypress pointing at the cookbook SPA.
 test_cookbook: install_cookbook
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
 	npx --yes wait-on http-get://localhost:8090/api/
-	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
+	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.management.commands.testing_db import Command; Command().create_cookbook_chef()"
 	npx --yes wait-on http-get://localhost:8090/cookbook/
 	(cd cookbook && npx cypress run \
 		--config baseUrl=http://localhost:8090/cookbook/ \
@@ -72,7 +72,7 @@ open_cypress: install_frontend
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile dev up --quiet-pull -d
 	npx --yes wait-on http-get://localhost:8090/api/
-	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
+	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.management.commands.testing_db import Command; Command().create_cookbook_chef()"
 	yarn --cwd frontend run wait-on http-get://localhost:8090
 	yarn --cwd frontend run cypress open --config baseUrl=http://localhost:8090
 
