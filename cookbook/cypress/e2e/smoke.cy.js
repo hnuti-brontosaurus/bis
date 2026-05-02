@@ -148,8 +148,10 @@ describe("cookbook smoke", () => {
       })
       cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
       openSection("Ingredience").within(() => {
-        // Amount input.
-        cy.get(".n-input-number input").first().clear({ force: true }).type("2")
+        // Amount input. Break clear().type() chain: clear() triggers a Vue
+        // re-render via v-model, detaching the element before type() runs.
+        cy.get(".n-input-number input").first().clear({ force: true })
+        cy.get(".n-input-number input").first().type("2")
         // Unit select (second n-select in the row).
         cy.get(".n-base-selection").eq(1).click({ force: true })
       })
@@ -158,15 +160,19 @@ describe("cookbook smoke", () => {
       // Postup: name + description.
       openSection("Postup").within(() => {
         cy.get(".n-dynamic-input").find("button").first().click({ force: true })
-        cy.get('input[type="text"]').first().clear({ force: true }).type(stepName)
-        cy.get("textarea").first().clear({ force: true }).type(`step-desc-${tag}`)
+        cy.get('input[type="text"]').first().clear({ force: true })
+        cy.get('input[type="text"]').first().type(stepName)
+        cy.get("textarea").first().clear({ force: true })
+        cy.get("textarea").first().type(`step-desc-${tag}`)
       })
 
       // Tipy a triky: name + description.
       openSection("Tipy a triky").within(() => {
         cy.get(".n-dynamic-input").find("button").first().click({ force: true })
-        cy.get('input[type="text"]').first().clear({ force: true }).type(tipName)
-        cy.get("textarea").first().clear({ force: true }).type(tipDesc)
+        cy.get('input[type="text"]').first().clear({ force: true })
+        cy.get('input[type="text"]').first().type(tipName)
+        cy.get("textarea").first().clear({ force: true })
+        cy.get("textarea").first().type(tipDesc)
       })
 
       cy.contains("button", "Uložit").click({ force: true })
