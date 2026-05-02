@@ -10,6 +10,8 @@ import {
 } from "naive-ui"
 import { computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faEyeSlash } from "@fortawesome/free-solid-svg-icons"
 import { useRecipesStore } from "@/data/recipes.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { _ } from "@/composables/translations.js"
@@ -52,11 +54,29 @@ const chefNameFor = chef_id => computed(() => chefsStore.byId[chef_id]?.name ?? 
             @click="onClick(recipe.id)"
           >
             <template #cover>
-              <img
-                :src="recipe.photo.medium"
-                :alt="recipe.name"
-                style="object-fit: cover; height: 200px"
-              />
+              <div style="position: relative">
+                <img
+                  :src="recipe.photo?.medium"
+                  :alt="recipe.name"
+                  style="object-fit: cover; height: 200px; width: 100%"
+                />
+                <div
+                  v-if="!recipe.is_public"
+                  :title="_.recipes.is_private"
+                  style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: rgba(0, 0, 0, 0.6);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    line-height: 1;
+                  "
+                >
+                  <font-awesome-icon :icon="faEyeSlash" />
+                </div>
+              </div>
             </template>
             {{ chefNameFor(recipe.chef_id).value }}
           </n-card>

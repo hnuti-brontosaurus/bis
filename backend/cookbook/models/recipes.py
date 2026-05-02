@@ -25,9 +25,9 @@ class Recipe(ChangeMixin, BaseModel):
         RecipeRequiredTime, related_name="recipes", on_delete=PROTECT
     )
     tags = m.ManyToManyField(RecipeTag, related_name="recipes", blank=True)
-    photo = ThumbnailImageField(upload_to="recipes")
-    intro = m.TextField()
-    sources = m.TextField()
+    photo = ThumbnailImageField(upload_to="recipes", blank=True)
+    intro = m.TextField(blank=True)
+    sources = m.TextField(blank=True)
     is_public = m.BooleanField(default=False)
 
 

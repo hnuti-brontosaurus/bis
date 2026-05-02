@@ -129,6 +129,24 @@ class RecipeSerializer(WritableNestedModelSerializer):
             "is_public",
         )
 
+    def validate(self, attrs):
+        # photo/intro/sources are required only when the recipe is public.
+        # Need the *effective* post-write value, which on PATCH means
+        # falling back to the current instance for fields not in `attrs`.
+        def effective(field):
+            if field in attrs:
+                return attrs[field]
+            return getattr(self.instance, field, None)
+
+        if effective("is_public"):
+            errors = {}
+            for field in ("photo", "intro", "sources"):
+                if not effective(field):
+                    errors[field] = "Veřejný recept musí mít vyplněné toto pole."
+            if errors:
+                raise serializers.ValidationError(errors)
+        return super().validate(attrs)
+
 
 class RecipeReferenceSerializer(serializers.ModelSerializer):
     class Meta:

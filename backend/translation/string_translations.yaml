@@ -129,6 +129,7 @@ cookbook:
     delete_content: Opravdu chceš tento recept smazat?
     delete_error: Nepodařilo se smazat recept
     is_public: Veřejný
+    is_private: Neveřejný
     chef: Autorstvo
     difficulty: Obtížnost
     tags: Tagy

@@ -1,5 +1,5 @@
 <script setup>
-import { NForm, NButton, NFlex, useDialog } from "naive-ui"
+import { NForm, NButton, NFlex, NSwitch, useDialog } from "naive-ui"
 import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
@@ -83,6 +83,10 @@ const tagGroups = computed(() => [
 
 const inputs = computed(() => {
   if (!recipe.value) return []
+  // Photo / intro / sources are required only when publishing the recipe;
+  // non-public recipes can be saved as drafts without them. Backend mirrors
+  // this in RecipeSerializer.validate.
+  const publishedRequired = !!recipe.value.is_public
   return [
     { type: "text", key: "name", required: true },
     // Only editors get to pick the chef; for plain chefs the field is
@@ -111,11 +115,7 @@ const inputs = computed(() => {
       options: storeOptions(requiredTimesStore).value,
       value: propertyRef(recipe, "required_time_id"),
     },
-    { type: "image", key: "photo", required: true },
-    {
-      type: "checkboxes",
-      checkboxes: [{ key: "is_public", label: _.value.Recipe.is_public }],
-    },
+    { type: "image", key: "photo", required: publishedRequired },
     ...tagGroups.value.map(group => ({
       type: "checkboxes",
       vertical: true,
@@ -139,14 +139,14 @@ const inputs = computed(() => {
     {
       type: "text",
       key: "intro",
-      required: true,
+      required: publishedRequired,
       new_line: true,
       extra: { type: "textarea" },
     },
     {
       type: "text",
       key: "sources",
-      required: true,
+      required: publishedRequired,
       extra: { type: "textarea" },
     },
     {
@@ -199,6 +199,10 @@ const save = async () => {
   backendErrors.value = {}
   try {
     await form.value.validate()
+    // `order` mirrors the list position the user sees; assign it here so
+    // reordering in the dynamic-input UI is what gets persisted.
+    recipe.value.ingredients.forEach((row, i) => (row.order = i))
+    recipe.value.steps.forEach((row, i) => (row.order = i))
     const saved = await recipesStore.save(recipe.value)
     router.push({ name: "recipe", params: { id: saved.id } })
   } catch (e) {
@@ -217,7 +221,17 @@ const save = async () => {
 <template>
   <AppPage :title="recipe_id ? _.edit_recipe.title_edit : _.edit_recipe.title_new">
     <template #actions>
-      <n-flex>
+      <n-flex align="center">
+        <n-switch
+          v-if="recipe"
+          :value="!!recipe.is_public"
+          @update:value="v => (recipe.is_public = v)"
+          :round="false"
+          size="large"
+        >
+          <template #checked>{{ _.recipes.is_public }}</template>
+          <template #unchecked>{{ _.recipes.is_private }}</template>
+        </n-switch>
         <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
         <n-button v-if="recipe_id" type="error" ghost @click="onDelete">{{
           _.recipes.delete
