@@ -75,10 +75,22 @@ class Command(BaseCommand):
             else:
                 self.create_event_categories(value, slug, name)
 
-    def handle(self, *args, **options):
-        self.create_bis_categories()
-        self.create_game_book_categories()
-        self.create_cookbook_categories()
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--group",
+            choices=["bis", "game_book", "cookbook"],
+            help="Single category group to create. Default: all. "
+            "`testing_db cookbook` passes --group cookbook to keep the "
+            "cypress seed fast.",
+        )
+
+    def handle(self, *args, group=None, **options):
+        if group is None or group == "bis":
+            self.create_bis_categories()
+        if group is None or group == "game_book":
+            self.create_game_book_categories()
+        if group is None or group == "cookbook":
+            self.create_cookbook_categories()
 
     def create_bis_categories(self):
         DietCategory.objects.update_or_create(

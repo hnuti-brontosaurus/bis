@@ -1,48 +1,27 @@
 /// <reference types="cypress" />
 
-const BACKEND_CONTAINER = Cypress.env("BACKEND_CONTAINER") || "bis-backend"
 const TEST_USER_EMAIL = Cypress.env("TEST_USER_EMAIL") || "lamanchy@gmail.com"
-
-/**
- * Returns the id of an editable recipe owned by the logged-in chef whose
- * photo file actually exists on disk. Creates one if none exists yet —
- * keeps the spec runnable against either the dev DB or a clean
- * `testing_db` seed.
- */
-const ensureEditableRecipe = chefId =>
-  cy
-    .exec(
-      `docker exec ${BACKEND_CONTAINER} python manage.py shell -c "` +
-        `import os; from cookbook.models.recipes import Recipe; ` +
-        `cands=[r for r in Recipe.objects.filter(chef_id=${chefId}) ` +
-        `if r.photo and os.path.exists(r.photo.path)]; ` +
-        `print(cands[0].id if cands else '')"`,
-    )
-    .then(({ stdout }) => {
-      const id = parseInt(stdout.trim().split(/\s+/).pop(), 10)
-      if (id >= 1) return id
-      return cy
-        .exec(
-          `docker exec ${BACKEND_CONTAINER} python manage.py shell -c "` +
-            `from io import BytesIO; from PIL import Image; ` +
-            `from django.core.files.uploadedfile import SimpleUploadedFile; ` +
-            `from cookbook.models.recipes import Recipe; ` +
-            `from cookbook_categories.models import RecipeDifficulty, RecipeRequiredTime; ` +
-            `d, _ = RecipeDifficulty.objects.get_or_create(slug='easy', defaults={'name': 'easy', 'order': 1}); ` +
-            `t, _ = RecipeRequiredTime.objects.get_or_create(slug='fast', defaults={'name': 'fast', 'order': 1}); ` +
-            `buf = BytesIO(); Image.new('RGB', (8, 8), 'red').save(buf, format='PNG'); ` +
-            `f = SimpleUploadedFile('seed.png', buf.getvalue(), content_type='image/png'); ` +
-            `r = Recipe.objects.create(name='Cypress seed', chef_id=${chefId}, difficulty=d, required_time=t, photo=f, intro='intro', sources='.'); ` +
-            `print(r.id)"`,
-        )
-        .then(({ stdout: out }) => parseInt(out.trim().split(/\s+/).pop(), 10))
-    })
+const API_BASE_URL = Cypress.env("API_BASE_URL") || "http://localhost/api/cookbook"
 
 // Read the whoami payload out of the pinia-persisted auth store.
 const getStoredAuth = () => {
   const raw = window.localStorage.getItem("cookbook:auth:v1")
   return raw ? (JSON.parse(raw).me ?? {}) : {}
 }
+
+// Returns the id of a recipe owned by the logged-in chef. The seed
+// (`testing_db cookbook`) guarantees one exists with a photo on disk, so
+// this is just a list call against the API the SPA itself uses.
+const getOwnedRecipeId = (chefId, token) =>
+  cy
+    .request({
+      url: `${API_BASE_URL}/recipes/?chef=${chefId}`,
+      headers: { Authorization: `Token ${token}` },
+    })
+    .then(({ body }) => {
+      expect(body.results, "owned recipes").to.have.length.gte(1)
+      return body.results[0].id
+    })
 
 describe("cookbook smoke", () => {
   beforeEach(() => {
@@ -66,15 +45,12 @@ describe("cookbook smoke", () => {
   })
 
   it("renders recipes list and a recipe detail", () => {
-    const auth = getStoredAuth()
-    ensureEditableRecipe(auth.chef?.id ?? 0).then(() => {
-      cy.visit("/recipes/")
-      cy.contains("Recepty").should("exist")
-      // Wait for recipe cards to render then click the first.
-      cy.get(".n-card", { timeout: 10000 }).first().click()
-      cy.location("pathname").should("match", /\/recipe\/\d+\//)
-      cy.contains("Autorstvo").should("be.visible")
-    })
+    cy.visit("/recipes/")
+    cy.contains("Recepty").should("exist")
+    // Wait for recipe cards to render then click the first.
+    cy.get(".n-card", { timeout: 10000 }).first().click()
+    cy.location("pathname").should("match", /\/recipe\/\d+\//)
+    cy.contains("Autorstvo").should("be.visible")
   })
 
   it("opens edit form, mutates description, and persists", () => {
@@ -82,9 +58,8 @@ describe("cookbook smoke", () => {
     const auth = getStoredAuth()
     const token = auth.user?.token
 
-    ensureEditableRecipe(auth.chef?.id ?? 0).then(recipeId => {
+    getOwnedRecipeId(auth.chef?.id, token).then(recipeId => {
       cy.task("log", `recipeId=${recipeId}`)
-      expect(recipeId, "owned recipe with photo").to.be.gte(1)
 
       cy.intercept("**/api/cookbook/**").as("api")
       cy.visit(`/recipe/${recipeId}/edit/`, {
@@ -131,9 +106,6 @@ describe("cookbook smoke", () => {
       cy.reload()
       cy.contains(tag).should("exist")
     })
-
-    // Reference token to avoid lint complaining about unused destructure.
-    expect(token).to.be.a("string")
   })
 
   it("renders chefs view", () => {

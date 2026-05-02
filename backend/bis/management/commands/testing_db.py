@@ -19,6 +19,8 @@ from categories.models import (
     QualificationCategory,
 )
 from cookbook.models.chefs import Chef
+from cookbook.models.recipes import Recipe
+from cookbook_categories.models import RecipeDifficulty, RecipeRequiredTime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -42,13 +44,32 @@ class Command(BaseCommand):
 
         super().__init__(*args, **kwargs)
 
-    def handle(self, *args, **options):
-        call_command("flush", no_input=False)
-        call_command("create_categories")
-        call_command("import_regions")
-        call_command("import_zip_codes")
-        self.create_testing_db()
-        # call_command("import_locations")
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "target",
+            choices=["dev", "cookbook"],
+            help=(
+                "dev: full demo seed for dev.bis.brontosaurus.cz "
+                "(flush + categories + regions + zip codes + ~80 demo entities). "
+                "cookbook: minimal idempotent seed for Cypress cookbook tests "
+                "(categories + chef). No flush — safe to re-run."
+            ),
+        )
+
+    def handle(self, *args, target, **options):
+        if target == "dev":
+            call_command("flush", no_input=False)
+            call_command("create_categories")
+            call_command("import_regions")
+            call_command("import_zip_codes")
+            self.create_testing_db()
+            # call_command("import_locations")
+        elif target == "cookbook":
+            # Idempotent: create_categories uses update_or_create, and
+            # create_cookbook_chef uses get_or_create. --group cookbook skips
+            # the BIS + game book taxonomies the cypress suite never touches.
+            call_command("create_categories", group="cookbook")
+            self.create_cookbook_chef()
 
     def create_user(
         self,
@@ -294,6 +315,28 @@ class Command(BaseCommand):
             chef.photo.save(
                 "chef.png",
                 SimpleUploadedFile("chef.png", buf.getvalue(), "image/png"),
+            )
+        # One canonical owned recipe so cypress specs can edit a real row
+        # without reaching into the ORM. The edit form renders the photo, so
+        # the file must actually exist on disk — `chef.recipes` is filtered to
+        # rows whose photo file is present, and one is created if none qualify.
+        if not any(
+            r.photo and r.photo.storage.exists(r.photo.name) for r in chef.recipes.all()
+        ):
+            difficulty = RecipeDifficulty.objects.get(slug="simple")
+            required_time = RecipeRequiredTime.objects.get(slug="fast")
+            buf = BytesIO()
+            Image.new("RGB", (8, 8), "red").save(buf, format="PNG")
+            Recipe.objects.create(
+                name="Cypress seed",
+                chef=chef,
+                difficulty=difficulty,
+                required_time=required_time,
+                photo=SimpleUploadedFile(
+                    "seed.png", buf.getvalue(), content_type="image/png"
+                ),
+                intro="intro",
+                sources=".",
             )
 
     def create_testing_db(self):

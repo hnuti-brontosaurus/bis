@@ -23,11 +23,22 @@ make clean            # Stop all containers and remove orphans
 
 ### Testing
 ```bash
-make test             # Run all tests (backend + frontend)
-make test_backend     # Run pytest tests only
-make test_frontend    # Run Cypress tests only
-make open_cypress     # Open Cypress interactive test runner
+make test              # Run all tests (backend + frontend + cookbook)
+make test_backend      # Run pytest tests only
+make test_frontend     # Frontend Cypress — FULLY MOCKED (cy.intercept). No backend or DB.
+make test_cookbook     # Cookbook Cypress — REAL e2e against backend + postgres.
+make cypress_frontend  # Interactive Cypress for the frontend (mock-only stack).
+make cypress_cookbook  # Interactive Cypress for the cookbook (real backend stack).
 ```
+
+Test stack profiles (`docker-compose.test.yaml`):
+- `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `cypress_frontend`.
+- `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `cypress_cookbook`.
+- `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
+
+Cookbook chef seeding lives in `cookbook/cypress.config.js` (`before:spec` hook), not in the Makefile, so interactive runs seed too. It calls `python manage.py testing_db cookbook`, which is idempotent.
+
+Cookbook tests rely on real backend state. The `testing_db cookbook` seed provides everything specs need (chef + canonical recipe with photo); specs talk to the same HTTP API the SPA uses, not the ORM directly. Mutations within a test use uniquely-tagged values (e.g. `cypress-${Date.now()}`) so the assertion only depends on what *that* test wrote — not on global counts. The test DB volume is wiped on teardown.
 
 ### Backend-specific
 ```bash
@@ -35,7 +46,8 @@ docker exec -it bis-backend sh                          # Shell into backend con
 docker exec -it bis-backend python manage.py <command>  # Run Django management command
 docker exec -it bis-backend python manage.py migrate    # Apply migrations
 docker exec -it bis-backend python manage.py reset      # Import old database
-docker exec -it bis-backend python manage.py testing_db # Create test database
+docker exec -it bis-backend python manage.py testing_db dev      # Full demo seed for dev.bis.brontosaurus.cz (flush + ~80 entities)
+docker exec -it bis-backend python manage.py testing_db cookbook # Minimal idempotent seed for cookbook tests (categories + chef)
 ```
 
 Containers run as the host UID/GID (`user: ${UID}:${GID}` in `docker-compose.yaml`, exported by the Makefile), so files written from inside (migrations, fixtures, build output) are owned by your host user. No `-u` flag or `sudo chown` needed.

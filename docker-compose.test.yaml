@@ -19,6 +19,10 @@ services:
       - ./logs:/app/logs
       - ./backend/media:/app/media
 
+  # Postgres + backend are gated behind profiles so `test_frontend` (which is
+  # fully mocked via cy.intercept) can run nginx + frontend only — no DB, no
+  # Django. They come up for `test_cookbook` (real e2e), `test_backend`, and
+  # the dev profile.
   postgres:
     container_name: bis-test-postgres
     ports: !override []
@@ -29,6 +33,10 @@ services:
       POSTGRES_DB: bis_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123
+    profiles:
+      - backend
+      - cookbook
+      - dev
 
   backend:
     image: bis-backend:latest
@@ -46,6 +54,10 @@ services:
       TEST: 1
       ALLOWED_HOSTS: "*"
       DEBUG: 1
+    profiles:
+      - backend
+      - cookbook
+      - dev
 
   frontend:
     image: bis-frontend:latest

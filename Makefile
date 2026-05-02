@@ -18,7 +18,7 @@ TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
 TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend down -t 0 -v --remove-orphans
 
 .PHONY: build dev clean test test_backend test_frontend test_cookbook \
-        open_cypress build_frontend build_cookbook \
+        cypress_frontend cypress_cookbook build_frontend build_cookbook \
         install_frontend install_cookbook
 
 build: .env
@@ -42,39 +42,48 @@ test_backend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm --quiet-pull backend sh docker-entrypoint.sh test
 
-# Frontend cypress. Brings up backend + frontend + nginx in bis-test, seeds
-# the testing_db, then runs cypress on the host pointed at http://localhost:8090.
+# Frontend cypress — FULLY MOCKED. Specs use cy.intercept for every API call,
+# so no backend, postgres, or seeded user is needed. The `frontend` compose
+# profile only brings up nginx + frontend (backend/postgres are gated behind
+# the `backend` profile in docker-compose.test.yaml).
 test_frontend: install_frontend
 	yarn --cwd frontend run test:types
 	yarn --cwd frontend run test:unit
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
-	npx --yes wait-on http-get://localhost:8090/api/
-	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.models import User; from rest_framework.authtoken.models import Token; u, _ = User.objects.get_or_create(email='test@test.local', defaults={'first_name': 'Cypress', 'last_name': 'Tester'}); Token.objects.get_or_create(user=u)"
 	yarn --cwd frontend run wait-on http-get://localhost:8090
 	yarn --cwd frontend run cypress run --config baseUrl=http://localhost:8090 \
 		$(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
-# Cookbook cypress. Same shape as test_frontend but with the cookbook service.
-# Seeds user test@test.local as a Chef (via testing_db.create_cookbook_chef),
-# then runs Cypress pointing at the cookbook SPA.
+# Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
+# profile brings up nginx + cookbook + backend + postgres. Chef seeding lives
+# in cookbook/cypress.config.js (`before:spec`) so it runs in both `cypress
+# run` and `cypress open`.
 test_cookbook: install_cookbook
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
 	npx --yes wait-on http-get://localhost:8090/api/
-	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.management.commands.testing_db import Command; Command().create_cookbook_chef()"
 	npx --yes wait-on http-get://localhost:8090/cookbook/
 	(cd cookbook && npx cypress run \
 		--config baseUrl=http://localhost:8090/cookbook/ \
 		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
 
-open_cypress: install_frontend
+# Interactive cypress for the frontend — same mock-only stack as test_frontend.
+cypress_frontend: install_frontend
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) --profile dev up --quiet-pull -d
-	npx --yes wait-on http-get://localhost:8090/api/
-	$(TEST_COMPOSE) exec -T backend python manage.py shell -c "from bis.management.commands.testing_db import Command; Command().create_cookbook_chef()"
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
 	yarn --cwd frontend run wait-on http-get://localhost:8090
 	yarn --cwd frontend run cypress open --config baseUrl=http://localhost:8090
+
+# Interactive cypress for the cookbook — same real-backend stack as test_cookbook.
+cypress_cookbook: install_cookbook
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
+	npx --yes wait-on http-get://localhost:8090/api/
+	npx --yes wait-on http-get://localhost:8090/cookbook/
+	(cd cookbook && npx cypress open \
+		--config baseUrl=http://localhost:8090/cookbook/ \
+		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
 
 build_frontend:
 	docker compose run --rm frontend sh docker-entrypoint.sh build
