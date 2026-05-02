@@ -150,7 +150,7 @@ describe("cookbook smoke", () => {
         cy.get(".n-base-selection").eq(0).click({ force: true })
       })
       cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
-      openSection("Ingredience").within(() => {
+      cy.contains(".n-collapse-item", "Ingredience").within(() => {
         // Amount input. Break clear().type() chain: clear() triggers a Vue
         // re-render via v-model, detaching the element before type() runs.
         cy.get(".n-input-number input").first().clear({ force: true })
