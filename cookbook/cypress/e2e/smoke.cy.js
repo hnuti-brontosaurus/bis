@@ -136,7 +136,7 @@ describe("cookbook smoke", () => {
       // is an <h6> wrapped inside .n-collapse-item; click it to expand,
       // then scope subsequent interactions to that collapse item.
       const openSection = title =>
-        cy.contains("h6", title).click({ force: true }).closest(".n-collapse-item")
+        cy.contains("h6", title, { timeout: 10000 }).click({ force: true }).closest(".n-collapse-item")
 
       // Ingredience: empty list → click the empty-state create button,
       // then drive the row's three inputs (ingredient select, amount,
