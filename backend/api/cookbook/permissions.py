@@ -23,6 +23,7 @@ from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -47,6 +48,7 @@ class CookbookAccessPermission(BasePermission):
 
         if model in (
             Ingredient,
+            Allergen,
             RecipeDifficulty,
             RecipeRequiredTime,
             RecipeTag,

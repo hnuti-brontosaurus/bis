@@ -134,6 +134,7 @@ cookbook:
     difficulty: Obtížnost
     required_time: Časová náročnost
     tags: Tagy
+    allergen_warning: Typicky obsahuje alergeny
     steps: Postup
     tips: Tipy a triky
     comments: Komentáře

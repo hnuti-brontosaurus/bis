@@ -7,6 +7,7 @@ import { useUnitsStore } from "./units.js"
 import { useRecipeDifficultiesStore } from "./recipeDifficulties.js"
 import { useRecipeRequiredTimesStore } from "./recipeRequiredTimes.js"
 import { useRecipeTagsStore } from "./recipeTags.js"
+import { useAllergensStore } from "./allergens.js"
 
 export const recipesApi = crudApi("/recipes")
 
@@ -45,6 +46,7 @@ export const useRecipe = id => {
   const tagsStore = useRecipeTagsStore()
   const ingredientsStore = useIngredientsStore()
   const unitsStore = useUnitsStore()
+  const allergensStore = useAllergensStore()
 
   return computed(() => {
     const raw = recipesStore.byId[unref(id)]
@@ -55,6 +57,9 @@ export const useRecipe = id => {
       difficulty: difficultiesStore.byId[raw.difficulty_id],
       required_time: requiredTimesStore.byId[raw.required_time_id],
       tags: (raw.tag_ids ?? []).map(tagId => tagsStore.byId[tagId]).filter(Boolean),
+      allergens: (raw.allergen_ids ?? [])
+        .map(id => allergensStore.byId[id])
+        .filter(Boolean),
       ingredients: (raw.ingredients ?? []).map(row => ({
         ...row,
         ingredient: ingredientsStore.byId[row.ingredient_id],

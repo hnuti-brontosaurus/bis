@@ -27,6 +27,7 @@ from cookbook.models.recipes import (
     RecipeTip,
 )
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -47,9 +48,16 @@ class ChefSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    allergen_ids = PrimaryKeyRelatedField(
+        source="allergens",
+        queryset=Allergen.objects.all(),
+        many=True,
+        required=False,
+    )
+
     class Meta:
         model = Ingredient
-        fields = ("id", "name", "state", "g_per_piece", "g_per_liter")
+        fields = ("id", "name", "state", "g_per_piece", "g_per_liter", "allergen_ids")
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -109,6 +117,9 @@ class RecipeSerializer(WritableNestedModelSerializer):
     steps = RecipeStepSerializer(many=True, required=False)
     tips = RecipeTipSerializer(many=True, required=False)
     comments = RecipeCommentSerializer(many=True, required=False, read_only=True)
+    # Cached on the Recipe via signals (cookbook.signals); chefs edit
+    # allergens on the Ingredient, never per-recipe.
+    allergen_ids = PrimaryKeyRelatedField(source="allergens", many=True, read_only=True)
 
     class Meta:
         model = Recipe
@@ -126,6 +137,7 @@ class RecipeSerializer(WritableNestedModelSerializer):
             "steps",
             "tips",
             "comments",
+            "allergen_ids",
             "is_public",
         )
 

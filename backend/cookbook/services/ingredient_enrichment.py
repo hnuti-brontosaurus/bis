@@ -14,6 +14,7 @@ import json
 
 import groq
 from cookbook.models.ingredients import Ingredient
+from cookbook_categories.models import Allergen
 from django.conf import settings
 
 # https://console.groq.com/playground
@@ -35,6 +36,7 @@ Vždy vrať všechny klíče v tomto schématu:
   "g_per_liter": integer | null,
   "g_per_piece": integer | null,
   "g_per_serving": integer | null,
+  "allergens": list of strings z {"gluten","soya","nuts"},
   "reasoning": string
 }
 
@@ -65,17 +67,23 @@ Pravidla:
 - Použij pouze u surovin, kde pojem porce dává smysl (např. příloha, pečivo, těstoviny, rýže), či pro typické možství (olej na pánev, sůl).
 - Pokud pojem porce nedává smysl, vrať null.
 
-5) Nejednoznačný nebo nesmyslný vstup
+5) "allergens"
+- Seznam slugů alergenů, které surovina typicky obsahuje. Povolené hodnoty: "gluten" (lepek — pšenice, ječmen, žito, špalda, kuskus, bulgur, pšeničná mouka, chleba, těstoviny, pivo, ...), "soya" (sója — sójové boby, sójové mléko, tofu, tempeh, sójová omáčka, ...), "nuts" (oříšky — vlašské, lískové, kešu, mandle, pistácie, para, makadamy, pekanové ořechy; arašídy NE — botanicky luštěnina).
+- Pokud surovina žádný z těchto alergenů typicky neobsahuje, vrať [].
+- Buď opatrný — vrať alergen jen tehdy, je-li v surovině typicky obsažen v běžně prodávané variantě.
+
+6) Nejednoznačný nebo nesmyslný vstup
 - Pokus se o nejlepší možný odhad.
 - Pokud ani tak nelze rozhodnout, použij tento fallback:
   {
     "state": "solid",
     "g_per_liter": null,
     "g_per_piece": null,
-    "g_per_serving": null
+    "g_per_serving": null,
+    "allergens": []
   }
 
-6) Výstup
+7) Výstup
 - Musí být validní JSON.
 - Používej pouze dvojité uvozovky.
 - Žádné trailing čárky.
@@ -84,13 +92,19 @@ Pravidla:
 Příklady (vstup -> výstup):
 
 brambory ->
-{"state":"solid","g_per_liter":null,"g_per_piece":85,"g_per_serving":250,"reasoning":"Brambory jsou pevná surovina, která se běžně používá v kusech a jako příloha. Průměrná brambora váží kolem 85g a typická porce je asi 250g."}
+{"state":"solid","g_per_liter":null,"g_per_piece":85,"g_per_serving":250,"allergens":[],"reasoning":"Brambory jsou pevná surovina, která se běžně používá v kusech a jako příloha. Průměrná brambora váží kolem 85g a typická porce je asi 250g."}
 
 mléko ->
-{"state":"liquid","g_per_liter":1030,"g_per_piece":null,"g_per_serving":null,"reasoning":"Mléko je tekutá surovina s hustotou přibližně 1030g/l. Nepočítá se na kusy a nemá standardní porci."}
+{"state":"liquid","g_per_liter":1030,"g_per_piece":null,"g_per_serving":null,"allergens":[],"reasoning":"Mléko je tekutá surovina s hustotou přibližně 1030g/l. Nepočítá se na kusy a nemá standardní porci."}
 
 mouka ->
-{"state":"solid","g_per_liter":600,"g_per_piece":null,"g_per_serving":null,"reasoning":"Mouka je sypká pevná surovina s objemovou hustotou kolem 600g/l. Nepoužívá se v kusech a nemá standardní porci."}"""
+{"state":"solid","g_per_liter":600,"g_per_piece":null,"g_per_serving":null,"allergens":["gluten"],"reasoning":"Hladká pšeničná mouka je sypká pevná surovina s objemovou hustotou kolem 600g/l. Obsahuje lepek."}
+
+vlašské ořechy ->
+{"state":"solid","g_per_liter":null,"g_per_piece":5,"g_per_serving":30,"allergens":["nuts"],"reasoning":"Vlašské ořechy se běžně počítají na kusy (~5g) a typická porce je hrst (~30g). Patří mezi ořechy."}
+
+tofu ->
+{"state":"solid","g_per_liter":null,"g_per_piece":null,"g_per_serving":150,"allergens":["soya"],"reasoning":"Tofu je sójový výrobek; běžná porce 150g. Obsahuje sóju."}"""
 
 
 def enrich_ingredient(instance: Ingredient) -> bool:
@@ -134,5 +148,11 @@ def enrich_ingredient(instance: Ingredient) -> bool:
         instance.g_per_serving = int(g_per_serving)
     if reasoning := data.get("reasoning"):
         instance.reasoning = reasoning
+
+    # Allergens are M2M and require an existing PK; the caller (post-create)
+    # already has one. Replace the set even when empty so a reclassification
+    # can clear stale flags.
+    allergen_slugs = data.get("allergens") or []
+    instance.allergens.set(Allergen.objects.filter(slug__in=allergen_slugs))
 
     return True

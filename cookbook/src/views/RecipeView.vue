@@ -1,5 +1,6 @@
 <script setup>
 import {
+  NAlert,
   NFlex,
   NTag,
   NList,
@@ -23,6 +24,7 @@ import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
 import { useRecipeTagsStore } from "@/data/recipeTags.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
+import { useAllergensStore } from "@/data/allergens.js"
 import { useAuthStore } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
@@ -42,6 +44,7 @@ useRecipeRequiredTimesStore().fetchAll()
 useRecipeTagsStore().fetchAll()
 useIngredientsStore().fetchAll()
 useUnitsStore().fetchAll()
+useAllergensStore().fetchAll()
 
 const ensureLoaded = id => recipesStore.fetchOne(id)
 onMounted(() => ensureLoaded(route.params.id))
@@ -129,6 +132,14 @@ const onDelete = () => {
         </n-list>
       </n-flex>
     </template>
+
+    <n-alert
+      v-if="recipe.allergens.length"
+      type="warning"
+      :title="
+        _.recipes.allergen_warning + ': ' + recipe.allergens.map(a => a.name).join(', ')
+      "
+    />
 
     <n-text v-if="recipe.intro">
       {{ recipe.intro }}

@@ -1,4 +1,5 @@
 from cookbook.models.base import BaseModel, ChangeMixin
+from cookbook_categories.models import Allergen
 from django.db import models as m
 from translation.translate import translate_model
 
@@ -15,3 +16,4 @@ class Ingredient(ChangeMixin, BaseModel):
     g_per_liter = m.PositiveSmallIntegerField(blank=True, null=True)
     g_per_serving = m.PositiveSmallIntegerField(blank=True, null=True)
     reasoning = m.TextField(blank=True)
+    allergens = m.ManyToManyField(Allergen, related_name="ingredients", blank=True)

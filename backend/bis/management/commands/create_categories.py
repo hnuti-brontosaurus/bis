@@ -26,6 +26,7 @@ from categories.models import (
     TeamRoleCategory,
 )
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -1183,3 +1184,16 @@ class Command(BaseCommand):
         ]
         for i, (slug, abbreviation, name, name2, name5, of) in enumerate(units):
             Unit.objects.update_or_create(slug=slug, defaults=dict(order=i, name=name))
+
+        # Allergens we currently warn about. Slugs are stable identifiers
+        # used by the Groq enrichment prompt and the test suite; names are
+        # the user-visible Czech labels.
+        allergens = [
+            ("gluten", "lepek"),
+            ("soya", "sója"),
+            ("nuts", "oříšky"),
+        ]
+        for i, (slug, name) in enumerate(allergens):
+            Allergen.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )

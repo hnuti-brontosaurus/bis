@@ -4,6 +4,7 @@ from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -29,6 +30,19 @@ class Recipe(ChangeMixin, BaseModel):
     intro = m.TextField(blank=True)
     sources = m.TextField(blank=True)
     is_public = m.BooleanField(default=False)
+    # Denormalized cache of the allergens contributed by this recipe's
+    # ingredients. Kept in sync by signals in cookbook.signals (whenever a
+    # RecipeIngredient is added/removed, or an Ingredient's allergen set
+    # changes). Read by the API; not editable per-recipe.
+    allergens = m.ManyToManyField(Allergen, related_name="recipes", blank=True)
+
+    def refresh_allergens(self):
+        ids = (
+            Allergen.objects.filter(ingredients__recipe_ingredients__recipe=self)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        self.allergens.set(list(ids))
 
 
 @translate_model

@@ -31,9 +31,8 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
         Recipe.objects.select_related("chef", "chef__user", "difficulty")
         .prefetch_related(
             "tags",
+            "allergens",
             "ingredients",
-            "ingredients__ingredient",
-            "ingredients__unit",
             "steps",
             "tips",
             "comments",

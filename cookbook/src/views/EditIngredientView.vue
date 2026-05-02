@@ -8,6 +8,7 @@ import GenericForm from "@/contrib/components/GenericForm.vue"
 import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
+import { useAllergensStore } from "@/data/allergens.js"
 import { _ } from "@/composables/translations.js"
 
 const route = useRoute()
@@ -16,16 +17,23 @@ const dialog = useDialog()
 const form = ref()
 
 const ingredientsStore = useIngredientsStore()
+const allergensStore = useAllergensStore()
+allergensStore.fetchAll()
 
 const ingredient_id = route.params.id
-const ingredient = ref(ingredient_id ? null : { name: "", state: "solid" })
+const ingredient = ref(
+  ingredient_id ? null : { name: "", state: "solid", allergen_ids: [] },
+)
 
 onMounted(async () => {
   if (ingredient_id) {
     const fresh = await ingredientsStore.fetchOne(ingredient_id)
     ingredient.value = JSON.parse(JSON.stringify(fresh))
+    ingredient.value.allergen_ids ??= []
   }
 })
+
+const allergenIds = computed(() => ingredient.value?.allergen_ids ?? [])
 
 const stateOptions = computed(() => [
   { value: "solid", label: _.value.ingredients.state_solid },
@@ -45,6 +53,26 @@ const inputs = computed(() => {
     { type: "number", key: "g_per_piece" },
     { type: "number", key: "g_per_liter" },
     { type: "number", key: "g_per_serving" },
+    {
+      type: "checkboxes",
+      key: "allergen_ids",
+      title: _.value.Ingredient.allergens,
+      checkboxes: allergensStore.list.map(allergen => ({
+        key: allergen.id,
+        label: allergen.name,
+        value: computed({
+          get: () => allergenIds.value.includes(allergen.id),
+          set: value => {
+            if (value && !allergenIds.value.includes(allergen.id))
+              ingredient.value.allergen_ids.push(allergen.id)
+            if (!value)
+              ingredient.value.allergen_ids = ingredient.value.allergen_ids.filter(
+                id => id !== allergen.id,
+              )
+          },
+        }),
+      })),
+    },
   ]
 })
 
@@ -94,7 +122,7 @@ const onDelete = () => {
         }}</n-button>
       </n-flex>
     </template>
-    <n-form v-if="ingredient" ref="form" :model="ingredient" @keydown.enter="save">
+    <n-form v-if="ingredient" ref="form" :model="ingredient">
       <GenericForm
         v-model:data="ingredient"
         :inputs="inputs"
