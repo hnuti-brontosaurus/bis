@@ -114,10 +114,6 @@ services:
       WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
       XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
       PULSE_SERVER: ${PULSE_SERVER:-}
-      # Cypress config + Cypress.env() values (CYPRESS_* vars are auto-promoted)
-      CYPRESS_baseUrl: http://nginx/cookbook/
-      CYPRESS_TEST_USER_EMAIL: test@test.local
-      CYPRESS_API_BASE_URL: http://nginx/api/cookbook
     # No depends_on — the Makefile's `up -d --profile cookbook` brings the
     # rest of the stack up first, and the entrypoint waits for nginx itself.
     # Adding depends_on here would couple build/run resolution to services

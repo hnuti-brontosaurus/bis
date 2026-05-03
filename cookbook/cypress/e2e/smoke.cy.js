@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-const TEST_USER_EMAIL = Cypress.env("TEST_USER_EMAIL") || "lamanchy@gmail.com"
-const API_BASE_URL = Cypress.env("API_BASE_URL") || "http://localhost/api/cookbook"
+const TEST_USER_EMAIL = "test@test.local"
+const API_BASE_URL = "http://nginx/api/cookbook"
 
 // Read the whoami payload out of the pinia-persisted auth store.
 const getStoredAuth = () => {

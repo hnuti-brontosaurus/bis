@@ -1,8 +1,9 @@
 // Bare config object (no `defineConfig` import) so cypress is not required
 // in cookbook/node_modules — the runner image (cypress/included) provides it.
 export default {
+  allowCypressEnv: false,
   e2e: {
-    baseUrl: "http://localhost/cookbook/",
+    baseUrl: "http://nginx/cookbook/",
     responseTimeout: 10000,
     pageLoadTimeout: 30000,
     video: false,
