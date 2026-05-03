@@ -15,11 +15,10 @@ CLEANUP := docker compose down -t 0 --remove-orphans
 TEST_PROJECT := bis-test
 TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
 TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
-TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend down -t 0 -v --remove-orphans
+TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile cypress --profile cypress-frontend down -t 0 -v --remove-orphans
 
 .PHONY: build dev clean test test_backend test_frontend test_cookbook \
-        cypress_frontend cypress_cookbook build_frontend build_cookbook \
-        install_frontend install_cookbook
+        cypress_frontend cypress_cookbook build_frontend build_cookbook
 
 build: .env
 	docker compose build
@@ -44,58 +43,48 @@ test_backend:
 
 # Frontend cypress — FULLY MOCKED. Specs use cy.intercept for every API call,
 # so no backend, postgres, or seeded user is needed. The `frontend` compose
-# profile only brings up nginx + frontend (backend/postgres are gated behind
-# the `backend` profile in docker-compose.test.yaml).
-test_frontend: install_frontend
-	yarn --cwd frontend run test:types
-	yarn --cwd frontend run test:unit
+# profile only brings up nginx + frontend; cypress itself runs in the
+# bis-cypress image (built once for cookbook, shared here). Type-check and
+# unit tests also run inside the frontend container — no host yarn needed.
+test_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) build cypress
+	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh ci
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
-	yarn --cwd frontend run wait-on http-get://localhost:8090
-	yarn --cwd frontend run cypress run --config baseUrl=http://localhost:8090 \
-		$(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
 # Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
-# profile brings up nginx + cookbook + backend + postgres. Chef seeding lives
-# in cookbook/cypress.config.js (`before:spec`) so it runs in both `cypress
-# run` and `cypress open`.
-test_cookbook: install_cookbook
+# profile brings up nginx + cookbook + backend + postgres. Cypress itself
+# runs in a third container (`cypress` profile, image cypress/included +
+# docker CLI) on the same docker network — no host Node toolchain involved.
+# Chef seeding lives in cookbook/cypress.config.js (`before:spec`), shells
+# out to `docker exec` against the backend via the bind-mounted docker socket.
+test_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
-	npx --yes wait-on http-get://localhost:8090/api/
-	npx --yes wait-on http-get://localhost:8090/cookbook/
-	(cd cookbook && npx cypress run \
-		--config baseUrl=http://localhost:8090/cookbook/ \
-		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
+	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
-# Interactive cypress for the frontend — same mock-only stack as test_frontend.
-cypress_frontend: install_frontend
+# Interactive cypress for the frontend. WSLg / X11 socket forwarding gives
+# the GUI a Windows window like any other WSL app.
+cypress_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
-	yarn --cwd frontend run wait-on http-get://localhost:8090
-	yarn --cwd frontend run cypress open --config baseUrl=http://localhost:8090
+	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend open --project /e2e
 
 # Interactive cypress for the cookbook — same real-backend stack as test_cookbook.
-cypress_cookbook: install_cookbook
+# The cypress container forwards X11 / Wayland sockets to the host (WSLg on
+# Windows, native X11 on Linux) so the Cypress GUI shows up like any other
+# WSL/Linux app.
+cypress_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
-	npx --yes wait-on http-get://localhost:8090/api/
-	npx --yes wait-on http-get://localhost:8090/cookbook/
-	(cd cookbook && npx cypress open \
-		--config baseUrl=http://localhost:8090/cookbook/ \
-		--env BACKEND_CONTAINER=bis-test-backend,TEST_USER_EMAIL=test@test.local,API_BASE_URL=http://localhost:8090/api/cookbook)
+	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress open --project /e2e
 
 build_frontend:
 	docker compose run --rm frontend sh docker-entrypoint.sh build
 
 build_cookbook:
 	docker compose run --rm cookbook sh docker-entrypoint.sh build
-
-# Always run yarn install — cypress's postinstall downloads its binary into
-# ~/.cache/Cypress (not part of node_modules), so a cached node_modules alone
-# is not enough for `cypress run` on a fresh CI runner.
-install_frontend:
-	yarn --cwd frontend install --frozen-lockfile
-
-install_cookbook:
-	yarn --cwd cookbook install --frozen-lockfile

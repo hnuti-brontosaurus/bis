@@ -382,7 +382,7 @@ describe('create event', () => {
       cy.get('[name="questions.2.is_required"]').check()
       cy.get('[name="questions.2.data.type"]').select('radio')
       cy.get('button')
-        .contains('Přidat možnost')
+        .filter(':contains("Přidat možnost")')
         .should('have.length', 2)
         .last()
         .click()

@@ -86,5 +86,71 @@ services:
       - cookbook
       - dev
 
+  # Host-less Cypress runner. Built from cookbook/cypress.Dockerfile (cypress/included
+  # + docker CLI for the seed hook). Brought up only via `docker compose run --rm cypress`
+  # — its profile (`cypress`) is not enabled by `up`, so it never auto-starts.
+  #
+  # WSLg integration: we mount /tmp/.X11-unix and /mnt/wslg and forward DISPLAY /
+  # WAYLAND_DISPLAY / PULSE_SERVER so `cypress open` shows up in Windows just like
+  # any other WSL GUI app. On non-WSL hosts the env vars are empty and the X11
+  # mount is a no-op for `cypress run` (headless).
+  cypress:
+    build:
+      context: ./cookbook
+      dockerfile: cypress.Dockerfile
+    image: bis-cypress:latest
+    container_name: bis-test-cypress
+    restart: "no"
+    working_dir: /e2e
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./cookbook:/e2e
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      HOME: /tmp
+      # WSLg / X11 forwarding — empty on non-WSL hosts, harmless
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
+      PULSE_SERVER: ${PULSE_SERVER:-}
+      # Cypress config + Cypress.env() values (CYPRESS_* vars are auto-promoted)
+      CYPRESS_baseUrl: http://nginx/cookbook/
+      CYPRESS_TEST_USER_EMAIL: test@test.local
+      CYPRESS_API_BASE_URL: http://nginx/api/cookbook
+    # No depends_on — the Makefile's `up -d --profile cookbook` brings the
+    # rest of the stack up first, and the entrypoint waits for nginx itself.
+    # Adding depends_on here would couple build/run resolution to services
+    # in the `cookbook` profile, which compose can't resolve without that
+    # profile being active.
+    profiles:
+      - cypress
+
+  # Same containerized cypress runner, but for the frontend (mock-only stack).
+  # No docker socket — frontend specs don't seed a backend. Reuses the same
+  # bis-cypress image built once from cookbook/cypress.Dockerfile.
+  cypress-frontend:
+    image: bis-cypress:latest
+    container_name: bis-test-cypress-frontend
+    restart: "no"
+    working_dir: /e2e
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./frontend:/e2e
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      HOME: /tmp
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
+      PULSE_SERVER: ${PULSE_SERVER:-}
+      # No trailing slash — matches origin format used by cy.getAllLocalStorage()
+      # in some specs (e.g. logout.cy.ts) that key by `${baseUrl}.persist:auth`.
+      CYPRESS_baseUrl: http://nginx
+      WAIT_FOR_URLS: http://nginx/
+    profiles:
+      - cypress-frontend
+
 volumes:
   postgresqldata_test:

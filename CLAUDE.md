@@ -25,16 +25,24 @@ make clean            # Stop all containers and remove orphans
 ```bash
 make test              # Run all tests (backend + frontend + cookbook)
 make test_backend      # Run pytest tests only
-make test_frontend     # Frontend Cypress — FULLY MOCKED (cy.intercept). No backend or DB.
-make test_cookbook     # Cookbook Cypress — REAL e2e against backend + postgres.
-make cypress_frontend  # Interactive Cypress for the frontend (mock-only stack).
-make cypress_cookbook  # Interactive Cypress for the cookbook (real backend stack).
+make test_frontend     # Frontend Cypress — FULLY MOCKED (cy.intercept). Containerized cypress.
+make test_cookbook     # Cookbook Cypress — REAL e2e against backend + postgres. Containerized cypress.
+make cypress_frontend  # Interactive frontend Cypress (containerized; uses WSLg / X11 to show GUI).
+make cypress_cookbook  # Interactive cookbook Cypress (containerized; uses WSLg / X11 to show GUI).
 ```
 
 Test stack profiles (`docker-compose.test.yaml`):
 - `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `cypress_frontend`.
 - `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `cypress_cookbook`.
 - `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
+- `cypress` profile → cookbook cypress runner. Built from `cookbook/cypress.Dockerfile` (cypress/included + docker CLI). Started on demand via `docker compose run --rm cypress`, never by `up`.
+- `cypress-frontend` profile → frontend cypress runner. Reuses the same `bis-cypress` image, mounts `frontend/` instead, no docker socket. Started via `docker compose run --rm cypress-frontend`.
+
+Both cypress runners are fully containerized — no host cypress binary is needed. They join the test docker network so `baseUrl` is `http://nginx/...`, mount `/tmp/.X11-unix` + `/mnt/wslg` (forwarding `DISPLAY` / `WAYLAND_DISPLAY` / `PULSE_SERVER`) so `cypress open` shows up via WSLg on Windows or native X11 on Linux.
+
+Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh ci` (see `frontend/docker-entrypoint.sh` for the `ci` mode), so no host yarn install is needed at all.
+
+Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookbook/testing/seed/` (`api/cookbook/views/testing.py`) — gated by `settings.TEST` so it 404s in production. The `before:spec` hook in `cookbook/cypress.config.js` `fetch`es it instead of shelling out to `docker exec`, which lets the cypress container stay minimal (no docker CLI, no socket mount, no docker-group GID handling).
 
 Cookbook chef seeding lives in `cookbook/cypress.config.js` (`before:spec` hook), not in the Makefile, so interactive runs seed too. It calls `python manage.py testing_db cookbook`, which is idempotent.
 

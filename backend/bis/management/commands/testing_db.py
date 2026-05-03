@@ -320,7 +320,11 @@ class Command(BaseCommand):
         # A handful of ingredients so cypress specs can pick existing rows
         # in the recipe edit form without having to also exercise the
         # "create new ingredient" dialog.
-        for name in ("cukr", "mouka", "máslo"):
+        # Use the normalized (lower().capitalize()) form so get_or_create is
+        # idempotent — the pre_save signal in cookbook.signals capitalizes the
+        # name on insert, so "cukr" lookups would never match the stored "Cukr"
+        # and re-runs would hit the unique-name constraint.
+        for name in ("Cukr", "Mouka", "Máslo"):
             Ingredient.objects.get_or_create(name=name)
         # One canonical owned recipe so cypress specs can edit a real row
         # without reaching into the ORM. The edit form renders the photo, so

@@ -143,13 +143,24 @@ describe("cookbook smoke", () => {
 
       // Ingredience: empty list → click the empty-state create button,
       // then drive the row's three inputs (ingredient select, amount,
-      // unit select).
+      // unit select). Naive UI teleports the dropdown menu out of the
+      // collapse-item, so option clicks must scope to the *visible*
+      // .n-base-select-menu — not just .n-base-select-option, which
+      // also matches stale hidden options from the previous dropdown.
+      const pickFirstOpenOption = () =>
+        cy
+          .get(".n-base-select-menu:visible .n-base-select-option", {
+            timeout: 5000,
+          })
+          .first()
+          .click({ force: true })
+
       openSection("Ingredience").within(() => {
         cy.get(".n-dynamic-input").find("button").first().click({ force: true })
         // Ingredient select (first n-select in the new row).
         cy.get(".n-base-selection").eq(0).click({ force: true })
       })
-      cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
+      pickFirstOpenOption()
       // Guard: the dropdown close event can collapse the section; re-open if needed.
       cy.contains("h6", "Ingredience", { timeout: 10000 }).then($h6 => {
         if (!$h6.closest(".n-collapse-item").find(".n-input-number").length) {
@@ -159,12 +170,14 @@ describe("cookbook smoke", () => {
       cy.contains(".n-collapse-item", "Ingredience").within(() => {
         // Amount input. Break clear().type() chain: clear() triggers a Vue
         // re-render via v-model, detaching the element before type() runs.
-        cy.get(".n-input-number input", { timeout: 10000 }).first().clear({ force: true })
+        cy.get(".n-input-number input", { timeout: 10000 })
+          .first()
+          .clear({ force: true })
         cy.get(".n-input-number input").first().type("2")
         // Unit select (second n-select in the row).
         cy.get(".n-base-selection").eq(1).click({ force: true })
       })
-      cy.get(".n-base-select-option", { timeout: 5000 }).first().click({ force: true })
+      pickFirstOpenOption()
 
       // Postup: name + description.
       openSection("Postup").within(() => {
@@ -193,7 +206,19 @@ describe("cookbook smoke", () => {
 
       cy.reload()
       cy.contains(stepName, { timeout: 10000 }).should("exist")
-      cy.contains(tipDesc).should("exist")
+      // Naive UI's CollapseList lazy-renders item bodies (the n-collapse-item
+      // content node only mounts after the item has been opened at least
+      // once, even with displayDirective="show"). Open the tip header so
+      // tipDesc actually enters the DOM.
+      // The clickable element is .n-collapse-item__header-main — the outer
+      // __header is just a wrapper without the toggle handler.
+      cy.contains(".n-collapse-item__header-main", tipName, {
+        timeout: 10000,
+      }).click({ force: true })
+      // The wrapper has overflow:hidden during/after the collapse animation,
+      // so .be.visible can flap. Existence is enough — the text being in the
+      // DOM means the saved description hydrated into the rendered recipe.
+      cy.contains(tipDesc, { timeout: 10000 }).should("exist")
     })
   })
 

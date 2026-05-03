@@ -18,7 +18,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["cookbook"],
+    allowedHosts: ["cookbook", "nginx"],
     host: "0.0.0.0",
     port: 3001,
   },
