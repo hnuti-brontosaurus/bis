@@ -6,62 +6,6 @@ from ecomail.helpers import get_name_from_template, send
 from ecomail.models import Contact
 from ecomail.serializers import SendEmailSerializer
 
-# def delete_contact(email):
-#     if settings.TEST: return
-#     DeleteContactSerializer(data=dict(email=email)).is_valid(raise_exception=True)
-#
-#     contact, _ = Contact.objects.get_or_create(email=email)
-#     response = send(contact, "GET", f"REST/contact/{email}")
-#
-#     # if contact exists in ecomail
-#     if 'Data' in response:
-#         id = response["Data"][0]["ID"]
-#         send(contact, "DELETE", f"contacts/{id}", version="v4")
-#
-#
-# def create_contact(email, data: dict = None):
-#     if settings.TEST: return
-#     if data is None:
-#         data = {}
-#     CreateContactSerializer(data=dict(email=email, data=data)).is_valid(raise_exception=True)
-#
-#     contact, _ = Contact.objects.get_or_create(email=email)
-#
-#     send(contact, "POST", "REST/contact", {
-#         "Email": email
-#     })
-#     send(contact, "PUT", f"REST/contactdata/{email}", {
-#         "Data": [
-#             {
-#                 "Name": key,
-#                 "Value": value
-#             } for key, value in data.items()
-#         ]
-#     })
-#
-#
-# def set_subscription_status(email, list_id, is_subscribed):
-#     if settings.TEST: return
-#     SetSubscriptionStatusSerializer(data=dict(email=email, list_id=list_id, is_subscribed=is_subscribed)).is_valid(
-#         raise_exception=True)
-#
-#     contact, _ = Contact.objects.get_or_create(email=email)
-#     send(contact, "POST", f"REST/listrecipient", {
-#         "ContactAlt": email,
-#         "ListID": list_id,
-#         "IsUnsubscribed": "true"
-#     })
-#
-#     res = send(contact, "GET", f"REST/listrecipient", params={
-#         "ContactEmail": email,
-#         "ContactsList": list_id
-#     })
-#     id = res["Data"][0]["ID"]
-#
-#     send(contact, "PUT", f"REST/listrecipient/{id}", {
-#         "IsUnsubscribed": str(not is_subscribed).lower()
-#     })
-
 
 def send_email(
     sender: tuple[str, str],

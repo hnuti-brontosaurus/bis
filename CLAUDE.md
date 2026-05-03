@@ -124,6 +124,12 @@ English for code, comments, variable names. Czech for user-facing strings.
 - Style with CSS modules + SCSS
 - Forms use react-hook-form + yup validation
 
+### Comments
+- Default: no comments. Code with well-named identifiers should explain itself, rather rewrite the code to be more readable.
+- Only write a comment for a non-obvious **why** — a constraint, an invariant, a workaround for a specific bug, or behavior that would surprise a reader.
+- Do not write: section banners (`# ---- Foo ----`, `# Static files`), restatements of the next line, references to tasks/PRs/tickets, commented-out code blocks (use git history), or framework template boilerplate.
+- If deleting the comment wouldn't confuse a competent reader, don't write it.
+
 ### Commit Messages
 - Capital first letter, imperative style, no trailing period
 - Follow with empty line, then details

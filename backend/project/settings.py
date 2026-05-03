@@ -138,8 +138,6 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-#
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
@@ -150,9 +148,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = ["bis.auth_backend.BISBackend"]
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = "cs"
 TIME_ZONE = "Europe/Prague"
@@ -181,18 +176,12 @@ DATETIME_INPUT_FORMATS = [
 ]
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
 STATIC_URL = "/backend_static/"
 MEDIA_URL = "/media/"
 
 STATIC_ROOT = join(BASE_DIR, "backend_static")
 MEDIA_ROOT = join(BASE_DIR, "media")
 
-#
-# Upload limits
-# https://docs.djangoproject.com/en/3.0/ref/settings/#std:setting-DATA_UPLOAD_MAX_MEMORY_SIZE
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE

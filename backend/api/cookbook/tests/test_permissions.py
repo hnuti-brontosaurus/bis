@@ -16,8 +16,6 @@ from cookbook.models.recipes import Recipe
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-# ---------- helpers ----------
-
 
 def _make_chef_user(email, name="Other"):
     user = User.objects.create(first_name=name, last_name="X", email=email)
@@ -38,9 +36,6 @@ def _client_for(user):
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Token {user.auth_token.key}")
     return client
-
-
-# ---------- fixtures ----------
 
 
 @pytest.fixture
@@ -126,9 +121,6 @@ def other_menu_private(other_chef_user):
     return Menu.objects.create(name="Private", user=other_chef_user, is_shared=False)
 
 
-# ---------- Recipe visibility ----------
-
-
 @pytest.mark.django_db
 def test_recipe_list_anon_sees_only_public(
     anon_client, recipe, other_recipe_public, other_recipe_private
@@ -178,9 +170,6 @@ def test_recipe_retrieve_private_other_ok_for_editor(
 ):
     response = editor_client.get(f"/api/cookbook/recipes/{other_recipe_private.id}/")
     assert response.status_code == 200
-
-
-# ---------- Recipe writes ----------
 
 
 @pytest.mark.django_db
@@ -259,9 +248,6 @@ def test_recipe_chef_cannot_create_under_other_chef(
     assert response.status_code == 403
 
 
-# ---------- Menu visibility & writes ----------
-
-
 @pytest.mark.django_db
 def test_menu_list_anon_sees_only_shared(
     anon_client, other_menu_shared, other_menu_private
@@ -310,9 +296,6 @@ def test_menu_editor_can_delete_any(editor_client, other_menu_private):
     assert response.status_code == 204
 
 
-# ---------- Ingredient writes ----------
-
-
 @pytest.mark.django_db
 def test_ingredient_non_chef_cannot_create(non_chef_client):
     response = non_chef_client.post(
@@ -346,9 +329,6 @@ def test_ingredient_anon_cannot_create(anon_client):
         "/api/cookbook/ingredients/", {"name": "sůl"}, format="json"
     )
     assert response.status_code in (401, 403)
-
-
-# ---------- Chef writes ----------
 
 
 @pytest.mark.django_db
@@ -387,9 +367,6 @@ def test_chef_delete_forbidden_even_for_self(api_client, chef):
 def test_chef_delete_forbidden_for_editor(editor_client, other_chef):
     response = editor_client.delete(f"/api/cookbook/chefs/{other_chef.id}/")
     assert response.status_code == 403
-
-
-# ---------- Chef visibility ----------
 
 
 @pytest.mark.django_db
@@ -442,9 +419,6 @@ def test_chef_retrieve_publishing_other_ok_for_anon(
 ):
     response = anon_client.get(f"/api/cookbook/chefs/{other_chef.id}/")
     assert response.status_code == 200
-
-
-# ---------- Visibility for non-chef authenticated users ----------
 
 
 @pytest.mark.django_db

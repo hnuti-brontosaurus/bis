@@ -15,7 +15,6 @@ def test_recipe_get(api_client, recipe):
     response = api_client.get(f"/api/cookbook/recipes/{recipe.id}/")
     assert response.status_code == 200, response.data
     body = response.data
-    # FK fields come back as ids only.
     assert body["chef_id"] == recipe.chef_id
     assert body["difficulty_id"] == recipe.difficulty_id
     assert body["required_time_id"] == recipe.required_time_id
@@ -25,11 +24,9 @@ def test_recipe_get(api_client, recipe):
     assert "difficulty" not in body
     assert "required_time" not in body
     assert "tags" not in body
-    # Owned children come back as nested arrays of objects.
     assert isinstance(body["ingredients"], list)
     assert isinstance(body["steps"], list)
     assert isinstance(body["tips"], list)
-    # Through rows also flatten FKs to _id.
     if body["ingredients"]:
         ing = body["ingredients"][0]
         assert "ingredient_id" in ing
