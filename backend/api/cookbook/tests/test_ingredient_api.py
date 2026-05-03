@@ -72,12 +72,12 @@ def test_create_ingredient_runs_groq_enrichment(api_client, chef, settings):
 
 
 @pytest.mark.django_db
-def test_create_ingredient_groq_attaches_allergens(api_client, chef, settings):
+def test_create_ingredient_groq_attaches_allergens(
+    api_client, chef, allergens, settings
+):
     """Allergen slugs returned by Groq become an M2M attachment."""
     from cookbook_categories.models import Allergen
 
-    # Allergens are seeded into the test DB by the create_categories data
-    # migration; just look them up rather than creating duplicates.
     settings.GROQ_API_KEY = "test-key"
     fake_completion = MagicMock()
     fake_completion.choices = [
@@ -111,7 +111,7 @@ def test_create_ingredient_groq_attaches_allergens(api_client, chef, settings):
 
 @pytest.mark.django_db
 def test_recipe_allergen_ids_unions_ingredient_allergens(
-    api_client, recipe, ingredient, unit
+    api_client, recipe, ingredient, unit, allergens
 ):
     """Recipe.allergen_ids is a deduped union across the recipe's ingredients,
     cached via signals on the Recipe.allergens M2M."""

@@ -73,6 +73,7 @@ dev = [
 DJANGO_SETTINGS_MODULE = "project.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 norecursedirs = ["backend_static", "media"]
+addopts = "--no-migrations"
 
 [tool.black]
 
