@@ -4,11 +4,10 @@ services:
     image: nginx:1.28-alpine
     ports:
       - ${APP_PORT}:80
-      - ${HTTPS_PORT}:443
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/templates/default.conf.template
+      - ./nginx/dev.conf:/etc/nginx/templates/default.conf.template
       - ./logs:/app/logs
       - ./frontend/build:/app/frontend
       - ./backend/backend_static:/app/backend_static
@@ -18,15 +17,24 @@ services:
     container_name: bis-frontend
     build: ./frontend
     user: "${UID:-1000}:${GID:-1000}"
+    restart: always
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    ports:
+      - 3000:3000
     volumes:
       - ./logs:/logs
       - ./frontend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/"]
+      interval: 1s
+      retries: 600
     environment:
       HOME: /tmp
-      HOST: frontend
+      HOST: 0.0.0.0
       APP_NAME: 'bis'
       API_BASE: 'api/'
-      DEBUG: 0
+      NODE_ENV: 'development'
+      VITE_ENVIRONMENT: local
       VITE_SENTRY_DSN: https://f3a6554a5b71437682e51b0410e20c64@o4504321204027392.ingest.sentry.io/4504453023924224
       VITE_MAPY_CZ_API_KEY: chqysuJbnz1zVPuiyvVCuP_kSaCHVVVzUDPwtrDcn30
 
@@ -34,12 +42,20 @@ services:
     container_name: bis-cookbook
     build: ./cookbook
     user: "${UID:-1000}:${GID:-1000}"
+    restart: always
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    ports:
+      - 3001:3001
     volumes:
       - ./logs:/logs
       - ./cookbook:/app
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3001/cookbook/"]
+      interval: 1s
+      retries: 600
     environment:
       HOME: /tmp
-      HOST: cookbook
+      HOST: 0.0.0.0
 
   backend:
     container_name: bis-backend
@@ -49,8 +65,18 @@ services:
         APP_PORT: 8000
     user: "${UID:-1000}:${GID:-1000}"
     restart: always
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    ports:
+      - 8000:8000
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://$$APP_HOST:$$APP_PORT/api/').read()"
+      interval: 1s
+      retries: 600
     volumes:
       - ./logs:/logs
       - ./backend:/app
@@ -66,11 +92,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       EMAIL: 'bis@brontosaurus.cz'
-      EMAILS_ENABLED: 0
       FULL_HOSTNAME: ${FULL_HOSTNAME}
-      DEBUG: 0
-      TEST: 0
-      ALLOWED_HOSTS: '*'
+      ENVIRONMENT: local
+      ALLOWED_HOSTS: 'localhost,backend,frontend,192.168.2.3'
       APP_NAME: 'bis'
       API_BASE: 'api/'
       ECOMAIL_API_KEY: ${ECOMAIL_API_KEY}
@@ -88,6 +112,10 @@ services:
       - postgresqldata:/var/lib/postgresql/data
     ports:
       - 127.0.0.1:5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 1s
+      retries: 600
     environment:
       POSTGRES_DATABASE: ${DB_NAME} # for postgres
       POSTGRES_DB: ${DB_NAME} # for postgis

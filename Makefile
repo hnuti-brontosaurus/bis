@@ -50,7 +50,7 @@ test_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh ci
-	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
 # Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
@@ -62,7 +62,7 @@ test_frontend:
 test_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) build cypress
-	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
 # Interactive cypress for the frontend. WSLg / X11 socket forwarding gives
@@ -70,7 +70,7 @@ test_cookbook:
 cypress_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) build cypress
-	$(TEST_COMPOSE) --profile frontend up --quiet-pull -d
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend open --project /e2e
 
 # Interactive cypress for the cookbook — same real-backend stack as test_cookbook.
@@ -80,11 +80,11 @@ cypress_frontend:
 cypress_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) build cypress
-	$(TEST_COMPOSE) --profile cookbook up --quiet-pull -d
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress open --project /e2e
 
 build_frontend:
-	docker compose run --rm frontend sh docker-entrypoint.sh build
+	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build
 
 build_cookbook:
 	docker compose run --rm cookbook sh docker-entrypoint.sh build

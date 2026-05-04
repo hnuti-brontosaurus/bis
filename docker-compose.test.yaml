@@ -43,17 +43,14 @@ services:
     container_name: bis-test-backend
     ports: !override []
     restart: "no"
-    # Idle entrypoint — the make targets run migrate + testing_db + dev
-    # server explicitly so we can sequence them safely.
     command: ["sh", "docker-entrypoint.sh", "dev"]
     environment:
       DB_NAME: bis_test
       DB_USERNAME: postgres
       DB_PASSWORD: 123
       GROQ_API_KEY: ""
-      TEST: 1
+      ENVIRONMENT: testing
       ALLOWED_HOSTS: "*"
-      DEBUG: 1
     profiles:
       - backend
       - cookbook
@@ -67,8 +64,8 @@ services:
     command: ["sh", "docker-entrypoint.sh", "dev"]
     environment:
       HOST: 0.0.0.0
-      DEBUG: 1
       NODE_ENV: development
+      VITE_ENVIRONMENT: testing
       VITE_CYPRESS: "true"
     profiles:
       - frontend
@@ -114,8 +111,8 @@ services:
       WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
       XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
       PULSE_SERVER: ${PULSE_SERVER:-}
-    # No depends_on — the Makefile's `up -d --profile cookbook` brings the
-    # rest of the stack up first, and the entrypoint waits for nginx itself.
+    # No depends_on — the Makefile's `up --wait -d --profile cookbook`
+    # brings the rest of the stack up healthy before this container runs.
     # Adding depends_on here would couple build/run resolution to services
     # in the `cookbook` profile, which compose can't resolve without that
     # profile being active.
@@ -144,7 +141,6 @@ services:
       # No trailing slash — matches origin format used by cy.getAllLocalStorage()
       # in some specs (e.g. logout.cy.ts) that key by `${baseUrl}.persist:auth`.
       CYPRESS_baseUrl: http://nginx
-      WAIT_FOR_URLS: http://nginx/
     profiles:
       - cypress-frontend
 
