@@ -7,9 +7,7 @@ from cookbook_categories.models import (
     Unit,
 )
 from django.contrib import admin
-from nested_admin.nested import (
-    NestedModelAdmin,
-)
+from nested_admin.nested import NestedModelAdmin
 
 
 @admin.register(RecipeDifficulty)

@@ -31,6 +31,8 @@ dependencies = [
     "django-admin-numeric-filter @ git+https://github.com/lukasvinclav/django-admin-numeric-filter.git@c5718f59eea66f67bbaa2ee542206719dfd43df3",
     # Database
     "psycopg2-binary>=2.9",
+    # Cache / sessions / throttling
+    "django-redis>=5.4",
     # Server
     "gunicorn>=20.1",
     # Data processing

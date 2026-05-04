@@ -1,6 +1,7 @@
 import zoneinfo
 from datetime import datetime
 
+from bis.cache import invalidate_cache
 from bis.models import Location
 from categories.models import (
     AdministrationUnitCategory,
@@ -89,10 +90,12 @@ class Command(BaseCommand):
     def handle(self, *args, group=None, **options):
         if group is None or group == "bis":
             self.create_bis_categories()
+            invalidate_cache("categories")
         if group is None or group == "game_book":
             self.create_game_book_categories()
         if group is None or group == "cookbook":
             self.create_cookbook_categories()
+            invalidate_cache("cookbook_categories")
 
     def create_bis_categories(self):
         DietCategory.objects.update_or_create(
