@@ -33,6 +33,7 @@ from cookbook_categories.models import (
     Unit,
 )
 from django.core.management.base import BaseCommand
+from donations.models import FundraisingCampaign
 from game_book_categories.models import (
     GameLengthCategory,
     LocationCategory,
@@ -650,6 +651,11 @@ class Command(BaseCommand):
                 slug=slug,
                 defaults=dict(description=description),
             )
+
+        FundraisingCampaign.objects.update_or_create(
+            slug="automatic_emails",
+            defaults=dict(name="Automatické e-maily"),
+        )
 
     def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/
