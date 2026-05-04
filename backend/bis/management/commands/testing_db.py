@@ -360,7 +360,7 @@ class Command(BaseCommand):
             "Předseda",
             "ZC",
             "chairman@hb.nope",
-            qualification=("instructor", date(2018, 1, 1), self.kancl),
+            qualification=("instructor", date.today(), self.kancl),
         )
         zc_manager = self.create_user("Hospodář", "ZC", "manager@hb.nope")
         basic_section = self.create_administration_unit(
