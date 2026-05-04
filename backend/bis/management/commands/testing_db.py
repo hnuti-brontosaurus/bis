@@ -124,6 +124,7 @@ class Command(BaseCommand):
             "Finanční", "Ředitel", "finance_director@hb.nope"
         )
         kancl = self.create_user("Zaměstnanec", "Kancl", "office_worker@hb.nope")
+        self.kancl = kancl
         krk = self.create_user("Zaměstnanec", "KRK", "auditor@hb.nope")
         vv = self.create_user("Zaměstnanec", "VV", "executive@hb.nope")
         edu = self.create_user("Zaměstnanec", "EDU", "education_member@hb.nope")
@@ -355,7 +356,12 @@ class Command(BaseCommand):
         # Cookbook chef for Cypress smoke tests
         self.create_cookbook_chef()
         # Virtual basic section
-        zc_chairman = self.create_user("Předseda", "ZC", "chairman@hb.nope")
+        zc_chairman = self.create_user(
+            "Předseda",
+            "ZC",
+            "chairman@hb.nope",
+            qualification=("instructor", date(2018, 1, 1), self.kancl),
+        )
         zc_manager = self.create_user("Hospodář", "ZC", "manager@hb.nope")
         basic_section = self.create_administration_unit(
             name="Základní článek",
