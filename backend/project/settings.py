@@ -10,9 +10,9 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 
 SECRET_KEY = environ["SECRET_KEY"]
 
-DEBUG = bool(int(environ["DEBUG"]))
-TEST = bool(int(environ["TEST"]))
 ENVIRONMENT = environ.get("ENVIRONMENT", "local")
+DEBUG = ENVIRONMENT == "testing"
+TEST = ENVIRONMENT == "testing"
 
 FULL_HOSTNAME = environ["FULL_HOSTNAME"]
 ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
