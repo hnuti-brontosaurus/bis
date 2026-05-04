@@ -35,8 +35,8 @@ Test stack profiles (`docker-compose.test.yaml`):
 - `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `cypress_frontend`.
 - `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `cypress_cookbook`.
 - `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
-- `cypress` profile → cookbook cypress runner. Built from `cookbook/cypress.Dockerfile` (cypress/included + docker CLI). Started on demand via `docker compose run --rm cypress`, never by `up`.
-- `cypress-frontend` profile → frontend cypress runner. Reuses the same `bis-cypress` image, mounts `frontend/` instead, no docker socket. Started via `docker compose run --rm cypress-frontend`.
+- `cypress` profile → cookbook cypress runner. Uses upstream `cypress/included` image directly. Started on demand via `docker compose run --rm cypress`, never by `up`.
+- `cypress-frontend` profile → frontend cypress runner. Same upstream image, mounts `frontend/` instead. Started via `docker compose run --rm cypress-frontend`.
 
 Both cypress runners are fully containerized — no host cypress binary is needed. They join the test docker network so `baseUrl` is `http://nginx/...`, mount `/tmp/.X11-unix` + `/mnt/wslg` (forwarding `DISPLAY` / `WAYLAND_DISPLAY` / `PULSE_SERVER`) so `cypress open` shows up via WSLg on Windows or native X11 on Linux.
 

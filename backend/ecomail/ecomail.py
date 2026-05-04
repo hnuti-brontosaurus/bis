@@ -39,7 +39,7 @@ def send_email(
         reply_to=reply_to,
     )
 
-    if settings.TEST or not settings.EMAILS_ENABLED or cache.get("emails_paused"):
+    if settings.ENVIRONMENT != "prod" or cache.get("emails_paused"):
         logging.info("Sending of emails disabled, email data: %s", data)
         return
 

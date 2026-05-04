@@ -43,7 +43,7 @@ services:
     container_name: bis-test-backend
     ports: !override []
     restart: "no"
-    command: ["sh", "docker-entrypoint.sh", "dev"]
+    command: ["sh", "docker-entrypoint.sh", "testing"]
     environment:
       DB_NAME: bis_test
       DB_USERNAME: postgres
@@ -83,19 +83,16 @@ services:
       - cookbook
       - dev
 
-  # Host-less Cypress runner. Built from cookbook/cypress.Dockerfile (cypress/included
-  # + docker CLI for the seed hook). Brought up only via `docker compose run --rm cypress`
-  # — its profile (`cypress`) is not enabled by `up`, so it never auto-starts.
+  # Host-less Cypress runner using the upstream cypress/included image directly.
+  # Brought up only via `docker compose run --rm cypress` — its profile
+  # (`cypress`) is not enabled by `up`, so it never auto-starts.
   #
   # WSLg integration: we mount /tmp/.X11-unix and /mnt/wslg and forward DISPLAY /
   # WAYLAND_DISPLAY / PULSE_SERVER so `cypress open` shows up in Windows just like
   # any other WSL GUI app. On non-WSL hosts the env vars are empty and the X11
   # mount is a no-op for `cypress run` (headless).
   cypress:
-    build:
-      context: ./cookbook
-      dockerfile: cypress.Dockerfile
-    image: bis-cypress:latest
+    image: cypress/included:15.14.2
     container_name: bis-test-cypress
     restart: "no"
     working_dir: /e2e
@@ -120,10 +117,8 @@ services:
       - cypress
 
   # Same containerized cypress runner, but for the frontend (mock-only stack).
-  # No docker socket — frontend specs don't seed a backend. Reuses the same
-  # bis-cypress image built once from cookbook/cypress.Dockerfile.
   cypress-frontend:
-    image: bis-cypress:latest
+    image: cypress/included:15.14.2
     container_name: bis-test-cypress-frontend
     restart: "no"
     working_dir: /e2e

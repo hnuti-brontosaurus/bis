@@ -11,8 +11,15 @@ BASE_DIR = dirname(dirname(abspath(__file__)))
 SECRET_KEY = environ["SECRET_KEY"]
 
 ENVIRONMENT = environ.get("ENVIRONMENT", "local")
-DEBUG = ENVIRONMENT == "testing"
-TEST = ENVIRONMENT == "testing"
+assert ENVIRONMENT in ("local", "testing", "dev", "prod"), (
+    f"Invalid ENVIRONMENT: {ENVIRONMENT!r}"
+)
+
+TESTING = ENVIRONMENT == "testing"
+DEBUG = ENVIRONMENT in (
+    "local",
+    "testing",
+)  # required name; Django reads settings.DEBUG natively
 
 FULL_HOSTNAME = environ["FULL_HOSTNAME"]
 ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
@@ -95,7 +102,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-if DEBUG:
+if ENVIRONMENT in ("local", "testing"):
     MIDDLEWARE.insert(0, "bis.middleware.sql_middleware")
     MIDDLEWARE.insert(
         0,
@@ -135,6 +142,20 @@ DATABASES = {
         "PASSWORD": environ["DB_PASSWORD"],
     }
 }
+
+if TESTING:
+    # Skip migrations on the test stack — `migrate --run-syncdb` creates
+    # tables directly from current models against a fresh DB. Keeps the
+    # cookbook cypress stack and pytest in sync (pytest sets the same flag
+    # via pyproject.toml's `addopts = --no-migrations`).
+    class _DisableMigrations(dict):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = _DisableMigrations()
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -212,7 +233,9 @@ OAUTH2_PROVIDER = {
     "ACCESS_TOKEN_EXPIRE_SECONDS": None,
     "REFRESH_TOKEN_EXPIRE_SECONDS": None,
     "ROTATE_REFRESH_TOKEN": False,
-    "ALLOWED_REDIRECT_URI_SCHEMES": ["https", "http"] if DEBUG else ["https"],
+    "ALLOWED_REDIRECT_URI_SCHEMES": (
+        ["https", "http"] if ENVIRONMENT in ("local", "testing") else ["https"]
+    ),
     # PKCE is required for public clients
     "PKCE_REQUIRED": True,
 }
@@ -262,11 +285,11 @@ SPECTACULAR_SETTINGS = {
 # API settings
 API_BASE = environ["API_BASE"]
 
-if not DEBUG:
+if ENVIRONMENT in ("dev", "prod"):
     CSRF_TRUSTED_ORIGINS = [FULL_HOSTNAME]
     CORS_ALLOWED_ORIGINS = [FULL_HOSTNAME]
 
-    if "dev" in FULL_HOSTNAME:
+    if ENVIRONMENT == "dev":
         CSRF_TRUSTED_ORIGINS += ["http://localhost", "http://localhost:3000"]
         CORS_ALLOWED_ORIGINS += ["http://localhost", "http://localhost:3000"]
 
@@ -277,7 +300,7 @@ PHONENUMBER_DEFAULT_REGION = "CZ"
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 
 # sentry.io logging
-if not DEBUG:
+if ENVIRONMENT in ("dev", "prod"):
     sentry_sdk.init(
         dsn=environ["SENTRY_DSN"],
         integrations=[DjangoIntegration()],
@@ -299,7 +322,6 @@ EMAIL = environ["EMAIL"]
 AUTH_USER_MODEL = "bis.User"
 
 SKIP_VALIDATION = False
-EMAILS_ENABLED = bool(int(environ["EMAILS_ENABLED"]))
 
 ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
 
@@ -312,8 +334,8 @@ GROQ_API_KEY = environ["GROQ_API_KEY"]
 GOOGLE_CREDENTIALS = environ.get("GOOGLE_CREDENTIALS")
 GOOGLE_SHARED_DRIVE_ID = "0APUaw_FPCiv7Uk9PVA"
 
-if DEBUG:
-    import socket  # only if you haven't already imported this
+if ENVIRONMENT in ("local", "testing"):
+    import socket
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + [

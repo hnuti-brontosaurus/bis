@@ -43,25 +43,23 @@ test_backend:
 
 # Frontend cypress — FULLY MOCKED. Specs use cy.intercept for every API call,
 # so no backend, postgres, or seeded user is needed. The `frontend` compose
-# profile only brings up nginx + frontend; cypress itself runs in the
-# bis-cypress image (built once for cookbook, shared here). Type-check and
-# unit tests also run inside the frontend container — no host yarn needed.
+# profile only brings up nginx + frontend; cypress itself runs in the upstream
+# cypress/included image. Type-check and unit tests also run inside the
+# frontend container — no host yarn needed.
 test_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh ci
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
 # Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
 # profile brings up nginx + cookbook + backend + postgres. Cypress itself
-# runs in a third container (`cypress` profile, image cypress/included +
-# docker CLI) on the same docker network — no host Node toolchain involved.
-# Chef seeding lives in cookbook/cypress.config.js (`before:spec`), shells
-# out to `docker exec` against the backend via the bind-mounted docker socket.
+# runs in a third container (`cypress` profile, upstream cypress/included
+# image) on the same docker network — no host Node toolchain involved.
+# Chef seeding lives in cookbook/cypress.config.js (`before:spec`) and
+# fetches `/api/cookbook/testing/seed/` directly.
 test_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
@@ -69,7 +67,6 @@ test_cookbook:
 # the GUI a Windows window like any other WSL app.
 cypress_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend open --project /e2e
 
@@ -79,7 +76,6 @@ cypress_frontend:
 # WSL/Linux app.
 cypress_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) build cypress
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress open --project /e2e
 
