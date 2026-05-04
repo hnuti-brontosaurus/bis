@@ -163,7 +163,7 @@ if ENVIRONMENT in ("dev", "prod"):
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": f"redis://{environ.get('REDIS_HOST', 'redis')}:{environ.get('REDIS_PORT', '6379')}/1",
+            "LOCATION": "redis://redis:6379/1",
         }
     }
     SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
