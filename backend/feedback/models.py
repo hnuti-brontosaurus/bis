@@ -2,6 +2,7 @@ from bis.models import User
 from django.contrib.gis.db import models as m
 from django.db.models import CASCADE, PROTECT
 from event.models import Event
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
@@ -33,8 +34,8 @@ class EventFeedback(m.Model):
 @translate_model
 class FeedbackForm(m.Model):
     event = m.OneToOneField(Event, related_name="feedback_form", on_delete=CASCADE)
-    email_subject = m.TextField(blank=True)
-    email_content = m.TextField(blank=True)
+    email_subject = m.CharField(max_length=255)
+    email_content = HTMLField(blank=True)
     introduction = m.TextField(blank=True)
     after_submit_text = m.TextField(blank=True)
     sent_at = m.DateField(null=True, blank=True)

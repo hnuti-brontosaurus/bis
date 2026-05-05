@@ -50,6 +50,7 @@ dependencies = [
     # Monitoring
     "sentry-sdk>=1.21",
     # Utils
+    "premailer>=3.10",
     "python-dotenv>=1.0",
     "python-monkey-business>=1.0",
     "PyYAML>=6.0.1",
