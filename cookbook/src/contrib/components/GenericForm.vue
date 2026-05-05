@@ -1,5 +1,6 @@
 <script setup>
 import {
+  NAlert,
   NButton,
   NCascader,
   NCheckbox,
@@ -20,9 +21,13 @@ import {
   NH6,
   NButtonGroup,
 } from "naive-ui"
-import { computed, isRef, onMounted, ref, toValue, watch } from "vue"
+import { computed, isRef, onMounted, toValue, watch } from "vue"
 
-import { textFilter, toValueLabel } from "@/contrib/composables/helpers.js"
+import {
+  scrollToFirstFormError,
+  textFilter,
+  toValueLabel,
+} from "@/contrib/composables/helpers.js"
 import WithHint from "@/contrib/components/WithHint.vue"
 import { _ } from "@/composables/translations.js"
 import IngredientInput from "@/contrib/components/IngredientInput.vue"
@@ -30,14 +35,72 @@ import { icon } from "@/contrib/composables/render.js"
 import {
   faArrowDown,
   faArrowUp,
-  faMinus,
+  faTrash,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
 
-const props = defineProps(["inputs", "path_prefix", "group"])
+const props = defineProps({
+  inputs: Array,
+  path_prefix: String,
+  group: String,
+  backendErrors: { type: Object, default: () => ({}) },
+})
 const data = defineModel("data")
+
+// Flatten a DRF error shape into one human-readable line for the
+// n-form-item feedback slot. DRF can return:
+//   - "msg"                                     (string)
+//   - ["msg1", "msg2"]                          (list of strings, plain field)
+//   - {field: [...], non_field_errors: [...]}   (nested serializer)
+//   - [{}, {field: [...]}, {}]                  (writable-nested list, parallel
+//                                                to the input array)
+const formatErrors = value => {
+  if (value === null || value === undefined || value === "") return ""
+  if (typeof value === "string") return value
+  if (Array.isArray(value)) {
+    return value
+      .map((item, idx) => {
+        const formatted = formatErrors(item)
+        if (!formatted) return ""
+        // Index-prefix object items so users can locate the offending row;
+        // skip the prefix for plain string lists where it would just be noise.
+        const isItemObject = item && typeof item === "object" && !Array.isArray(item)
+        return isItemObject ? `#${idx + 1}: ${formatted}` : formatted
+      })
+      .filter(Boolean)
+      .join(" ")
+  }
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .map(([k, v]) => {
+        const formatted = formatErrors(v)
+        return formatted ? `${k}: ${formatted}` : ""
+      })
+      .filter(Boolean)
+      .join(" ")
+  }
+  return String(value)
+}
+const backendErrorFor = key => formatErrors(key && props.backendErrors?.[key])
+
+// `non_field_errors` are not bound to any input — surface them as an alert
+// above the form fields. Scroll the first invalid field into view whenever
+// the backend supplies a fresh error payload so users see what to fix.
+const formError = computed(() => {
+  const nfe = props.backendErrors?.non_field_errors
+  return Array.isArray(nfe) ? nfe.join(" ") : null
+})
+watch(
+  () => props.backendErrors,
+  () => {
+    if (props.backendErrors && Object.keys(props.backendErrors).length) {
+      scrollToFirstFormError()
+    }
+  },
+  { deep: true },
+)
 const getRule = input => {
   const rules = []
   if (input.required) {
@@ -65,7 +128,7 @@ const getRule = input => {
 
           reader.onload = () => {
             const result = reader.result
-            const [prefix, base64Data] = result.split(",")
+            const [, base64Data] = result.split(",")
 
             value.base64data = `data:${value.type};filename=${value.name};base64,${base64Data}`
             resolve()
@@ -179,16 +242,21 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
 </script>
 
 <template>
+  <n-alert v-if="formError" type="error" style="margin-bottom: 1rem">{{
+    formError
+  }}</n-alert>
   <n-grid cols="2 s:4" x-gap="32" responsive="screen">
     <n-form-item-gi
       v-for="input in shownInputs"
       :key="input.key"
-      :path="`${prefix}${input.key}`"
+      :path="`${prefix}${input.path ?? input.key}`"
       :rule="getRule(input)"
-      :show-feedback="!input.hide_feedback"
+      :show-feedback="!input.hide_feedback || !!backendErrorFor(input.key)"
       :show-label="!!input.label"
       :span="(input.span ?? 1) * 2"
       :style="getStyle(input)"
+      :validation-status="backendErrorFor(input.key) ? 'error' : undefined"
+      :feedback="backendErrorFor(input.key) || undefined"
       v-bind="input.item"
       require-mark-placement="left"
     >
@@ -264,7 +332,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
           v-bind="input.extra"
           :max="1"
           :show-preview-button="false"
-          >Přidat
+          >{{ _.edit_recipe.add }}
         </n-upload>
 
         <n-collapse v-if="input.type === 'section'">
@@ -318,7 +386,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
                   <n-button-group style="margin-left: 1rem; align-items: center">
                     <n-button
                       @click="() => remove(index)"
-                      :render-icon="icon(faMinus)"
+                      :render-icon="icon(faTrash)"
                       size="tiny"
                     />
                     <n-button

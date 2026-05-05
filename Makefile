@@ -1,161 +1,86 @@
-.PHONY: build run dev_mac dev_wsl dev_linux no_python_mac no_python_wsl no_python_linux test test_wsl clean submodule_checkout_next submodule_update gen_dev_dockercompose_file open_cypress_wsl prepare_test_env startup_testing backend frontend test_backend test_frontend startup_testing_frontend init_test_db
+SHELL := bash
+.SHELLFLAGS := -euo pipefail -c
+.ONESHELL:
 
-define with_os
-if [ "$(shell uname)" = "Darwin" ]; then		                                           \
-	OS='mac';								                                               \
-elif grep -q icrosoft /proc/version; then	                                               \
-	OS='wsl';								                                               \
-else											                                           \
-	OS='linux';								                                               \
-fi;											                                               \
-$1
-endef
+# run containers as the host user so files written from inside (migrations, build output)
+# are owned by the host user, not root
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 
-define with_trap
-$(call with_os, bash -c "trap 'make clean' EXIT; $1")
-endef
+CLEANUP := docker compose down -t 0 --remove-orphans
 
+# Isolated test stack — separate compose project (`bis-test`), separate
+# network and DB volume, no shared host ports. All test targets can run
+# while `make dev` is up.
+TEST_PROJECT := bis-test
+TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
+TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
+TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile cypress --profile cypress-frontend down -t 0 -v --remove-orphans
 
-define compose_with_trap
-$(call with_trap, docker compose                                                           \
-    -f docker-compose.yaml                                                                 \
-    -f docker-compose/dev.yaml $1)
-endef
+.PHONY: build dev clean test test_backend test_frontend test_cookbook \
+        cypress_frontend cypress_cookbook build_frontend build_cookbook
 
-build: .env submodule_sync
-	echo '.git' > .dockerignore
-	cat .gitignore >> .dockerignore
+build: .env
 	docker compose build
-	make gen_dev_dockercompose_file
 
 .env:
 	cp .example.env .env
 
-gen_dev_dockercompose_file:
-	echo "# Generated dev compose config for python dev env, changes will be overridden" > \
-	    docker-compose/dev_exported_config.yaml
-
-	$(call compose_with_trap,                                                              \
-	    --profile backend config >> docker-compose/dev_exported_config.yaml)
-
-submodule_sync:
-	# check all submodule directories for not-yet initialized ones and drops them,
-	# then sync and initialization is processed
-	BASE_PATH=`pwd`															; \
-	cat .gitmodules | grep 'path =' | cut -d ' ' -f3 | while read -r path; do \
-		if [ ! -f "$$BASE_PATH/$$path/.git" ]; then 						  \
-			echo "initializing '$$BASE_PATH/$$path/.git'"					; \
-			rm -Rf $$BASE_PATH/$$path										; \
-		fi																	; \
-	done																	; \
-
-	git submodule sync
-	git submodule update --init --recursive
-
-submodule_checkout_next:
-	# 1. cd to each submodule
-	# 2. stash all local changes
-	# 3. checkout branch `next`
-	# 4. unstash local changes back
-	BASE_PATH=`pwd`															; \
-	cat .gitmodules | grep 'path =' | cut -d ' ' -f3 | while read -r path; do \
-		cd $$BASE_PATH/$$path												; \
-		echo "entering '$$path'"											; \
-		git stash 2>&1 | grep -vi 'no local changes'						; \
-		git checkout next 2>&1 | grep -vi 'already' | grep -vi 'up to date'	; \
-		git stash pop 2>&1 | grep -vi 'no stash entries found'				; \
-	done																	; \
-	echo "done"
-
-submodule_update: submodule_sync
-	# update all submodules to their latest versions
-	git submodule update --init --recursive --remote
-
-run:
-	docker compose up -d
-
-build_frontend:
-	docker compose run frontend sh docker-entrypoint.sh build
-
-build_cookbook:
-	docker compose run cookbook sh docker-entrypoint.sh build
-
 dev: clean
-	$(call compose_with_trap,                                                              \
-		--profile dev                                                                   \
-		-f docker-compose/dev_$$OS.yaml up)
-
-backend:
-	$(call compose_with_trap,                                                              \
-		--profile backend                                                                   \
-		-f docker-compose/dev_$$OS.yaml up)
-
-frontend:
-	$(call compose_with_trap,                                                              \
-		--profile frontned                                                                   \
-		-f docker-compose/dev_$$OS.yaml up)
-
-node_modules/cypress/bin/cypress:
-	yarn --cwd frontend install --frozen-lockfile
-
-prepare_test_env:
-	rm -Rf ./*data_test
-	docker volume rm -f postgresqldata_test
-	docker volume create postgresqldata_test
-
-startup_testing:
-	$(call with_os,                                                                        \
-	    docker compose                                                                     \
-	        --profile dev                                                                  \
-            -f docker-compose.yaml                                                         \
-            -f docker-compose/dev.yaml                                                     \
-            -f docker-compose/dev_test.yaml                                                \
-            -f docker-compose/dev_test_$$OS.yaml up --quiet-pull -d)
-
-startup_testing_frontend:
-	$(call with_os,                                                                        \
-	    docker compose                                                                     \
-	        --profile frontend                                                             \
-            -f docker-compose.yaml                                                         \
-            -f docker-compose/dev.yaml                                                     \
-            -f docker-compose/dev_test.yaml                                                \
-            -f docker-compose/dev_test_$$OS.yaml up --quiet-pull -d)
-
-test_backend:
-	make prepare_test_env
-	$(call compose_with_trap,                                                              \
-		-f docker-compose/dev_test.yaml                                                    \
-		-f docker-compose/dev_test_$$OS.yaml run --quiet-pull backend sh docker-entrypoint.sh test)
-
-
-test_frontend: node_modules/cypress/bin/cypress
-	yarn --cwd frontend run test:types
-	yarn --cwd frontend run test:unit
-	make startup_testing_frontend
-	yarn --cwd frontend run wait-on http-get://localhost:3000
-	$(call with_trap, yarn --cwd frontend run e2e:ci $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',))
-
-
-test_e2e: node_modules/cypress/bin/cypress
-	make prepare_test_env
-	make startup_testing
-	yarn --cwd frontend run wait-on http-get://localhost/api/
-	yarn --cwd frontend run wait-on http-get://localhost:3000
-	$(call with_trap, yarn --cwd frontend run cypress run)
-
-test: test_backend test_frontend
-
-open_cypress: node_modules/cypress/bin/cypress prepare_test_env
-	make startup_testing
-	yarn --cwd frontend run wait-on http-get://localhost/api/
-	$(call with_trap, yarn --cwd frontend run cypress open)
+	trap '$(CLEANUP)' EXIT
+	docker compose up
 
 clean:
-	docker compose down -t 0 --remove-orphans
+	$(CLEANUP)
 
+test: test_backend test_frontend test_cookbook
 
-init_test_db:
-	$(call compose_with_trap,                                                              \
-		-f docker-compose/dev_$$OS.yaml run backend sh docker-entrypoint.sh manage migrate)
-	$(call compose_with_trap,                                                              \
-		-f docker-compose/dev_$$OS.yaml run backend sh docker-entrypoint.sh manage testing_db)
+# Backend pytest. Brings up only postgres + backend in the bis-test project,
+# runs the entrypoint's `test` mode (pytest), tears down with the volume.
+test_backend:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) run --rm --quiet-pull backend sh docker-entrypoint.sh test
+
+# Frontend cypress — FULLY MOCKED. Specs use cy.intercept for every API call,
+# so no backend, postgres, or seeded user is needed. The `frontend` compose
+# profile only brings up nginx + frontend; cypress itself runs in the upstream
+# cypress/included image. Type-check and unit tests also run inside the
+# frontend container — no host yarn needed.
+test_frontend:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh ci
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+
+# Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
+# profile brings up nginx + cookbook + backend + postgres. Cypress itself
+# runs in a third container (`cypress` profile, upstream cypress/included
+# image) on the same docker network — no host Node toolchain involved.
+# Chef seeding lives in cookbook/cypress.config.js (`before:spec`) and
+# fetches `/api/cookbook/testing/seed/` directly.
+test_cookbook:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+
+# Interactive cypress for the frontend. WSLg / X11 socket forwarding gives
+# the GUI a Windows window like any other WSL app.
+cypress_frontend:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend open --project /e2e
+
+# Interactive cypress for the cookbook — same real-backend stack as test_cookbook.
+# The cypress container forwards X11 / Wayland sockets to the host (WSLg on
+# Windows, native X11 on Linux) so the Cypress GUI shows up like any other
+# WSL/Linux app.
+cypress_cookbook:
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress open --project /e2e
+
+build_frontend:
+	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build
+
+build_cookbook:
+	docker compose run --rm cookbook sh docker-entrypoint.sh build

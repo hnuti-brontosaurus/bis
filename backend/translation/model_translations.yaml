@@ -864,6 +864,7 @@ Ingredient:
     g_per_serving: gramy na typickou porci
     state: Konzistence
     reasoning: Popis
+    allergens: Typicky obsahuje alergeny
 
 Recipe:
   name: Recept
@@ -877,6 +878,7 @@ Recipe:
     required_time: Časová náročnost
     steps: Postup
     tips: Tipy
+    allergens: Typicky obsahuje alergeny
 
 RecipeIngredient:
   name: Přísada receptu
@@ -936,3 +938,7 @@ RecipeTag:
 RecipeRequiredTime:
   name: Časová náročnost receptu
   name_plural: Časové náročnosti receptů
+
+Allergen:
+  name: Alergen
+  name_plural: Alergeny

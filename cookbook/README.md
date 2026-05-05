@@ -13,7 +13,7 @@ Common files for ocn sk frontends.
       - ...
     - public
     - src
-    - .env (config local env with VITE_* env variables)
+    - .env (config local env with VITE\_\* env variables)
     - jsconfig.json (needs to be copied per project)
     - package.json (commands should be copied)
     - yarn.lock

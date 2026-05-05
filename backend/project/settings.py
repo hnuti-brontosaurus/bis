@@ -4,31 +4,22 @@ from os.path import abspath, dirname, join
 from pathlib import Path
 
 import sentry_sdk
-import yaml
 from sentry_sdk.integrations.django import DjangoIntegration
 
 BASE_DIR = dirname(dirname(abspath(__file__)))
 
-
-def load_environment_variables_from_docker_compose_file():
-    try:
-        with open(join(dirname(BASE_DIR), "docker-compose/.dev.yaml")) as stream:
-            content = yaml.safe_load(stream)
-            for key, value in content["services"]["backend"]["environment"].items():
-                if key not in environ:
-                    environ[key] = str(value)
-
-    except FileNotFoundError:
-        pass  # Expected when using docker-compose
-
-
-load_environment_variables_from_docker_compose_file()
-
 SECRET_KEY = environ["SECRET_KEY"]
 
-DEBUG = bool(int(environ["DEBUG"]))
-TEST = bool(int(environ["TEST"]))
 ENVIRONMENT = environ.get("ENVIRONMENT", "local")
+assert ENVIRONMENT in ("local", "testing", "dev", "prod"), (
+    f"Invalid ENVIRONMENT: {ENVIRONMENT!r}"
+)
+
+TESTING = ENVIRONMENT == "testing"
+DEBUG = ENVIRONMENT in (
+    "local",
+    "testing",
+)  # required name; Django reads settings.DEBUG natively
 
 FULL_HOSTNAME = environ["FULL_HOSTNAME"]
 ALLOWED_HOSTS = environ["ALLOWED_HOSTS"].split(",")
@@ -111,7 +102,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-if DEBUG:
+if ENVIRONMENT in ("local", "testing"):
     MIDDLEWARE.insert(0, "bis.middleware.sql_middleware")
     MIDDLEWARE.insert(
         0,
@@ -152,10 +143,31 @@ DATABASES = {
     }
 }
 
+if TESTING:
+    # Skip migrations on the test stack — `migrate --run-syncdb` creates
+    # tables directly from current models against a fresh DB. Keeps the
+    # cookbook cypress stack and pytest in sync (pytest sets the same flag
+    # via pyproject.toml's `addopts = --no-migrations`).
+    class _DisableMigrations(dict):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = _DisableMigrations()
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-#
-# Password validation
+if ENVIRONMENT in ("dev", "prod"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://redis:6379/1",
+        }
+    }
+    SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
@@ -166,9 +178,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = ["bis.auth_backend.BISBackend"]
-
-# Internationalization
-# https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = "cs"
 TIME_ZONE = "Europe/Prague"
@@ -197,18 +206,12 @@ DATETIME_INPUT_FORMATS = [
 ]
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
 STATIC_URL = "/backend_static/"
 MEDIA_URL = "/media/"
 
 STATIC_ROOT = join(BASE_DIR, "backend_static")
 MEDIA_ROOT = join(BASE_DIR, "media")
 
-#
-# Upload limits
-# https://docs.djangoproject.com/en/3.0/ref/settings/#std:setting-DATA_UPLOAD_MAX_MEMORY_SIZE
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
@@ -239,7 +242,9 @@ OAUTH2_PROVIDER = {
     "ACCESS_TOKEN_EXPIRE_SECONDS": None,
     "REFRESH_TOKEN_EXPIRE_SECONDS": None,
     "ROTATE_REFRESH_TOKEN": False,
-    "ALLOWED_REDIRECT_URI_SCHEMES": ["https", "http"] if DEBUG else ["https"],
+    "ALLOWED_REDIRECT_URI_SCHEMES": (
+        ["https", "http"] if ENVIRONMENT in ("local", "testing") else ["https"]
+    ),
     # PKCE is required for public clients
     "PKCE_REQUIRED": True,
 }
@@ -289,11 +294,11 @@ SPECTACULAR_SETTINGS = {
 # API settings
 API_BASE = environ["API_BASE"]
 
-if not DEBUG:
+if ENVIRONMENT in ("dev", "prod"):
     CSRF_TRUSTED_ORIGINS = [FULL_HOSTNAME]
     CORS_ALLOWED_ORIGINS = [FULL_HOSTNAME]
 
-    if "dev" in FULL_HOSTNAME:
+    if ENVIRONMENT == "dev":
         CSRF_TRUSTED_ORIGINS += ["http://localhost", "http://localhost:3000"]
         CORS_ALLOWED_ORIGINS += ["http://localhost", "http://localhost:3000"]
 
@@ -304,7 +309,7 @@ PHONENUMBER_DEFAULT_REGION = "CZ"
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
 
 # sentry.io logging
-if not DEBUG:
+if ENVIRONMENT in ("dev", "prod"):
     sentry_sdk.init(
         dsn=environ["SENTRY_DSN"],
         integrations=[DjangoIntegration()],
@@ -326,7 +331,6 @@ EMAIL = environ["EMAIL"]
 AUTH_USER_MODEL = "bis.User"
 
 SKIP_VALIDATION = False
-EMAILS_ENABLED = bool(int(environ["EMAILS_ENABLED"]))
 
 ECOMAIL_API_KEY = environ["ECOMAIL_API_KEY"]
 
@@ -339,8 +343,8 @@ GROQ_API_KEY = environ["GROQ_API_KEY"]
 GOOGLE_CREDENTIALS = environ.get("GOOGLE_CREDENTIALS")
 GOOGLE_SHARED_DRIVE_ID = "0APUaw_FPCiv7Uk9PVA"
 
-if DEBUG:
-    import socket  # only if you haven't already imported this
+if ENVIRONMENT in ("local", "testing"):
+    import socket
 
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + [

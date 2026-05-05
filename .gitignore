@@ -30,6 +30,9 @@ __pycache__
 
 /cypress/videos
 /cypress/screenshots
+/cookbook/cypress/videos
+/cookbook/cypress/screenshots
+/cookbook/cypress/downloads
 
 /postgresqldata_test
 /.env

@@ -10,6 +10,7 @@ dependencies = [
     "djangorestframework-gis>=1.0",
     "drf-nested-routers>=0.93",
     "drf-spectacular>=0.26",
+    "drf-writable-nested>=0.7",
     "django-admin-autocomplete-filter>=0.7",
     "django-admin-rangefilter>=0.10",
     "django-autocomplete-light>=3.9",
@@ -30,6 +31,8 @@ dependencies = [
     "django-admin-numeric-filter @ git+https://github.com/lukasvinclav/django-admin-numeric-filter.git@c5718f59eea66f67bbaa2ee542206719dfd43df3",
     # Database
     "psycopg2-binary>=2.9",
+    # Cache / sessions / throttling
+    "django-redis>=5.4",
     # Server
     "gunicorn>=20.1",
     # Data processing
@@ -72,6 +75,7 @@ dev = [
 DJANGO_SETTINGS_MODULE = "project.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 norecursedirs = ["backend_static", "media"]
+addopts = "--no-migrations"
 
 [tool.black]
 

@@ -1,8 +1,6 @@
 <script setup>
 import {
   NFlex,
-  NH1,
-  NText,
   NButtonGroup,
   NPageHeader,
   NButton,
@@ -10,17 +8,26 @@ import {
   NGridItem,
   NCard,
 } from "naive-ui"
-import { rand } from "@vueuse/core"
-import { recipes, useConnector } from "@/composables/connector.js"
+import { computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { onMounted } from "vue"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import { useRecipesStore } from "@/data/recipes.js"
+import { useChefsStore } from "@/data/chefs.js"
 import { _ } from "@/composables/translations.js"
 
-useConnector("recipes")
+const recipesStore = useRecipesStore()
+const chefsStore = useChefsStore()
+onMounted(() => {
+  recipesStore.fetchAll()
+  chefsStore.fetchAll()
+})
 
 const router = useRouter()
 
-const onClick = value => router.push({ name: "recipe", params: { id: value } })
+const onClick = id => router.push({ name: "recipe", params: { id } })
+
+const chefNameFor = chef_id => computed(() => chefsStore.byId[chef_id]?.name ?? "")
 </script>
 
 <template>
@@ -37,23 +44,41 @@ const onClick = value => router.push({ name: "recipe", params: { id: value } })
     </n-page-header>
 
     <n-grid cols="1 s:2 m:3" x-gap="32" y-gap="32" responsive="screen">
-      <n-grid-item v-for="(recipe, id) in recipes" :key="id">
-        <router-link :to="{ name: 'recipe', params: { id } }" custom>
+      <n-grid-item v-for="recipe in recipesStore.list" :key="recipe.id">
+        <router-link :to="{ name: 'recipe', params: { id: recipe.id } }" custom>
           <n-card
             :title="recipe.name"
             embedded
             hoverable
             style="cursor: pointer"
-            @click="onClick(id)"
+            @click="onClick(recipe.id)"
           >
             <template #cover>
-              <img
-                :src="recipe.photo.medium"
-                :alt="recipe.name"
-                style="object-fit: cover; height: 200px"
-              />
+              <div style="position: relative">
+                <img
+                  :src="recipe.photo?.medium"
+                  :alt="recipe.name"
+                  style="object-fit: cover; height: 200px; width: 100%"
+                />
+                <div
+                  v-if="!recipe.is_public"
+                  :title="_.recipes.is_private"
+                  style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: rgba(0, 0, 0, 0.6);
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    line-height: 1;
+                  "
+                >
+                  <font-awesome-icon :icon="faEyeSlash" />
+                </div>
+              </div>
             </template>
-            {{ recipe.chef.name }}
+            {{ chefNameFor(recipe.chef_id).value }}
           </n-card>
         </router-link>
       </n-grid-item>

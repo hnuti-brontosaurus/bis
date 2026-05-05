@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from datetime import timedelta
 from random import randint
 
 from bis.models import User
+from django.core.cache import cache
 from django.db import models
 from django.utils.timezone import now
 from rest_framework.exceptions import AuthenticationFailed, Throttled
@@ -15,27 +17,31 @@ def one_hour_later():
     return now() + timedelta(hours=1)
 
 
-class ThrottleLog(models.Model):
-    key = models.CharField(max_length=255)
-    created = models.DateTimeField(auto_now_add=True)
+@dataclass(frozen=True)
+class Throttle:
+    prefix: str
+    max_count: int
+    window_hours: int
 
-    def __str__(self):
-        return f"throttle_log.{self.id}"
+    def _key(self, key):
+        return f"throttle:{self.prefix}:{key}"
 
-    @classmethod
-    def check_throttled(cls, prefix, key, max_count, timedelta_hours):
-        if (
-            cls.objects.filter(
-                key=f"{prefix}_{key}",
-                created__gte=now() - timedelta(hours=timedelta_hours),
-            ).count()
-            > max_count
-        ):
-            raise Throttled(timedelta_hours * 3600)
+    def check(self, key):
+        if (cache.get(self._key(key)) or 0) > self.max_count:
+            raise Throttled(self.window_hours * 3600)
 
-    @classmethod
-    def add(cls, prefix, key):
-        cls.objects.create(key=f"{prefix}_{key}")
+    def add(self, key):
+        cache_key = self._key(key)
+        try:
+            cache.incr(cache_key)
+        except ValueError:
+            cache.set(cache_key, 1, timeout=self.window_hours * 3600)
+
+
+login_code_throttle = Throttle("login_code", max_count=10, window_hours=1)
+cookbook_login_throttle = Throttle("cookbook_login", max_count=10, window_hours=1)
+get_unknown_user_throttle = Throttle("get_unknown_user", max_count=5, window_hours=24)
+guess_birthday_throttle = Throttle("guess_birthday", max_count=5, window_hours=24)
 
 
 class LoginCode(models.Model):
@@ -48,17 +54,21 @@ class LoginCode(models.Model):
 
     @classmethod
     def check_throttled(cls, user):
-        ThrottleLog.check_throttled("login_code", user.email, 10, 1)
+        login_code_throttle.check(user.email)
 
     @classmethod
     def add_throttled(cls, user):
-        ThrottleLog.add("login_code", user.email)
+        login_code_throttle.add(user.email)
 
     @classmethod
     def make(cls, user):
         cls.check_throttled(user)
         cls.add_throttled(user)
         return cls.objects.create(user=user)
+
+    @classmethod
+    def remove_expired(cls):
+        cls.objects.filter(valid_till__lt=now()).delete()
 
     @classmethod
     def is_valid(cls, user, code):

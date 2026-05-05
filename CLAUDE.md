@@ -17,19 +17,36 @@ BIS (Brontosaurus Information System) is a full-stack web application for managi
 ### Development
 ```bash
 make build            # Build all Docker images (run first)
-make dev              # Start all services with live-reload (auto-detects OS)
-make backend          # Run backend only
-make frontend         # Run frontend only
+make dev              # Start all services with live-reload
 make clean            # Stop all containers and remove orphans
 ```
 
 ### Testing
 ```bash
-make test             # Run all tests (backend + frontend)
-make test_backend     # Run pytest tests only
-make test_frontend    # Run Cypress tests only
-make open_cypress     # Open Cypress interactive test runner
+make test              # Run all tests (backend + frontend + cookbook)
+make test_backend      # Run pytest tests only
+make test_frontend     # Frontend Cypress — FULLY MOCKED (cy.intercept). Containerized cypress.
+make test_cookbook     # Cookbook Cypress — REAL e2e against backend + postgres. Containerized cypress.
+make cypress_frontend  # Interactive frontend Cypress (containerized; uses WSLg / X11 to show GUI).
+make cypress_cookbook  # Interactive cookbook Cypress (containerized; uses WSLg / X11 to show GUI).
 ```
+
+Test stack profiles (`docker-compose.test.yaml`):
+- `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `cypress_frontend`.
+- `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `cypress_cookbook`.
+- `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
+- `cypress` profile → cookbook cypress runner. Uses upstream `cypress/included` image directly. Started on demand via `docker compose run --rm cypress`, never by `up`.
+- `cypress-frontend` profile → frontend cypress runner. Same upstream image, mounts `frontend/` instead. Started via `docker compose run --rm cypress-frontend`.
+
+Both cypress runners are fully containerized — no host cypress binary is needed. They join the test docker network so `baseUrl` is `http://nginx/...`, mount `/tmp/.X11-unix` + `/mnt/wslg` (forwarding `DISPLAY` / `WAYLAND_DISPLAY` / `PULSE_SERVER`) so `cypress open` shows up via WSLg on Windows or native X11 on Linux.
+
+Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh ci` (see `frontend/docker-entrypoint.sh` for the `ci` mode), so no host yarn install is needed at all.
+
+Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookbook/testing/seed/` (`api/cookbook/views/testing.py`) — gated by `settings.TEST` so it 404s in production. The `before:spec` hook in `cookbook/cypress.config.js` `fetch`es it instead of shelling out to `docker exec`, which lets the cypress container stay minimal (no docker CLI, no socket mount, no docker-group GID handling).
+
+Cookbook chef seeding lives in `cookbook/cypress.config.js` (`before:spec` hook), not in the Makefile, so interactive runs seed too. It calls `python manage.py testing_db cookbook`, which is idempotent.
+
+Cookbook tests rely on real backend state. The `testing_db cookbook` seed provides everything specs need (chef + canonical recipe with photo); specs talk to the same HTTP API the SPA uses, not the ORM directly. Mutations within a test use uniquely-tagged values (e.g. `cypress-${Date.now()}`) so the assertion only depends on what *that* test wrote — not on global counts. The test DB volume is wiped on teardown.
 
 ### Backend-specific
 ```bash
@@ -37,13 +54,11 @@ docker exec -it bis-backend sh                          # Shell into backend con
 docker exec -it bis-backend python manage.py <command>  # Run Django management command
 docker exec -it bis-backend python manage.py migrate    # Apply migrations
 docker exec -it bis-backend python manage.py reset      # Import old database
-docker exec -it bis-backend python manage.py testing_db # Create test database
+docker exec -it bis-backend python manage.py testing_db dev      # Full demo seed for dev.bis.brontosaurus.cz (flush + ~80 entities)
+docker exec -it bis-backend python manage.py testing_db cookbook # Minimal idempotent seed for cookbook tests (categories + chef)
 ```
 
-**IMPORTANT:** Always pass `-u $(id -u):$(id -g)` to `docker exec`/`docker run` so any files written (migrations, fixtures, etc.) are owned by your host user and editable without `sudo chown`:
-```bash
-docker exec -u $(id -u):$(id -g) bis-backend python manage.py makemigrations
-```
+Containers run as the host UID/GID (`user: ${UID}:${GID}` in `docker-compose.yaml`, exported by the Makefile), so files written from inside (migrations, fixtures, build output) are owned by your host user. No `-u` flag or `sudo chown` needed.
 
 ### Frontend-specific
 ```bash
@@ -108,6 +123,12 @@ English for code, comments, variable names. Czech for user-facing strings.
 - Use absolute imports
 - Style with CSS modules + SCSS
 - Forms use react-hook-form + yup validation
+
+### Comments
+- Default: no comments. Code with well-named identifiers should explain itself, rather rewrite the code to be more readable.
+- Only write a comment for a non-obvious **why** — a constraint, an invariant, a workaround for a specific bug, or behavior that would surprise a reader.
+- Do not write: section banners (`# ---- Foo ----`, `# Static files`), restatements of the next line, references to tasks/PRs/tickets, commented-out code blocks (use git history), or framework template boilerplate.
+- If deleting the comment wouldn't confuse a competent reader, don't write it.
 
 ### Commit Messages
 - Capital first letter, imperative style, no trailing period

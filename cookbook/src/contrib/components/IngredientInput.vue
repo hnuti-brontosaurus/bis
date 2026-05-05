@@ -1,30 +1,21 @@
 <script setup>
-import { NInputGroup, NSelect, NText, NInputNumber, NButton, useDialog } from "naive-ui"
-import { useWindowSize } from "@vueuse/core"
-import { propertyRef, textFilter, toValueLabel } from "@/contrib/composables/helpers.js"
-import {
-  chefs,
-  dataIdMapping,
-  dataOptions,
-  ingredients,
-  units,
-  useConnector,
-} from "@/composables/connector.js"
+import { NInputGroup, NSelect, NInputNumber, NButton, useDialog } from "naive-ui"
+import { useIngredientsStore } from "@/data/ingredients.js"
+import { useUnitsStore } from "@/data/units.js"
+import { storeOptions } from "@/data/helpers.js"
 import { _ } from "@/composables/translations.js"
 import { ref } from "vue"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 
-const { width } = useWindowSize()
-const connector = useConnector("ingredients", false)
+const ingredientsStore = useIngredientsStore()
+const unitsStore = useUnitsStore()
 
 const value = defineModel("value")
 const dialog = useDialog()
 const loading = ref(false)
 
-const ingredientValue = dataIdMapping(ingredients, propertyRef(value, "ingredient"))
-const ingredientOptions = dataOptions(ingredients)
-const unitValue = dataIdMapping(units, propertyRef(value, "unit"))
-const unitOptions = dataOptions(units)
+const ingredientOptions = storeOptions(ingredientsStore)
+const unitOptions = storeOptions(unitsStore)
 
 const input = ref("")
 const fallback = () => ({ label: `${_.value.ingredients.new}: ${input.value}` })
@@ -38,9 +29,10 @@ const createIngredient = () => {
     onPositiveClick: async () => {
       loading.value = true
       try {
-        value.value.ingredient = await connector.upsert({ name: input.value })
+        const created = await ingredientsStore.save({ name: input.value })
+        value.value.ingredient_id = created.id
       } catch (e) {
-        handleAxiosError(_.value.ingredients.upsert_error)
+        handleAxiosError(_.value.ingredients.upsert_error)(e)
       } finally {
         loading.value = false
       }
@@ -52,15 +44,15 @@ const createIngredient = () => {
 <template>
   <n-input-group>
     <n-select
-      v-model:value="ingredientValue"
+      v-model:value="value.ingredient_id"
       :options="ingredientOptions"
       filterable
       :clearable="false"
       placeholder=""
       show-on-focus
       :fallback-option="fallback"
-      @search="v => (input = v)"
       :loading="loading"
+      @search="v => (input = v)"
     >
       <template #action>
         <n-button
@@ -75,9 +67,14 @@ const createIngredient = () => {
         <div class="input_empty_hide"></div>
       </template>
     </n-select>
-    <n-input-number v-model:value="value.amount" :show-button="false" :format="v => v != null ? String(Math.round(v * 100) / 100) : ''" :parse="parseFloat"/>
+    <n-input-number
+      v-model:value="value.amount"
+      :show-button="false"
+      :format="v => (v != null ? String(Math.round(v * 100) / 100) : '')"
+      :parse="parseFloat"
+    />
     <n-select
-      v-model:value="unitValue"
+      v-model:value="value.unit_id"
       :options="unitOptions"
       filterable
       :clearable="false"

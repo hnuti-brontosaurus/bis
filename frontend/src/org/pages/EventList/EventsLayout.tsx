@@ -18,7 +18,7 @@ export const EventsLayout = () => {
         '/org/akce/aktualni': 'editEvent',
         '/org/akce/vsechny': 'editEvent',
         '/org/akce/nevyplnene': 'closeEvent',
-      } as const),
+      }) as const,
     [],
   )
 

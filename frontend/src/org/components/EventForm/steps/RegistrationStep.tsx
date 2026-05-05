@@ -70,8 +70,8 @@ export const RegistrationStep = ({
                                 e.target.value === 'true'
                                   ? true
                                   : e.target.value === 'false'
-                                  ? false
-                                  : undefined,
+                                    ? false
+                                    : undefined,
                               )
                             }
                           />{' '}

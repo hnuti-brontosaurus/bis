@@ -44,7 +44,7 @@ from event.models import (
     EventPropagationImage,
 )
 from feedback.models import EventFeedback, Inquiry
-from login_code.models import ThrottleLog
+from login_code.models import get_unknown_user_throttle
 from opportunities.models import Opportunity
 from other.models import Announcement, DashboardItem
 from questionnaire.models import EventApplication, Question
@@ -379,11 +379,11 @@ class UserSearchViewSet(ListModelMixin, GenericViewSet):
 @parse_request_data(GetUnknownUserRequestSerializer, "query_params")
 def get_unknown_user(request, data):
     key = f"{data['first_name']}_{data['last_name']}_{request.user.id}"
-    ThrottleLog.check_throttled("get_unknown_user", key, 5, 24)
+    get_unknown_user_throttle.check(key)
     user = User.objects.filter(**data).first()
 
     if not user:
-        ThrottleLog.add("get_unknown_user", key)
+        get_unknown_user_throttle.add(key)
         raise NotFound()
 
     return Response(UserSerializer(instance=user, context={"request": request}).data)

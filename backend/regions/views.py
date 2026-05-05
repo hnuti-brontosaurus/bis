@@ -1,8 +1,8 @@
+from categories.views import CachedReadOnlyModelViewSet
 from regions.models import Region
 from regions.serializers import RegionSerializer
-from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
-class RegionViewSet(ReadOnlyModelViewSet):
+class RegionViewSet(CachedReadOnlyModelViewSet):
     serializer_class = RegionSerializer
     queryset = Region.objects.all()

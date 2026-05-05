@@ -83,11 +83,11 @@ export const import2payload = (
     : null
 
   const health_insurance_company = data.health_insurance_company
-    ? healthInsuranceCompanies.find(
+    ? (healthInsuranceCompanies.find(
         company =>
           normalizeString(company.slug) ===
           normalizeString(data.health_insurance_company),
-      )?.id ?? null
+      )?.id ?? null)
     : null
 
   const preparedFields = {

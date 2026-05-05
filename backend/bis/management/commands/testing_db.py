@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from io import BytesIO
 from os.path import join
 
 from administration_units.models import (
@@ -17,10 +18,21 @@ from categories.models import (
     PronounCategory,
     QualificationCategory,
 )
+from cookbook.models.chefs import Chef
+from cookbook.models.ingredients import Ingredient
+from cookbook.models.recipes import Recipe
+from cookbook_categories.models import RecipeDifficulty, RecipeRequiredTime
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
+from PIL import Image
 from project.settings import BASE_DIR
+from rest_framework.authtoken.models import Token
+
+# Email for the seeded cookbook chef used by Cypress smoke tests.
+# Mirrors TEST_USER_EMAIL in the Makefile cypress target.
+CYPRESS_CHEF_EMAIL = "test@test.local"
 
 
 class Command(BaseCommand):
@@ -33,13 +45,32 @@ class Command(BaseCommand):
 
         super().__init__(*args, **kwargs)
 
-    def handle(self, *args, **options):
-        call_command("flush", no_input=False)
-        call_command("create_categories")
-        call_command("import_regions")
-        call_command("import_zip_codes")
-        self.create_testing_db()
-        # call_command("import_locations")
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "target",
+            choices=["dev", "cookbook"],
+            help=(
+                "dev: full demo seed for dev.bis.brontosaurus.cz "
+                "(flush + categories + regions + zip codes + ~80 demo entities). "
+                "cookbook: minimal idempotent seed for Cypress cookbook tests "
+                "(categories + chef). No flush — safe to re-run."
+            ),
+        )
+
+    def handle(self, *args, target, **options):
+        if target == "dev":
+            call_command("flush", no_input=False)
+            call_command("create_categories")
+            call_command("import_regions")
+            call_command("import_zip_codes")
+            self.create_testing_db()
+            # call_command("import_locations")
+        elif target == "cookbook":
+            # Idempotent: create_categories uses update_or_create, and
+            # create_cookbook_chef uses get_or_create. --group cookbook skips
+            # the BIS + game book taxonomies the cypress suite never touches.
+            call_command("create_categories", group="cookbook")
+            self.create_cookbook_chef()
 
     def create_user(
         self,
@@ -93,6 +124,7 @@ class Command(BaseCommand):
             "Finanční", "Ředitel", "finance_director@hb.nope"
         )
         kancl = self.create_user("Zaměstnanec", "Kancl", "office_worker@hb.nope")
+        self.kancl = kancl
         krk = self.create_user("Zaměstnanec", "KRK", "auditor@hb.nope")
         vv = self.create_user("Zaměstnanec", "VV", "executive@hb.nope")
         edu = self.create_user("Zaměstnanec", "EDU", "education_member@hb.nope")
@@ -266,11 +298,70 @@ class Command(BaseCommand):
 
         return event
 
+    def create_cookbook_chef(self):
+        # Cypress smoke tests log in as this chef via a token short-circuit
+        # (see api/cookbook/views/auth.login). Seeded here so the test suite
+        # does not need to mutate the DB on every run.
+        user, _ = User.objects.get_or_create(
+            email=CYPRESS_CHEF_EMAIL,
+            defaults={"first_name": "Cypress", "last_name": "Tester"},
+        )
+        Token.objects.get_or_create(user=user)
+        chef, _ = Chef.objects.get_or_create(
+            user=user,
+            defaults={"name": "Cypress Chef", "email": user.email},
+        )
+        if not chef.photo:
+            buf = BytesIO()
+            Image.new("RGB", (32, 32), "red").save(buf, format="PNG")
+            chef.photo.save(
+                "chef.png",
+                SimpleUploadedFile("chef.png", buf.getvalue(), "image/png"),
+            )
+        # A handful of ingredients so cypress specs can pick existing rows
+        # in the recipe edit form without having to also exercise the
+        # "create new ingredient" dialog.
+        # Use the normalized (lower().capitalize()) form so get_or_create is
+        # idempotent — the pre_save signal in cookbook.signals capitalizes the
+        # name on insert, so "cukr" lookups would never match the stored "Cukr"
+        # and re-runs would hit the unique-name constraint.
+        for name in ("Cukr", "Mouka", "Máslo"):
+            Ingredient.objects.get_or_create(name=name)
+        # One canonical owned recipe so cypress specs can edit a real row
+        # without reaching into the ORM. The edit form renders the photo, so
+        # the file must actually exist on disk — `chef.recipes` is filtered to
+        # rows whose photo file is present, and one is created if none qualify.
+        if not any(
+            r.photo and r.photo.storage.exists(r.photo.name) for r in chef.recipes.all()
+        ):
+            difficulty = RecipeDifficulty.objects.get(slug="simple")
+            required_time = RecipeRequiredTime.objects.get(slug="fast")
+            buf = BytesIO()
+            Image.new("RGB", (8, 8), "red").save(buf, format="PNG")
+            Recipe.objects.create(
+                name="Cypress seed",
+                chef=chef,
+                difficulty=difficulty,
+                required_time=required_time,
+                photo=SimpleUploadedFile(
+                    "seed.png", buf.getvalue(), content_type="image/png"
+                ),
+                intro="intro",
+                sources=".",
+            )
+
     def create_testing_db(self):
         # Brontosaurus movement
         self.create_brontosaurus()
+        # Cookbook chef for Cypress smoke tests
+        self.create_cookbook_chef()
         # Virtual basic section
-        zc_chairman = self.create_user("Předseda", "ZC", "chairman@hb.nope")
+        zc_chairman = self.create_user(
+            "Předseda",
+            "ZC",
+            "chairman@hb.nope",
+            qualification=("instructor", date.today(), self.kancl),
+        )
         zc_manager = self.create_user("Hospodář", "ZC", "manager@hb.nope")
         basic_section = self.create_administration_unit(
             name="Základní článek",

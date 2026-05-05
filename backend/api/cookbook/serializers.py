@@ -1,7 +1,21 @@
-from api.frontend.serializers import (
-    ModelSerializer,
-    SmartUpdatableListSerializer,
-)
+"""Cookbook serializers.
+
+Field-shape rules:
+
+- Non-owned FK / M2M relations (chef, difficulty, required_time, unit,
+  ingredient, tags) expose ONLY the `_id` form on both read and write:
+    chef_id      -> integer (FK)
+    tag_ids      -> list[integer] (M2M)
+    ingredient_id, unit_id -> integers on through rows
+  No nested object is rendered for these — the frontend resolves names
+  out of sibling stores keyed by id.
+
+- Owned children of Recipe / Menu (ingredients, steps, tips,
+  menu_recipes, menu_recipe_ingredients) keep nested writes AND nested
+  reads — they only exist as part of the parent and are rewritten via
+  drf-writable-nested.
+"""
+
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
@@ -12,16 +26,20 @@ from cookbook.models.recipes import (
     RecipeStep,
     RecipeTip,
 )
-from cookbook_categories.serializers import (
-    RecipeDifficultySerializer,
-    RecipeRequiredTimeSerializer,
-    RecipeTagSerializer,
-    UnitSerializer,
+from cookbook_categories.models import (
+    Allergen,
+    RecipeDifficulty,
+    RecipeRequiredTime,
+    RecipeTag,
+    Unit,
 )
+from drf_writable_nested.serializers import WritableNestedModelSerializer
+from rest_framework import serializers
 from rest_framework.fields import CharField
+from rest_framework.relations import PrimaryKeyRelatedField
 
 
-class ChefSerializer(ModelSerializer):
+class ChefSerializer(serializers.ModelSerializer):
     user_id = CharField()
 
     class Meta:
@@ -29,81 +47,89 @@ class ChefSerializer(ModelSerializer):
         fields = ("id", "user_id", "name", "email", "photo", "is_editor")
 
 
-class IngredientSerializer(ModelSerializer):
+class IngredientSerializer(serializers.ModelSerializer):
+    allergen_ids = PrimaryKeyRelatedField(
+        source="allergens",
+        queryset=Allergen.objects.all(),
+        many=True,
+        required=False,
+    )
+
     class Meta:
         model = Ingredient
-        fields = ("id", "name", "state", "g_per_piece", "g_per_liter")
+        fields = ("id", "name", "state", "g_per_piece", "g_per_liter", "allergen_ids")
 
 
-class RecipeIngredientSerializer(ModelSerializer):
-    ingredient = IngredientSerializer()
-    unit = UnitSerializer()
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    ingredient_id = PrimaryKeyRelatedField(
+        source="ingredient", queryset=Ingredient.objects.all()
+    )
+    unit_id = PrimaryKeyRelatedField(source="unit", queryset=Unit.objects.all())
 
     class Meta:
-        nested = True
         model = RecipeIngredient
         fields = (
             "id",
             "order",
-            "ingredient",
-            "unit",
+            "ingredient_id",
+            "unit_id",
             "amount",
             "is_required",
             "comment",
         )
-        list_serializer_class = SmartUpdatableListSerializer
 
 
-class RecipeStepSerializer(ModelSerializer):
+class RecipeStepSerializer(serializers.ModelSerializer):
     class Meta:
-        nested = True
         model = RecipeStep
-        fields = (
-            "id",
-            "name",
-            "order",
-            "description",
-            "photo",
-        )
-        list_serializer_class = SmartUpdatableListSerializer
+        fields = ("id", "name", "order", "description", "photo")
 
 
-class RecipeTipSerializer(ModelSerializer):
+class RecipeTipSerializer(serializers.ModelSerializer):
     class Meta:
-        nested = True
         model = RecipeTip
         fields = ("id", "name", "description")
-        list_serializer_class = SmartUpdatableListSerializer
 
 
-class RecipeCommentSerializer(ModelSerializer):
+class RecipeCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeComment
         fields = ("id", "user_id", "created_at", "comment")
         read_only_fields = ("created_at",)
 
 
-class RecipeSerializer(ModelSerializer):
-    chef = ChefSerializer()
-    difficulty = RecipeDifficultySerializer()
-    required_time = RecipeRequiredTimeSerializer()
-    tags = RecipeTagSerializer(many=True, required=False)
+class RecipeSerializer(WritableNestedModelSerializer):
+    chef_id = PrimaryKeyRelatedField(source="chef", queryset=Chef.objects.all())
+    difficulty_id = PrimaryKeyRelatedField(
+        source="difficulty", queryset=RecipeDifficulty.objects.all()
+    )
+    required_time_id = PrimaryKeyRelatedField(
+        source="required_time", queryset=RecipeRequiredTime.objects.all()
+    )
+    tag_ids = PrimaryKeyRelatedField(
+        source="tags",
+        queryset=RecipeTag.objects.all(),
+        many=True,
+        required=False,
+    )
 
     ingredients = RecipeIngredientSerializer(many=True, required=False)
     steps = RecipeStepSerializer(many=True, required=False)
     tips = RecipeTipSerializer(many=True, required=False)
-    comments = RecipeCommentSerializer(many=True, required=False)
+    comments = RecipeCommentSerializer(many=True, required=False, read_only=True)
+    # Cached on the Recipe via signals (cookbook.signals); chefs edit
+    # allergens on the Ingredient, never per-recipe.
+    allergen_ids = PrimaryKeyRelatedField(source="allergens", many=True, read_only=True)
 
     class Meta:
         model = Recipe
-        read_only_fields = ("comments",)
         fields = (
             "id",
             "name",
-            "chef",
-            "difficulty",
-            "required_time",
-            "tags",
+            "chef_id",
+            "difficulty_id",
+            "required_time_id",
+            "tag_ids",
             "photo",
             "intro",
             "sources",
@@ -111,34 +137,60 @@ class RecipeSerializer(ModelSerializer):
             "steps",
             "tips",
             "comments",
+            "allergen_ids",
             "is_public",
         )
 
+    def validate(self, attrs):
+        # photo/intro/sources are required only when the recipe is public.
+        # Need the *effective* post-write value, which on PATCH means
+        # falling back to the current instance for fields not in `attrs`.
+        def effective(field):
+            if field in attrs:
+                return attrs[field]
+            return getattr(self.instance, field, None)
 
-class RecipeReferenceSerializer(ModelSerializer):
+        if effective("is_public"):
+            errors = {}
+            for field in ("photo", "intro", "sources"):
+                if not effective(field):
+                    errors[field] = "Veřejný recept musí mít vyplněné toto pole."
+            if errors:
+                raise serializers.ValidationError(errors)
+        return super().validate(attrs)
+
+
+class RecipeReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ("id", "name", "photo")
 
 
-class MenuRecipeIngredientSerializer(ModelSerializer):
-    ingredient = IngredientSerializer()
-    unit = UnitSerializer()
+class MenuRecipeIngredientSerializer(serializers.ModelSerializer):
+    ingredient_id = PrimaryKeyRelatedField(
+        source="ingredient", queryset=Ingredient.objects.all()
+    )
+    unit_id = PrimaryKeyRelatedField(source="unit", queryset=Unit.objects.all())
 
     class Meta:
         model = MenuRecipeIngredient
         fields = (
             "id",
-            "ingredient",
-            "unit",
+            "ingredient_id",
+            "unit_id",
             "amount",
             "is_used",
             "comment",
         )
 
 
-class MenuRecipeSerializer(ModelSerializer):
-    original = RecipeReferenceSerializer(allow_null=True)
+class MenuRecipeSerializer(WritableNestedModelSerializer):
+    original_id = PrimaryKeyRelatedField(
+        source="original",
+        queryset=Recipe.objects.all(),
+        allow_null=True,
+        required=False,
+    )
     menu_recipe_ingredients = MenuRecipeIngredientSerializer(many=True, required=False)
 
     class Meta:
@@ -146,14 +198,14 @@ class MenuRecipeSerializer(ModelSerializer):
         fields = (
             "id",
             "name",
-            "original",
+            "original_id",
             "note",
             "served_at",
             "menu_recipe_ingredients",
         )
 
 
-class MenuSerializer(ModelSerializer):
+class MenuSerializer(WritableNestedModelSerializer):
     menu_recipes = MenuRecipeSerializer(many=True, required=False)
 
     class Meta:

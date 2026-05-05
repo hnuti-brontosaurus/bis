@@ -1,31 +1,14 @@
 <script setup>
 import {
   NFlex,
-  NH1,
   NText,
-  NPageHeader,
   NButton,
   NH2,
-  NH3,
-  NH4,
-  NH5,
-  NH6,
-  NCollapse,
-  NCollapseItem,
-  NGridItem,
-  NGrid,
-  NCard,
   NDataTable,
-  useThemeVars,
   NInputNumber,
   NInputGroup,
-  NCheckbox,
 } from "naive-ui"
-import { rand } from "@vueuse/core"
-import { useConnector } from "@/composables/connector.js"
-import { useRoute } from "vue-router"
-import { computed, h, onMounted, ref } from "vue"
-import RecipeIngrediences from "@/components/recipe/RecipeIngrediences.vue"
+import { computed, h, ref } from "vue"
 import { servings } from "@/composables/servings.js"
 import {
   faCartPlus,
@@ -33,6 +16,7 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
+import { _ } from "@/composables/translations.js"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
@@ -51,38 +35,39 @@ const columns = computed(() => {
       ),
     },
     { key: "ingredient.name" },
-    { key: "amount", render: row => `${Math.round(row.amount * servings.value * 100) / 100} ${row.unit.name}` },
-    // {key: "selected", render: row => h(NCheckbox, {checked: row.is_required, 'onUpdate:checked': (val) => {
-    //     recipe.value.ingredients.find(_ => _.id === row.id).is_required = val
-    //     }})},
+    {
+      key: "amount",
+      render: row =>
+        `${Math.round(row.amount * servings.value * 100) / 100} ${row.unit.name}`,
+    },
     {
       type: "selection",
       options: [
         {
           key: "all",
-          label: "Vyber vše",
-          onSelect: () => (selected.value = recipe.value.ingredients.map(_ => _.id)),
+          label: _.value.recipes.select_all,
+          onSelect: () => (selected.value = recipe.value.ingredients.map(i => i.id)),
         },
         {
           key: "default",
-          label: "Vyber výchozí",
+          label: _.value.recipes.select_default,
           onSelect: () =>
             (selected.value = recipe.value.ingredients
-              .filter(_ => _.is_required)
-              .map(_ => _.id)),
+              .filter(i => i.is_required)
+              .map(i => i.id)),
         },
       ],
     },
   ]
 })
 
-const selected = ref(recipe.value.ingredients.filter(_ => _.is_required).map(_ => _.id))
+const selected = ref(recipe.value.ingredients.filter(i => i.is_required).map(i => i.id))
 const expanded = ref([])
 const expandAll = () => {
   if (expanded.value.length) {
     expanded.value = []
   } else {
-    expanded.value = recipe.value.ingredients.filter(expandable).map(_ => _.id)
+    expanded.value = recipe.value.ingredients.filter(expandable).map(i => i.id)
   }
 }
 
@@ -96,9 +81,9 @@ const data = computed(() => {
 
 <template>
   <n-flex align="end" justify="space-between" :style="{ 'margin-bottom': '30px' }">
-    <n-h2 style="margin-bottom: 0">Ingredience</n-h2>
+    <n-h2 style="margin-bottom: 0">{{ _.recipes.ingredients }}</n-h2>
     <n-flex align="baseline" :wrap="false">
-      <n-text>Porcí:</n-text>
+      <n-text>{{ _.recipes.servings }}:</n-text>
       <n-input-group>
         <n-input-number
           size="small"

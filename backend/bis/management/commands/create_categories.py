@@ -1,6 +1,7 @@
 import zoneinfo
 from datetime import datetime
 
+from bis.cache import invalidate_cache
 from bis.models import Location
 from categories.models import (
     AdministrationUnitCategory,
@@ -26,12 +27,14 @@ from categories.models import (
     TeamRoleCategory,
 )
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
     Unit,
 )
 from django.core.management.base import BaseCommand
+from donations.models import FundraisingCampaign
 from game_book_categories.models import (
     GameLengthCategory,
     LocationCategory,
@@ -75,10 +78,24 @@ class Command(BaseCommand):
             else:
                 self.create_event_categories(value, slug, name)
 
-    def handle(self, *args, **options):
-        self.create_bis_categories()
-        self.create_game_book_categories()
-        self.create_cookbook_categories()
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--group",
+            choices=["bis", "game_book", "cookbook"],
+            help="Single category group to create. Default: all. "
+            "`testing_db cookbook` passes --group cookbook to keep the "
+            "cypress seed fast.",
+        )
+
+    def handle(self, *args, group=None, **options):
+        if group is None or group == "bis":
+            self.create_bis_categories()
+            invalidate_cache("categories")
+        if group is None or group == "game_book":
+            self.create_game_book_categories()
+        if group is None or group == "cookbook":
+            self.create_cookbook_categories()
+            invalidate_cache("cookbook_categories")
 
     def create_bis_categories(self):
         DietCategory.objects.update_or_create(
@@ -638,6 +655,11 @@ class Command(BaseCommand):
                 defaults=dict(description=description),
             )
 
+        FundraisingCampaign.objects.update_or_create(
+            slug="automatic_emails",
+            defaults=dict(name="Automatické e-maily"),
+        )
+
     def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/
         Tag.objects.update_or_create(
@@ -1171,3 +1193,13 @@ class Command(BaseCommand):
         ]
         for i, (slug, abbreviation, name, name2, name5, of) in enumerate(units):
             Unit.objects.update_or_create(slug=slug, defaults=dict(order=i, name=name))
+
+        allergens = [
+            ("gluten", "lepek"),
+            ("soya", "sója"),
+            ("nuts", "oříšky"),
+        ]
+        for i, (slug, name) in enumerate(allergens):
+            Allergen.objects.update_or_create(
+                slug=slug, defaults=dict(order=i, name=name)
+            )

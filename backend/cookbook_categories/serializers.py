@@ -1,5 +1,6 @@
 from api.frontend.serializers import ModelSerializer
 from cookbook_categories.models import (
+    Allergen,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -48,4 +49,10 @@ class RecipeTagSerializer(BaseCategorySerializer):
 class UnitSerializer(BaseCategorySerializer):
     class Meta:
         model = Unit
+        exclude = ()
+
+
+class AllergenSerializer(BaseCategorySerializer):
+    class Meta:
+        model = Allergen
         exclude = ()

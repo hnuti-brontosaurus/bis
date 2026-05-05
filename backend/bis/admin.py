@@ -63,7 +63,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from login_code.models import ThrottleLog
+from login_code.models import guess_birthday_throttle
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
 from nested_admin.nested import (
@@ -690,12 +690,12 @@ class MembershipAdminAddForm(forms.ModelForm):
 
                     try:
                         key = f"{cleaned_data['user'].id}_{self.request.user.id}"
-                        ThrottleLog.check_throttled("guess_birthday", key, 5, 24)
+                        guess_birthday_throttle.check(key)
                     except Throttled as e:
                         raise ValidationError(str(e))
 
                     if cleaned_data["birthday"] != cleaned_data["user"].birthday:
-                        ThrottleLog.add("guess_birthday", key)
+                        guess_birthday_throttle.add(key)
                         raise ValidationError(
                             {
                                 "birthday": "Uživatel v BISu existuje, ale jeho datum narození se neshoduje se "

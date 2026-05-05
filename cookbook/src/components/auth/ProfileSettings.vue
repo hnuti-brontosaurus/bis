@@ -1,36 +1,32 @@
 <script setup>
-import {
-  NButton,
-  NButtonGroup,
-  NDropdown,
-  NFlex,
-  NForm,
-  NGrid,
-  NGridItem,
-  NImage,
-  useMessage,
-  useThemeVars,
-} from "naive-ui"
-import { useRender } from "@/contrib/composables/render.js"
-import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars } from "@fortawesome/free-solid-svg-icons"
+import { NForm, useMessage } from "naive-ui"
 import { useRouter } from "vue-router"
-import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
-import { me, useAuth } from "@/composables/auth.js"
+import axios from "axios"
+import { _ } from "@/composables/translations.js"
+import { useAuthStore } from "@/data/auth.js"
 import { computed, ref } from "vue"
-import { useDarkTheme } from "@/composables/settings.js"
+import { settings, useDarkTheme } from "@/composables/settings.js"
 import AppPage from "@/components/app/AppPage.vue"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
-import { useConnector } from "@/composables/connector.js"
+import { useChefsStore } from "@/data/chefs.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
+import { storeToRefs } from "pinia"
+
 const router = useRouter()
 const form = ref()
-const auth = useAuth()
-const chefs = useConnector("chefs", 0)
+const authStore = useAuthStore()
+const { me, isChef } = storeToRefs(authStore)
+const chefsStore = useChefsStore()
 const loading = ref(false)
 const message = useMessage()
+const darkThemeChecked = computed({
+  get: () => useDarkTheme.value,
+  set: value => {
+    settings.value.darkTheme = value
+  },
+})
 const inputs = computed(() => [
   { type: "text", key: "name", required: true },
   { type: "text", key: "email", required: true },
@@ -45,16 +41,35 @@ const inputs = computed(() => [
       extra: { loading: loading.value, disabled: loading.value },
     },
   },
+  {
+    type: "checkboxes",
+    new_line: true,
+    span: 2,
+    checkboxes: [
+      {
+        key: "darkTheme",
+        label: _.value.profile.dark_theme,
+        value: darkThemeChecked,
+      },
+    ],
+  },
 ])
+const backendErrors = ref({})
 const save = async () => {
   loading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
-    await chefs.upsert(me.value.chef)
-    await auth.whoami()
-    message.info("Uloženo")
+    await chefsStore.save(me.value.chef)
+    await authStore.whoami()
+    message.info(_.value.profile.saved)
     router.back()
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.profile.error_saving)(e)
   } finally {
     loading.value = false
@@ -63,9 +78,14 @@ const save = async () => {
 </script>
 
 <template>
-  <AppPage :title="me.is_chef ? _.profile.title : _.profile.new">
+  <AppPage :title="isChef ? _.profile.title : _.profile.new">
     <n-form ref="form" :model="me.chef" @keydown.enter="save">
-      <GenericForm v-model:data="me.chef" :inputs="inputs" group="Chef" />
+      <GenericForm
+        v-model:data="me.chef"
+        :inputs="inputs"
+        :backend-errors="backendErrors"
+        group="Chef"
+      />
       <vue-hcaptcha
         ref="hcaptcha"
         sitekey="12a8ba44-b54e-4346-b426-585e191acf7c"

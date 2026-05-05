@@ -7,19 +7,21 @@ import {
   NGrid,
   NGridItem,
   NImage,
-  useThemeVars,
 } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
 import { faBars } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "vue-router"
 import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
-import { me } from "@/composables/auth.js"
+import { translatedKey } from "@/composables/translations.js"
+import { useAuthStore } from "@/data/auth.js"
 import { computed } from "vue"
+import { storeToRefs } from "pinia"
 
 const { icon } = useRender()
 const router = useRouter()
+const authStore = useAuthStore()
+const { isChef, isAuthenticated } = storeToRefs(authStore)
 
 const translatedMenuKey = translatedKey("menu")
 
@@ -57,13 +59,13 @@ const menuOptions = computed(() => [
 ])
 
 const userOptions = computed(() => {
-  if (me.value.is_chef)
+  if (isChef.value)
     return [
       translatedMenuKey("my_recipes"),
       translatedMenuKey("settings"),
       translatedMenuKey("logout"),
     ]
-  if (me.value.is_authenticated)
+  if (isAuthenticated.value)
     return [translatedMenuKey("create_profile"), translatedMenuKey("logout")]
 
   return [translatedMenuKey("login"), translatedMenuKey("register")]
@@ -71,7 +73,7 @@ const userOptions = computed(() => {
 
 const select = value => {
   if (value === "logout") {
-    me.value = {}
+    authStore.logout()
     router.go(0)
     return
   }

@@ -1,7 +1,5 @@
 <script setup>
 import {
-  darkTheme,
-  lightTheme,
   NConfigProvider,
   NDialogProvider,
   NMessageProvider,

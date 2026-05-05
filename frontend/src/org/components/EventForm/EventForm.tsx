@@ -52,7 +52,7 @@ const steps = [
   'organizers',
 ] as const
 
-type StepName = typeof steps[number]
+type StepName = (typeof steps)[number]
 
 export type SubmitShape = Assign<
   EventPayload,
@@ -138,7 +138,7 @@ const shapes = {
 } as const
 
 type ShapeTypes = {
-  [Property in keyof typeof shapes]: typeof shapes[Property][number]
+  [Property in keyof typeof shapes]: (typeof shapes)[Property][number]
 }
 
 export type StepShapes = Overwrite<
@@ -176,10 +176,10 @@ export const getRegistrationMethodBeforeFull = (
   data?.registration?.is_registration_required === false
     ? 'none'
     : data?.registration?.alternative_registration_link
-    ? 'other'
-    : data?.registration?.is_registration_required === true
-    ? 'standard'
-    : ''
+      ? 'other'
+      : data?.registration?.is_registration_required === true
+        ? 'standard'
+        : ''
 
 const initialData2form = (
   data?: Partial<InitialEventData>,
@@ -378,7 +378,7 @@ export const EventForm: FC<{
         propagation: propagationForm,
         invitation: invitationForm,
         organizers: organizersForm,
-      } as MethodsShapes),
+      }) as MethodsShapes,
     [
       basicInfoForm,
       groupForm,

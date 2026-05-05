@@ -552,7 +552,8 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                   <span>Uživatel/ka: </span>
                   <span>
                     {retrievedUser.first_name} {retrievedUser.last_name}{' '}
-                    {retrievedUser.nickname && `(${retrievedUser.nickname})`}{' '}
+                    {retrievedUser.nickname &&
+                      `(${retrievedUser.nickname})`}{' '}
                   </span>
                   {retrievedUser.birthday && (
                     <div>

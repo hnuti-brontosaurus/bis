@@ -1,26 +1,13 @@
 <script setup>
-import { useRender } from "@/contrib/composables/render.js"
-import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars } from "@fortawesome/free-solid-svg-icons"
-import {useRoute, useRouter} from "vue-router"
-import { theme } from "@/composables/theme.js"
-import { _, translatedKey } from "@/composables/translations.js"
-import { me, useAuth } from "@/composables/auth.js"
-import { computed, onMounted, ref, watch } from "vue"
-import {
-  NForm,
-  NFormItem,
-  NInput,
-  NH6,
-  NButton,
-  NGrid,
-  NFormItemGi,
-  NGridItem,
-} from "naive-ui"
+import { useRoute, useRouter } from "vue-router"
+import { _ } from "@/composables/translations.js"
+import { authApi, useAuthStore } from "@/data/auth.js"
+import { computed, ref, watch } from "vue"
+import { NForm } from "naive-ui"
 import { watchDebounced } from "@vueuse/core"
-import { propertyRef } from "@/contrib/composables/helpers.js"
 import axios from "axios"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import AppPage from "@/components/app/AppPage.vue"
 import { useDarkTheme } from "@/composables/settings.js"
 import VueHcaptcha from "@hcaptcha/vue3-hcaptcha"
@@ -34,6 +21,7 @@ const form = ref()
 const registerLoading = ref(false)
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 let controller
 
 watch(
@@ -54,13 +42,9 @@ watchDebounced(
     controller?.abort()
     controller = new AbortController()
     try {
-      const response = await axios.post(
-        "/auth/check_email/",
-        { email: user.value.email },
-        { signal: controller.signal },
-      )
-
-      emailExists.value = response.data
+      emailExists.value = await authApi.checkEmail(user.value.email, {
+        signal: controller.signal,
+      })
     } catch (e) {
       if (e.status === 400) {
         emailProps.value.feedback = _.value.login.bad_email
@@ -75,14 +59,21 @@ watchDebounced(
   { debounce: 1000, immediate: true },
 )
 
+const backendErrors = ref({})
+
 const register = async () => {
   registerLoading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
     const { response } = await hcaptcha.value.executeAsync()
-    const { data } = await axios.post("/auth/register/", { ...user.value, response })
-    me.value = data
+    authStore.setMe(await authApi.register({ ...user.value, response }))
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.login.registration_error)(e)
   } finally {
     registerLoading.value = false
@@ -91,12 +82,17 @@ const register = async () => {
 
 const login = async () => {
   registerLoading.value = true
+  backendErrors.value = {}
   try {
     await form.value.validate()
-    const { data } = await axios.post("/auth/login/", { ...user.value })
-    me.value = data
-    if (me.value.is_chef && route.query.next) router.push(route.query.next)
+    authStore.setMe(await authApi.login({ ...user.value }))
+    if (authStore.isChef && route.query.next) router.push(route.query.next)
   } catch (e) {
+    if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
+      backendErrors.value = e.response.data
+    } else {
+      scrollToFirstFormError()
+    }
     handleAxiosError(_.value.login.login_error)(e)
   } finally {
     registerLoading.value = false
@@ -134,10 +130,10 @@ const inputs = computed(() => {
               trigger: "change",
               validator: async (_, value) => {
                 try {
-                  await axios.post("/auth/validate_password/", { password: value })
+                  await authApi.validatePassword(value)
                   return true
                 } catch (e) {
-                  throw new Error(e.response.data.join(" "))
+                  throw new Error(e.response.data.join(" "), { cause: e })
                 }
               },
             },
@@ -192,7 +188,12 @@ const submit = () =>
 <template>
   <AppPage :title="_.login.title">
     <n-form ref="form" :model="user" @keydown.enter="submit">
-      <GenericForm v-model:data="user" :inputs="inputs" group="login" />
+      <GenericForm
+        v-model:data="user"
+        :inputs="inputs"
+        :backend-errors="backendErrors"
+        group="login"
+      />
       <vue-hcaptcha
         ref="hcaptcha"
         sitekey="12a8ba44-b54e-4346-b426-585e191acf7c"

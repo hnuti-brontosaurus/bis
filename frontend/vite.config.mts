@@ -6,7 +6,7 @@ import checker from 'vite-plugin-checker'
 
 export default defineConfig(({mode}) => ({
   plugins: [react(), tsconfigPaths(), svgr(), checker({typescript: true})],
-  server: { host: '0.0.0.0', port: 3000, allowedHosts: ['frontend'] },
+  server: { host: '0.0.0.0', port: 3000, allowedHosts: ['frontend', 'nginx'] },
   build: { outDir: 'build', target: 'es2021' },
   assetsInclude: ['**/*.xlsx', '**/*.pdf'],
   css: {

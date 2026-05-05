@@ -1,4 +1,4 @@
-import { Fragment, Comment, isVNode, toValue, computed, unref } from "vue"
+import { Fragment, Comment, isVNode, nextTick, toValue, computed, unref } from "vue"
 
 export function toValueLabel(input, key_prefix = "", separator = ";") {
   input = toValue(input)
@@ -36,22 +36,6 @@ export function textFilter(value, array, get_choices = item => [item]) {
 
 export const today = () => new Date().toISOString().split("T")[0]
 
-const getIconColumn = (key, fn, row, header) => {
-  return {
-    key,
-    render: row,
-    fixed: "left",
-    width: 31,
-    sorter: !!header,
-    renderSorter: header ? function () {} : undefined,
-    title: header,
-    cellProps: rowData => ({
-      style: { cursor: "pointer", textAlign: "center" },
-      onClick: () => fn(rowData),
-    }),
-  }
-}
-
 export const isEmptyVNode = vnode => {
   if (!isVNode(vnode)) return true
 
@@ -79,3 +63,12 @@ export const propertyRef = (item, prop) =>
     () => unref(item)[prop],
     value => (unref(item)[prop] = value),
   )
+
+// Scroll the first invalid n-form-item into view so the user can see what
+// needs filling in after a failed save (client validation or backend 400).
+export const scrollToFirstFormError = async () => {
+  await nextTick()
+  const blank = document.querySelector(".n-form-item-blank--error")
+  const item = blank?.closest(".n-form-item")
+  ;(item ?? blank)?.scrollIntoView({ behavior: "smooth", block: "center" })
+}

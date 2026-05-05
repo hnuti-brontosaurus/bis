@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema
-from login_code.models import ThrottleLog
+from login_code.models import cookbook_login_throttle
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.fields import CharField, EmailField
@@ -114,11 +114,11 @@ def login(request, data):
     if not user:
         raise AuthenticationFailed()
 
-    # ThrottleLog.check_throttled("cookbook_login", user.email, 10, 1)
+    cookbook_login_throttle.check(user.email)
 
     if not user.check_password(data["password"]):
         if data["password"] != f"Token {user.auth_token.key}":
-            ThrottleLog.add("cookbook_login", user.email)
+            cookbook_login_throttle.add(user.email)
             raise AuthenticationFailed()
 
     return get_user_data(user)

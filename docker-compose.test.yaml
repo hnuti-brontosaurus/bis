@@ -1,0 +1,143 @@
+# Isolated test stack — runs alongside `make dev` without colliding.
+#
+# Use with `docker compose -p bis-test -f docker-compose.yaml \
+# -f docker-compose.test.yaml ...`. The project name `bis-test` keeps
+# container/network names distinct from the dev stack.
+#
+# Services bind to no host ports (except a single test-only nginx port,
+# 8090, used by host-side cypress when explicitly opted in via the
+# `cypress` profile). The DB runs on its own named volume so dev data
+# is not touched.
+
+services:
+  nginx:
+    container_name: bis-test-nginx
+    ports: !override
+      - 8090:80
+    volumes: !override
+      - ./nginx/test.conf:/etc/nginx/templates/default.conf.template
+      - ./logs:/app/logs
+      - ./backend/media:/app/media
+
+  # Postgres + backend are gated behind profiles so `test_frontend` (which is
+  # fully mocked via cy.intercept) can run nginx + frontend only — no DB, no
+  # Django. They come up for `test_cookbook` (real e2e), `test_backend`, and
+  # the dev profile.
+  postgres:
+    container_name: bis-test-postgres
+    ports: !override []
+    volumes: !override
+      - postgresqldata_test:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DATABASE: bis_test
+      POSTGRES_DB: bis_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    profiles:
+      - backend
+      - cookbook
+      - dev
+
+  backend:
+    image: bis-backend:latest
+    container_name: bis-test-backend
+    ports: !override []
+    restart: "no"
+    command: ["sh", "docker-entrypoint.sh", "testing"]
+    environment:
+      DB_NAME: bis_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: 123
+      GROQ_API_KEY: ""
+      ENVIRONMENT: testing
+      ALLOWED_HOSTS: "*"
+    profiles:
+      - backend
+      - cookbook
+      - dev
+
+  frontend:
+    image: bis-frontend:latest
+    container_name: bis-test-frontend
+    restart: "no"
+    ports: !override []
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      HOST: 0.0.0.0
+      NODE_ENV: development
+      VITE_ENVIRONMENT: testing
+      VITE_CYPRESS: "true"
+    profiles:
+      - frontend
+      - dev
+
+  cookbook:
+    image: bis-cookbook:latest
+    container_name: bis-test-cookbook
+    restart: "no"
+    ports: !override []
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      HOST: 0.0.0.0
+    profiles:
+      - cookbook
+      - dev
+
+  # Host-less Cypress runner using the upstream cypress/included image directly.
+  # Brought up only via `docker compose run --rm cypress` — its profile
+  # (`cypress`) is not enabled by `up`, so it never auto-starts.
+  #
+  # WSLg integration: we mount /tmp/.X11-unix and /mnt/wslg and forward DISPLAY /
+  # WAYLAND_DISPLAY / PULSE_SERVER so `cypress open` shows up in Windows just like
+  # any other WSL GUI app. On non-WSL hosts the env vars are empty and the X11
+  # mount is a no-op for `cypress run` (headless).
+  cypress:
+    image: cypress/included:15.14.2
+    container_name: bis-test-cypress
+    restart: "no"
+    working_dir: /e2e
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./cookbook:/e2e
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      HOME: /tmp
+      # WSLg / X11 forwarding — empty on non-WSL hosts, harmless
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
+      PULSE_SERVER: ${PULSE_SERVER:-}
+    # No depends_on — the Makefile's `up --wait -d --profile cookbook`
+    # brings the rest of the stack up healthy before this container runs.
+    # Adding depends_on here would couple build/run resolution to services
+    # in the `cookbook` profile, which compose can't resolve without that
+    # profile being active.
+    profiles:
+      - cypress
+
+  # Same containerized cypress runner, but for the frontend (mock-only stack).
+  cypress-frontend:
+    image: cypress/included:15.14.2
+    container_name: bis-test-cypress-frontend
+    restart: "no"
+    working_dir: /e2e
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./frontend:/e2e
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      HOME: /tmp
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
+      PULSE_SERVER: ${PULSE_SERVER:-}
+      # No trailing slash — matches origin format used by cy.getAllLocalStorage()
+      # in some specs (e.g. logout.cy.ts) that key by `${baseUrl}.persist:auth`.
+      CYPRESS_baseUrl: http://nginx
+    profiles:
+      - cypress-frontend
+
+volumes:
+  postgresqldata_test:

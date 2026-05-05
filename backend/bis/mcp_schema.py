@@ -21,10 +21,6 @@ from regions.models import Region
 from strawberry.scalars import JSON
 from strawberry_django.optimizer import DjangoOptimizerExtension
 
-# ---------------------------------------------------------------------------
-# Types
-# ---------------------------------------------------------------------------
-
 # Exclude PII from Event and EventFeedback; geo fields from Region/Location.
 # Everything else: all fields.
 
@@ -144,11 +140,6 @@ class EventType:
     intended_for: EventIntendedForType
 
 
-# ---------------------------------------------------------------------------
-# Query
-# ---------------------------------------------------------------------------
-
-
 def _permitted_events(info):
     qs = Event.objects.all()
     return Permissions(info.context["request"].user, Event, "backend").filter_queryset(
@@ -213,10 +204,6 @@ class Query:
             return []
         return qs[offset : offset + limit]
 
-
-# ---------------------------------------------------------------------------
-# Schema
-# ---------------------------------------------------------------------------
 
 schema = strawberry.Schema(
     query=Query,

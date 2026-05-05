@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: ef325adcb2d879dd
+// source-hash: caac1351f1697b75
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -981,6 +981,7 @@ export const ingredient = {
   g_per_serving: 'gramy na typickou porci',
   state: 'Konzistence',
   reasoning: 'Popis',
+  allergens: 'Typicky obsahuje alergeny',
 } as const
 
 export const recipe = {
@@ -994,6 +995,7 @@ export const recipe = {
   required_time: 'Časová náročnost',
   steps: 'Postup',
   tips: 'Tipy',
+  allergens: 'Typicky obsahuje alergeny',
 } as const
 
 export const recipeIngredient = {
@@ -1065,6 +1067,8 @@ export const recipeRequiredTime = {
   _name: 'Časová náročnost receptu',
   _name_plural: 'Časová náročnost receptu',
 } as const
+
+export const allergen = { _name: 'Alergen', _name_plural: 'Alergen' } as const
 
 export const generic = {
   user: 'Uživatel',
@@ -1192,13 +1196,75 @@ export const cookbook = {
     registration_error: 'Chyba při registraci',
     login_error: 'Chyba při přihlášení',
   },
+  recipes: {
+    create: 'nový recept',
+    edit: 'upravit',
+    delete: 'smazat',
+    delete_title: 'Smazat recept',
+    delete_content: 'Opravdu chceš tento recept smazat?',
+    delete_error: 'Nepodařilo se smazat recept',
+    is_public: 'Veřejný',
+    is_private: 'Neveřejný',
+    chef: 'Autorstvo',
+    difficulty: 'Obtížnost',
+    required_time: 'Časová náročnost',
+    tags: 'Tagy',
+    allergen_warning: 'Typicky obsahuje alergeny',
+    steps: 'Postup',
+    cook_mode: 'Vařím',
+    tips: 'Tipy a triky',
+    comments: 'Komentáře',
+    sources: 'Zdroje',
+    ingredients: 'Ingredience',
+    servings: 'Porcí',
+    select_all: 'Vyber vše',
+    select_default: 'Vyber výchozí',
+  },
+  edit_recipe: {
+    title_edit: 'Úprava receptu',
+    title_new: 'Nový recept',
+    save: 'Uložit',
+    save_error: 'Chyba při uložení',
+    add: 'Přidat',
+  },
+  home: {
+    title: 'Veganská Brontosauří kuchařka',
+    subtitle: '*nejen pro Brontosaury',
+  },
+  section: { tips: 'tip', steps: 'krok', ingredients: 'přísada' },
+  ingredients: {
+    title: 'Přísady',
+    new: 'Nová přísada',
+    create_title: 'Vytvořit přísadu',
+    create_content: 'Opravdu chceš vytvořit novou přísadu?',
+    create: 'Vytvořit',
+    edit: 'upravit',
+    delete: 'smazat',
+    delete_title: 'Smazat přísadu',
+    delete_content: 'Opravdu chceš tuto přísadu smazat?',
+    delete_error: 'Nepodařilo se smazat přísadu (možná je použita v receptu).',
+    go_back: 'Zpět',
+    upsert_error: 'Chyba při ukládání přísady',
+    name: 'Název',
+    state: 'Skupenství',
+    state_solid: 'Pevná',
+    state_liquid: 'Tekuté',
+    g_per_piece: 'g / kus',
+    g_per_liter: 'g / litr',
+    g_per_serving: 'g / porce',
+    edit_title: 'Úprava přísady',
+    new_title: 'Nová přísada',
+  },
+  chefs: { title: 'Kuchařstvo' },
   profile: {
     new: 'Vytvoření profilu',
     title: 'Můj profil',
     error_saving: 'Chyba při ukládání profilu',
+    saved: 'Uloženo',
+    dark_theme: 'Tmavý režim',
+    chef_required_login:
+      'Přihlas se nebo se zaregistruj — pro přidání receptu pak budeš potřebovat profil kuchařstva.',
+    chef_required_profile:
+      'Pro přidávání receptů je potřeba mít profil kuchařstva. Vyplň ho níže.',
   },
-  recipes: { create: 'nový recept' },
-  edit_recipe: null,
-  section: { tips: 'iip', steps: 'krok', ingredients: 'přísada' },
-  ingredients: { new: 'Nová přísada' },
 } as const

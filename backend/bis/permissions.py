@@ -66,6 +66,7 @@ class Permissions:
         return self.model._meta.app_label in [
             "categories",
             "regions",
+            "cookbook_categories",
         ]
 
     def is_game_book(self):

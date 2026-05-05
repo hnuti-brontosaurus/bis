@@ -5,6 +5,7 @@ from bis import emails
 from bis.helpers import try_to_run
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from login_code.models import LoginCode
 from other.models import SavedFile
 
 
@@ -30,6 +31,9 @@ class Command(BaseCommand):
         try_to_run(call_command, "set_date_joined")
         try_to_run(call_command, "export_events")
         try_to_run(SavedFile.remove_old)
+        try_to_run(LoginCode.remove_expired)
+        try_to_run(call_command, "clearsessions")
+        try_to_run(call_command, "cleartokens")
 
         today = date.today()
 

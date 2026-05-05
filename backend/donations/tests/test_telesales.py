@@ -9,10 +9,6 @@ from django.utils import timezone
 from donations.models import Donor, DonorEvent, FundraisingCampaign
 from donations.telesales import get_reminders_due, get_worklist
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-
 
 @pytest.fixture
 def categories(db):
@@ -90,11 +86,6 @@ def log_call(donor, campaign, categories, slug, created_at=None, reminder=None):
     if created_at:
         DonorEvent.objects.filter(pk=event.pk).update(created_at=created_at)
     return event
-
-
-# ---------------------------------------------------------------------------
-# Query tests
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db
@@ -231,11 +222,6 @@ def test_call_declined_counts_toward_cap(categories, campaign):
     log_call(donor, campaign, categories, "call_declined", created_at=now)
 
     assert donor not in list(get_worklist(campaign))
-
-
-# ---------------------------------------------------------------------------
-# View tests
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.django_db

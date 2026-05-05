@@ -41,8 +41,8 @@ export const apiErrors2Message = (
         typeof errors === 'string'
           ? errors
           : Array.isArray(errors)
-          ? errors.join(' ')
-          : JSON.stringify(errors)
+            ? errors.join(' ')
+            : JSON.stringify(errors)
       }`
     })
   } else if (error.status === 'PARSING_ERROR' && error.originalStatus === 500) {

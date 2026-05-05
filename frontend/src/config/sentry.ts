@@ -23,6 +23,7 @@ replace Routes with Routes from 'react-router-dom'
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_ENVIRONMENT,
   integrations: [
     new BrowserTracing({
       routingInstrumentation: Sentry.reactRouterV6Instrumentation(
@@ -36,7 +37,7 @@ Sentry.init({
   ],
   enabled:
     Boolean(import.meta.env.VITE_SENTRY_DSN) &&
-    import.meta.env.MODE !== 'development',
+    ['dev', 'prod'].includes(import.meta.env.VITE_ENVIRONMENT),
   // We recommend adjusting this value in production, or using tracesSampler
   // for finer control
   tracesSampleRate: 0,

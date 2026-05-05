@@ -1,13 +1,6 @@
-import { computed, onMounted, ref, toRef } from "vue"
-import { useMessage } from "naive-ui"
-import {
-  createSharedComposable,
-  toRefs,
-  useLocalStorage,
-  useStorage,
-  useThrottleFn,
-} from "@vueuse/core"
-import axios from "axios"
+import { computed } from "vue"
+import { createSharedComposable, useLocalStorage } from "@vueuse/core"
+import { translationsApi } from "@/data/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 
 const translations = useLocalStorage(
@@ -66,9 +59,9 @@ export const _ = computed(() => {
 })
 
 export const useTranslations = createSharedComposable(() => {
-  axios
-    .get("/extras/translations/")
-    .then(({ data }) => (translations.value = data))
+  translationsApi
+    .fetch()
+    .then(data => (translations.value = data))
     .catch(handleAxiosError("Failed to fetch translations"))
 })
 

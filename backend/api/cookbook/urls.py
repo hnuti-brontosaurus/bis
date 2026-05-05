@@ -1,6 +1,8 @@
 import api.cookbook.views.auth
 import api.cookbook.views.extras
+import api.cookbook.views.testing
 from api.cookbook.views.categories import (
+    AllergenViewSet,
     RecipeDifficultyViewSet,
     RecipeRequiredTimeViewSet,
     RecipeTagViewSet,
@@ -27,6 +29,7 @@ router.register(
     "recipe_required_times", RecipeRequiredTimeViewSet, "recipe_required_times"
 )
 router.register("recipe_tags", RecipeTagViewSet, "recipe_tags")
+router.register("allergens", AllergenViewSet, "allergens")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -36,4 +39,6 @@ urlpatterns = [
     path("auth/validate_password/", api.cookbook.views.auth.check_password),
     path("auth/register/", api.cookbook.views.auth.register),
     path("auth/login/", api.cookbook.views.auth.login),
+    path("testing/seed/", api.cookbook.views.testing.seed),
+    path("testing/auth_token/", api.cookbook.views.testing.auth_token),
 ]

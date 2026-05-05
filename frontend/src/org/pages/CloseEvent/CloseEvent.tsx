@@ -247,8 +247,8 @@ export const CloseEvent = () => {
         evidence.is_closed
           ? ' a uzavřena'
           : evidence.feedback_form?.sent_at
-          ? ' a zpětná vazba byla odeslána'
-          : ''
+            ? ' a zpětná vazba byla odeslána'
+            : ''
       }.`
       showMessage({
         type: needsClosing ? 'warning' : 'success',

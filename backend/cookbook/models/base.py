@@ -20,7 +20,12 @@ class ChangeMixin(m.Model):
     ]
 
     class Meta:
+        # Repeated from BaseModel because Django picks the first parent's
+        # Meta in multiple inheritance — without this, models declared as
+        # `(ChangeMixin, BaseModel)` end up with no default ordering and
+        # DRF emits UnorderedObjectListWarning when paginating.
         abstract = True
+        ordering = ("-id",)
 
 
 class BaseModel(m.Model):
