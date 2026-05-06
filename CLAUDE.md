@@ -40,7 +40,9 @@ Test stack profiles (`docker-compose.test.yaml`):
 
 Both cypress runners are fully containerized — no host cypress binary is needed. They join the test docker network so `baseUrl` is `http://nginx/...`, mount `/tmp/.X11-unix` + `/mnt/wslg` (forwarding `DISPLAY` / `WAYLAND_DISPLAY` / `PULSE_SERVER`) so `cypress open` shows up via WSLg on Windows or native X11 on Linux.
 
-Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh ci` (see `frontend/docker-entrypoint.sh` for the `ci` mode), so no host yarn install is needed at all.
+Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all.
+
+Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make test_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check` before the cypress run. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
 
 Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookbook/testing/seed/` (`api/cookbook/views/testing.py`) — gated by `settings.TEST` so it 404s in production. The `before:spec` hook in `cookbook/cypress.config.js` `fetch`es it instead of shelling out to `docker exec`, which lets the cypress container stay minimal (no docker CLI, no socket mount, no docker-group GID handling).
 

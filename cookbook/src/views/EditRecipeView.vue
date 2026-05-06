@@ -1,14 +1,16 @@
 <script setup>
 import { NForm, NButton, NFlex, NSwitch, useDialog } from "naive-ui"
-import { computed, onMounted, ref } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
 import axios from "axios"
 import AppPage from "@/components/app/AppPage.vue"
+import UploadPhotosDialog from "@/components/UploadPhotosDialog.vue"
 import { propertyRef, scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import { _ } from "@/composables/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
+import { useRecipeSave } from "@/composables/useRecipeSave.js"
 import { useRecipesStore } from "@/data/recipes.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
@@ -195,6 +197,21 @@ const onDelete = () => {
   })
 }
 
+const upload = useRecipeSave()
+const showUploadDialog = ref(false)
+
+// When the orchestrator finishes (initial run or after a retry), navigate
+// to the saved recipe. Stays on the edit page if any photo failed.
+watch(
+  () => upload.state.phase,
+  phase => {
+    if (phase === "done" && upload.state.recipeId) {
+      showUploadDialog.value = false
+      router.push({ name: "recipe", params: { id: upload.state.recipeId } })
+    }
+  },
+)
+
 const save = async () => {
   backendErrors.value = {}
   try {
@@ -203,9 +220,13 @@ const save = async () => {
     // reordering in the dynamic-input UI is what gets persisted.
     recipe.value.ingredients.forEach((row, i) => (row.order = i))
     recipe.value.steps.forEach((row, i) => (row.order = i))
-    const saved = await recipesStore.save(recipe.value)
-    router.push({ name: "recipe", params: { id: saved.id } })
+
+    showUploadDialog.value = true
+    await upload.run(recipe.value)
+    // The watcher above handles navigation on done; if the run finishes
+    // in 'partial' the modal stays open with retry buttons.
   } catch (e) {
+    showUploadDialog.value = false
     if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
       backendErrors.value = e.response.data
     } else {
@@ -246,6 +267,11 @@ const save = async () => {
         group="Recipe"
       />
     </n-form>
+    <UploadPhotosDialog
+      v-model:show="showUploadDialog"
+      :state="upload.state"
+      @retry="upload.retryFailed"
+    />
   </AppPage>
 </template>
 

@@ -85,6 +85,22 @@ class RecipeStepSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "order", "description", "photo")
 
 
+class RecipeStepPhotoSerializer(serializers.ModelSerializer):
+    """PATCH-only serializer used by the per-step photo upload endpoint.
+
+    Lets the cookbook frontend upload step photos one-by-one (with progress
+    + retry) instead of bundling them into a single recipe PATCH that times
+    out on slow networks. PATCHing the recipe with a partial `steps` array
+    isn't safe — the parent serializer is WritableNested and would delete
+    steps not present in the array.
+    """
+
+    class Meta:
+        model = RecipeStep
+        fields = ("id", "photo")
+        read_only_fields = ("id",)
+
+
 class RecipeTipSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeTip

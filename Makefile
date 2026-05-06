@@ -48,7 +48,7 @@ test_backend:
 # frontend container — no host yarn needed.
 test_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
-	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh ci
+	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh check
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 
@@ -60,6 +60,7 @@ test_frontend:
 # fetches `/api/cookbook/testing/seed/` directly.
 test_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) run --rm cookbook sh docker-entrypoint.sh check
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
 

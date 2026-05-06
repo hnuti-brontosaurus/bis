@@ -430,3 +430,87 @@ def test_recipe_list_non_chef_sees_only_public(
     assert other_recipe_public.id in ids
     assert other_recipe_private.id not in ids
     assert recipe.id not in ids
+
+
+def _b64_png():
+    import base64
+
+    from cookbook.models.recipes import RecipeStep  # noqa: F401  (test helper)
+
+    from .conftest import _png_bytes
+
+    return f"data:image/png;filename=test.png;base64,{base64.b64encode(_png_bytes()).decode()}"
+
+
+@pytest.mark.django_db
+def test_step_photo_owner_can_upload(api_client, recipe):
+    step = recipe.steps.first()
+    response = api_client.patch(
+        f"/api/cookbook/recipe_steps/{step.id}/",
+        {"photo": _b64_png()},
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    step.refresh_from_db()
+    assert step.photo
+
+
+@pytest.mark.django_db
+def test_step_photo_other_chef_forbidden(other_client, recipe):
+    step = recipe.steps.first()
+    response = other_client.patch(
+        f"/api/cookbook/recipe_steps/{step.id}/",
+        {"photo": _b64_png()},
+        format="json",
+    )
+    # 404 is acceptable: the queryset filter hides recipes the user can't
+    # see, so the step lookup fails before permission_denied fires.
+    assert response.status_code in (403, 404)
+
+
+@pytest.mark.django_db
+def test_step_photo_editor_can_upload(editor_client, recipe):
+    step = recipe.steps.first()
+    response = editor_client.patch(
+        f"/api/cookbook/recipe_steps/{step.id}/",
+        {"photo": _b64_png()},
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+
+
+@pytest.mark.django_db
+def test_step_photo_anon_cannot_upload(anon_client, recipe):
+    step = recipe.steps.first()
+    response = anon_client.patch(
+        f"/api/cookbook/recipe_steps/{step.id}/",
+        {"photo": _b64_png()},
+        format="json",
+    )
+    assert response.status_code in (401, 403, 404)
+
+
+@pytest.mark.django_db
+def test_step_photo_endpoint_rejects_other_fields(api_client, recipe):
+    """The endpoint is photo-only — name etc. are read-only and ignored."""
+    step = recipe.steps.first()
+    original_name = step.name
+    response = api_client.patch(
+        f"/api/cookbook/recipe_steps/{step.id}/",
+        {"name": "tampered", "photo": _b64_png()},
+        format="json",
+    )
+    assert response.status_code == 200
+    step.refresh_from_db()
+    assert step.name == original_name
+
+
+@pytest.mark.django_db
+def test_step_photo_endpoint_blocks_create_and_delete(api_client, recipe):
+    step = recipe.steps.first()
+    assert api_client.post(
+        "/api/cookbook/recipe_steps/", {}, format="json"
+    ).status_code in (404, 405)
+    assert (
+        api_client.delete(f"/api/cookbook/recipe_steps/{step.id}/").status_code == 405
+    )

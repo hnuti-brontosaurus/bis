@@ -1,4 +1,5 @@
 import axios from "axios"
+import axiosRetry, { exponentialDelay, isNetworkError } from "axios-retry"
 import { ConcurrencyManager } from "@/contrib/composables/concurrencyManager.js"
 import { getAuthToken } from "./auth.js"
 
@@ -10,6 +11,25 @@ const MAX_CONCURRENT_REQUESTS = 5
 
 const client = axios.create({ baseURL: "/api/cookbook" })
 ConcurrencyManager(client, MAX_CONCURRENT_REQUESTS)
+
+// Global retry for transient failures. Photo uploads on slow networks were
+// the trigger, but every call site benefits — flaky cellular connections
+// drop network errors and 5xx alike. POST stays *not* retried because
+// re-sending a creation request after the response is lost can duplicate
+// the resource; PATCH/PUT/DELETE/GET/HEAD/OPTIONS are safe.
+const RETRYABLE_METHODS = new Set(["get", "head", "options", "put", "patch", "delete"])
+axiosRetry(client, {
+  retries: 3,
+  retryDelay: exponentialDelay,
+  retryCondition: error => {
+    const method = (error.config?.method || "").toLowerCase()
+    if (!RETRYABLE_METHODS.has(method)) return false
+    if (isNetworkError(error)) return true
+    if (error.code === "ECONNABORTED") return true
+    const status = error.response?.status
+    return typeof status === "number" && status >= 500 && status <= 599
+  },
+})
 
 client.interceptors.request.use(config => {
   const token = getAuthToken()

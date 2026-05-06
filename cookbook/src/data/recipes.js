@@ -1,5 +1,5 @@
 import { computed, unref } from "vue"
-import { crudApi } from "./client.js"
+import { client, crudApi } from "./client.js"
 import { defineByIdStore } from "./factory.js"
 import { useChefsStore } from "./chefs.js"
 import { useIngredientsStore } from "./ingredients.js"
@@ -10,6 +10,17 @@ import { useRecipeTagsStore } from "./recipeTags.js"
 import { useAllergensStore } from "./allergens.js"
 
 export const recipesApi = crudApi("/recipes")
+
+/**
+ * Upload a single recipe.photo via PATCH. The backend's Base64ImageField
+ * decodes the data-URI string. axios fires onUploadProgress on the bytes
+ * sent over the wire (works for any body type), so the caller gets real
+ * progress for the photo's worth of payload.
+ */
+export const uploadRecipePhoto = (recipeId, base64data, onUploadProgress) =>
+  client
+    .patch(`/recipes/${recipeId}/`, { photo: base64data }, { onUploadProgress })
+    .then(r => r.data)
 
 /**
  * Recipes are persisted by default for instant load. Image upload blobs

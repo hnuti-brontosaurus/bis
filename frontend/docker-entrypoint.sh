@@ -12,7 +12,7 @@ case "$1" in
     test)
         yarn test
     ;;
-    ci)
+    check)
         # Used by `make test_frontend` — type-check + unit tests inside the
         # container so no host node is needed.
         yarn run test:types

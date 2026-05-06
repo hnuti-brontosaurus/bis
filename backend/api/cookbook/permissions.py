@@ -21,7 +21,7 @@ The viewset wires this in via `CookbookViewSetMixin`, which both sets
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipes import Recipe
+from cookbook.models.recipes import Recipe, RecipeStep
 from cookbook_categories.models import (
     Allergen,
     RecipeDifficulty,
@@ -72,6 +72,14 @@ class CookbookAccessPermission(BasePermission):
             if user.is_authenticated and user.is_chef:
                 return queryset.filter(Q(is_public=True) | Q(chef_id=user.chef.id))
             return queryset.filter(is_public=True)
+
+        if model is RecipeStep:
+            # Visibility delegates to the parent recipe.
+            if user.is_authenticated and user.is_chef:
+                return queryset.filter(
+                    Q(recipe__is_public=True) | Q(recipe__chef_id=user.chef.id)
+                )
+            return queryset.filter(recipe__is_public=True)
 
         if model is Menu:
             if user.is_authenticated and user.is_chef:
@@ -130,10 +138,18 @@ class CookbookAccessPermission(BasePermission):
             return True
 
         if user.is_editor:
-            return model in (Recipe, Menu)
+            return model in (Recipe, RecipeStep, Menu)
 
         if model is Recipe:
             return self._matches(request, obj, "chef_id", user.chef.id)
+
+        if model is RecipeStep:
+            # Per-step photo PATCH delegates write permission to the parent
+            # recipe. Creation/deletion of steps still happens via the
+            # nested recipe serializer, so obj is always present here.
+            if obj is None:
+                return False
+            return obj.recipe.chef_id == user.chef.id
 
         if model is Menu:
             return self._matches(request, obj, "user_id", user.id)

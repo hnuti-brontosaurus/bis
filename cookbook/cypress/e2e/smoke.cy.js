@@ -222,6 +222,93 @@ describe("cookbook smoke", () => {
     })
   })
 
+  it("adds a step with a photo and uploads it via the staged save flow", () => {
+    // Exercises useRecipeSave + UploadPhotosDialog + the new
+    // /api/cookbook/recipe_steps/{id}/ endpoint end-to-end: the recipe
+    // text save creates the step with photo=null, then the orchestrator
+    // PATCHes the photo to the dedicated step endpoint.
+    const auth = getStoredAuth()
+    const token = auth.user?.token
+
+    getOwnedRecipeId(auth.chef?.id, token).then(recipeId => {
+      // Reset to a clean slate (no steps) so the dynamic-input renders
+      // its empty-state add button and we own the step we'll create.
+      cy.request({
+        method: "PATCH",
+        url: `${API_BASE_URL}/recipes/${recipeId}/`,
+        headers: { Authorization: `Token ${token}` },
+        body: { steps: [] },
+      })
+
+      cy.visit(`/recipe/${recipeId}/edit/`)
+      cy.location("pathname").should("equal", `/cookbook/recipe/${recipeId}/edit/`)
+      cy.get("textarea", { timeout: 15000 }).should("have.length.gte", 1)
+
+      // Intercept the two endpoints we expect the orchestrator to hit.
+      cy.intercept("PATCH", `**/api/cookbook/recipes/${recipeId}/`).as("recipePatch")
+      cy.intercept("PATCH", "**/api/cookbook/recipe_steps/*/").as("stepPhotoPatch")
+
+      const tag = `cypress-${Date.now()}`
+      const stepName = `step-${tag}`
+
+      // Add a step with a name. Photo input lives in the same row.
+      cy.contains("h6", "Postup", { timeout: 10000 })
+        .click({ force: true })
+        .closest(".n-collapse-item")
+        .within(() => {
+          cy.get(".n-dynamic-input").find("button").first().click({ force: true })
+          cy.get('input[type="text"]').first().clear({ force: true })
+          cy.get('input[type="text"]').first().type(stepName)
+        })
+
+      // Attach a photo. The recipe already has its main photo so we
+      // target the file input inside the step row specifically — it's
+      // empty, so adding a file here doesn't collide with NUpload's
+      // :max="1" constraint on the recipe-level input.
+      cy.fixture("upload/red-pixel.png", "base64").then(base64 => {
+        cy.contains(".n-collapse-item", "Postup")
+          .find('input[type="file"]')
+          .selectFile(
+            {
+              contents: Cypress.Buffer.from(base64, "base64"),
+              fileName: "red-pixel.png",
+              mimeType: "image/png",
+            },
+            { force: true },
+          )
+      })
+
+      // The NForm change-trigger validator runs FileReader async to
+      // populate `step.photo.base64data`; isNewUpload checks for that
+      // key, so without it the orchestrator collects zero uploads. The
+      // FileReader resolves on the next microtask after change fires —
+      // a small wait is enough.
+      cy.wait(500)
+
+      cy.contains("button", "Uložit").click({ force: true })
+      // Modal opens during the save+upload sequence.
+      cy.contains("Ukládám recept", { timeout: 10000 }).should("exist")
+
+      // First: recipe text PATCH (creates the step with photo=null).
+      cy.wait("@recipePatch", { timeout: 30000 }).then(({ request }) => {
+        const step = (request.body.steps || []).find(s => s.name === stepName)
+        expect(step, `step "${stepName}" in payload`).to.exist
+        expect(step.photo, "step.photo stripped before upload").to.be.null
+      })
+
+      // Second: per-step photo PATCH against the new endpoint.
+      cy.wait("@stepPhotoPatch", { timeout: 30000 }).then(({ request }) => {
+        expect(request.body.photo, "step photo payload").to.match(/^data:image\/png/)
+      })
+
+      // All-done → navigate to detail page.
+      cy.location("pathname", { timeout: 30000 }).should(
+        "equal",
+        `/cookbook/recipe/${recipeId}/`,
+      )
+    })
+  })
+
   it("renders chefs view", () => {
     cy.visit("/chefs/")
     cy.contains("Kuchařstvo").should("exist")
