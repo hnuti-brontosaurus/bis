@@ -309,6 +309,95 @@ describe("cookbook smoke", () => {
     })
   })
 
+  it("changes ingredient unit and recomputes the amount", () => {
+    // Cukr is seeded with g_per_liter=850, so it can use both weight and
+    // volume units. Servings/pieces have no g_per_* set, so they must be
+    // hidden from the dropdown.
+    const auth = getStoredAuth()
+    const token = auth.user?.token
+
+    cy.request({
+      url: `${API_BASE_URL}/ingredients/?search=Cukr`,
+      headers: { Authorization: `Token ${token}` },
+    }).then(({ body }) => {
+      const cukr = body.results.find(i => i.name === "Cukr")
+      expect(cukr, "seeded Cukr ingredient").to.exist
+
+      cy.request({
+        url: `${API_BASE_URL}/units/`,
+        headers: { Authorization: `Token ${token}` },
+      }).then(({ body: unitsBody }) => {
+        const units = unitsBody.results || unitsBody
+        const bySlug = Object.fromEntries(units.map(u => [u.slug, u]))
+
+        getOwnedRecipeId(auth.chef?.id, token).then(recipeId => {
+          // Pre-populate one ingredient in kilograms so the spec only has to
+          // exercise the unit-change flow, not the row-creation flow.
+          cy.request({
+            method: "PATCH",
+            url: `${API_BASE_URL}/recipes/${recipeId}/`,
+            headers: { Authorization: `Token ${token}` },
+            body: {
+              ingredients: [
+                {
+                  order: 0,
+                  ingredient_id: cukr.id,
+                  unit_id: bySlug.kilograms.id,
+                  amount: 2,
+                  is_required: true,
+                },
+              ],
+            },
+          })
+
+          cy.visit(`/recipe/${recipeId}/edit/`)
+          cy.location("pathname").should("equal", `/cookbook/recipe/${recipeId}/edit/`)
+          cy.get("textarea", { timeout: 15000 }).should("have.length.gte", 1)
+
+          cy.contains("h6", "Ingredience", { timeout: 10000 })
+            .click({ force: true })
+            .closest(".n-collapse-item")
+            .within(() => {
+              // First selection is the ingredient (Cukr); second is the unit.
+              cy.get(".n-base-selection").eq(1).click({ force: true })
+            })
+
+          // Filtering: weight + volume must be present, but servings/pieces
+          // must not (Cukr has no g_per_serving / g_per_piece).
+          cy.get(".n-base-select-menu:visible", { timeout: 5000 }).within(() => {
+            cy.contains(".n-base-select-option", "gram").should("exist")
+            cy.contains(".n-base-select-option", "litr").should("exist")
+            cy.contains(".n-base-select-option", "porce").should("not.exist")
+            cy.contains(".n-base-select-option", "kus").should("not.exist")
+            cy.contains(".n-base-select-option", "gram").click({ force: true })
+          })
+
+          // 2 kg → 2000 g.
+          cy.contains(".n-collapse-item", "Ingredience").within(() => {
+            cy.get(".n-input-number input").first().should("have.value", "2000")
+          })
+
+          cy.contains("button", "Uložit").click({ force: true })
+          cy.location("pathname", { timeout: 15000 }).should(
+            "equal",
+            `/cookbook/recipe/${recipeId}/`,
+          )
+
+          // Backend round-trip: amount stored as 2000g.
+          cy.request({
+            url: `${API_BASE_URL}/recipes/${recipeId}/`,
+            headers: { Authorization: `Token ${token}` },
+          }).then(({ body }) => {
+            const ing = body.ingredients.find(i => i.ingredient_id === cukr.id)
+            expect(ing, "Cukr row").to.exist
+            expect(ing.unit_id).to.equal(bySlug.grams.id)
+            expect(ing.amount).to.equal(2000)
+          })
+        })
+      })
+    })
+  })
+
   it("renders chefs view", () => {
     cy.visit("/chefs/")
     cy.contains("Kuchařstvo").should("exist")

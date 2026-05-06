@@ -325,8 +325,15 @@ class Command(BaseCommand):
         # idempotent — the pre_save signal in cookbook.signals capitalizes the
         # name on insert, so "cukr" lookups would never match the stored "Cukr"
         # and re-runs would hit the unique-name constraint.
-        for name in ("Cukr", "Mouka", "Máslo"):
-            Ingredient.objects.get_or_create(name=name)
+        # Cukr has g_per_liter so the unit-change cypress flow can switch
+        # between weight and volume on the same ingredient.
+        ingredient_seeds = [
+            ("Cukr", {"g_per_liter": 850}),
+            ("Mouka", {}),
+            ("Máslo", {}),
+        ]
+        for name, defaults in ingredient_seeds:
+            Ingredient.objects.update_or_create(name=name, defaults=defaults)
         # One canonical owned recipe so cypress specs can edit a real row
         # without reaching into the ORM. The edit form renders the photo, so
         # the file must actually exist on disk — `chef.recipes` is filtered to

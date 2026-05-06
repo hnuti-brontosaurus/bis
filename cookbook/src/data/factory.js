@@ -3,7 +3,7 @@ import { computed, ref } from "vue"
 
 // Bumping this key invalidates the persisted cache for every cookbook store
 // (handy for shape changes after a deploy).
-export const PERSISTED_VERSION = "2"
+export const PERSISTED_VERSION = "3"
 
 /**
  * Build a Pinia store keyed by entity id.

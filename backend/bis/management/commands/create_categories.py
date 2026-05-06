@@ -1189,10 +1189,22 @@ class Command(BaseCommand):
             ("cup", "", "hrnek", "hrnky", "hrnků", "volume"),
             ("serving", "", "porce", "porce", "porcí", "servings"),
             ("piece", "ks", "kus", "kusy", "kusů", "pieces"),
+            ("clove", "", "stroužek", "stroužky", "stroužků", "pieces"),
+            ("bulb", "", "palička", "paličky", "paliček", "pieces"),
             # ("bread", "", "šumava", "šumavy", "šumav", "weight"),
         ]
         for i, (slug, abbreviation, name, name2, name5, of) in enumerate(units):
-            Unit.objects.update_or_create(slug=slug, defaults=dict(order=i, name=name))
+            Unit.objects.update_or_create(
+                slug=slug,
+                defaults=dict(
+                    order=i,
+                    name=name,
+                    name2=name2,
+                    name5=name5,
+                    abbreviation=abbreviation,
+                    of=of,
+                ),
+            )
 
         allergens = [
             ("gluten", "lepek"),

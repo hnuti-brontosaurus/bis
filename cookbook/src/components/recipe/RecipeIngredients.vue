@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
 import { _ } from "@/composables/translations.js"
+import { pluralizeUnit } from "@/data/unitConversion.js"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
@@ -37,8 +38,10 @@ const columns = computed(() => {
     { key: "ingredient.name" },
     {
       key: "amount",
-      render: row =>
-        `${Math.round(row.amount * servings.value * 100) / 100} ${row.unit.name}`,
+      render: row => {
+        const amount = Math.round(row.amount * servings.value * 100) / 100
+        return `${amount} ${pluralizeUnit(amount, row.unit)}`
+      },
     },
     {
       type: "selection",
