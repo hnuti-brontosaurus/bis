@@ -179,7 +179,11 @@ const onDelete = () => {
           </WithHint>
         </n-flex>
         <CollapseList :data="recipe.steps" checked-key="done">
-          <template #header="{ item, i }"> {{ i + 1 }}. {{ item.name }} </template>
+          <template #header="{ item, i }">
+            {{ i + 1 }}.
+            <em v-if="item.is_optional">{{ item.name }}</em>
+            <template v-else>{{ item.name }}</template>
+          </template>
           <template #default="{ item }">
             <n-flex v-if="item.description || item.photo">
               <n-text v-if="item.description"

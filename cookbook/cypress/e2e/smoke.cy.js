@@ -344,7 +344,7 @@ describe("cookbook smoke", () => {
                   ingredient_id: cukr.id,
                   unit_id: bySlug.kilograms.id,
                   amount: 2,
-                  is_required: true,
+                  is_optional: false,
                 },
               ],
             },

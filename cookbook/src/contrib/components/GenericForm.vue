@@ -37,9 +37,11 @@ import {
   faArrowUp,
   faTrash,
   faPlus,
+  faComment,
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
+import { SHOW_COMMENT, SHOW_DETAILS } from "@/contrib/composables/expandFlags.js"
 
 const props = defineProps({
   inputs: Array,
@@ -239,6 +241,11 @@ const shownInputs = computed(() =>
 
 const prefix = computed(() => (props.path_prefix ? `${props.path_prefix}.` : ""))
 const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
+
+const toggleFlag = (row, flag) => (row[flag] = !row[flag])
+const isShown = (row, flag) => !!row?.[flag]
+const ingredientHasContent = row => !!row?.comment || !!row?.is_optional
+const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_optional
 </script>
 
 <template>
@@ -335,6 +342,13 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
           >{{ _.edit_recipe.add }}
         </n-upload>
 
+        <n-checkbox
+          v-if="input.type === 'checkbox'"
+          v-model:checked="input.value.value"
+        >
+          {{ _[group][input.key] }}
+        </n-checkbox>
+
         <n-collapse v-if="input.type === 'section'">
           <n-collapse-item>
             <template #header>
@@ -346,7 +360,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
               v-model:value="input.value.value"
               show-sort-button
               v-bind="input.extra"
-              :on-create="() => ({})"
+              :on-create="() => (input.key === 'steps' ? { [SHOW_DETAILS]: true } : {})"
               item-style="align-items: center; flex-direction: column-reverse;"
               :create-button-props="{ size: 'small', 'render-icon': icon(faPlus) }"
             >
@@ -356,11 +370,13 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
                   <IngredientInput
                     :index="index"
                     :value="value"
+                    :show-comment="isShown(value, SHOW_COMMENT)"
                     v-if="input.key === 'ingredients'"
                   />
                   <StepsInput
                     :index="index"
                     :value="value"
+                    :show-details="isShown(value, SHOW_DETAILS)"
                     v-if="input.key === 'steps'"
                   />
                   <TipsInput
@@ -369,7 +385,12 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
                     v-if="input.key === 'tips'"
                   />
                   <n-button
-                    @click="() => input.value.value.push({})"
+                    @click="
+                      () =>
+                        input.value.value.push(
+                          input.key === 'steps' ? { [SHOW_DETAILS]: true } : {},
+                        )
+                    "
                     v-if="index + 1 === input.value.value.length"
                     ghost
                     dashed
@@ -402,6 +423,26 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
                     <n-button
                       @click="() => create(index)"
                       :render-icon="icon(faPlus)"
+                      size="tiny"
+                    />
+                    <n-button
+                      v-if="input.key === 'ingredients'"
+                      @click="toggleFlag(input.value.value[index], SHOW_COMMENT)"
+                      :render-icon="icon(faComment)"
+                      :type="
+                        ingredientHasContent(input.value.value[index])
+                          ? 'primary'
+                          : 'default'
+                      "
+                      size="tiny"
+                    />
+                    <n-button
+                      v-if="input.key === 'steps'"
+                      @click="toggleFlag(input.value.value[index], SHOW_DETAILS)"
+                      :render-icon="icon(faComment)"
+                      :type="
+                        stepHasContent(input.value.value[index]) ? 'primary' : 'default'
+                      "
                       size="tiny"
                     />
                   </n-button-group>

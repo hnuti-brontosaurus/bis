@@ -54,7 +54,7 @@ class RecipeIngredient(BaseModel):
     )
     unit = m.ForeignKey(Unit, related_name="recipe_ingredients", on_delete=PROTECT)
     amount = m.FloatField()
-    is_required = m.BooleanField(default=True)
+    is_optional = m.BooleanField(default=False)
     comment = m.TextField(blank=True)
 
     def __str__(self):
@@ -71,6 +71,7 @@ class RecipeStep(BaseModel):
     order = m.PositiveSmallIntegerField()
     description = m.TextField(blank=True)
     photo = ThumbnailImageField(upload_to="recipe_steps", blank=True, null=True)
+    is_optional = m.BooleanField(default=False)
 
     class Meta:
         ordering = ("order",)

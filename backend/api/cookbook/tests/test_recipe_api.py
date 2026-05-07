@@ -109,7 +109,7 @@ def test_recipe_nested_ingredient_roundtrip(api_client, recipe, ingredient, unit
                     "ingredient_id": ingredient.id,
                     "unit_id": unit.id,
                     "amount": 2.0,
-                    "is_required": True,
+                    "is_optional": False,
                     "comment": "first",
                 },
                 {
@@ -117,7 +117,7 @@ def test_recipe_nested_ingredient_roundtrip(api_client, recipe, ingredient, unit
                     "ingredient_id": other.id,
                     "unit_id": unit.id,
                     "amount": 3.0,
-                    "is_required": False,
+                    "is_optional": True,
                     "comment": "",
                 },
             ]
@@ -267,7 +267,7 @@ def test_recipe_full_create_then_edit(
                     "ingredient_id": ingredient.id,
                     "unit_id": unit.id,
                     "amount": 100.0,
-                    "is_required": True,
+                    "is_optional": False,
                     "comment": "krystalový",
                 },
                 {
@@ -275,7 +275,7 @@ def test_recipe_full_create_then_edit(
                     "ingredient_id": other_ingredient.id,
                     "unit_id": unit.id,
                     "amount": 250.0,
-                    "is_required": True,
+                    "is_optional": False,
                     "comment": "",
                 },
             ],
@@ -305,7 +305,7 @@ def test_recipe_full_create_then_edit(
                     "ingredient_id": other_ingredient.id,
                     "unit_id": unit.id,
                     "amount": 300.0,
-                    "is_required": True,
+                    "is_optional": False,
                     "comment": "hladká",
                 },
                 {
@@ -313,7 +313,7 @@ def test_recipe_full_create_then_edit(
                     "ingredient_id": ingredient.id,
                     "unit_id": unit.id,
                     "amount": 120.0,
-                    "is_required": False,
+                    "is_optional": True,
                     "comment": "moučkový",
                 },
             ],
@@ -347,7 +347,7 @@ def test_recipe_full_create_then_edit(
     assert [i["order"] for i in ings] == [0, 1]
     assert [i["ingredient_id"] for i in ings] == [other_ingredient.id, ingredient.id]
     assert [i["amount"] for i in ings] == [300.0, 120.0]
-    assert [i["is_required"] for i in ings] == [True, False]
+    assert [i["is_optional"] for i in ings] == [False, True]
     assert [i["comment"] for i in ings] == ["hladká", "moučkový"]
 
     steps = sorted(body["steps"], key=lambda s: s["order"])

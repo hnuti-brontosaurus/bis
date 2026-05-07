@@ -1,5 +1,13 @@
 <script setup>
-import { NInputGroup, NSelect, NInputNumber, NButton, useDialog } from "naive-ui"
+import {
+  NInputGroup,
+  NSelect,
+  NInputNumber,
+  NButton,
+  NCollapseTransition,
+  useDialog,
+} from "naive-ui"
+import GenericForm from "@/contrib/components/GenericForm.vue"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
 import { storeOptions } from "@/data/helpers.js"
@@ -17,8 +25,20 @@ const ingredientsStore = useIngredientsStore()
 const unitsStore = useUnitsStore()
 
 const value = defineModel("value")
+const props = defineProps({ index: Number, showComment: Boolean })
 const dialog = useDialog()
 const loading = ref(false)
+
+const commentInputs = [
+  {
+    type: "text",
+    key: "comment",
+    extra: { type: "textarea", autosize: { minRows: 1 } },
+    hide_label: true,
+    span: 1.5,
+  },
+  { type: "checkbox", key: "is_optional", span: 0.5, hide_label: true },
+]
 
 const ingredientOptions = storeOptions(ingredientsStore)
 
@@ -139,6 +159,14 @@ const createIngredient = () => {
       @update:value="onUnitChange"
     />
   </n-input-group>
+  <n-collapse-transition :show="showComment">
+    <GenericForm
+      v-model:data="value"
+      :inputs="commentInputs"
+      group="RecipeIngredient"
+      :path_prefix="`ingredients[${props.index}]`"
+    />
+  </n-collapse-transition>
 </template>
 
 <style scoped>

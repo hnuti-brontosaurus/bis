@@ -38,36 +38,24 @@ const columns = computed(() => {
         expanded.value.length ? icon(faChevronDown) : icon(faChevronRight),
       ),
     },
-    { key: "ingredient.name" },
+    {
+      key: "ingredient.name",
+      render: row =>
+        row.is_optional ? h("em", {}, row.ingredient?.name) : row.ingredient?.name,
+    },
     {
       key: "amount",
       render: row => {
         const amount = Math.round(row.amount * servings.value * 100) / 100
-        return `${amount} ${pluralizeUnit(amount, row.unit)}`
+        const text = `${amount} ${pluralizeUnit(amount, row.unit)}`
+        return row.is_optional ? h("em", {}, text) : text
       },
     },
-    {
-      type: "selection",
-      options: [
-        {
-          key: "all",
-          label: _.value.recipes.select_all,
-          onSelect: () => (selected.value = recipe.value.ingredients.map(i => i.id)),
-        },
-        {
-          key: "default",
-          label: _.value.recipes.select_default,
-          onSelect: () =>
-            (selected.value = recipe.value.ingredients
-              .filter(i => i.is_required)
-              .map(i => i.id)),
-        },
-      ],
-    },
+    { type: "selection" },
   ]
 })
 
-const selected = ref(recipe.value.ingredients.filter(i => i.is_required).map(i => i.id))
+const ready = ref([])
 const expanded = ref([])
 const expandAll = () => {
   if (expanded.value.length) {
@@ -133,14 +121,13 @@ const onConfirmAdd = group => {
   <AddToCartDialog
     v-model:show="showAddToCart"
     :recipe="recipe"
-    :selected-ids="selected"
     @confirm="onConfirmAdd"
   />
 
   <n-data-table
     :data="data"
     :columns="columns"
-    v-model:checked-row-keys="selected"
+    v-model:checked-row-keys="ready"
     v-model:expanded-row-keys="expanded"
     :bordered="false"
     :bottom-bordered="false"

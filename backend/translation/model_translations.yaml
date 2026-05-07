@@ -885,7 +885,7 @@ RecipeIngredient:
   fields:
     amount: Množství
     ingredient: Přísada
-    is_required: Nutné?
+    is_optional: Nepovinné?
     recipe: Recept
     unit: Jednotka
 RecipeStep:
@@ -893,7 +893,7 @@ RecipeStep:
   name_plural: Kroky receptu
   fields:
     recipe: Recept
-    is_required: Nutné?
+    is_optional: Nepovinné?
 RecipeTip:
   name: Tip k receptu
   name_plural: Tipy k receptu

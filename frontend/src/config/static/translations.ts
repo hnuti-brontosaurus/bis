@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: f6781c48a38d7953
+// source-hash: e94a91bdeb6eddb2
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1003,7 +1003,7 @@ export const recipeIngredient = {
   _name_plural: 'Přísada receptu',
   amount: 'Množství',
   ingredient: 'Přísada',
-  is_required: 'Nutné?',
+  is_optional: 'Nepovinné?',
   recipe: 'Recept',
   unit: 'Jednotka',
 } as const
@@ -1012,7 +1012,7 @@ export const recipeStep = {
   _name: 'Krok receptu',
   _name_plural: 'Krok receptu',
   recipe: 'Recept',
-  is_required: 'Nutné?',
+  is_optional: 'Nepovinné?',
 } as const
 
 export const recipeTip = {

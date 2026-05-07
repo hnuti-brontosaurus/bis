@@ -89,7 +89,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             "ingredient_id",
             "unit_id",
             "amount",
-            "is_required",
+            "is_optional",
             "comment",
         )
 
@@ -97,7 +97,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeStep
-        fields = ("id", "name", "order", "description", "photo")
+        fields = ("id", "name", "order", "description", "photo", "is_optional")
 
 
 class RecipeStepPhotoSerializer(serializers.ModelSerializer):

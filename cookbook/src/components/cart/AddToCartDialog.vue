@@ -12,7 +12,6 @@ const { icon } = useRender()
 const props = defineProps({
   show: { type: Boolean, default: false },
   recipe: { type: Object, required: true },
-  selectedIds: { type: Array, default: () => [] },
 })
 const emit = defineEmits(["update:show", "confirm"])
 
@@ -22,11 +21,10 @@ const newRowKey = () =>
 
 const rows = ref([])
 
-const buildRowsFromRecipe = () => {
-  const selected = new Set(props.selectedIds)
-  return props.recipe.ingredients.map(ri => ({
+const buildRowsFromRecipe = () =>
+  props.recipe.ingredients.map(ri => ({
     key: `recipe_${ri.id}`,
-    checked: selected.has(ri.id),
+    checked: !ri.is_optional,
     baseAmount: ri.amount,
     value: {
       ingredient_id: ri.ingredient_id,
@@ -34,7 +32,6 @@ const buildRowsFromRecipe = () => {
       amount: ri.amount * servings.value,
     },
   }))
-}
 
 watch(
   () => props.show,
