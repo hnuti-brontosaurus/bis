@@ -5,6 +5,7 @@ const js = require("@eslint/js")
 const pluginVue = require("eslint-plugin-vue")
 const skipFormatting = require("@vue/eslint-config-prettier/skip-formatting")
 const unusedImports = require("eslint-plugin-unused-imports")
+const localRules = require("./eslint-rules/index.cjs")
 const globals = require("globals")
 
 module.exports = [
@@ -42,7 +43,7 @@ module.exports = [
     },
   },
   {
-    plugins: { "unused-imports": unusedImports },
+    plugins: { "unused-imports": unusedImports, local: localRules },
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -60,6 +61,7 @@ module.exports = [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "local/missing-translation": "error",
     },
   },
 ]

@@ -32,6 +32,7 @@ import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 import LinkifiedText from "@/components/app/LinkifiedText.vue"
+import WithHint from "@/contrib/components/WithHint.vue"
 import { _ } from "@/composables/translations.js"
 
 const route = useRoute()
@@ -166,15 +167,16 @@ const onDelete = () => {
       <n-grid-item>
         <n-flex justify="space-between" align="center" :wrap="false">
           <n-h2>{{ _.recipes.steps }}</n-h2>
-          <n-switch
+          <WithHint
             v-if="wakeLockSupported"
-            :value="cookMode"
-            @update:value="toggleCookMode"
-            :round="false"
+            :hint="_.recipes.cook_mode_hint"
+            :width="220"
           >
-            <template #checked>{{ _.recipes.cook_mode }}</template>
-            <template #unchecked>{{ _.recipes.cook_mode }}</template>
-          </n-switch>
+            <n-switch :value="cookMode" @update:value="toggleCookMode" :round="false">
+              <template #checked>{{ _.recipes.cook_mode }}</template>
+              <template #unchecked>{{ _.recipes.cook_mode }}</template>
+            </n-switch>
+          </WithHint>
         </n-flex>
         <CollapseList :data="recipe.steps" checked-key="done">
           <template #header="{ item, i }"> {{ i + 1 }}. {{ item.name }} </template>

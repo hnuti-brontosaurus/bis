@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: caac1351f1697b75
+// source-hash: f6781c48a38d7953
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1212,6 +1212,7 @@ export const cookbook = {
     allergen_warning: 'Typicky obsahuje alergeny',
     steps: 'Postup',
     cook_mode: 'Vařím',
+    cook_mode_hint: 'Nechá obrazovku rozsvícenou, dokud je zapnuto.',
     tips: 'Tipy a triky',
     comments: 'Komentáře',
     sources: 'Zdroje',
@@ -1247,7 +1248,7 @@ export const cookbook = {
     upsert_error: 'Chyba při ukládání přísady',
     name: 'Název',
     state: 'Skupenství',
-    state_solid: 'Pevná',
+    state_solid: 'Pevné',
     state_liquid: 'Tekuté',
     g_per_piece: 'g / kus',
     g_per_liter: 'g / litr',
@@ -1256,6 +1257,33 @@ export const cookbook = {
     new_title: 'Nová přísada',
   },
   chefs: { title: 'Kuchařstvo' },
+  cart: {
+    title: 'Nákupní košík',
+    shopping: 'Nakupování',
+    edit: 'Upravit',
+    add: 'Přidat do košíku',
+    add_to_cart: 'Přidat do košíku',
+    add_ingredient: 'Přidat přísadu',
+    add_group: 'Přidat seznam',
+    empty: 'Košík je prázdný',
+    all_bought: 'Všechno nakoupeno',
+    hide_bought: 'Skrýt nakoupené',
+    custom_group: 'Vlastní seznam',
+    new_group_placeholder: 'Název nového seznamu',
+    replace: 'Nahradit',
+    append: 'Přidat ke stávajícímu',
+    stale_title: 'Starší košík',
+    stale_content:
+      'Tvůj košík obsahuje starší položky. Co s nimi chceš udělat?',
+    conflict_title: 'Konflikt košíků',
+    conflict_intro:
+      'Máš košík v prohlížeči i na serveru. Co s nimi chceš udělat?',
+    conflict_local: 'V prohlížeči',
+    conflict_server: 'Na serveru',
+    keep_server: 'Použít serverový',
+    use_local: 'Použít lokální',
+    merge: 'Sloučit',
+  },
   profile: {
     new: 'Vytvoření profilu',
     title: 'Můj profil',

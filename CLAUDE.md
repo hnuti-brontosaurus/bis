@@ -119,6 +119,7 @@ English for code, comments, variable names. Czech for user-facing strings.
 - CSS modules: `ComponentName.module.scss` next to component
 - Python: snake_case (enforced by black/isort)
 - API response properties use snake_case to match backend
+- No abbreviations — use the full word (`ingredient`, not `ing`). Single-letter loop variables in tight scopes are fine.
 
 ### React/TypeScript
 - One component per file, no default exports

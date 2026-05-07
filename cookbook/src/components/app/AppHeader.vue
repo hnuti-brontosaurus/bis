@@ -10,11 +10,15 @@ import {
 } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars } from "@fortawesome/free-solid-svg-icons"
+import { faBars, faCartShopping } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "vue-router"
 import { theme } from "@/composables/theme.js"
 import { translatedKey } from "@/composables/translations.js"
 import { useAuthStore } from "@/data/auth.js"
+import { useIngredientsStore } from "@/data/ingredients.js"
+import { useUnitsStore } from "@/data/units.js"
+import { useCartSummed } from "@/composables/cartSummed.js"
+import { NBadge } from "naive-ui"
 import { computed } from "vue"
 import { storeToRefs } from "pinia"
 
@@ -71,6 +75,13 @@ const userOptions = computed(() => {
   return [translatedMenuKey("login"), translatedMenuKey("register")]
 })
 
+// Ingredients + units back the summed-cart computation. They're cheap to
+// fetch and cached in their stores; loading them in the header guarantees
+// the badge has data on first paint instead of waiting for a route mount.
+useIngredientsStore().fetchAll()
+useUnitsStore().fetchAll()
+const { unboughtCount } = useCartSummed()
+
 const select = value => {
   if (value === "logout") {
     authStore.logout()
@@ -118,6 +129,18 @@ const select = value => {
     </n-grid>
 
     <n-button-group style="position: absolute; right: 1rem">
+      <n-badge
+        :value="unboughtCount"
+        :show="unboughtCount > 0"
+        :max="99"
+        :offset="[-6, 6]"
+      >
+        <n-button
+          :render-icon="icon(faCartShopping)"
+          quaternary
+          @click="router.push({ name: 'cart' })"
+        />
+      </n-badge>
       <n-dropdown :options="userOptions" placement="bottom-end" @select="select">
         <n-button :render-icon="icon(faUser)" quaternary />
       </n-dropdown>

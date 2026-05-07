@@ -16,6 +16,7 @@ Field-shape rules:
   drf-writable-nested.
 """
 
+from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
@@ -45,6 +46,12 @@ class ChefSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chef
         fields = ("id", "user_id", "name", "email", "photo", "is_editor")
+
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = ("items",)
 
 
 class IngredientSerializer(serializers.ModelSerializer):

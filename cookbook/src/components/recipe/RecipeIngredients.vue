@@ -7,6 +7,7 @@ import {
   NDataTable,
   NInputNumber,
   NInputGroup,
+  useDialog,
 } from "naive-ui"
 import { computed, h, ref } from "vue"
 import { servings } from "@/composables/servings.js"
@@ -18,6 +19,8 @@ import {
 import { useRender } from "@/contrib/composables/render.js"
 import { _ } from "@/composables/translations.js"
 import { pluralizeUnit } from "@/data/unitConversion.js"
+import { useCartStore } from "@/data/cart.js"
+import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
@@ -80,6 +83,29 @@ const data = computed(() => {
     key: ingredient.id,
   }))
 })
+
+const dialog = useDialog()
+const cartStore = useCartStore()
+const showAddToCart = ref(false)
+
+const onConfirmAdd = group => {
+  if (!cartStore.meaningful.length) {
+    cartStore.replaceWith(group)
+    return
+  }
+  if (cartStore.isStale) {
+    dialog.warning({
+      title: _.value.cart.stale_title,
+      content: _.value.cart.stale_content,
+      positiveText: _.value.cart.replace,
+      negativeText: _.value.cart.append,
+      onPositiveClick: () => cartStore.replaceWith(group),
+      onNegativeClick: () => cartStore.addGroup(group),
+    })
+  } else {
+    cartStore.addGroup(group)
+  }
+}
 </script>
 
 <template>
@@ -95,10 +121,21 @@ const data = computed(() => {
           min="1"
           :precision="1"
         />
-        <n-button :render-icon="icon(faCartPlus)" size="small"></n-button>
+        <n-button
+          :render-icon="icon(faCartPlus)"
+          size="small"
+          @click="showAddToCart = true"
+        ></n-button>
       </n-input-group>
     </n-flex>
   </n-flex>
+
+  <AddToCartDialog
+    v-model:show="showAddToCart"
+    :recipe="recipe"
+    :selected-ids="selected"
+    @confirm="onConfirmAdd"
+  />
 
   <n-data-table
     :data="data"

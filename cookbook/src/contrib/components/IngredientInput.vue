@@ -4,7 +4,7 @@ import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
 import { storeOptions } from "@/data/helpers.js"
 import { _ } from "@/composables/translations.js"
-import { computed, ref } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import {
   isUnitAllowed,
@@ -36,12 +36,12 @@ const selectedIngredient = computed(
  */
 const unitOptions = computed(() => {
   const all = unitsStore.list
-  const ing = selectedIngredient.value
+  const ingredient = selectedIngredient.value
   const specialSlugs = new Set(
     Object.values(SPECIAL_UNIT_GRAMS).flatMap(m => Object.keys(m)),
   )
-  const visible = ing
-    ? all.filter(u => isUnitAllowed(u, ing) || u.id === value.value.unit_id)
+  const visible = ingredient
+    ? all.filter(u => isUnitAllowed(u, ingredient) || u.id === value.value.unit_id)
     : all.filter(u => !specialSlugs.has(u.slug) || u.id === value.value.unit_id)
   return visible.map(u => ({
     label: pluralizeUnit(value.value.amount, u),
@@ -49,14 +49,25 @@ const unitOptions = computed(() => {
   }))
 })
 
+onMounted(() => {
+  if (value.value.amount == null) value.value.amount = 1
+})
+
+watch(selectedIngredient, ingredient => {
+  if (!ingredient || value.value.unit_id != null) return
+  const slug = ingredient.state === "liquid" ? "milliliter" : "grams"
+  const fallbackUnit = unitsStore.list.find(u => u.slug === slug)
+  if (fallbackUnit) value.value.unit_id = fallbackUnit.id
+})
+
 const onUnitChange = newUnitId => {
   const prevUnit = unitsStore.byId[value.value.unit_id]
   const nextUnit = unitsStore.byId[newUnitId]
-  const ing = selectedIngredient.value
-  if (ing && prevUnit && nextUnit && value.value.amount != null) {
-    const converted = convertAmount(value.value.amount, prevUnit, nextUnit, ing)
+  const ingredient = selectedIngredient.value
+  if (ingredient && prevUnit && nextUnit && value.value.amount != null) {
+    const converted = convertAmount(value.value.amount, prevUnit, nextUnit, ingredient)
     if (converted != null && Number.isFinite(converted)) {
-      value.value.amount = Math.round(converted * 100) / 100
+      value.value.amount = converted
     }
   }
   value.value.unit_id = newUnitId

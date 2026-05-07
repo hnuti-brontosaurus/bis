@@ -2,13 +2,17 @@
 import { NTooltip, NBadge, NText } from "naive-ui"
 import { useWindowSize } from "@vueuse/core"
 
-const { width } = useWindowSize()
+const { width: windowWidth } = useWindowSize()
 
-defineProps(["label", "hint", "placement"])
+const props = defineProps(["label", "hint", "placement", "width"])
 </script>
 
 <template>
-  <n-tooltip v-if="hint" :width="width / 3" :placement="placement ?? 'top-end'">
+  <n-tooltip
+    v-if="hint"
+    :width="props.width ?? windowWidth / 3"
+    :placement="placement ?? 'top-end'"
+  >
     <template #trigger>
       <n-badge :offset="[5, 2]" color="transparent" style="font-family: unset">
         <template #value>

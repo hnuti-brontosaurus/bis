@@ -64,6 +64,12 @@ const router = createRouter({
       component: () => import("@/views/IngredientsView.vue"),
     },
     {
+      path: "/cart/",
+      name: "cart",
+      meta: { back: { name: "recipes" } },
+      component: () => import("@/views/CartView.vue"),
+    },
+    {
       path: "/ingredient/:id/edit/",
       name: "edit_ingredient",
       meta: { requiresAuth: true, back: { name: "ingredients" } },

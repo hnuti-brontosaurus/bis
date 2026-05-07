@@ -9,7 +9,7 @@ class Ingredient(ChangeMixin, BaseModel):
     name = m.CharField(max_length=31, unique=True)
     state = m.CharField(
         max_length=13,
-        choices=[("solid", "Pevná"), ("liquid", "Tekuté")],
+        choices=[("solid", "Pevné"), ("liquid", "Tekuté")],
         default="solid",
     )
     g_per_piece = m.PositiveSmallIntegerField(blank=True, null=True)
