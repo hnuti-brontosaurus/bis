@@ -1,20 +1,34 @@
 from contextlib import nullcontext
+from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
 from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
-from bis.helpers import paused_validation
+from bis.helpers import AgeStats, paused_validation
 from bis.models import User
 from django.contrib import admin
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
-from event.models import Event
+from event.models import (
+    Event,
+    EventContact,
+    EventPropagation,
+    EventRecord,
+    EventRegistration,
+    VIPEventPropagation,
+)
 from feedback.models import EventFeedback
 from more_admin_filters import MultiSelectRelatedDropdownFilter
+from nested_admin.nested import (
+    NestedModelAdmin,
+    NestedStackedInline,
+    NestedTabularInline,
+)
 from rangefilter.filters import DateRangeFilter
 from translation.translate import _
 from xlsx_export.export import (
@@ -22,6 +36,65 @@ from xlsx_export.export import (
     export_to_xlsx,
     get_attendance_list,
 )
+
+
+class EventContactAdmin(PermissionMixin, NestedTabularInline):
+    model = EventContact
+    classes = ("collapse",)
+
+
+class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
+    model = EventPropagation
+    classes = ("collapse",)
+
+    exclude = ("_contact_url",)
+
+
+class EventVIPPropagationAdmin(PermissionMixin, NestedStackedInline):
+    model = VIPEventPropagation
+    classes = ("collapse",)
+
+
+class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
+    model = EventRegistration
+    classes = ("collapse",)
+
+
+class EventRecordAdmin(PermissionMixin, NestedStackedInline):
+    model = EventRecord
+    inlines = (EventContactAdmin,)
+
+    readonly_fields = (
+        "get_participants_age_stats_event_start",
+        "get_participants_age_stats_year_start",
+    )
+    autocomplete_fields = ("participants",)
+
+    @admin.display(
+        description="Statistika věku účastníků a organizátorů k začátku akce"
+    )
+    def get_participants_age_stats_event_start(self, obj):
+        return AgeStats(
+            "účastníků", obj.get_all_participants(), obj.event.start
+        ).as_table()
+
+    @admin.display(
+        description="Statistika věku účastníků a organizátorů k začátku roku"
+    )
+    def get_participants_age_stats_year_start(self, obj):
+        return AgeStats(
+            "účastníků", obj.get_all_participants(), date(obj.event.start.year, 1, 1)
+        ).as_table()
+
+    def get_formset(self, request, obj=None, **kwargs):
+        kwargs.update(
+            {
+                "help_texts": {
+                    "get_participants_age_stats_year_start": "Pro podmínky dotací",
+                }
+            }
+        )
+        return super().get_formset(request, obj, **kwargs)
 
 
 @admin.action(description="Zarchivovat akce")
@@ -36,10 +109,20 @@ def export_feedbacks(model_admin, request, queryset):
 
 
 @admin.register(Event)
-class EventAdmin(PermissionMixin, admin.ModelAdmin):
+class EventAdmin(PermissionMixin, NestedModelAdmin):
     change_form_template = "bis/event_change_form.html"
 
     actions = [mark_as_archived, export_to_xlsx, export_feedbacks]
+    inlines = (
+        EventPropagationAdmin,
+        EventVIPPropagationAdmin,
+        EventRegistrationAdmin,
+        EventRecordAdmin,
+    )
+    filter_horizontal = ("other_organizers",)
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
     list_filter = [
         list_filter_extra_text(
@@ -162,25 +245,46 @@ class EventAdmin(PermissionMixin, admin.ModelAdmin):
 
     date_hierarchy = "start"
     search_fields = Event.get_search_fields()
+    readonly_fields = "duration", "created_by", "created_at", "closed_at"
 
-    fields = (
-        "name",
-        "is_canceled",
-        "is_closed",
-        "is_archived",
-        "is_attendance_list_required",
-        "duration",
-        "created_by",
-        "created_at",
-        "closed_at",
+    autocomplete_fields = (
+        "main_organizer",
+        "other_organizers",
+        "location",
+        "administration_units",
     )
-    readonly_fields = (
-        "name",
-        "duration",
-        "created_by",
-        "created_at",
-        "closed_at",
-    )
+
+    exclude = "_import_id", "_search_field"
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        user = request.user
+
+        class F1(form):
+            def clean(_self):
+                super().clean()
+                if not user.is_superuser and not user.is_office_worker:
+                    if not any(
+                        [
+                            any(
+                                au in user.administration_units.all()
+                                for au in _self.cleaned_data.get(
+                                    "administration_units", []
+                                )
+                            ),
+                            _self.cleaned_data.get("main_organizer") == user,
+                            user
+                            in _self.cleaned_data.get("other_organizers", []).all(),
+                        ]
+                    ):
+                        raise ValidationError(
+                            "Akci musíš vytvořit pod svou organizační jednotkou nebo "
+                            "musíš být v organizátorském týmu"
+                        )
+
+                return _self.cleaned_data
+
+        return F1
 
     def save_related(self, request, form, formsets, change):
         if request.method == "POST" and "_save_raw" in request.POST:
