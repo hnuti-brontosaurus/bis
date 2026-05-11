@@ -91,8 +91,8 @@ export const form = {
   },
   registration: {
     is_event_full: {
-      name: 'Je akce plná',
-      help: 'Pokud zaškrtnete, účastníkům se zobrazí, že je akce plná. Způsob přihlášení i nastavení dotazníku zůstanou zachované, takže když se místo uvolní, stačí zaškrtnutí zrušit.',
+      name: 'Je akce plná?',
+      help: 'Po zaškrtnutí se na webu zobrazí informace, že je akce plná. Přihláška zůstane v BIS uložená a pokud se místo znovu uvolní, stačí volbu zrušit a přihláška se znovu zobrazí.',
     },
     questionnaire: {
       help: 'Zde můžeš připsat svoje doplňující otevřené otázky pro účastníky, které se zobrazí u standardní přihlášky na webu. Kromě tvých otázek se standardní přihláška ptá na jméno, datum narození, telefon a email účastníka.',
