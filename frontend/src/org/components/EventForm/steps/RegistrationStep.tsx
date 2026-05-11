@@ -130,7 +130,8 @@ export const RegistrationStep = ({
                     type="checkbox"
                     {...register('registration.is_event_full')}
                   />{' '}
-                  Máme bohužel plno, zkuste jinou z našich akcí
+                  Na webu zobrazit informaci, ze je akce plně obsazena. (zobrazí
+                  se: "Máme bohužel plno, zkuste jinou z našich akcí").
                 </label>
               </FormInputError>
             </FormSection>
