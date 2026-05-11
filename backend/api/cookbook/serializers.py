@@ -170,7 +170,9 @@ class RecipeSerializer(WritableNestedModelSerializer):
             "comments",
             "allergen_ids",
             "is_public",
+            "created_at",
         )
+        read_only_fields = ("created_at",)
 
     def validate(self, attrs):
         # photo/intro/sources are required only when the recipe is public.

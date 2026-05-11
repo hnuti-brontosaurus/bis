@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: e94a91bdeb6eddb2
+// source-hash: e5b110019e56a750
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1161,6 +1161,11 @@ export const cookbook = {
     required: 'Toto pole je povinné',
     save: 'Uložit',
     save_error: 'Chyba při uložení',
+    clear: 'Zrušit',
+    close: 'Zavřít',
+    search: 'Hledat',
+    true: 'Ano',
+    false: 'Ne',
   },
   menu: {
     vegan: 'Proč vegan?',
@@ -1220,6 +1225,23 @@ export const cookbook = {
     servings: 'Porcí',
     select_all: 'Vyber vše',
     select_default: 'Vyber výchozí',
+    search_placeholder: 'Hledat v receptech…',
+    no_results: 'Žádný recept neodpovídá filtrům',
+    sort_by: 'Seřadit podle',
+    sort_newest: 'Nejnovější',
+    sort_oldest: 'Nejstarší',
+    sort_name_asc: 'Název A–Z',
+    sort_name_desc: 'Název Z–A',
+    tags_include: 'Tagy (musí obsahovat všechny)',
+    tags_exclude: 'Tagy (nesmí obsahovat žádný)',
+    allergens_exclude: 'Alergeny (nesmí obsahovat žádný)',
+    ingredients_include: 'Ingredience (musí obsahovat všechny)',
+    ingredients_exclude: 'Ingredience (nesmí obsahovat žádnou)',
+    visibility: 'Viditelnost',
+    visibility_all: 'Vše',
+    clear_filters: 'Zrušit filtry',
+    active_filters: 'Aktivní filtry',
+    search_label: 'Hledání',
   },
   edit_recipe: {
     title_edit: 'Úprava receptu',
