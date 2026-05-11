@@ -313,7 +313,7 @@ class Command(BaseCommand):
             },
             "internal": {
                 "name": "interní akce",
-                "description": "plánovačky, valné hromady článků",
+                "description": "plánovačky, valné hromady článků, setkávání organizátorů - setkání bez programu a dobrovolnické činnosti",
             },
             "experiential": {
                 "name": "zážitková akce",
@@ -321,11 +321,11 @@ class Command(BaseCommand):
             },
             "public_educational": {
                 "name": "vzdělávací pro veřejnost",
-                "description": "včetně vzdělávacích klubů např. klubové přednášky, workshopy, promítání na envirotémata… Vzdělávání Akce příroda např. semináře typu OSF",
+                "description": "zaměřené na různá témata např. environmentální vzdělávání, péče o přírodu a památky - zahrnuje přednášky, workshopy, promítání, kluby nebo semináře, semináře Akce Příroda např. typu OSF",
             },
             "internal_educational": {
                 "name": "vzdělávací pro organizátory HB",
-                "description": "OHB, Cestičky, malá OHB, BRĎO kurzy, vzdělávání pro ústředí",
+                "description": "malá OHB, BRĎO kurzy, rozvoj organizátorských dovedností, vzdělávání pro ústředí",
             },
             "internal_educational_full": {
                 "name": "OHB, Cestičky",
