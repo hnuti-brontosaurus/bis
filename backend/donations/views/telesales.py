@@ -16,7 +16,6 @@ from donations.telesales import (
 
 OUTCOME_CHOICES = [
     ("call_no_answer", "Nezvedl"),
-    ("call_declined", "Odmítl"),
     ("call_postponed", "Odloženo"),
     ("call_reached", "Odvoláno"),
 ]
@@ -46,13 +45,11 @@ class CallForm(forms.Form):
         reminder = cleaned.get("reminder")
         now = timezone.now()
 
-        if outcome == "call_postponed":
-            if not reminder:
-                self.add_error("reminder", "Připomenutí je povinné pro odložení.")
-            elif reminder <= now:
-                self.add_error("reminder", "Připomenutí musí být v budoucnosti.")
-
-        if outcome == "call_reached" and reminder and reminder <= now:
+        if (
+            outcome in ("call_postponed", "call_reached")
+            and reminder
+            and reminder <= now
+        ):
             self.add_error("reminder", "Připomenutí musí být v budoucnosti.")
 
         return cleaned

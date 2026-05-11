@@ -13,9 +13,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce, Greatest
 from donations.models import Donor, DonorEvent
 
-CALL_OUTCOME_SLUGS = frozenset(
-    {"call_no_answer", "call_declined", "call_postponed", "call_reached"}
-)
+CALL_OUTCOME_SLUGS = frozenset({"call_no_answer", "call_postponed", "call_reached"})
 
 
 def _membership_qs(campaign):
@@ -134,8 +132,16 @@ def _with_recent_events(qs, campaign):
     return qs.select_related("user", "user__pronoun").prefetch_related(recent)
 
 
+def _exclude_unreachable(qs):
+    return (
+        qs.exclude(user__phone="")
+        .exclude(do_not_call=True)
+        .exclude(do_not_solicit=True)
+    )
+
+
 def get_reminders_due(campaign):
-    qs = _membership_qs(campaign)
+    qs = _exclude_unreachable(_membership_qs(campaign))
     qs = _annotate_worklist(qs, campaign)
     return (
         _with_recent_events(qs, campaign)
@@ -145,7 +151,7 @@ def get_reminders_due(campaign):
 
 
 def get_worklist(campaign):
-    qs = _membership_qs(campaign)
+    qs = _exclude_unreachable(_membership_qs(campaign))
     qs = _annotate_worklist(qs, campaign)
     qs = qs.filter(calls_in_window__lt=4)
     qs = qs.exclude(latest_call_slug__isnull=False, latest_call_slug="call_reached")
@@ -165,7 +171,13 @@ def get_finished(campaign):
     qs = _annotate_worklist(qs, campaign)
     return (
         _with_recent_events(qs, campaign)
-        .filter(Q(calls_in_window__gte=4) | Q(latest_call_slug="call_reached"))
+        .filter(
+            Q(calls_in_window__gte=4)
+            | Q(latest_call_slug="call_reached")
+            | Q(user__phone="")
+            | Q(do_not_call=True)
+            | Q(do_not_solicit=True)
+        )
         .order_by(F("latest_call_at").desc(nulls_last=True))
     )
 

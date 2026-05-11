@@ -8,6 +8,11 @@
 {% block content %}
 <div class="telesales-call-header">
   <h1>{{ donor.user.get_full_name }}</h1>
+  <div class="telesales-call-links">
+    <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">Profil dárce</a>
+    &bull;
+    <a href="{% url 'admin:bis_user_change' donor.user_id %}" target="_blank">Profil uživatele</a>
+  </div>
   <div class="telesales-call-meta">
     {% if donor.user.pronoun %}
       <span class="telesales-pronoun">{{ donor.user.pronoun }}</span>
@@ -31,8 +36,8 @@
 </div>
 
 {% if donor_context.history %}
-<details class="telesales-history">
-  <summary>Historie kampaně ({{ donor_context.history|length }} událostí)</summary>
+<div class="telesales-history">
+  <h2>Historie kampaně ({{ donor_context.history|length }} událostí)</h2>
   <table class="telesales-table">
     <thead>
       <tr>
@@ -57,7 +62,7 @@
       {% endfor %}
     </tbody>
   </table>
-</details>
+</div>
 {% endif %}
 
 {% if donor.do_not_call or donor.do_not_solicit %}
@@ -141,15 +146,11 @@
 function updateCallForm(outcome) {
   var pledgeField = document.getElementById('{{ form.pledge.id_for_label }}');
   var reminderField = document.getElementById('{{ form.reminder.id_for_label }}');
-  var needsReminder = outcome === 'call_postponed';
   var canHaveReminder = outcome === 'call_postponed' || outcome === 'call_reached';
   var canHavePledge = outcome === 'call_postponed' || outcome === 'call_reached';
 
   pledgeField.disabled = !canHavePledge;
   reminderField.disabled = !canHaveReminder;
-  reminderField.required = needsReminder;
-
-  document.getElementById('label-reminder').classList.toggle('required', needsReminder);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -1,6 +1,7 @@
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
-from donations.models import Donation, Donor, VariableSymbol
+from django.utils.text import slugify
+from donations.models import Donation, Donor, FundraisingCampaign, VariableSymbol
 from vokativ import vokativ
 
 
@@ -32,3 +33,9 @@ def set_formal_vokativ(instance: Donor, **kwargs):
         instance.formal_vokativ = vokativ(
             instance.user.last_name.split(" ")[0]
         ).capitalize()
+
+
+@receiver(pre_save, sender=FundraisingCampaign, dispatch_uid="set_campaign_slug")
+def set_campaign_slug(instance: FundraisingCampaign, **kwargs):
+    if not instance.slug:
+        instance.slug = slugify(instance.name)

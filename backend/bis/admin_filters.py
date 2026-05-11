@@ -39,6 +39,7 @@ class IsAdministrationUnitActiveFilter(YesNoFilter):
 class AgeFilter(RawRangeNumericFilter):
     title = "Věk"
     parameter_name = "age"
+    birthday_field = "birthday"
 
     def queryset(self, request, queryset):
         filters = {}
@@ -50,7 +51,7 @@ class AgeFilter(RawRangeNumericFilter):
         if value_from is not None and value_from != "":
             filters.update(
                 {
-                    "birthday__lt": now().date()
+                    f"{self.birthday_field}__lt": now().date()
                     - relativedelta(years=min_max_age(value_from))
                 }
             )
@@ -59,12 +60,16 @@ class AgeFilter(RawRangeNumericFilter):
         if value_to is not None and value_to != "":
             filters.update(
                 {
-                    "birthday__gte": now().date()
+                    f"{self.birthday_field}__gte": now().date()
                     - relativedelta(years=min_max_age(value_to) + 1)
                 }
             )
 
         return queryset.filter(**filters)
+
+
+class DonorAgeFilter(AgeFilter):
+    birthday_field = "user__birthday"
 
 
 class NoBirthdayFilter(YesNoFilter):

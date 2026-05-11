@@ -645,7 +645,6 @@ class Command(BaseCommand):
             "donor_10k_total": "Součet všech darů od jednoho dárce přesáhl 10 000 Kč.",
             "added_to_campaign": "Přidán do fundraisingové kampaně",
             "call_no_answer": "Volání — nezvedl",
-            "call_declined": "Volání — odmítl",
             "call_postponed": "Volání — odloženo",
             "call_reached": "Volání — odvoláno",
         }

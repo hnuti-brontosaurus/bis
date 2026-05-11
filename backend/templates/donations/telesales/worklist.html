@@ -28,7 +28,6 @@
       <th>Připomenutí</th>
       <th>Poslední kontakt</th>
       <th>Volání</th>
-      <th>Oslovení / vokativ</th>
       <th>Poslední vyplněná poznámka</th>
       <th></th>
     </tr>
@@ -57,10 +56,6 @@
           {{ donor.calls_in_window }}/4
         </span>
       </td>
-      <td class="telesales-vokativ">
-        {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
-        {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
-      </td>
       <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
       <td>
         <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
@@ -81,7 +76,6 @@
       <th>Jméno</th>
       <th>Poslední kontakt</th>
       <th>Volání</th>
-      <th>Oslovení / vokativ</th>
       <th>Poslední vyplněná poznámka</th>
       <th></th>
     </tr>
@@ -101,10 +95,6 @@
         <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
           {{ donor.calls_in_window }}/4
         </span>
-      </td>
-      <td class="telesales-vokativ">
-        {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
-        {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
       </td>
       <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
       <td>
@@ -130,7 +120,6 @@
         <th>Důvod</th>
         <th>Poslední kontakt</th>
         <th>Volání</th>
-        <th>Oslovení / vokativ</th>
         <th>Poslední vyplněná poznámka</th>
         <th></th>
       </tr>
@@ -144,7 +133,11 @@
           </a>
         </td>
         <td>
-          {% if donor.latest_call_slug == "call_reached" %}Odvoláno{% else %}Příliš mnoho pokusů{% endif %}
+          {% if not donor.user.phone %}Bez telefonního čísla
+          {% elif donor.do_not_call %}Už nevolat
+          {% elif donor.do_not_solicit %}Už nežádat o dar
+          {% elif donor.latest_call_slug == "call_reached" %}Odvoláno
+          {% else %}Příliš mnoho pokusů{% endif %}
         </td>
         <td>
           {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
@@ -153,10 +146,6 @@
           <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
             {{ donor.calls_in_window }}/4
           </span>
-        </td>
-        <td class="telesales-vokativ">
-          {% if donor.user.pronoun %}{{ donor.user.pronoun }}{% endif %}
-          {% if donor.formal_vokativ %} / {{ donor.formal_vokativ }}{% endif %}
         </td>
         <td class="telesales-note">
           {% if donor.recent_campaign_events %}

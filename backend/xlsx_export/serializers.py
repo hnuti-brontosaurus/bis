@@ -180,6 +180,8 @@ class BaseDonorExportSerializer(ModelSerializer):
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
+            "do_not_call",
+            "do_not_solicit",
         )
 
 

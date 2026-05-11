@@ -2,6 +2,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from bis.admin_filters import (
     DonationSumAmountFilter,
     DonationSumRangeFilter,
+    DonorAgeFilter,
     FirstDonorsDonationFilter,
     HasDonorFilter,
     HasPledgeInCampaignFilter,
@@ -52,6 +53,12 @@ from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 @admin.register(FundraisingCampaign)
 class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "telesales_link")
+    readonly_fields = ("slug",)
+
+    def get_fields(self, request, obj=None):
+        if obj is None:
+            return ("name",)
+        return ("name", "slug")
 
     @admin.display(description="Telesales")
     def telesales_link(self, obj):
@@ -285,8 +292,11 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
     list_filter = (
         "user__pronoun",
         ("user__roles", MultiSelectRelatedDropdownFilter),
+        DonorAgeFilter,
         "subscribed_to_newsletter",
         "is_public",
+        "do_not_call",
+        "do_not_solicit",
         HasRecurrentDonationFilter,
         AutocompleteFilterFactory("Podporující RC", "regional_center_support"),
         AutocompleteFilterFactory("Podporující ZČ", "basic_section_support"),
