@@ -358,6 +358,7 @@ class Command(BaseCommand):
             defaults=dict(
                 name="Retro akce",
                 description="Historické úspěné akce, které chceme ve výročním roce zopakovat, připomenout či obnovit. Akce týmů, které již neorganizují, ale rádi by se ve výročí 50 let HB zase sešli a něco spolu udělali. Zkrátka retro akce.",
+                is_active=False,
             ),
         )
         EventTag.objects.update_or_create(
