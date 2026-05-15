@@ -1018,7 +1018,6 @@ class Qualification(m.Model):
             "public__other__for_public",
             # new slugs
             "section_meeting",
-            "section_event",
             "volunteering",
             "experiential",
             "public_educational",
@@ -1029,7 +1028,6 @@ class Qualification(m.Model):
         section_meeting_categories = {
             "internal__section_meeting",
             "section_meeting",
-            "section_event",
         }
         ohb_categories = {
             "public__educational__ohb",

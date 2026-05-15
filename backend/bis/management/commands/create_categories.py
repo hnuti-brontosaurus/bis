@@ -58,6 +58,14 @@ _CATEGORIES_ACTIVATION = datetime(
 class Command(BaseCommand):
     help = "Creates categories etc."
 
+    def update_categories(self, model, data, **shared):
+        has_order = any(f.name == "order" for f in model._meta.fields)
+        for i, (slug, defaults) in enumerate(data.items()):
+            merged = {**defaults, **shared}
+            if has_order:
+                merged.setdefault("order", i)
+            model.objects.update_or_create(slug=slug, defaults=merged)
+
     def create_event_categories(self, data, prefix="", name_prefix=""):
         is_active = (
             datetime.now(zoneinfo.ZoneInfo("Europe/Prague")) < _CATEGORIES_ACTIVATION
@@ -98,65 +106,46 @@ class Command(BaseCommand):
             invalidate_cache("cookbook_categories")
 
     def create_bis_categories(self):
-        DietCategory.objects.update_or_create(
-            slug="meat", defaults=dict(name="s masem")
-        )
-        DietCategory.objects.update_or_create(
-            slug="vege", defaults=dict(name="vegetariánská")
-        )
-        DietCategory.objects.update_or_create(
-            slug="vegan", defaults=dict(name="veganská")
-        )
-
-        EventIntendedForCategory.objects.update_or_create(
-            slug="for_all", defaults=dict(name="pro všechny")
-        )
-        EventIntendedForCategory.objects.update_or_create(
-            slug="for_young_and_adult", defaults=dict(name="pro mládež a dospělé")
-        )
-        EventIntendedForCategory.objects.update_or_create(
-            slug="for_kids", defaults=dict(name="pro děti")
-        )
-        EventIntendedForCategory.objects.update_or_create(
-            slug="for_parents_with_kids", defaults=dict(name="pro rodiče s dětmi")
-        )
-        EventIntendedForCategory.objects.update_or_create(
-            slug="for_first_time_participant", defaults=dict(name="pro prvoúčastníky")
+        self.update_categories(
+            DietCategory,
+            {
+                "meat": dict(name="s masem"),
+                "vege": dict(name="vegetariánská"),
+                "vegan": dict(name="veganská"),
+            },
         )
 
-        QualificationCategory.objects.update_or_create(
-            slug="consultant", defaults=dict(name="Konzultant")
+        self.update_categories(
+            EventIntendedForCategory,
+            {
+                "for_all": dict(name="pro všechny"),
+                "for_young_and_adult": dict(name="pro mládež a dospělé"),
+                "for_kids": dict(name="pro děti"),
+                "for_parents_with_kids": dict(name="pro rodiče s dětmi"),
+                "for_first_time_participant": dict(name="pro prvoúčastníky"),
+            },
         )
-        QualificationCategory.objects.update_or_create(
-            slug="instructor", defaults=dict(name="Instruktor")
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="organizer", defaults=dict(name="Organizátor (OHB)")
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="weekend_organizer",
-            defaults=dict(name="Organizátor víkendovek (OvHB)"),
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="consultant_for_kids", defaults=dict(name="Konzultant Brďo")
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="kids_leader", defaults=dict(name="Vedoucí Brďo")
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="kids_intern", defaults=dict(name="Praktikant Brďo")
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="main_leader_of_kids_camps",
-            defaults=dict(name="Hlavní vedoucí dětských táborů (HVDT)"),
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="main_leader_of_recovery_events",
-            defaults=dict(name="Hlavní vedoucí zotavovacích akcí (HVZA)"),
-        )
-        QualificationCategory.objects.update_or_create(
-            slug="organizer_without_education",
-            defaults=dict(name="Organizátorský přístup do BISu"),
+
+        self.update_categories(
+            QualificationCategory,
+            {
+                "consultant": dict(name="Konzultant"),
+                "instructor": dict(name="Instruktor"),
+                "organizer": dict(name="Organizátor (OHB)"),
+                "weekend_organizer": dict(name="Organizátor víkendovek (OvHB)"),
+                "consultant_for_kids": dict(name="Konzultant Brďo"),
+                "kids_leader": dict(name="Vedoucí Brďo"),
+                "kids_intern": dict(name="Praktikant Brďo"),
+                "main_leader_of_kids_camps": dict(
+                    name="Hlavní vedoucí dětských táborů (HVDT)"
+                ),
+                "main_leader_of_recovery_events": dict(
+                    name="Hlavní vedoucí zotavovacích akcí (HVZA)"
+                ),
+                "organizer_without_education": dict(
+                    name="Organizátorský přístup do BISu"
+                ),
+            },
         )
 
         qualification_parents = {
@@ -192,80 +181,58 @@ class Command(BaseCommand):
                 ]
             )
 
-        AdministrationUnitCategory.objects.update_or_create(
-            slug="basic_section", defaults=dict(name="Základní článek")
-        )
-        AdministrationUnitCategory.objects.update_or_create(
-            slug="headquarter", defaults=dict(name="Ústředí")
-        )
-        AdministrationUnitCategory.objects.update_or_create(
-            slug="regional_center", defaults=dict(name="Regionální centrum")
-        )
-        AdministrationUnitCategory.objects.update_or_create(
-            slug="club", defaults=dict(name="Klub")
+        self.update_categories(
+            AdministrationUnitCategory,
+            {
+                "basic_section": dict(name="Základní článek"),
+                "headquarter": dict(name="Ústředí"),
+                "regional_center": dict(name="Regionální centrum"),
+                "club": dict(name="Klub"),
+            },
         )
 
-        MembershipCategory.objects.update_or_create(
-            slug="family", defaults=dict(name="první rodinný člen")
-        )
-        MembershipCategory.objects.update_or_create(
-            slug="family_member", defaults=dict(name="další rodinný člen")
-        )
-        MembershipCategory.objects.update_or_create(
-            slug="kid", defaults=dict(name="dětské do 15 let")
-        )
-        MembershipCategory.objects.update_or_create(
-            slug="student", defaults=dict(name="individuální 15-26 let")
-        )
-        MembershipCategory.objects.update_or_create(
-            slug="adult", defaults=dict(name="individuální nad 26 let")
-        )
-        MembershipCategory.objects.update_or_create(
-            slug="member_elsewhere", defaults=dict(name="platil v jiném ZČ")
+        self.update_categories(
+            MembershipCategory,
+            {
+                "family": dict(name="první rodinný člen"),
+                "family_member": dict(name="další rodinný člen"),
+                "kid": dict(name="dětské do 15 let"),
+                "student": dict(name="individuální 15-26 let"),
+                "adult": dict(name="individuální nad 26 let"),
+                "member_elsewhere": dict(name="platil v jiném ZČ"),
+            },
         )
 
-        EventGroupCategory.objects.update_or_create(
-            slug="camp", defaults=dict(name="Tábor")
-        )
-        EventGroupCategory.objects.update_or_create(
-            slug="weekend_event", defaults=dict(name="Víkendovka (Brďo schůzka)")
-        )
-        EventGroupCategory.objects.update_or_create(
-            slug="other", defaults=dict(name="Jednodenní (bez adresáře)")
+        self.update_categories(
+            EventGroupCategory,
+            {
+                "camp": dict(name="Tábor"),
+                "weekend_event": dict(name="Víkendovka (Brďo schůzka)"),
+                "other": dict(name="Jednodenní (bez adresáře)"),
+            },
         )
 
-        EventProgramCategory.objects.update_or_create(
-            slug="monuments",
-            defaults=dict(email="pamatky@brontosaurus.cz", name="Akce památky"),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="nature",
-            defaults=dict(email="akce-priroda@brontosaurus.cz", name="Akce příroda"),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="kids", defaults=dict(email="sekce.brdo@brontosaurus.cz", name="BRĎO")
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="eco_tent",
-            defaults=dict(email="ekostan@brontosaurus.cz", name="Ekostan"),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="holidays_with_brontosaurus",
-            defaults=dict(
-                email="psb@brontosaurus.cz",
-                name="PsB (Prázdniny s Brontosaurem = vícedenní letní akce)",
-            ),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="education",
-            defaults=dict(email="vzdelavani@brontosaurus.cz", name="Vzdělávání"),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="international",
-            defaults=dict(email="international@brontosaurus.cz", name="Mezinárodní"),
-        )
-        EventProgramCategory.objects.update_or_create(
-            slug="none", defaults=dict(email="hnuti@brontosaurus.cz", name="Žádný")
+        self.update_categories(
+            EventProgramCategory,
+            {
+                "monuments": dict(email="pamatky@brontosaurus.cz", name="Akce památky"),
+                "nature": dict(
+                    email="akce-priroda@brontosaurus.cz", name="Akce příroda"
+                ),
+                "kids": dict(email="sekce.brdo@brontosaurus.cz", name="BRĎO"),
+                "eco_tent": dict(email="ekostan@brontosaurus.cz", name="Ekostan"),
+                "holidays_with_brontosaurus": dict(
+                    email="psb@brontosaurus.cz",
+                    name="PsB (Prázdniny s Brontosaurem = vícedenní letní akce)",
+                ),
+                "education": dict(
+                    email="vzdelavani@brontosaurus.cz", name="Vzdělávání"
+                ),
+                "international": dict(
+                    email="international@brontosaurus.cz", name="Mezinárodní"
+                ),
+                "none": dict(email="hnuti@brontosaurus.cz", name="Žádný"),
+            },
         )
 
         event_categories = {
@@ -301,15 +268,11 @@ class Command(BaseCommand):
         event_categories = {
             "volunteering": {
                 "name": "dobrovolnická akce",
-                "description": "akce, kde byla dobrovolnická činnost bez ohledu na její rozsah",
+                "description": "Akce, kde byla dobrovolnická činnost bez ohledu na její rozsah. Zahrnuje i Brďo výpravy a tábory s dobrovolnickou prací. (pravidelné oddílové schůzky mají vlastní typ akce).",
             },
             "section_meeting": {
-                "name": "oddílová schůzka",
+                "name": "pravidelné oddílové schůzky",
                 "description": "pravidelná dětská oddílová činnost BRĎO",
-            },
-            "section_event": {
-                "name": "oddílová akce",
-                "description": "BRĎO výpravy, výlety, dětské tábory",
             },
             "internal": {
                 "name": "interní akce",
@@ -317,7 +280,7 @@ class Command(BaseCommand):
             },
             "experiential": {
                 "name": "zážitková akce",
-                "description": "akce zcela bez dobrovolnické činnosti",
+                "description": "Akce zcela bez dobrovolnické činnosti. Kluby se zážitkovým programem (např. deskovky, háčkování…). Brďo výpravy a tábory bez dobrovolnické práce (pravidelné oddílové schůzky mají vlastní typ akce)",
             },
             "public_educational": {
                 "name": "vzdělávací pro veřejnost",
@@ -343,223 +306,157 @@ class Command(BaseCommand):
         is_active = (
             datetime.now(zoneinfo.ZoneInfo("Europe/Prague")) >= _CATEGORIES_ACTIVATION
         )
-        for i, (slug, defaults) in enumerate(event_categories.items()):
-            EventCategory.objects.update_or_create(
-                slug=slug,
-                defaults={
-                    **defaults,
-                    "order": i,
-                    "is_active": is_active,
-                },
-            )
+        self.update_categories(EventCategory, event_categories, is_active=is_active)
 
-        EventTag.objects.update_or_create(
-            slug="retro_event",
-            defaults=dict(
-                name="Retro akce",
-                description="Historické úspěné akce, které chceme ve výročním roce zopakovat, připomenout či obnovit. Akce týmů, které již neorganizují, ale rádi by se ve výročí 50 let HB zase sešli a něco spolu udělali. Zkrátka retro akce.",
-                is_active=False,
-            ),
-        )
-        EventTag.objects.update_or_create(
-            slug="region_event",
-            defaults=dict(
-                name="Akce Brontosarus",
-                description="Dobrovolnické akce, jež mají za cíl udělat kus užitečné práce pro přírodu, krajinu či památky a zároveň dobrovolnicví představit veřejnosti a oslovit lidi k zapojení. Akce mohou také prezentovat činnost Brontosaura v daném regionu. Typicky půjde o půldenní, jednodenní, max. víkendové akce konané v dubnu.",
-            ),
+        self.update_categories(
+            EventTag,
+            {
+                "retro_event": dict(
+                    name="Retro akce",
+                    description="Historické úspěné akce, které chceme ve výročním roce zopakovat, připomenout či obnovit. Akce týmů, které již neorganizují, ale rádi by se ve výročí 50 let HB zase sešli a něco spolu udělali. Zkrátka retro akce.",
+                    is_active=False,
+                ),
+                "region_event": dict(
+                    name="Akce Brontosarus",
+                    description="Dobrovolnické akce, jež mají za cíl udělat kus užitečné práce pro přírodu, krajinu či památky a zároveň dobrovolnicví představit veřejnosti a oslovit lidi k zapojení. Akce mohou také prezentovat činnost Brontosaura v daném regionu. Typicky půjde o půldenní, jednodenní, max. víkendové akce konané v dubnu.",
+                ),
+            },
         )
 
-        GrantCategory.objects.update_or_create(slug="msmt", defaults=dict(name="mšmt"))
-        GrantCategory.objects.update_or_create(
-            slug="other", defaults=dict(name="z jiných projektů")
+        self.update_categories(
+            GrantCategory,
+            {
+                "msmt": dict(name="mšmt"),
+                "other": dict(name="z jiných projektů"),
+            },
         )
 
         DonationSourceCategory.objects.update_or_create(
             slug="bank_transfer", defaults=dict(name="bankovním převodem")
         )
 
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="program", defaults=dict(name="Tvorba a vedení her")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="material", defaults=dict(name="Materiálně-technické zajištění")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="cook", defaults=dict(name="Kuchař/ka")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="photo", defaults=dict(name="Fotograf/ka")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="propagation", defaults=dict(name="Propagace akcí")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="communication",
-            defaults=dict(name="Komunikace s účastníky/lektory/lokalitou"),
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="manager", defaults=dict(name="Hospodář/ka")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="medic", defaults=dict(name="Zdravotník/ce")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="singer", defaults=dict(name="Hudebník/ce")
-        )
-        OrganizerRoleCategory.objects.update_or_create(
-            slug="generic", defaults=dict(name="Všeuměl / podržtaška")
+        self.update_categories(
+            OrganizerRoleCategory,
+            {
+                "program": dict(name="Tvorba a vedení her"),
+                "material": dict(name="Materiálně-technické zajištění"),
+                "cook": dict(name="Kuchař/ka"),
+                "photo": dict(name="Fotograf/ka"),
+                "propagation": dict(name="Propagace akcí"),
+                "communication": dict(name="Komunikace s účastníky/lektory/lokalitou"),
+                "manager": dict(name="Hospodář/ka"),
+                "medic": dict(name="Zdravotník/ce"),
+                "singer": dict(name="Hudebník/ce"),
+                "generic": dict(name="Všeuměl / podržtaška"),
+            },
         )
 
-        TeamRoleCategory.objects.update_or_create(
-            slug="lector", defaults=dict(name="Lektor")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="lecturer", defaults=dict(name="Přednášející")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="graphic", defaults=dict(name="Grafik")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="translator", defaults=dict(name="Překladatel")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="copywriter", defaults=dict(name="Copywriter")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="marketing", defaults=dict(name="Markeťák")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="web", defaults=dict(name="Webař")
-        )
-        TeamRoleCategory.objects.update_or_create(
-            slug="manager", defaults=dict(name="Hospodář")
+        self.update_categories(
+            TeamRoleCategory,
+            {
+                "lector": dict(name="Lektor"),
+                "lecturer": dict(name="Přednášející"),
+                "graphic": dict(name="Grafik"),
+                "translator": dict(name="Překladatel"),
+                "copywriter": dict(name="Copywriter"),
+                "marketing": dict(name="Markeťák"),
+                "web": dict(name="Webař"),
+                "manager": dict(name="Hospodář"),
+            },
         )
 
-        OpportunityCategory.objects.update_or_create(
-            slug="organizing",
-            defaults=dict(
-                name="Organizování akcí",
-                description="Příležitosti organizovat či pomáhat s pořádáním našich akcí.",
-            ),
-        )
-        OpportunityCategory.objects.update_or_create(
-            slug="collaboration",
-            defaults=dict(
-                name="Spolupráce",
-                description="Příležitosti ke spolupráci na chodu a rozvoji Hnutí Brontosaurus.",
-            ),
-        )
-        OpportunityCategory.objects.update_or_create(
-            slug="location_help",
-            defaults=dict(
-                name="Pomoc lokalitě",
-                description="Příležitosti k pomoci dané lokalitě, která to aktuálně potřebuje.",
-            ),
-        )
-        OpportunityPriority.objects.update_or_create(slug="highest", name="Nejvyšší")
-        OpportunityPriority.objects.update_or_create(slug="high", name="Vysoká")
-        OpportunityPriority.objects.update_or_create(slug="normal", name="Normální")
-        OpportunityPriority.objects.update_or_create(slug="low", name="Nízká")
-        OpportunityPriority.objects.update_or_create(slug="lowest", name="Nejnižší")
-
-        LocationProgramCategory.objects.update_or_create(
-            slug="nature", defaults=dict(name="AP - Akce příroda")
-        )
-        LocationProgramCategory.objects.update_or_create(
-            slug="monuments", defaults=dict(name="APAM - Akce památky")
+        self.update_categories(
+            OpportunityCategory,
+            {
+                "organizing": dict(
+                    name="Organizování akcí",
+                    description="Příležitosti organizovat či pomáhat s pořádáním našich akcí.",
+                ),
+                "collaboration": dict(
+                    name="Spolupráce",
+                    description="Příležitosti ke spolupráci na chodu a rozvoji Hnutí Brontosaurus.",
+                ),
+                "location_help": dict(
+                    name="Pomoc lokalitě",
+                    description="Příležitosti k pomoci dané lokalitě, která to aktuálně potřebuje.",
+                ),
+            },
         )
 
-        LocationAccessibilityCategory.objects.update_or_create(
-            slug="good", defaults=dict(name="Snadná (0-1,5h)")
-        )
-        LocationAccessibilityCategory.objects.update_or_create(
-            slug="ok", defaults=dict(name="Středně obtížná (1,5-3h)")
-        )
-        LocationAccessibilityCategory.objects.update_or_create(
-            slug="bad", defaults=dict(name="Obtížná (více než 3h)")
-        )
-
-        RoleCategory.objects.update_or_create(
-            slug="director", defaults=dict(name="Ředitel")
-        )
-        RoleCategory.objects.update_or_create(slug="admin", defaults=dict(name="Admin"))
-        RoleCategory.objects.update_or_create(
-            slug="office_worker", defaults=dict(name="Ústředí")
-        )
-        RoleCategory.objects.update_or_create(slug="auditor", defaults=dict(name="KRK"))
-        RoleCategory.objects.update_or_create(
-            slug="executive", defaults=dict(name="VV")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="education_member", defaults=dict(name="EDU")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="chairman", defaults=dict(name="Předseda")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="vice_chairman", defaults=dict(name="Místopředseda")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="manager", defaults=dict(name="Hospodář")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="board_member", defaults=dict(name="Člen představenstva")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="main_organizer", defaults=dict(name="Hlavní organizátor")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="organizer", defaults=dict(name="Organizátor")
-        )
-        RoleCategory.objects.update_or_create(
-            slug="qualified_organizer", defaults=dict(name="Organizátor s kvalifikací")
-        )
-        RoleCategory.objects.update_or_create(slug="any", defaults=dict(name="Kdokoli"))
-        RoleCategory.objects.update_or_create(
-            slug="fundraiser", defaults=dict(name="Fundraiser")
+        self.update_categories(
+            OpportunityPriority,
+            {
+                "highest": dict(name="Nejvyšší"),
+                "high": dict(name="Vysoká"),
+                "normal": dict(name="Normální"),
+                "low": dict(name="Nízká"),
+                "lowest": dict(name="Nejnižší"),
+            },
         )
 
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="VZP",
-            defaults=dict(name="Všeobecná zdravotní pojišťovna České republiky"),
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="VOZP",
-            defaults=dict(name="Vojenská zdravotní pojišťovna České republiky"),
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="CPZP", defaults=dict(name="Česká průmyslová zdravotní pojišťovna")
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="OZP",
-            defaults=dict(
-                name="Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví"
-            ),
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="ZPS", defaults=dict(name="Zaměstnanecká pojišťovna Škoda")
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="ZPMV",
-            defaults=dict(
-                name="Zdravotní pojišťovna ministerstva vnitra České republiky"
-            ),
-        )
-        HealthInsuranceCompany.objects.update_or_create(
-            slug="RBP", defaults=dict(name="RBP, zdravotní pojišťovna")
+        self.update_categories(
+            LocationProgramCategory,
+            {
+                "nature": dict(name="AP - Akce příroda"),
+                "monuments": dict(name="APAM - Akce památky"),
+            },
         )
 
-        PronounCategory.objects.update_or_create(
-            slug="woman", defaults=dict(name="Ona/její")
+        self.update_categories(
+            LocationAccessibilityCategory,
+            {
+                "good": dict(name="Snadná (0-1,5h)"),
+                "ok": dict(name="Středně obtížná (1,5-3h)"),
+                "bad": dict(name="Obtížná (více než 3h)"),
+            },
         )
-        PronounCategory.objects.update_or_create(
-            slug="man", defaults=dict(name="On/jeho")
+
+        self.update_categories(
+            RoleCategory,
+            {
+                "director": dict(name="Ředitel"),
+                "admin": dict(name="Admin"),
+                "office_worker": dict(name="Ústředí"),
+                "auditor": dict(name="KRK"),
+                "executive": dict(name="VV"),
+                "education_member": dict(name="EDU"),
+                "chairman": dict(name="Předseda"),
+                "vice_chairman": dict(name="Místopředseda"),
+                "manager": dict(name="Hospodář"),
+                "board_member": dict(name="Člen představenstva"),
+                "main_organizer": dict(name="Hlavní organizátor"),
+                "organizer": dict(name="Organizátor"),
+                "qualified_organizer": dict(name="Organizátor s kvalifikací"),
+                "any": dict(name="Kdokoli"),
+                "fundraiser": dict(name="Fundraiser"),
+            },
         )
-        PronounCategory.objects.update_or_create(
-            slug="other", defaults=dict(name="Jiné")
+
+        self.update_categories(
+            HealthInsuranceCompany,
+            {
+                "VZP": dict(name="Všeobecná zdravotní pojišťovna České republiky"),
+                "VOZP": dict(name="Vojenská zdravotní pojišťovna České republiky"),
+                "CPZP": dict(name="Česká průmyslová zdravotní pojišťovna"),
+                "OZP": dict(
+                    name="Oborová zdravotní pojišťovna zaměstnanců bank, pojišťoven a stavebnictví"
+                ),
+                "ZPS": dict(name="Zaměstnanecká pojišťovna Škoda"),
+                "ZPMV": dict(
+                    name="Zdravotní pojišťovna ministerstva vnitra České republiky"
+                ),
+                "RBP": dict(name="RBP, zdravotní pojišťovna"),
+            },
         )
-        PronounCategory.objects.update_or_create(
-            slug="unknown", defaults=dict(name="Nechci uvádět")
+
+        self.update_categories(
+            PronounCategory,
+            {
+                "woman": dict(name="Ona/její"),
+                "man": dict(name="On/jeho"),
+                "other": dict(name="Jiné"),
+                "unknown": dict(name="Nechci uvádět"),
+            },
         )
 
         Location.objects.update_or_create(
@@ -575,85 +472,73 @@ class Command(BaseCommand):
             ),
         )
 
-        DonationPointsAggregation.objects.update_or_create(
-            slug="clubs",
-            defaults=dict(
-                name="Kluby",
-                description="počet akcí, které mají program: vzdělávací - přednáška, klub - přednáška, klub - setkání",
-            ),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="other_without_clubs",
-            defaults=dict(
-                name="Jednodenní bez klubů",
-                description="počet akcí druhu jednodenní bez klubů",
-            ),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="weekend_events",
-            defaults=dict(name="Víkendovky", description="počet akcí druhu víkendovka"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="camps",
-            defaults=dict(name="Tábory", description="počet akcí druhu tábory"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="50_worked_hours",
-            defaults=dict(
-                name="Odpracováno 50 člověkohodin",
-                description="bod za každých 50 odpracovaných člověkohodin",
-            ),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="members_0_15",
-            defaults=dict(name="Členi 0-15 let", description="počet členů 0-15 let"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="members_16_18",
-            defaults=dict(name="Členi 16-18 let", description="počet členů 16-18 let"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="members_19_26",
-            defaults=dict(name="Členi 19-26 let", description="počet členů 19-26 let"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="members_27_and_more",
-            defaults=dict(name="Členi 27+ let", description="počet členů 27+ let"),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="supporting_donations",
-            defaults=dict(
-                name="Podpora ZČ",
-                description="Celková suma dotací, jejiž procento má být přislíbeno danému ZČ",
-            ),
-        )
-        DonationPointsAggregation.objects.update_or_create(
-            slug="supporting_donations_rc",
-            defaults=dict(
-                name="Podpora RC",
-                description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
-            ),
+        self.update_categories(
+            DonationPointsAggregation,
+            {
+                "clubs": dict(
+                    name="Kluby",
+                    description="počet akcí, které mají program: vzdělávací - přednáška, klub - přednáška, klub - setkání",
+                ),
+                "other_without_clubs": dict(
+                    name="Jednodenní bez klubů",
+                    description="počet akcí druhu jednodenní bez klubů",
+                ),
+                "weekend_events": dict(
+                    name="Víkendovky", description="počet akcí druhu víkendovka"
+                ),
+                "camps": dict(name="Tábory", description="počet akcí druhu tábory"),
+                "50_worked_hours": dict(
+                    name="Odpracováno 50 člověkohodin",
+                    description="bod za každých 50 odpracovaných člověkohodin",
+                ),
+                "members_0_15": dict(
+                    name="Členi 0-15 let", description="počet členů 0-15 let"
+                ),
+                "members_16_18": dict(
+                    name="Členi 16-18 let", description="počet členů 16-18 let"
+                ),
+                "members_19_26": dict(
+                    name="Členi 19-26 let", description="počet členů 19-26 let"
+                ),
+                "members_27_and_more": dict(
+                    name="Členi 27+ let", description="počet členů 27+ let"
+                ),
+                "supporting_donations": dict(
+                    name="Podpora ZČ",
+                    description="Celková suma dotací, jejiž procento má být přislíbeno danému ZČ",
+                ),
+                "supporting_donations_rc": dict(
+                    name="Podpora RC",
+                    description="Celková suma dotací, jejiž procento má být přislíbeno danému RC",
+                ),
+            },
         )
 
-        donor_event_categories = {
-            "new_recurrent_pledge": "Nový pravidelný dárce v Darujme",
-            "recurrent_stopped": "Podruhé za sebou nepřišla platba od pravidelného dárce.",
-            "pledge_1y": "Pravidelný dárce daruje již 1 rok.",
-            "pledge_2y": "Pravidelný dárce daruje již 2 roky.",
-            "pledge_3y": "Pravidelný dárce daruje již 3 roky.",
-            "pledge_4y": "Pravidelný dárce daruje již 4 roky.",
-            "pledge_5y": "Pravidelný dárce daruje již 5 let.",
-            "donor_10k_total": "Součet všech darů od jednoho dárce přesáhl 10 000 Kč.",
-            "added_to_campaign": "Přidán do fundraisingové kampaně",
-            "call_no_answer": "Volání — nezvedl",
-            "call_postponed": "Volání — odloženo",
-            "call_reached": "Volání — odvoláno",
-        }
-        for slug, description in donor_event_categories.items():
-            DonorEventCategory.objects.update_or_create(
-                slug=slug,
-                defaults=dict(description=description),
-            )
+        self.update_categories(
+            DonorEventCategory,
+            {
+                "new_recurrent_pledge": dict(
+                    description="Nový pravidelný dárce v Darujme"
+                ),
+                "recurrent_stopped": dict(
+                    description="Podruhé za sebou nepřišla platba od pravidelného dárce."
+                ),
+                "pledge_1y": dict(description="Pravidelný dárce daruje již 1 rok."),
+                "pledge_2y": dict(description="Pravidelný dárce daruje již 2 roky."),
+                "pledge_3y": dict(description="Pravidelný dárce daruje již 3 roky."),
+                "pledge_4y": dict(description="Pravidelný dárce daruje již 4 roky."),
+                "pledge_5y": dict(description="Pravidelný dárce daruje již 5 let."),
+                "donor_10k_total": dict(
+                    description="Součet všech darů od jednoho dárce přesáhl 10 000 Kč."
+                ),
+                "added_to_campaign": dict(
+                    description="Přidán do fundraisingové kampaně"
+                ),
+                "call_no_answer": dict(description="Volání — nezvedl"),
+                "call_postponed": dict(description="Volání — odloženo"),
+                "call_reached": dict(description="Volání — odvoláno"),
+            },
+        )
 
         FundraisingCampaign.objects.update_or_create(
             slug="automatic_emails",
@@ -662,462 +547,350 @@ class Command(BaseCommand):
 
     def create_game_book_categories(self):
         # good emoji overview at https://www.piliapp.com/emoji/list/
-        Tag.objects.update_or_create(
-            slug="icebreaker",
-            defaults=dict(
-                emoji="🧊",
-                name="icebreaker",
-                description="Prolomení nervozity, uvolnění účastníků, tvoření skupiny z jednotlivců",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="meet", defaults=dict(emoji="🤝", name="seznamka", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="dynamix", defaults=dict(emoji="🌪", name="dynamix", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="trust",
-            defaults=dict(
-                emoji="🙏",
-                name="důvěrovka",
-                description="Buduje či rozvíjí důvěru mezi účastníky",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="simul",
-            defaults=dict(
-                emoji="🎮",
-                name="simulační",
-                description="Ať běhačka či deskovka, hra simuluje reálný život",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="strategy", defaults=dict(emoji="📈", name="strategie", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="small",
-            defaults=dict(
-                emoji="🐁",
-                name="drobnička",
-                description="Na výplň prostojů, jednoduchá, na uvolnění",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="enviro",
-            defaults=dict(
-                emoji="🌱",
-                name="enviro",
-                description="Program obsahuje smysluplnou enviro tématiku",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="discuss", defaults=dict(emoji="🗣", name="diskuzní", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="orvo",
-            defaults=dict(
-                emoji="🤕",
-                name="orvo",
-                description="Oblečení nemusí zůstat v původním stavu",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="larp", defaults=dict(emoji="🎭", name="larp", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="team-building",
-            defaults=dict(emoji="🪜", name="team building", description=""),
-        )
-        Tag.objects.update_or_create(
-            slug="creative", defaults=dict(emoji="🎨", name="kreativní", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="vrchol",
-            defaults=dict(
-                emoji="🤬",
-                name="vrcholovka",
-                description="Vrchol akce, ať fyzický, psychický či atmosférický",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="reflexe",
-            defaults=dict(
-                emoji="🔎",
-                name="reflexe",
-                description="Metodika pro vedení reflexe programu",
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="night", defaults=dict(emoji="🌙", name="noční", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="atmo",
-            defaults=dict(
-                emoji="🎆", name="s atmoškou", description="Programy tvořící atmosféru"
-            ),
-        )
-        Tag.objects.update_or_create(
-            slug="cipher", defaults=dict(emoji="📝", name="šifrovačka", description="")
-        )
-        Tag.objects.update_or_create(
-            slug="warm-up",
-            defaults=dict(emoji="🤸", name="rozcvička", description="Hodí se po ránu"),
-        )
-        Tag.objects.update_or_create(
-            slug="tutorial",
-            defaults=dict(
-                emoji="🔨",
-                name="návod",
-                description="Jak zasadit, vyrobit, zpracovat, vytvořit...",
-            ),
+        self.update_categories(
+            Tag,
+            {
+                "icebreaker": dict(
+                    emoji="🧊",
+                    name="icebreaker",
+                    description="Prolomení nervozity, uvolnění účastníků, tvoření skupiny z jednotlivců",
+                ),
+                "meet": dict(emoji="🤝", name="seznamka", description=""),
+                "dynamix": dict(emoji="🌪", name="dynamix", description=""),
+                "trust": dict(
+                    emoji="🙏",
+                    name="důvěrovka",
+                    description="Buduje či rozvíjí důvěru mezi účastníky",
+                ),
+                "simul": dict(
+                    emoji="🎮",
+                    name="simulační",
+                    description="Ať běhačka či deskovka, hra simuluje reálný život",
+                ),
+                "strategy": dict(emoji="📈", name="strategie", description=""),
+                "small": dict(
+                    emoji="🐁",
+                    name="drobnička",
+                    description="Na výplň prostojů, jednoduchá, na uvolnění",
+                ),
+                "enviro": dict(
+                    emoji="🌱",
+                    name="enviro",
+                    description="Program obsahuje smysluplnou enviro tématiku",
+                ),
+                "discuss": dict(emoji="🗣", name="diskuzní", description=""),
+                "orvo": dict(
+                    emoji="🤕",
+                    name="orvo",
+                    description="Oblečení nemusí zůstat v původním stavu",
+                ),
+                "larp": dict(emoji="🎭", name="larp", description=""),
+                "team-building": dict(emoji="🪜", name="team building", description=""),
+                "creative": dict(emoji="🎨", name="kreativní", description=""),
+                "vrchol": dict(
+                    emoji="🤬",
+                    name="vrcholovka",
+                    description="Vrchol akce, ať fyzický, psychický či atmosférický",
+                ),
+                "reflexe": dict(
+                    emoji="🔎",
+                    name="reflexe",
+                    description="Metodika pro vedení reflexe programu",
+                ),
+                "night": dict(emoji="🌙", name="noční", description=""),
+                "atmo": dict(
+                    emoji="🎆",
+                    name="s atmoškou",
+                    description="Programy tvořící atmosféru",
+                ),
+                "cipher": dict(emoji="📝", name="šifrovačka", description=""),
+                "warm-up": dict(
+                    emoji="🤸", name="rozcvička", description="Hodí se po ránu"
+                ),
+                "tutorial": dict(
+                    emoji="🔨",
+                    name="návod",
+                    description="Jak zasadit, vyrobit, zpracovat, vytvořit...",
+                ),
+            },
         )
 
-        PhysicalCategory.objects.update_or_create(
-            slug="minimal",
-            defaults=dict(
-                emoji="🧘",
-                name="Na místě",
-                description="Programy sedící či s minimem pohybu mezi účasníky",
-            ),
-        )
-        PhysicalCategory.objects.update_or_create(
-            slug="moving",
-            defaults=dict(
-                emoji="🚶",
-                name="Chodící",
-                description="Během programu něco nachodím, zahřeji se, ale nezpotím",
-            ),
-        )
-        PhysicalCategory.objects.update_or_create(
-            slug="running",
-            defaults=dict(
-                emoji="🏃", name="Běhací", description="Unavím se, ale nezničím se"
-            ),
-        )
-        PhysicalCategory.objects.update_or_create(
-            slug="hardcore",
-            defaults=dict(
-                emoji="🏋", name="Náročný", description="Po skončení někam odpadnu"
-            ),
+        self.update_categories(
+            PhysicalCategory,
+            {
+                "minimal": dict(
+                    emoji="🧘",
+                    name="Na místě",
+                    description="Programy sedící či s minimem pohybu mezi účasníky",
+                ),
+                "moving": dict(
+                    emoji="🚶",
+                    name="Chodící",
+                    description="Během programu něco nachodím, zahřeji se, ale nezpotím",
+                ),
+                "running": dict(
+                    emoji="🏃",
+                    name="Běhací",
+                    description="Unavím se, ale nezničím se",
+                ),
+                "hardcore": dict(
+                    emoji="🏋",
+                    name="Náročný",
+                    description="Po skončení někam odpadnu",
+                ),
+            },
         )
 
-        MentalCategory.objects.update_or_create(
-            slug="minimal",
-            defaults=dict(
-                emoji="😌",
-                name="Nenáročný",
-                description="Odpočinkové programy, u kterých můžu vypnout hlavu",
-            ),
-        )
-        MentalCategory.objects.update_or_create(
-            slug="thinking",
-            defaults=dict(
-                emoji="🤔",
-                name="Mozek potřeba",
-                description="Trochu kreativity to chce, ale nic náročného",
-            ),
-        )
-        MentalCategory.objects.update_or_create(
-            slug="logically_demanding",
-            defaults=dict(
-                emoji="📈",
-                name="Analyticky náročný",
-                description="Plánování strategie, řešení šifer, komunikace v časovém presu",
-            ),
-        )
-        MentalCategory.objects.update_or_create(
-            slug="emotionally_demanding",
-            defaults=dict(
-                emoji="💔",
-                name="Emočně náročný",
-                description="Přemýšlecí otázky, řešení hodnot, pocitů, sdílení",
-            ),
-        )
-        MentalCategory.objects.update_or_create(
-            slug="hardcore",
-            defaults=dict(
-                emoji="🤬",
-                name="Psycho",
-                description="Fyzicky i psychicky náročný, narušování komforní zóny, nutnost řešit psychickou bezpečnost",
-            ),
+        self.update_categories(
+            MentalCategory,
+            {
+                "minimal": dict(
+                    emoji="😌",
+                    name="Nenáročný",
+                    description="Odpočinkové programy, u kterých můžu vypnout hlavu",
+                ),
+                "thinking": dict(
+                    emoji="🤔",
+                    name="Mozek potřeba",
+                    description="Trochu kreativity to chce, ale nic náročného",
+                ),
+                "logically_demanding": dict(
+                    emoji="📈",
+                    name="Analyticky náročný",
+                    description="Plánování strategie, řešení šifer, komunikace v časovém presu",
+                ),
+                "emotionally_demanding": dict(
+                    emoji="💔",
+                    name="Emočně náročný",
+                    description="Přemýšlecí otázky, řešení hodnot, pocitů, sdílení",
+                ),
+                "hardcore": dict(
+                    emoji="🤬",
+                    name="Psycho",
+                    description="Fyzicky i psychicky náročný, narušování komforní zóny, nutnost řešit psychickou bezpečnost",
+                ),
+            },
         )
 
-        LocationCategory.objects.update_or_create(
-            slug="tearoom",
-            defaults=dict(
-                emoji="🫖",
-                name="Čajovna",
-                description="Klidné a komfortní místo s hezkou atmosférou, omezené množství pohybu",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="hall",
-            defaults=dict(
-                emoji="🏠",
-                name="Větší místnost",
-                description="Sál či místnost dostatkem prostoru, relativní teplo",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="in_a_circle",
-            defaults=dict(
-                emoji="🔥",
-                name="V kruhu (kolem ohně)",
-                description="Všichi na sebe vidí, tepelný komfort, omezený pohyb",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="field",
-            defaults=dict(
-                emoji="🌿",
-                name="Louka",
-                description="Louka či park, dost prostoru na sezení či běhání",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="forest",
-            defaults=dict(emoji="🌲", name="Les", description="Kousek lesa se stromy"),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="village",
-            defaults=dict(
-                emoji="🏘", name="Vesnice", description="Či město, výskyt lidí v okolí"
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="water",
-            defaults=dict(
-                emoji="💧",
-                name="Voda",
-                description="Nutno větší množství vody, na koupání či čvachtání",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="at_road",
-            defaults=dict(
-                emoji="🛣",
-                name="K cestě",
-                description="Možno hrát během putování či přesunu",
-            ),
-        )
-        LocationCategory.objects.update_or_create(
-            slug="specific",
-            defaults=dict(
-                emoji="❓",
-                name="Specifické umístění",
-                description="K programu třeba specifické místo (ať konkrétní či zřídké)",
-            ),
+        self.update_categories(
+            LocationCategory,
+            {
+                "tearoom": dict(
+                    emoji="🫖",
+                    name="Čajovna",
+                    description="Klidné a komfortní místo s hezkou atmosférou, omezené množství pohybu",
+                ),
+                "hall": dict(
+                    emoji="🏠",
+                    name="Větší místnost",
+                    description="Sál či místnost dostatkem prostoru, relativní teplo",
+                ),
+                "in_a_circle": dict(
+                    emoji="🔥",
+                    name="V kruhu (kolem ohně)",
+                    description="Všichi na sebe vidí, tepelný komfort, omezený pohyb",
+                ),
+                "field": dict(
+                    emoji="🌿",
+                    name="Louka",
+                    description="Louka či park, dost prostoru na sezení či běhání",
+                ),
+                "forest": dict(
+                    emoji="🌲", name="Les", description="Kousek lesa se stromy"
+                ),
+                "village": dict(
+                    emoji="🏘",
+                    name="Vesnice",
+                    description="Či město, výskyt lidí v okolí",
+                ),
+                "water": dict(
+                    emoji="💧",
+                    name="Voda",
+                    description="Nutno větší množství vody, na koupání či čvachtání",
+                ),
+                "at_road": dict(
+                    emoji="🛣",
+                    name="K cestě",
+                    description="Možno hrát během putování či přesunu",
+                ),
+                "specific": dict(
+                    emoji="❓",
+                    name="Specifické umístění",
+                    description="K programu třeba specifické místo (ať konkrétní či zřídké)",
+                ),
+            },
         )
 
-        ParticipantNumberCategory.objects.update_or_create(
-            slug="individual",
-            defaults=dict(
-                emoji="🚲",
-                name="Pro jednotlivce",
-                description="Každý hraje sám, lib. množství účastníků",
-            ),
-        )
-        ParticipantNumberCategory.objects.update_or_create(
-            slug="small",
-            defaults=dict(
-                emoji="🚗", name="Malá skupinka (4-6)", description="Skupinka 4-6 lidí"
-            ),
-        )
-        ParticipantNumberCategory.objects.update_or_create(
-            slug="few",
-            defaults=dict(
-                emoji="🚐", name="Skupina lidí (10+)", description="Zepár lidí, přes 10"
-            ),
-        )
-        ParticipantNumberCategory.objects.update_or_create(
-            slug="big",
-            defaults=dict(
-                emoji="🚌", name="Větší skupina (20+)", description="Kolem 20 lidí"
-            ),
-        )
-        ParticipantNumberCategory.objects.update_or_create(
-            slug="a_log",
-            defaults=dict(
-                emoji="🚢", name="Hromada lidí", description="Pro velká skupiny lidí"
-            ),
+        self.update_categories(
+            ParticipantNumberCategory,
+            {
+                "individual": dict(
+                    emoji="🚲",
+                    name="Pro jednotlivce",
+                    description="Každý hraje sám, lib. množství účastníků",
+                ),
+                "small": dict(
+                    emoji="🚗",
+                    name="Malá skupinka (4-6)",
+                    description="Skupinka 4-6 lidí",
+                ),
+                "few": dict(
+                    emoji="🚐",
+                    name="Skupina lidí (10+)",
+                    description="Zepár lidí, přes 10",
+                ),
+                "big": dict(
+                    emoji="🚌",
+                    name="Větší skupina (20+)",
+                    description="Kolem 20 lidí",
+                ),
+                "a_log": dict(
+                    emoji="🚢",
+                    name="Hromada lidí",
+                    description="Pro velká skupiny lidí",
+                ),
+            },
         )
 
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="parents_with_kids",
-            defaults=dict(emoji="👪", name="Rodiče s dětmi", description=""),
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="preschool",
-            defaults=dict(emoji="👶", name="Předškoláci", description=""),
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="elementary", defaults=dict(emoji="🧒", name="Školáci", description="")
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="teen", defaults=dict(emoji="🧑", name="Středoškoláci", description="")
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="university",
-            defaults=dict(emoji="🧑‍🎓", name="Vysokoškoláci", description=""),
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="adult", defaults=dict(emoji="🧑‍💼", name="Dospělí", description="")
-        )
-        ParticipantAgeCategory.objects.update_or_create(
-            slug="old", defaults=dict(emoji="🧓", name="Vyspělí", description="")
+        self.update_categories(
+            ParticipantAgeCategory,
+            {
+                "parents_with_kids": dict(
+                    emoji="👪", name="Rodiče s dětmi", description=""
+                ),
+                "preschool": dict(emoji="👶", name="Předškoláci", description=""),
+                "elementary": dict(emoji="🧒", name="Školáci", description=""),
+                "teen": dict(emoji="🧑", name="Středoškoláci", description=""),
+                "university": dict(emoji="🧑‍🎓", name="Vysokoškoláci", description=""),
+                "adult": dict(emoji="🧑‍💼", name="Dospělí", description=""),
+                "old": dict(emoji="🧓", name="Vyspělí", description=""),
+            },
         )
 
-        GameLengthCategory.objects.update_or_create(
-            slug="short",
-            defaults=dict(
-                emoji="⚡",
-                name="Rychlý (do 10 minut)",
-                description="Krátké programy, jednuché seznamky, rozcvičky, pro vyplnění prostoje",
-            ),
-        )
-        GameLengthCategory.objects.update_or_create(
-            slug="an_hour",
-            defaults=dict(
-                emoji="🕐",
-                name="Středně dlouhý (do hodiny)",
-                description="Nějakou chvíli účastníky zabaví, dvě tři takové naplní odpoledne",
-            ),
-        )
-        GameLengthCategory.objects.update_or_create(
-            slug="long",
-            defaults=dict(
-                emoji="🕓",
-                name="Dlouhý (pár hodin)",
-                description="Odpolední program, noční hra",
-            ),
-        )
-        GameLengthCategory.objects.update_or_create(
-            slug="multiple_days",
-            defaults=dict(
-                emoji="📅",
-                name="Vícedenní, celotáborový",
-                description="Program rozprostřený přes několik dní, většinou na pozadí jiných programů",
-            ),
+        self.update_categories(
+            GameLengthCategory,
+            {
+                "short": dict(
+                    emoji="⚡",
+                    name="Rychlý (do 10 minut)",
+                    description="Krátké programy, jednuché seznamky, rozcvičky, pro vyplnění prostoje",
+                ),
+                "an_hour": dict(
+                    emoji="🕐",
+                    name="Středně dlouhý (do hodiny)",
+                    description="Nějakou chvíli účastníky zabaví, dvě tři takové naplní odpoledne",
+                ),
+                "long": dict(
+                    emoji="🕓",
+                    name="Dlouhý (pár hodin)",
+                    description="Odpolední program, noční hra",
+                ),
+                "multiple_days": dict(
+                    emoji="📅",
+                    name="Vícedenní, celotáborový",
+                    description="Program rozprostřený přes několik dní, většinou na pozadí jiných programů",
+                ),
+            },
         )
 
-        PreparationLengthCategory.objects.update_or_create(
-            slug="enough_to_read",
-            defaults=dict(
-                emoji="⚡",
-                name="Stačí přečíst pravidla",
-                description="Zkušený org přečte, a program rovnou uvede",
-            ),
-        )
-        PreparationLengthCategory.objects.update_or_create(
-            slug="need_to_study",
-            defaults=dict(
-                emoji="🧘",
-                name="Třeba chvíle klidu",
-                description="Netriviální, potřeba pořádně přečíst a pochopit",
-            ),
-        )
-        PreparationLengthCategory.objects.update_or_create(
-            slug="training",
-            defaults=dict(
-                emoji="🖨",
-                name="Potřeba se připravit",
-                description="Příprava zabere pár hodin, chystání materiálů, předání dalším orgům",
-            ),
-        )
-        PreparationLengthCategory.objects.update_or_create(
-            slug="multiple_sessions",
-            defaults=dict(
-                emoji="📅",
-                name="Náročná příprava",
-                description="Rozsáhle rozpracovaný či naopak nedokončený program, nutno věnovat značné úsilí k uvedení",
-            ),
+        self.update_categories(
+            PreparationLengthCategory,
+            {
+                "enough_to_read": dict(
+                    emoji="⚡",
+                    name="Stačí přečíst pravidla",
+                    description="Zkušený org přečte, a program rovnou uvede",
+                ),
+                "need_to_study": dict(
+                    emoji="🧘",
+                    name="Třeba chvíle klidu",
+                    description="Netriviální, potřeba pořádně přečíst a pochopit",
+                ),
+                "training": dict(
+                    emoji="🖨",
+                    name="Potřeba se připravit",
+                    description="Příprava zabere pár hodin, chystání materiálů, předání dalším orgům",
+                ),
+                "multiple_sessions": dict(
+                    emoji="📅",
+                    name="Náročná příprava",
+                    description="Rozsáhle rozpracovaný či naopak nedokončený program, nutno věnovat značné úsilí k uvedení",
+                ),
+            },
         )
 
-        OrganizersNumberCategory.objects.update_or_create(
-            slug="one",
-            defaults=dict(
-                emoji="🧍",
-                name="Zvládnu sám",
-                description="Uvedení programu zvládne jeden org",
-            ),
-        )
-        OrganizersNumberCategory.objects.update_or_create(
-            slug="few",
-            defaults=dict(
-                emoji="🤝",
-                name="Potřebuji pomocnou ruku",
-                description="Na program je potřeba dva či tři orgové",
-            ),
-        )
-        OrganizersNumberCategory.objects.update_or_create(
-            slug="group",
-            defaults=dict(
-                emoji="👪", name="Skupinka orgů", description="Potřeba kolem pěti orgů"
-            ),
-        )
-        OrganizersNumberCategory.objects.update_or_create(
-            slug="a_lot",
-            defaults=dict(
-                emoji="🌍",
-                name="Spousta orgů",
-                description="Velké hry vyžadující B-tým, atp.",
-            ),
+        self.update_categories(
+            OrganizersNumberCategory,
+            {
+                "one": dict(
+                    emoji="🧍",
+                    name="Zvládnu sám",
+                    description="Uvedení programu zvládne jeden org",
+                ),
+                "few": dict(
+                    emoji="🤝",
+                    name="Potřebuji pomocnou ruku",
+                    description="Na program je potřeba dva či tři orgové",
+                ),
+                "group": dict(
+                    emoji="👪",
+                    name="Skupinka orgů",
+                    description="Potřeba kolem pěti orgů",
+                ),
+                "a_lot": dict(
+                    emoji="🌍",
+                    name="Spousta orgů",
+                    description="Velké hry vyžadující B-tým, atp.",
+                ),
+            },
         )
 
-        MaterialRequirementCategory.objects.update_or_create(
-            slug="none",
-            defaults=dict(
-                emoji="🚫", name="Nic není potřeba", description="Stačí účastníci"
-            ),
-        )
-        MaterialRequirementCategory.objects.update_or_create(
-            slug="simple",
-            defaults=dict(
-                emoji="✏",
-                name="Stačí základ",
-                description="Šátky, tužka a papír, provázek",
-            ),
-        )
-        MaterialRequirementCategory.objects.update_or_create(
-            slug="get_some",
-            defaults=dict(
-                emoji="🖨",
-                name="Potřeba nachystat",
-                description="Tisk pár stránek, kostým, potřeba specifický materiál k programu",
-            ),
-        )
-        MaterialRequirementCategory.objects.update_or_create(
-            slug="complicated",
-            defaults=dict(
-                emoji="🚚",
-                name="Kdo se s tím potáhne?",
-                description="Velké množství či velmi specifický materiál",
-            ),
+        self.update_categories(
+            MaterialRequirementCategory,
+            {
+                "none": dict(
+                    emoji="🚫",
+                    name="Nic není potřeba",
+                    description="Stačí účastníci",
+                ),
+                "simple": dict(
+                    emoji="✏",
+                    name="Stačí základ",
+                    description="Šátky, tužka a papír, provázek",
+                ),
+                "get_some": dict(
+                    emoji="🖨",
+                    name="Potřeba nachystat",
+                    description="Tisk pár stránek, kostým, potřeba specifický materiál k programu",
+                ),
+                "complicated": dict(
+                    emoji="🚚",
+                    name="Kdo se s tím potáhne?",
+                    description="Velké množství či velmi specifický materiál",
+                ),
+            },
         )
 
     def create_cookbook_categories(self):
-        difficulties = [
-            ("trivial", "triviální"),
-            ("simple", "jednoduchá"),
-            ("medium", "střední"),
-            ("hard", "složitá"),
-        ]
-        for i, (slug, name) in enumerate(difficulties):
-            RecipeDifficulty.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
+        self.update_categories(
+            RecipeDifficulty,
+            {
+                "trivial": dict(name="triviální"),
+                "simple": dict(name="jednoduchá"),
+                "medium": dict(name="střední"),
+                "hard": dict(name="složitá"),
+            },
+        )
 
-        recipe_times = [
-            ("instant", "instantní"),
-            ("fast", "rychlé"),
-            ("normal", "normální"),
-            ("long", "maraton"),
-        ]
-        for i, (slug, name) in enumerate(recipe_times):
-            RecipeRequiredTime.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
+        self.update_categories(
+            RecipeRequiredTime,
+            {
+                "instant": dict(name="instantní"),
+                "fast": dict(name="rychlé"),
+                "normal": dict(name="normální"),
+                "long": dict(name="maraton"),
+            },
+        )
 
         tags = {
             "Chody": [
@@ -1169,13 +942,14 @@ class Command(BaseCommand):
                 ("asian", "asijská"),
             ],
         }
-        i = 0
-        for group, items in tags.items():
-            for slug, name in items:
-                RecipeTag.objects.update_or_create(
-                    slug=slug, defaults=dict(order=i, name=name, group=group)
-                )
-                i += 1
+        self.update_categories(
+            RecipeTag,
+            {
+                slug: dict(name=name, group=group)
+                for group, items in tags.items()
+                for slug, name in items
+            },
+        )
 
         units = [
             ("grams", "g", "gram", "gramy", "gramů", "weight"),
@@ -1193,25 +967,25 @@ class Command(BaseCommand):
             ("bulb", "", "palička", "paličky", "paliček", "pieces"),
             # ("bread", "", "šumava", "šumavy", "šumav", "weight"),
         ]
-        for i, (slug, abbreviation, name, name2, name5, of) in enumerate(units):
-            Unit.objects.update_or_create(
-                slug=slug,
-                defaults=dict(
-                    order=i,
+        self.update_categories(
+            Unit,
+            {
+                slug: dict(
                     name=name,
                     name2=name2,
                     name5=name5,
                     abbreviation=abbreviation,
                     of=of,
-                ),
-            )
+                )
+                for slug, abbreviation, name, name2, name5, of in units
+            },
+        )
 
-        allergens = [
-            ("gluten", "lepek"),
-            ("soya", "sója"),
-            ("nuts", "oříšky"),
-        ]
-        for i, (slug, name) in enumerate(allergens):
-            Allergen.objects.update_or_create(
-                slug=slug, defaults=dict(order=i, name=name)
-            )
+        self.update_categories(
+            Allergen,
+            {
+                "gluten": dict(name="lepek"),
+                "soya": dict(name="sója"),
+                "nuts": dict(name="oříšky"),
+            },
+        )
