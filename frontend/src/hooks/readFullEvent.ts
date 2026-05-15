@@ -1,6 +1,6 @@
 import { SerializedError } from '@reduxjs/toolkit'
 import { FetchBaseQueryError, skipToken } from '@reduxjs/toolkit/query'
-import { ALL_USERS, api } from 'app/services/bis'
+import { api } from 'app/services/bis'
 import type { FullEvent } from 'app/services/bisTypes'
 import { User } from 'app/services/bisTypes'
 
@@ -31,16 +31,16 @@ export const useReadFullEvent = (
     event?.main_organizer ? { id: event.main_organizer } : skipToken,
   )
   const otherOrganizersQuery = api.endpoints.readUsers.useQuery(
-    // @ts-ignore -- readUsers query param shape mismatch
-    event?.other_organizers
-      ? { id: event.other_organizers, pageSize: ALL_USERS }
+    event?.other_organizers && event.other_organizers.length > 0
+      ? // readEvent returns ids as strings before full users are resolved
+        { id: event.other_organizers as unknown as string[] }
       : skipToken,
   )
   const locationQuery = api.endpoints.readLocation.useQuery(
     event?.location ? { id: event.location } : skipToken,
   )
   const inquiriesQuery = api.endpoints.readEventFeedbackInquiries.useQuery(
-    eventId > 0 ? { eventId, pageSize: 1000 } : skipToken,
+    eventId > 0 ? { eventId } : skipToken,
   )
 
   const allQueries = [

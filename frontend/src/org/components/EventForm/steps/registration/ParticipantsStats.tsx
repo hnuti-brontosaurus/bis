@@ -18,7 +18,6 @@ export const ParticipantsStats: FC<{
   const { data: participantsData, isLoading: isReadParticipantsLoading } =
     api.endpoints.readEventParticipants.useQuery({
       eventId: event.id,
-      pageSize: 10000,
     })
 
   const applications = applicationsData ? applicationsData.results : []

@@ -5,6 +5,7 @@ from api.web.serializers import (
     EventSerializer,
     OpportunitySerializer,
 )
+from bis.cache import CachedViewSetMixin
 from django.http import Http404
 from django.utils.timezone import now
 from event.models import Event
@@ -85,7 +86,8 @@ class OpportunityViewSet(ReadOnlyModelViewSet):
         )
 
 
-class AdministrationUnitViewSet(ReadOnlyModelViewSet):
+class AdministrationUnitViewSet(CachedViewSetMixin, ReadOnlyModelViewSet):
+    cache_namespace = "administration_units"
     queryset = (
         AdministrationUnit.objects.filter(
             existed_till__isnull=True,

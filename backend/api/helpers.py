@@ -18,6 +18,11 @@ from rest_framework.serializers import ModelSerializer
 
 class Pagination(PageNumberPagination):
     page_size_query_param = "page_size"
+    max_page_size = 200
+
+
+class LightPagination(Pagination):
+    max_page_size = 1000
 
 
 def parse_request_data(serializer_class, data_name="data"):

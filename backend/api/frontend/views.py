@@ -18,6 +18,7 @@ from api.frontend.serializers import (
     GetUserByEmailRequestSerializer,
     GetUserByEmailResponseSerializer,
     InquirySerializer,
+    LocationMapSerializer,
     LocationSerializer,
     OpportunitySerializer,
     QuestionSerializer,
@@ -25,7 +26,7 @@ from api.frontend.serializers import (
     UserSearchSerializer,
     UserSerializer,
 )
-from api.helpers import parse_request_data
+from api.helpers import LightPagination, parse_request_data
 from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import Location, User
 from bis.permissions import Permissions
@@ -48,7 +49,7 @@ from login_code.models import get_unknown_user_throttle
 from opportunities.models import Opportunity
 from other.models import Announcement, DashboardItem
 from questionnaire.models import EventApplication, Question
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin
@@ -247,6 +248,23 @@ class LocationViewSet(PermissionViewSetBase):
         "accessibility_from_prague",
         "accessibility_from_brno",
     )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        pagination_class=LightPagination,
+        filter_backends=[],
+    )
+    def for_map(self, request):
+        queryset = (
+            self.get_queryset()
+            .select_related(None)
+            .exclude(gps_location__isnull=True)
+            .only("id", "name", "gps_location")
+        )
+        page = self.paginate_queryset(queryset)
+        serializer = LocationMapSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class OpportunityViewSet(PermissionViewSetBase):

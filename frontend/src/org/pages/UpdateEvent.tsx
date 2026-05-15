@@ -37,7 +37,8 @@ export const UpdateEvent = () => {
   // TODO maybe: add star when data are unsaved (also persistent data)
   useTitle(event ? `Upravit akci ${event.name}` : 'Upravit akci')
 
-  const { data: categories } = api.endpoints.readEventCategories.useQuery()
+  const { data: categories } =
+    api.endpoints.readEventCategories.useQuery(undefined)
 
   const [updateEvent, { error: updateEventError }] =
     api.endpoints.updateEvent.useMutation()

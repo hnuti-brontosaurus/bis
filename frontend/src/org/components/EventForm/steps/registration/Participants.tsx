@@ -59,7 +59,7 @@ export const Participants: FC<{
   updateUser,
 }) => {
   const { data: participants, isLoading: isReadParticipantsLoading } =
-    api.endpoints.readEventParticipants.useQuery({ eventId, pageSize: 10000 })
+    api.endpoints.readEventParticipants.useQuery({ eventId })
 
   const [showShowApplicationModal, setShowShowApplicationModal] =
     useState<boolean>(false)
@@ -70,10 +70,10 @@ export const Participants: FC<{
   const [currentParticipantId, setCurrentParticipantId] = useState<string>()
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const { data: membershipCategories } =
-    api.endpoints.readMembershipCategories.useQuery({})
+    api.endpoints.readMembershipCategories.useQuery(undefined)
 
   const { data: administrationUnits } =
-    api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
+    api.endpoints.readAdministrationUnits.useQuery(undefined)
 
   const { data: currentParticipant } = api.endpoints.readUser.useQuery(
     currentParticipantId ? { id: currentParticipantId } : skipToken,

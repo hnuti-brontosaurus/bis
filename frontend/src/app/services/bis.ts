@@ -22,8 +22,8 @@
 // Need to use the React-specific entry point to import createApi
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { RootState } from 'app/store'
-import { ClearBounds } from 'components'
 import dayjs from 'dayjs'
+import { fetchAllPages } from './fetchAllPages'
 import type { Assign, Overwrite } from 'utility-types'
 import type {
   AdministrationUnit,
@@ -60,7 +60,6 @@ import type {
   Question,
   Questionnaire,
   Record,
-  Region,
   Registration,
   TokenResponse,
   User,
@@ -74,8 +73,6 @@ import {
   FeedbackForm,
   Inquiry,
 } from './testApi'
-
-export const ALL_USERS = 2000
 
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
@@ -179,17 +176,35 @@ export const api = createApi({
     }),
     readUsers: build.query<
       PaginatedList<User>,
-      ListArguments & { id?: string[]; _search_id?: string[] }
+      { id?: string[]; _search_id?: string[]; search?: string }
     >({
-      query: ({ id, _search_id, ...params }) => ({
-        url: `frontend/users/`,
-        params: {
-          id: id?.join?.(','),
-          _search_id: _search_id?.join?.(','),
-          page_size: params.pageSize,
-          ...params,
-        },
-      }),
+      queryFn: async (arg, api, extraOptions, baseQuery) => {
+        // An empty id/_search_id list means "no users match"; without this
+        // guard the empty filter would be sent to DRF and ignored, returning
+        // every visible user and looping forever for superusers.
+        if (
+          (arg.id !== undefined && arg.id.length === 0) ||
+          (arg._search_id !== undefined && arg._search_id.length === 0)
+        ) {
+          return { data: { count: 0, next: null, previous: null, results: [] } }
+        }
+        return fetchAllPages<typeof arg>({
+          buildArgs: ({ page, pageSize, arg }) => ({
+            url: `frontend/users/`,
+            params: {
+              id: arg.id?.join?.(','),
+              _search_id: arg._search_id?.join?.(','),
+              search: arg.search,
+              page,
+              page_size: pageSize,
+            },
+          }),
+          // Search caps matches so a vague term doesn't fan out into many
+          // pages; id/_search_id lookups stay unbounded because the caller
+          // has an exact list and expects every row back.
+          maxItems: a => (a.search ? 200 : undefined),
+        })<User>(arg, api, extraOptions, baseQuery)
+      },
       providesTags: results =>
         results?.results
           ? results.results.map(user => ({
@@ -204,14 +219,13 @@ export const api = createApi({
      * but searches the whole user database,
      * not just users visible to current user
      */
-    readAllUsers: build.query<PaginatedList<UserSearch>, ListArguments>({
-      query: queryArg => ({
-        url: `frontend/search_users/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+    readAllUsers: build.query<PaginatedList<UserSearch>, { search?: string }>({
+      queryFn: fetchAllPages<{ search?: string }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/search_users/`,
+          params: { page, page_size: pageSize, search: arg.search },
+        }),
+        maxItems: arg => (arg.search ? 200 : undefined),
       }),
       providesTags: results =>
         results?.results
@@ -241,124 +255,107 @@ export const api = createApi({
      * Read various categories
      */
     readEventCategories: build.query<PaginatedList<EventCategory>, void>({
-      query: () => ({
-        url: `categories/event_categories/`,
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/event_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readEventGroups: build.query<PaginatedList<EventGroupCategory>, void>({
-      query: () => ({
-        url: `categories/event_group_categories/`,
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/event_group_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readPrograms: build.query<PaginatedList<EventProgramCategory>, void>({
-      query: () => ({
-        url: `categories/event_program_categories/`,
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/event_program_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readIntendedFor: build.query<PaginatedList<EventIntendedForCategory>, void>(
       {
-        query: () => ({
-          url: `categories/event_intended_for_categories/`,
+        queryFn: fetchAllPages<void>({
+          buildArgs: ({ page, pageSize }) => ({
+            url: `categories/event_intended_for_categories/`,
+            params: { page, page_size: pageSize },
+          }),
         }),
       },
     ),
     readDiets: build.query<PaginatedList<DietCategory>, void>({
-      query: () => ({
-        url: `categories/diet_categories/`,
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/diet_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readAdministrationUnits: build.query<
       PaginatedList<AdministrationUnit>,
-      ListArguments & {
-        /** Více hodnot lze oddělit čárkami. */
-        category?: (
-          | 'basic_section'
-          | 'club'
-          | 'headquarter'
-          | 'regional_center'
-        )[]
-      }
+      void
     >({
-      query: queryArg => ({
-        url: `web/administration_units/`,
-        params: {
-          category: queryArg.category,
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `web/administration_units/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
-    readQualifications: build.query<
-      PaginatedList<QualificationCategory>,
-      ListArguments
-    >({
-      query: queryArg => ({
-        url: `categories/qualification_categories/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
-      }),
-    }),
-    readPronouns: build.query<PaginatedList<PronounCategory>, ListArguments>({
-      query: queryArg => ({
-        url: `categories/pronoun_categories/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
-      }),
-    }),
-    readRegions: build.query<PaginatedList<Region>, ListArguments>({
-      query: queryArg => ({
-        url: `categories/regions/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+    readQualifications: build.query<PaginatedList<QualificationCategory>, void>(
+      {
+        queryFn: fetchAllPages<void>({
+          buildArgs: ({ page, pageSize }) => ({
+            url: `categories/qualification_categories/`,
+            params: { page, page_size: pageSize },
+          }),
+        }),
+      },
+    ),
+    readPronouns: build.query<PaginatedList<PronounCategory>, void>({
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/pronoun_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readHealthInsuranceCompanies: build.query<
       PaginatedList<HealthInsuranceCompany>,
-      ListArguments
+      void
     >({
-      query: queryArg => ({
-        url: `categories/health_insurance_companies/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/health_insurance_companies/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readOpportunityCategories: build.query<
       PaginatedList<OpportunityCategory>,
-      ListArguments
+      void
     >({
-      query: queryArg => ({
-        url: `categories/opportunity_categories/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/opportunity_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readMembershipCategories: build.query<
       PaginatedList<MembershipCategory>,
-      ListArguments
+      void
     >({
-      query: queryArg => ({
-        url: `categories/membership_categories/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/membership_categories/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
 
@@ -377,21 +374,19 @@ export const api = createApi({
     }),
     readLocations: build.query<
       PaginatedList<Location>,
-      {
-        /** Více hodnot lze oddělit čárkami. */
-        id?: number[]
-        // This doesn't exist, but we want it!
-        bounds?: ClearBounds
-      } & ListArguments
+      { id?: number[]; search?: string }
     >({
-      query: queryArg => ({
-        url: `frontend/locations/`,
-        params: {
-          id: queryArg.id,
-          page: queryArg.page,
-          page_size: queryArg.bounds ? 5000 : queryArg.pageSize, // this will fetch everything (cry)
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ id?: number[]; search?: string }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/locations/`,
+          params: {
+            id: arg.id?.join?.(','),
+            search: arg.search,
+            page,
+            page_size: pageSize,
+          },
+        }),
+        maxItems: arg => (arg.search ? 200 : undefined),
       }),
       providesTags: results =>
         (results?.results
@@ -404,6 +399,19 @@ export const api = createApi({
             )
           : []
         ).concat([{ type: 'Location' as const, id: 'LOCATION_LIST' }]),
+    }),
+    readLocationsForMap: build.query<
+      PaginatedList<Pick<Location, 'id' | 'name' | 'gps_location'>>,
+      void
+    >({
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `frontend/locations/for_map/`,
+          params: { page, page_size: pageSize },
+        }),
+        pageSize: 500,
+      }),
+      providesTags: () => [{ type: 'Location' as const, id: 'LOCATION_LIST' }],
     }),
     readLocation: build.query<Location, { id: number }>({
       query: queryArg => ({ url: `frontend/locations/${queryArg.id}/` }),
@@ -521,7 +529,13 @@ export const api = createApi({
     }),
     readOrganizedEvents: build.query<
       PaginatedList<Event>,
-      { userId: string; id?: number[] } & ListArguments
+      {
+        userId: string
+        id?: number[]
+        is_archived?: boolean
+        is_closed?: boolean
+        is_canceled?: boolean
+      } & ListArguments
     >({
       query: queryArg => ({
         url: `frontend/users/${queryArg.userId}/events_where_was_organizer/`,
@@ -530,6 +544,9 @@ export const api = createApi({
           page: queryArg.page,
           page_size: queryArg.pageSize,
           search: queryArg.search,
+          is_archived: queryArg.is_archived,
+          is_closed: queryArg.is_closed,
+          is_canceled: queryArg.is_canceled,
         },
       }),
       providesTags: results =>
@@ -592,15 +609,13 @@ export const api = createApi({
     }),
     readEventImages: build.query<
       PaginatedList<EventPropagationImage>,
-      { eventId: number } & ListArguments
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/propagation/images/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/propagation/images/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -658,15 +673,13 @@ export const api = createApi({
     }),
     readEventQuestions: build.query<
       PaginatedList<Question>,
-      { eventId: number } & ListArguments
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/registration/questionnaire/questions/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/registration/questionnaire/questions/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -728,15 +741,13 @@ export const api = createApi({
     }),
     readEventFeedbackInquiries: build.query<
       PaginatedList<InquiryRead>,
-      { eventId: number } & ListArguments
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `/frontend/events/${queryArg.eventId}/feedback_form/inquiries/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `/frontend/events/${arg.eventId}/feedback_form/inquiries/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -806,15 +817,13 @@ export const api = createApi({
     }),
     readFinanceReceipts: build.query<
       PaginatedList<FinanceReceipt>,
-      ListArguments & { eventId: number }
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/finance/receipts/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/finance/receipts/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -876,16 +885,13 @@ export const api = createApi({
     }),
     readEventFeedbacks: build.query<
       PaginatedList<EventFeedbackRead>,
-      { eventId: number } & ListArguments
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/feedbacks/`,
-        method: 'GET',
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/feedbacks/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) => [
         { type: 'Feedback', id: `${eventId}_FEEDBACK_LIST` },
@@ -915,11 +921,11 @@ export const api = createApi({
       PaginatedList<EventApplication>,
       { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/registration/applications/`,
-        params: {
-          page_size: 10000,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/registration/applications/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: results =>
         (results?.results
@@ -981,15 +987,13 @@ export const api = createApi({
     }),
     readEventParticipants: build.query<
       PaginatedList<User>,
-      { eventId: number } & ListArguments
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/participants/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/record/participants/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: results =>
         (results?.results
@@ -1020,15 +1024,13 @@ export const api = createApi({
     // }),
     readAttendanceListPages: build.query<
       PaginatedList<AttendanceListPage>,
-      ListArguments & { eventId: number }
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/attendance_list_pages/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/record/attendance_list_pages/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -1104,15 +1106,13 @@ export const api = createApi({
     }),
     readEventPhotos: build.query<
       PaginatedList<EventPhoto>,
-      ListArguments & { eventId: number }
+      { eventId: number }
     >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/photos/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          search: queryArg.search,
-        },
+      queryFn: fetchAllPages<{ eventId: number }>({
+        buildArgs: ({ page, pageSize, arg }) => ({
+          url: `frontend/events/${arg.eventId}/record/photos/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
       providesTags: (results, error, { eventId }) =>
         results?.results
@@ -1189,11 +1189,11 @@ export const api = createApi({
       }),
     }),
     readDashboardItems: build.query<PaginatedList<DashboardItem>, void>({
-      query: () => ({
-        url: '/frontend/dashboard_items/',
-        params: {
-          page_size: 1000,
-        },
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: '/frontend/dashboard_items/',
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
     readAnnouncements: build.query<Announcement[], void>({
@@ -1229,8 +1229,11 @@ export const api = createApi({
     }),
 
     readEventTags: build.query<PaginatedList<EventTag>, void>({
-      query: () => ({
-        url: `categories/event_tags/`,
+      queryFn: fetchAllPages<void>({
+        buildArgs: ({ page, pageSize }) => ({
+          url: `categories/event_tags/`,
+          params: { page, page_size: pageSize },
+        }),
       }),
     }),
   }),

@@ -41,7 +41,8 @@ export const CreateEvent = () => {
     error: eventToCloneError,
   } = useReadFullEvent(cloneEventId)
 
-  const { data: categories } = api.endpoints.readEventCategories.useQuery()
+  const { data: categories } =
+    api.endpoints.readEventCategories.useQuery(undefined)
 
   const [createEvent, createEventStatus] =
     api.endpoints.createEvent.useMutation()

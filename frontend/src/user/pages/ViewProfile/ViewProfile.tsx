@@ -24,7 +24,7 @@ export const ViewProfile = () => {
   const { data: currentUser } = useCurrentUser()
 
   const { data: administrationUnits } =
-    api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
+    api.endpoints.readAdministrationUnits.useQuery(undefined)
 
   const isSelf = currentUser?.id === user.id
 

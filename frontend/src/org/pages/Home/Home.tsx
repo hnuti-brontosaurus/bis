@@ -36,7 +36,8 @@ const buttons: HomeButtonConfig[] = [
 export const Home = () => {
   useTitle('Organizátorský přístup')
   const [canCreateEvent] = useAllowedToCreateEvent()
-  const { data: dashboardItems } = api.endpoints.readDashboardItems.useQuery()
+  const { data: dashboardItems } =
+    api.endpoints.readDashboardItems.useQuery(undefined)
 
   const processedButtons = useMemo(() => {
     if (canCreateEvent) {

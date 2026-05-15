@@ -25,7 +25,8 @@ export const IntendedForStep = ({
   isCamp: boolean
   hasVIPPropagationOption: boolean
 }) => {
-  const { data: intendedFor } = api.endpoints.readIntendedFor.useQuery()
+  const { data: intendedFor } =
+    api.endpoints.readIntendedFor.useQuery(undefined)
   const { watch, register, trigger, control, unregister, setValue, formState } =
     methods
 

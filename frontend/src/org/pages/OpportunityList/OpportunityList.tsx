@@ -4,11 +4,13 @@ import {
   InfoMessage,
   ListHeader,
   Loading,
-  UnscalablePaginatedList,
+  PAGINATED_LIST_PAGE_SIZE,
+  PaginatedList,
 } from 'components'
 import listStyles from 'components/ListHeader/ListHeader.module.scss'
 import * as opportunityTexts from 'config/static/opportunity'
 import { useCurrentUser } from 'hooks/currentUser'
+import { useSearchParamsState } from 'hooks/searchParamsState'
 import { useTitle } from 'hooks/title'
 import { ClearPageMargin, Content, Header, Layout } from 'layout/Layout'
 import { OpportunityTable } from 'org/components/OpportunityTable'
@@ -18,12 +20,12 @@ import { ExternalButtonLink } from 'components/Button/Button'
 export const OpportunityList = () => {
   useTitle('Příležitosti')
   const { data: currentUser } = useCurrentUser()
-  // it's safe to assume that the user is already loaded
   const userId = currentUser!.id
+  const [page, setPage] = useSearchParamsState('s', 1, Number)
   const { data: opportunities } = api.endpoints.readOpportunities.useQuery({
     userId,
-    page: 1,
-    pageSize: 10000,
+    page,
+    pageSize: PAGINATED_LIST_PAGE_SIZE,
   })
 
   return (
@@ -56,8 +58,12 @@ export const OpportunityList = () => {
         </InfoMessage>
         <Content>
           {opportunities ? (
-            <UnscalablePaginatedList
+            <PaginatedList
               data={opportunities.results}
+              totalCount={opportunities.count}
+              page={page}
+              pageSize={PAGINATED_LIST_PAGE_SIZE}
+              onPageChange={setPage}
               table={OpportunityTable}
               className={listStyles.listContent}
             />

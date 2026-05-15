@@ -123,13 +123,12 @@ export const Applications: FC<{
     })
 
   const { data: membershipCategories } =
-    api.endpoints.readMembershipCategories.useQuery({})
+    api.endpoints.readMembershipCategories.useQuery(undefined)
   const { data: administrationUnitsData } =
-    api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
+    api.endpoints.readAdministrationUnits.useQuery(undefined)
 
   const { data: participants } = api.endpoints.readEventParticipants.useQuery({
     eventId: event.id,
-    pageSize: 10000,
   })
 
   const { data: currentApplication } =
@@ -149,14 +148,11 @@ export const Applications: FC<{
 
   const applications = applicationsData ? applicationsData.results : []
 
+  const applicationUserIds = applications
+    .map(application => application.user)
+    .filter(isString)
   const { data: applicationUsersData } = api.endpoints.readUsers.useQuery(
-    applicationsData
-      ? {
-          id: applications
-            .map(application => application.user)
-            .filter(isString),
-        }
-      : skipToken,
+    applicationUserIds.length > 0 ? { id: applicationUserIds } : skipToken,
   )
   const applicationUsers = applicationUsersData?.results ?? []
 

@@ -51,23 +51,29 @@ describe('create event', () => {
         },
       ],
     })
-    cy.intercept('GET', '/api/frontend/locations/\\?*', { results: locations })
-    cy.intercept('GET', '/api/frontend/search_users/?search=*', req => {
-      req.reply({
-        results: searchUsers
-          .filter(user =>
-            (
-              user.display_name +
-              user.first_name +
-              user.last_name +
-              user.nickname
+    cy.intercept(
+      { method: 'GET', pathname: '/api/frontend/locations/' },
+      { results: locations },
+    )
+    cy.intercept(
+      { method: 'GET', pathname: '/api/frontend/search_users/' },
+      req => {
+        req.reply({
+          results: searchUsers
+            .filter(user =>
+              (
+                user.display_name +
+                user.first_name +
+                user.last_name +
+                user.nickname
+              )
+                .toLowerCase()
+                .includes((req.query.search as string).toLowerCase()),
             )
-              .toLowerCase()
-              .includes((req.query.search as string).toLowerCase()),
-          )
-          .slice(5),
-      })
-    })
+            .slice(5),
+        })
+      },
+    )
     cy.intercept(
       { method: 'GET', pathname: '/api/frontend/users/' },
       { results: [] },

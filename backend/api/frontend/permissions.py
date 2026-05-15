@@ -9,7 +9,7 @@ class BISPermissions(BasePermission):
     def has_object_permission(self, request, view, obj):
         perms = Permissions(request.user, view.serializer_class.Meta.model, "frontend")
 
-        if view.action in ["retrieve", "list"]:
+        if view.action in ["retrieve", "list", "for_map"]:
             return perms.has_view_permission(obj)
 
         if view.action in ["create"]:

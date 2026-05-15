@@ -1,6 +1,7 @@
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
+from bis.cache import invalidate_cache
 from bis.models import User
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from event.models import Event
 
@@ -13,6 +14,18 @@ def set_board_members(instance, **kwargs):
         instance.board_members.add(instance.vice_chairman)
     if instance.manager:
         instance.board_members.add(instance.manager)
+
+
+@receiver(
+    post_save, sender=AdministrationUnit, dispatch_uid="invalidate_admin_units_save"
+)
+@receiver(
+    post_delete,
+    sender=AdministrationUnit,
+    dispatch_uid="invalidate_admin_units_delete",
+)
+def invalidate_administration_units_cache(**kwargs):
+    invalidate_cache("administration_units")
 
 
 @receiver(

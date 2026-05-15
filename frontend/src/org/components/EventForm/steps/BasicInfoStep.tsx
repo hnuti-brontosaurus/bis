@@ -29,11 +29,12 @@ export const BasicInfoStep = ({
   const { data: currentUser } = useCurrentUser()
 
   const { register, control, getValues, watch, trigger, formState } = methods
-  const { data: categories } = api.endpoints.readEventCategories.useQuery()
-  const { data: programs } = api.endpoints.readPrograms.useQuery()
+  const { data: categories } =
+    api.endpoints.readEventCategories.useQuery(undefined)
+  const { data: programs } = api.endpoints.readPrograms.useQuery(undefined)
   const { data: administrationUnits } =
-    api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
-  const { data: tags } = api.endpoints.readEventTags.useQuery()
+    api.endpoints.readAdministrationUnits.useQuery(undefined)
+  const { data: tags } = api.endpoints.readEventTags.useQuery(undefined)
 
   // trigger validation of fields which are dependent on other fields
   useEffect(() => {
