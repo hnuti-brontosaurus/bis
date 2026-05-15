@@ -5,7 +5,6 @@ import type { Location } from 'app/services/bisTypes'
 import classNames from 'classnames'
 import {
   Button,
-  ClearBounds,
   FormInputError,
   FormInputErrorSimple,
   InfoBox,
@@ -91,10 +90,12 @@ export const SelectLocation = forwardRef<
   }
 >(({ value, onChange, errorMessage, colorTheme }, ref) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [bounds, setBounds] = useState<ClearBounds>()
 
-  const { data: locations, isLoading } = api.endpoints.readLocations.useQuery(
-    bounds ? { pageSize: 5000 } : skipToken,
+  const { data: locations, isLoading } =
+    api.endpoints.readLocationsForMap.useQuery(undefined)
+
+  const { data: selectedFullLocation } = api.endpoints.readLocation.useQuery(
+    value && 'id' in value ? { id: value.id } : skipToken,
   )
 
   const newLocationMethods = useForm<NewLocation>({
@@ -108,7 +109,8 @@ export const SelectLocation = forwardRef<
       ),
     [locations],
   )
-  const selectedLocation = value
+  const selectedLocation =
+    value && 'id' in value ? (selectedFullLocation ?? value) : value
 
   // here we hold the coordinates of new location in map
   const [newLocationCoordinates, setNewLocationCoordinates] = useState<
@@ -158,7 +160,7 @@ export const SelectLocation = forwardRef<
           type: 'selected',
           name: selectedLocation.name,
           coordinates,
-          id: 'id' in selectedLocation ? selectedLocation.id : 0,
+          id: value.id,
         })
       }
     } else if (!isEditing && value?.name && value?.gps_location?.coordinates) {
@@ -183,9 +185,8 @@ export const SelectLocation = forwardRef<
 
   const handleSelect = (id: number) => {
     setIsEditing(false)
-    onChange(
-      locations!.results.find(location => location.id === id) as Location,
-    )
+    const found = locations!.results.find(location => location.id === id)
+    if (found) onChange(found as Location)
   }
 
   // do this when CreateLocation is finished
@@ -304,7 +305,6 @@ export const SelectLocation = forwardRef<
                   }
                 }}
                 onSelect={handleSelect}
-                onChangeBounds={bounds => setBounds(bounds)}
                 editMode={isEditing}
               />
             </Suspense>

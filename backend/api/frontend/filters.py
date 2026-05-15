@@ -22,6 +22,9 @@ class UserFilter(django_filters.FilterSet):
 
 class EventFilter(django_filters.FilterSet):
     id = NumberInFilter()
+    is_archived = django_filters.BooleanFilter()
+    is_closed = django_filters.BooleanFilter()
+    is_canceled = django_filters.BooleanFilter()
 
     class Meta:
         model = Event

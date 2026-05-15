@@ -274,9 +274,9 @@ export const UserForm = ({
   const showMessage = useShowMessage()
 
   // fetch data for form
-  const { data: pronouns } = api.endpoints.readPronouns.useQuery({})
+  const { data: pronouns } = api.endpoints.readPronouns.useQuery(undefined)
   const { data: healthInsuranceCompanies } =
-    api.endpoints.readHealthInsuranceCompanies.useQuery({ pageSize: 1000 })
+    api.endpoints.readHealthInsuranceCompanies.useQuery(undefined)
 
   const persistedData = usePersistentFormData('user', id)
 

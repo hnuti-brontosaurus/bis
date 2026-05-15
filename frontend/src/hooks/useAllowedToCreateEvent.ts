@@ -8,7 +8,9 @@ import { useCurrentUser } from './currentUser'
 export const useAllowedToCreateEvent = () => {
   const { data: currentUser, isLoading: isLoadingUser } = useCurrentUser()
   const { data: allQualifications, isLoading } =
-    api.endpoints.readQualifications.useQuery(currentUser ? {} : skipToken)
+    api.endpoints.readQualifications.useQuery(
+      currentUser ? undefined : skipToken,
+    )
 
   const canAddNewEvent =
     currentUser &&

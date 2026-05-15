@@ -758,6 +758,16 @@ class LocationPatronSerializer(BaseContactSerializer):
         model = LocationPatron
 
 
+class LocationMapSerializer(ModelSerializer):
+    class Meta:
+        model = Location
+        fields = (
+            "id",
+            "name",
+            "gps_location",
+        )
+
+
 class LocationSerializer(ModelSerializer):
     patron = LocationPatronSerializer(allow_null=True)
     contact_person = LocationContactPersonSerializer(allow_null=True)

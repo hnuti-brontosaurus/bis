@@ -55,7 +55,7 @@ export const PropagationStep = ({
   isInternalSectionMeeting: boolean
 }) => {
   const { control, register, getValues, watch, trigger } = methods
-  const { data: diets } = api.endpoints.readDiets.useQuery()
+  const { data: diets } = api.endpoints.readDiets.useQuery(undefined)
 
   // revalidate ages when they change
   useEffect(() => {

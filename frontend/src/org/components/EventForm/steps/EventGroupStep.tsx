@@ -20,7 +20,7 @@ export const EventGroupStep = ({
 }: {
   methods: MethodsShapes['group']
 }) => {
-  const { data: groups } = api.endpoints.readEventGroups.useQuery()
+  const { data: groups } = api.endpoints.readEventGroups.useQuery(undefined)
   return (
     <>
       <FormProvider {...methods}>

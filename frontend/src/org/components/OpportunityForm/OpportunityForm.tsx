@@ -76,10 +76,7 @@ export const OpportunityForm = ({
   const { data: defaultContactPerson } = useCurrentUser()
 
   const { data: opportunityCategories } =
-    api.endpoints.readOpportunityCategories.useQuery({
-      page: 1,
-      pageSize: 1000,
-    })
+    api.endpoints.readOpportunityCategories.useQuery(undefined)
 
   const cancelPersist = useClearPersistentForm('opportunity', id)
 

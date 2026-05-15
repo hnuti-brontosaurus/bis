@@ -55,9 +55,8 @@ export const OrganizerStep = ({
   isInternalSectionMeeting: boolean
 }) => {
   const { control, watch, trigger, register, setValue, getValues } = methods
-  const { data: allQualifications } = api.endpoints.readQualifications.useQuery(
-    {},
-  )
+  const { data: allQualifications } =
+    api.endpoints.readQualifications.useQuery(undefined)
 
   const { data: currentUser } = useCurrentUser()
 

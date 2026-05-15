@@ -1,6 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { FetchBaseQueryError, skipToken } from '@reduxjs/toolkit/query'
-import { ALL_USERS, api } from 'app/services/bis'
+import { api } from 'app/services/bis'
 import { User, UserSearch } from 'app/services/bisTypes'
 import {
   Actions,
@@ -44,7 +44,6 @@ export const SelectFullUsers = forwardRef<any, SelectObjectsProps<User>>(
         debouncedSearchQuery.length >= 2
           ? {
               search: debouncedSearchQuery,
-              pageSize: ALL_USERS,
             }
           : skipToken,
       )
@@ -93,7 +92,6 @@ export const SelectFullUser = forwardRef<any, SelectObjectProps<User>>(
         debouncedSearchQuery.length >= 2
           ? {
               search: debouncedSearchQuery,
-              pageSize: ALL_USERS,
             }
           : skipToken,
       )

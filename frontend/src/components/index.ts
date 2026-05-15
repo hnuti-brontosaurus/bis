@@ -51,7 +51,10 @@ export { MapyCzSearch } from './MapyCzSearch/MapyCzSearch'
 export { NumberInput } from './NumberInput/NumberInput'
 export { OSMSearch } from './OSMSearch/OSMSearch'
 export { PageHeader } from './PageHeader/PageHeader'
-export { UnscalablePaginatedList } from './PaginatedList/PaginatedList'
+export {
+  PAGE_SIZE as PAGINATED_LIST_PAGE_SIZE,
+  PaginatedList,
+} from './PaginatedList/PaginatedList'
 export { Pagination } from './Pagination/Pagination'
 export { htmlRequired, RichTextEditor } from './RichTextEditor/RichTextEditor'
 export {

@@ -397,16 +397,17 @@ export const EventForm: FC<{
 
   // we're loading these to make sure that we have the data before we try to render the form, to make sure that the default values are properly initialized
   // TODO check whether this is necessary
-  const { data: categories } = api.endpoints.readEventCategories.useQuery()
-  const { data: groups } = api.endpoints.readEventGroups.useQuery()
-  const { data: programs } = api.endpoints.readPrograms.useQuery()
-  const { data: intendedFor } = api.endpoints.readIntendedFor.useQuery()
-  const { data: diets } = api.endpoints.readDiets.useQuery()
+  const { data: categories } =
+    api.endpoints.readEventCategories.useQuery(undefined)
+  const { data: groups } = api.endpoints.readEventGroups.useQuery(undefined)
+  const { data: programs } = api.endpoints.readPrograms.useQuery(undefined)
+  const { data: intendedFor } =
+    api.endpoints.readIntendedFor.useQuery(undefined)
+  const { data: diets } = api.endpoints.readDiets.useQuery(undefined)
   const { data: administrationUnits } =
-    api.endpoints.readAdministrationUnits.useQuery({ pageSize: 2000 })
-  const { data: allQualifications } = api.endpoints.readQualifications.useQuery(
-    {},
-  )
+    api.endpoints.readAdministrationUnits.useQuery(undefined)
+  const { data: allQualifications } =
+    api.endpoints.readQualifications.useQuery(undefined)
 
   const cancelPersist = useClearPersistentForm('event', id)
 

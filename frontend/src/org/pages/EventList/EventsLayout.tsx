@@ -1,15 +1,10 @@
-import { skipToken } from '@reduxjs/toolkit/dist/query'
-import { api } from 'app/services/bis'
-import { ListHeader, Loading } from 'components'
+import { ListHeader } from 'components'
 import listStyles from 'components/ListHeader/ListHeader.module.scss'
-import { useCurrentUser } from 'hooks/currentUser'
 import { ClearPageMargin, Content, Header, Layout } from 'layout/Layout'
 import { useMemo } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
 export const EventsLayout = () => {
-  const { data: currentUser } = useCurrentUser()
-
   const location = useLocation()
 
   const pathnameThemes = useMemo(
@@ -23,12 +18,6 @@ export const EventsLayout = () => {
   )
 
   const theme = pathnameThemes[location.pathname as keyof typeof pathnameThemes]
-
-  const { data: events } = api.endpoints.readOrganizedEvents.useQuery(
-    currentUser
-      ? { userId: currentUser.id, page: 1, pageSize: 10000 } // fetch all and don't worry about it anymore
-      : skipToken,
-  )
 
   return (
     <ClearPageMargin style={{ height: '100%' }}>
@@ -53,13 +42,9 @@ export const EventsLayout = () => {
           />
         </Header>
         <Content>
-          {events?.results ? (
-            <div className={listStyles.listContent}>
-              <Outlet context={events} />
-            </div>
-          ) : (
-            <Loading>Stahujeme akce...</Loading>
-          )}
+          <div className={listStyles.listContent}>
+            <Outlet />
+          </div>
         </Content>
       </Layout>
     </ClearPageMargin>

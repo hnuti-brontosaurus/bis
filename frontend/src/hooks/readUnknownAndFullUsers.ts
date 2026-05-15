@@ -1,5 +1,5 @@
 import { skipToken } from '@reduxjs/toolkit/query'
-import { ALL_USERS, api } from 'app/services/bis'
+import { api } from 'app/services/bis'
 import { User, UserSearch } from 'app/services/bisTypes'
 import { useMemo } from 'react'
 
@@ -24,9 +24,7 @@ export const useReadUnknownAndFullUsers = (
 
   const { data: fullUsers, ...fullUsersStatus } =
     api.endpoints.readUsers.useQuery(
-      searchIds && searchIds.length > 0
-        ? { _search_id: searchIds, pageSize: ALL_USERS }
-        : skipToken,
+      searchIds && searchIds.length > 0 ? { _search_id: searchIds } : skipToken,
     )
 
   const combinedUsers: (UserSearch | User)[] | undefined =

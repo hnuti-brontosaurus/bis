@@ -176,7 +176,7 @@ const RowWithForm = ({
       : skipToken,
   )
   const { data: healthInsuranceCompanies } =
-    api.endpoints.readHealthInsuranceCompanies.useQuery({})
+    api.endpoints.readHealthInsuranceCompanies.useQuery(undefined)
 
   // here, we keep current user data
   const [currentData, setCurrentData] = useState<ConfirmedUser>()
