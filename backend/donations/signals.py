@@ -37,5 +37,14 @@ def set_formal_vokativ(instance: Donor, **kwargs):
 
 @receiver(pre_save, sender=FundraisingCampaign, dispatch_uid="set_campaign_slug")
 def set_campaign_slug(instance: FundraisingCampaign, **kwargs):
-    if not instance.slug:
-        instance.slug = slugify(instance.name)
+    if instance.slug:
+        return
+
+    base = slugify(instance.name)
+    slug = base
+    taken = FundraisingCampaign.objects.exclude(pk=instance.pk)
+    suffix = 2
+    while taken.filter(slug=slug).exists():
+        slug = f"{base}-{suffix}"
+        suffix += 1
+    instance.slug = slug
