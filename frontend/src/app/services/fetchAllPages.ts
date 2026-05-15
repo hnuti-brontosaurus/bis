@@ -13,7 +13,6 @@ import type { PaginatedList } from './bisTypes'
 const DEFAULT_PAGE_SIZE = 100
 
 /**
- * Fetches every page of a paginated DRF endpoint in parallel.
  * Page 1 reveals `count`; pages 2..N are fired concurrently.
  * The browser caps concurrent connections per origin (~6), so the loop
  * stays bounded without an explicit limiter.
