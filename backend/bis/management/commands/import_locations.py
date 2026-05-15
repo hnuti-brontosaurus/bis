@@ -69,6 +69,11 @@ class Command(BaseCommand):
             for_beginners=False,
             is_unexplored=False,
         ),
+        60576: dict(
+            program=LocationProgramCategory.objects.get(slug="nature"),
+            for_beginners=False,
+            is_unexplored=False,
+        ),
     }
 
     location_accessibility_map = {
