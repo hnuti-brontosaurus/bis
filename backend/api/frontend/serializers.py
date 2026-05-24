@@ -625,6 +625,7 @@ class RecordSerializer(ModelSerializer):
             "participants",
             "number_of_participants",
             "number_of_participants_under_26",
+            "attendance_list_type",
             "is_event_closed_email_enabled",
             "contacts",
             "age_stats",

@@ -10,6 +10,7 @@ export type {
   AdministrationUnit,
   Answer,
   AttendanceListPage,
+  AttendanceListTypeEnum,
   DietCategory,
   EventApplication,
   EventContact,
