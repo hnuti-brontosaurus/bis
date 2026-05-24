@@ -18,12 +18,12 @@ def backfill(apps, schema_editor):
     )
 
     full_list, simple_list, count = [], [], []
-    for pk, participant_count, has_contacts, num_participants, group_slug in rows:
+    for pk, participant_count, has_contacts, number_of_participants, group_slug in rows:
         if group_slug != "other" or participant_count:
             full_list.append(pk)
         elif has_contacts:
             simple_list.append(pk)
-        elif num_participants is not None:
+        elif number_of_participants is not None:
             count.append(pk)
 
     EventRecord.objects.filter(pk__in=full_list).update(
