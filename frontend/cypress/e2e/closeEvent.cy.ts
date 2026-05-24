@@ -37,7 +37,7 @@ describe('Close event - evidence and participants', () => {
     })
 
     it('should show the participant input type options', () => {
-      cy.get('[name=record\\.participantInputType]').should('have.length', 3)
+      cy.get('[name=record\\.attendance_list_type]').should('have.length', 3)
     })
 
     it('should show the participant input type options with proper labels', () => {
