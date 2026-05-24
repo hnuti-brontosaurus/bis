@@ -230,8 +230,15 @@ class Command(BaseCommand):
         queryset = User.objects.filter(email__isnull=False)
         total = queryset.count()
         users = (
-            queryset.select_related("pronoun", "address", "donor")
-            .prefetch_related("roles")
+            queryset.select_related("pronoun", "address__region", "donor")
+            .prefetch_related(
+                "roles",
+                "memberships",
+                "qualifications__category",
+                "events_where_was_as_main_organizer",
+                "events_where_was_organizer",
+                "participated_in_events__event",
+            )
             .iterator(chunk_size=PUSH_BATCH_SIZE)
         )
         pushed = 0
