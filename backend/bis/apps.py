@@ -1,7 +1,15 @@
 from pathlib import Path
 
+from bis.email_validation import validate_email
 from django.apps import AppConfig
+from django.db.models import EmailField
 from django.utils.autoreload import autoreload_started
+
+# Runs at app-load time, before any model module is imported, so every EmailField
+# in the project (including third-party apps') picks our validator up via its
+# `default_validators` class attribute.
+if validate_email not in EmailField.default_validators:
+    EmailField.default_validators = [*EmailField.default_validators, validate_email]
 
 
 class BISConfig(AppConfig):

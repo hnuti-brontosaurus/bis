@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
+from bis.email_validation import validate_email
 from bis.helpers import (
     SearchMixin,
     filter_queryset_with_multiple_or_queries,
@@ -450,6 +451,7 @@ class User(SearchMixin, AbstractBaseUser):
 
         if self.email:
             self.email = self.email.lower()
+            validate_email(self.email)
             user_email = UserEmail.objects.filter(email=self.email).first()
             if user_email and user_email.user != self:
                 raise ValidationError(
