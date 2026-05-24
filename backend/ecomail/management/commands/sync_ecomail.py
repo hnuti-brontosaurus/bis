@@ -93,7 +93,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--dry-run",
             action="store_true",
-            help=("Don't write to BIS or Ecomail; just print what the sync would do."),
+            help="Don't write to BIS or Ecomail; just print what the sync would do.",
         )
 
     def handle(
