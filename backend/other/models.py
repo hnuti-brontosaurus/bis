@@ -9,7 +9,7 @@ from categories.models import RoleCategory
 from dateutil.utils import today
 from django.contrib.gis.db import models as m
 from django.core.files import File
-from django.db.models import CASCADE, PROTECT, Index, UniqueConstraint
+from django.db.models import CASCADE, PROTECT, Index, Q, UniqueConstraint
 from donations.models import Donation
 from tinymce.models import HTMLField
 from translation.translate import translate_model
@@ -95,9 +95,10 @@ class DashboardItem(m.Model):
 
     @classmethod
     def get_items_for_user(cls, user):
+        upcoming = DashboardItem.objects.filter(date__gte=today().date())
         dashboard_items = list(
-            DashboardItem.objects.filter(
-                for_roles__in=user.roles.all(), date__gte=today().date()
+            upcoming.filter(
+                Q(for_roles__isnull=True) | Q(for_roles__in=user.roles.all())
             ).distinct()
         )
 

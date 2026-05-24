@@ -232,7 +232,6 @@ export type RoleSlug =
   | 'main_organizer'
   | 'organizer'
   | 'qualified_organizer'
-  | 'any'
 
 export type RoleCategory = Overwrite<original.RoleCategory, { slug: RoleSlug }>
 export type EventTag = {

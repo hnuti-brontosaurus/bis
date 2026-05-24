@@ -80,7 +80,7 @@
       "pronoun": null,
       "is_active": true,
       "date_joined": "2020-01-01",
-      "roles": [{ "id": 14, "name": "Kdokoli", "slug": "any" }],
+      "roles": [],
       "offers": null,
       "address": {
         "street": "Ulice 5",
@@ -109,7 +109,7 @@
       "pronoun": null,
       "is_active": true,
       "date_joined": "2020-01-01",
-      "roles": [{ "id": 14, "name": "Kdokoli", "slug": "any" }],
+      "roles": [],
       "offers": null,
       "address": {
         "street": "Street 1",

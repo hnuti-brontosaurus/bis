@@ -427,7 +427,6 @@ class Command(BaseCommand):
                 "main_organizer": dict(name="Hlavní organizátor"),
                 "organizer": dict(name="Organizátor"),
                 "qualified_organizer": dict(name="Organizátor s kvalifikací"),
-                "any": dict(name="Kdokoli"),
                 "fundraiser": dict(name="Fundraiser"),
             },
         )

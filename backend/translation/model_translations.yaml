@@ -659,7 +659,9 @@ DashboardItem:
   name: Termín
   name_plural: Termíny
   fields:
-    for_roles: Pro role
+    for_roles:
+      - Pro role
+      - Pokud nezvolíš žádnou roli, termín uvidí všichni uživatelé.
     repeats_every_year: Opakuje se každý rok?
     visible_date: Zobrazený termín
 

@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: c91c66e21ee5ec84
+// source-hash: 663f17bee4b7aaff
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -747,7 +747,10 @@ export const announcement = {
 export const dashboardItem = {
   _name: 'Termín',
   _name_plural: 'Termín',
-  for_roles: 'Pro role',
+  for_roles: [
+    'Pro role',
+    'Pokud nezvolíš žádnou roli, termín uvidí všichni uživatelé.',
+  ],
   repeats_every_year: 'Opakuje se každý rok?',
   visible_date: 'Zobrazený termín',
 } as const

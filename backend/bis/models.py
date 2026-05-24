@@ -360,7 +360,7 @@ class User(SearchMixin, AbstractBaseUser):
 
     @cached_property
     def is_member_only(self):
-        return not self.roles.exclude(slug="any").exists()
+        return not self.roles.exists()
 
     @cached_property
     def is_chef(self):
@@ -695,7 +695,7 @@ class User(SearchMixin, AbstractBaseUser):
                 return True
 
     def update_roles(self):
-        roles = ["any"]
+        roles = []
 
         try:
             brontosaurus_movement = BrontosaurusMovement.get()
