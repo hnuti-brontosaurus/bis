@@ -21,13 +21,14 @@ import { Controller, FormProvider, UseFormReturn } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import type {
   CloseEventFormShape,
-  ParticipantsStepFormInnerShape,
+  ParticipantsStepFormShape,
 } from './CloseEventForm'
 import styles from './ParticipantsStep.module.scss'
 import { SimpleParticipants } from './SimpleParticipants'
 
-type ParticipantInputType =
-  CloseEventFormShape['record']['participantInputType']
+type ParticipantInputType = NonNullable<
+  CloseEventFormShape['record']['attendance_list_type']
+>
 
 const optionButtonConfig: {
   [key: string]: {
@@ -64,20 +65,20 @@ export const ParticipantsStep = ({
 }: {
   event: FullEvent
   areParticipantsRequired: boolean
-  methods: UseFormReturn<ParticipantsStepFormInnerShape>
+  methods: UseFormReturn<ParticipantsStepFormShape>
 }) => {
   const { watch, control, trigger, formState } = methods
 
   // list of participants is shown when it's required
   // or when organizers prefer it rather than filling just numbers
 
-  const inputType = watch('record.participantInputType')
+  const inputType = watch('record.attendance_list_type')
 
   useEffect(() => {
     const subscription = watch((values, { name }) => {
       if (formState.isSubmitted && name === 'record.number_of_participants')
         trigger('record.number_of_participants_under_26')
-      if (formState.isSubmitted && name === 'record.participantInputType')
+      if (formState.isSubmitted && name === 'record.attendance_list_type')
         trigger()
     })
     return () => subscription.unsubscribe()
@@ -98,9 +99,9 @@ export const ParticipantsStep = ({
         <FormSectionGroup>
           {!areParticipantsRequired && (
             <FormSection required header="Způsob registrace účastníků">
-              <FormInputError name="participantInputType">
+              <FormInputError name="attendance_list_type">
                 <Controller
-                  name="record.participantInputType"
+                  name="record.attendance_list_type"
                   control={control}
                   rules={{ required }}
                   render={({ field }) => (

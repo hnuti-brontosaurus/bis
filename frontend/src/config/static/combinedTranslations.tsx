@@ -17,7 +17,7 @@ export const event = merge(
   },
   {
     registration: { questionnaire: translations.questionnaire },
-    record: { participantInputType: 'Způsob zadání účastníků' },
+    record: { attendance_list_type: 'Způsob zadání účastníků' },
   },
   { 'main_image.image': 'Hlavní foto' },
   {
