@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: e5b110019e56a750
+// source-hash: c91c66e21ee5ec84
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -65,7 +65,7 @@ export const user = {
   ],
   roles: 'Role',
   office_workers_note: 'Poznámka ústředí',
-  subscribed_to_newsletter: 'Odebírá novinky?',
+  subscription_status: 'Stav odběru newsletteru',
   last_after_event_email: 'Poslední e-mail po akci',
   is_contact_information_verified: 'Ověřil své kontaktní údaje?',
 } as const

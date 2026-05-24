@@ -47,7 +47,6 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
-from event.models import *
 from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 

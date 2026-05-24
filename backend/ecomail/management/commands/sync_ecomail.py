@@ -1,12 +1,11 @@
+from collections.abc import Iterable, Iterator
 from itertools import islice
-from typing import Iterable, Iterator
-
-from django.conf import settings
-from django.core.management.base import BaseCommand
 
 from bis.helpers import skip_ecomail_push
 from bis.models import User, UserEmail
 from categories.models import PronounCategory
+from django.conf import settings
+from django.core.management.base import BaseCommand
 from ecomail.sync import bulk_subscribe, get_session, iter_subscribers, remove_from_list
 
 GENDER_TO_PRONOUN_SLUG = {
@@ -103,13 +102,12 @@ class Command(BaseCommand):
         )
         response.raise_for_status()
 
-        return
         secondary_emails = []
         with skip_ecomail_push():
             secondary_emails = self._pull(session, list_id)
 
-        # for email in secondary_emails:
-        #     remove_from_list(session, list_id, email)
+        for email in secondary_emails:
+            remove_from_list(session, list_id, email)
 
         self._push(session, list_id)
 
@@ -127,9 +125,9 @@ class Command(BaseCommand):
             parsed = [self._parse(item, pronoun_id_by_gender) for item in batch]
             total += len(parsed)
 
-            for p in parsed:
-                if p["email"] != p["raw_email"]:
-                    secondary_emails.append(p["raw_email"])
+            secondary_emails.extend(
+                p["raw_email"] for p in parsed if p["email"] != p["raw_email"]
+            )
 
             parsed = list({p["email"]: p for p in parsed}.values())
 

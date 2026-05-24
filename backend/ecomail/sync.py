@@ -1,13 +1,12 @@
 import logging
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
+from bis.models import User
 from django.conf import settings
+from ecomail.tags import compute_tags
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-
-from bis.models import User
-from ecomail.tags import compute_tags
 
 BASE_URL = "https://api2.ecomailapp.cz"
 
@@ -42,8 +41,7 @@ def iter_subscribers(
         )
         response.raise_for_status()
         data = response.json()
-        for subscriber in data["data"]:
-            yield subscriber
+        yield from data["data"]
         if data["next_page_url"] is None:
             return
         page += 1

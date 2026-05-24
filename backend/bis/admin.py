@@ -50,7 +50,6 @@ from bis.models import (
 )
 from bis.permissions import Permissions
 from categories.models import MembershipCategory, PronounCategory, QualificationCategory
-from login_code.models import ThrottleLog
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
