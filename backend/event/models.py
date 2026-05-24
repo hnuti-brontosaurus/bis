@@ -325,6 +325,11 @@ class EventRegistration(m.Model):
 
 @translate_model
 class EventRecord(m.Model):
+    class AttendanceListType(m.TextChoices):
+        FULL_LIST = "full-list", "Plná prezenční listina"
+        SIMPLE_LIST = "simple-list", "Zjednodušená prezenční listina"
+        COUNT = "count", "Pouze počet účastníků"
+
     event = m.OneToOneField(Event, related_name="record", on_delete=PROTECT)
 
     total_hours_worked = m.PositiveIntegerField(null=True, blank=True)
@@ -332,6 +337,12 @@ class EventRecord(m.Model):
     participants = m.ManyToManyField(User, "participated_in_events", blank=True)
     number_of_participants = m.PositiveIntegerField(null=True, blank=True)
     number_of_participants_under_26 = m.PositiveIntegerField(null=True, blank=True)
+    attendance_list_type = m.CharField(
+        max_length=16,
+        choices=AttendanceListType.choices,
+        null=True,
+        blank=True,
+    )
 
     is_event_closed_email_enabled = m.BooleanField(default=True)
 

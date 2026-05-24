@@ -65,6 +65,7 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     inlines = (EventContactAdmin,)
 
     readonly_fields = (
+        "attendance_list_type",
         "get_participants_age_stats_event_start",
         "get_participants_age_stats_year_start",
     )
@@ -74,6 +75,8 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         description="Statistika věku účastníků a organizátorů k začátku akce"
     )
     def get_participants_age_stats_event_start(self, obj):
+        if obj.attendance_list_type != EventRecord.AttendanceListType.FULL_LIST:
+            return "—"
         return AgeStats(
             "účastníků", obj.get_all_participants(), obj.event.start
         ).as_table()
@@ -82,6 +85,8 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         description="Statistika věku účastníků a organizátorů k začátku roku"
     )
     def get_participants_age_stats_year_start(self, obj):
+        if obj.attendance_list_type != EventRecord.AttendanceListType.FULL_LIST:
+            return "—"
         return AgeStats(
             "účastníků", obj.get_all_participants(), date(obj.event.start.year, 1, 1)
         ).as_table()

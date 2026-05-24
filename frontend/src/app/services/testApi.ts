@@ -3047,6 +3047,7 @@ export type FeedbackForm = {
   email_subject?: string
   email_content?: string
 }
+export type AttendanceListTypeEnum = 'full-list' | 'simple-list' | 'count'
 export type Record = {
   total_hours_worked?: number | null
   comment_on_work_done?: string
@@ -3055,6 +3056,7 @@ export type Record = {
   number_of_participants?: number | null
   /** Vyplň pouze pokud nejsou vyplnění konkrétní účastníci */
   number_of_participants_under_26?: number | null
+  attendance_list_type?: AttendanceListTypeEnum | null
   contacts?: EventContact[]
   is_event_closed_email_enabled?: boolean
 }
