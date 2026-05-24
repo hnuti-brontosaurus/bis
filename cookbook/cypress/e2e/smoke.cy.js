@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-const TEST_USER_EMAIL = "test@test.local"
+const TEST_USER_EMAIL = "test@test.nope"
 const API_BASE_URL = "http://nginx/api/cookbook"
 
 // Read the whoami payload out of the pinia-persisted auth store.

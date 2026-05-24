@@ -6,7 +6,7 @@
  * cypress runner doesn't need docker/shell access.
  */
 Cypress.Commands.add("loginAsChef", email => {
-  email ??= "test@test.local"
+  email ??= "test@test.nope"
   const apiBase = "http://nginx/api/cookbook"
 
   cy.request("POST", `${apiBase}/testing/auth_token/`, { email }).then(

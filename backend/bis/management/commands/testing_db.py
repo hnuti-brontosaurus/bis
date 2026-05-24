@@ -32,7 +32,7 @@ from rest_framework.authtoken.models import Token
 
 # Email for the seeded cookbook chef used by Cypress smoke tests.
 # Mirrors TEST_USER_EMAIL in the Makefile cypress target.
-CYPRESS_CHEF_EMAIL = "test@test.local"
+CYPRESS_CHEF_EMAIL = "test@test.nope"
 
 
 class Command(BaseCommand):
