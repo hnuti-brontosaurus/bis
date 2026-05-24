@@ -1,4 +1,5 @@
 from collections.abc import Iterable, Iterator
+from datetime import UTC, datetime, timedelta
 from itertools import islice
 
 from bis.helpers import print_progress, skip_ecomail_push
@@ -6,6 +7,7 @@ from bis.models import User, UserEmail
 from categories.models import PronounCategory
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now
 from ecomail.sync import bulk_subscribe, get_session, iter_subscribers, remove_from_list
 
 GENDER_TO_PRONOUN_SLUG = {
@@ -21,6 +23,18 @@ ECOMAIL_TO_BIS_STATUS = {
 
 PULL_BATCH_SIZE = 100
 PUSH_BATCH_SIZE = 100
+
+
+def _parse_ecomail_datetime(value):
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt
 
 
 def batched(iterable: Iterable, size: int) -> Iterator[list]:
@@ -67,12 +81,45 @@ class Command(BaseCommand):
             default=settings.ECOMAIL_LIST_ID,
             help="Ecomail list to push BIS users to.",
         )
+        parser.add_argument(
+            "--promotion-window-days",
+            type=int,
+            default=7,
+            help=(
+                "Window (in days) within which a recently-added secondary email "
+                "is promoted over a still-subscribed primary."
+            ),
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help=("Don't write to BIS or Ecomail; just print what the sync would do."),
+        )
 
-    def handle(self, *args, input_list_id, output_list_id, **options):
+    def handle(
+        self,
+        *args,
+        input_list_id,
+        output_list_id,
+        promotion_window_days,
+        dry_run,
+        **options,
+    ):
         session = get_session()
 
         with skip_ecomail_push():
-            secondary_emails = self._pull(session, input_list_id)
+            secondary_emails = self._pull(
+                session, input_list_id, timedelta(days=promotion_window_days), dry_run
+            )
+
+        if dry_run:
+            self.stdout.write(
+                f"[dry-run] would unsubscribe {len(secondary_emails)} secondary emails"
+            )
+            self.stdout.write(
+                f"[dry-run] would push {User.objects.filter(email__isnull=False).count()} users"
+            )
+            return
 
         if input_list_id == output_list_id:
             for i, email in enumerate(secondary_emails):
@@ -83,15 +130,17 @@ class Command(BaseCommand):
 
         self._push(session, output_list_id)
 
-    def _pull(self, session, list_id):
+    def _pull(self, session, list_id, promotion_window, dry_run=False):
         total = 0
         primary = 0
         created = 0
+        promoted = 0
         pronoun_id_by_gender = {
             gender: PronounCategory.objects.get(slug=slug).id
             for gender, slug in GENDER_TO_PRONOUN_SLUG.items()
         }
         secondary_emails = []
+        promotion_cutoff = now() - promotion_window
 
         for batch in batched(iter_subscribers(session, list_id), PULL_BATCH_SIZE):
             parsed = [self._parse(item, pronoun_id_by_gender) for item in batch]
@@ -104,31 +153,46 @@ class Command(BaseCommand):
             parsed = list({p["email"]: p for p in parsed}.values())
 
             emails = [p["email"] for p in parsed]
-            email_to_user_id = {
-                email: (user_id, user_email)
-                for email, user_id, user_email in UserEmail.objects.filter(
+            email_to_user = {
+                email: (user_id, user_email, user_status)
+                for email, user_id, user_email, user_status in UserEmail.objects.filter(
                     email__in=emails
-                ).values_list("email", "user_id", "user__email")
+                ).values_list(
+                    "email", "user_id", "user__email", "user__subscription_status"
+                )
             }
 
             users_to_update = []
+            promoted_user_ids = set()
             for p in parsed:
-                info = email_to_user_id.get(p["email"])
+                info = email_to_user.get(p["email"])
                 if info is None:
                     if p["status"] == User.SubscriptionStatus.SUBSCRIBED:
-                        User.objects.create(
-                            email=p["email"],
-                            first_name=p["name"],
-                            last_name=p["surname"],
-                            pronoun_id=p["pronoun_id"],
-                            subscription_status=p["status"],
-                        )
+                        if not dry_run:
+                            User.objects.create(
+                                email=p["email"],
+                                first_name=p["name"],
+                                last_name=p["surname"],
+                                pronoun_id=p["pronoun_id"],
+                                subscription_status=p["status"],
+                            )
                         created += 1
                     continue
 
-                user_id, user_email = info
+                user_id, user_email, user_status = info
                 if p["email"] != user_email:
-                    secondary_emails.append(p["email"])
+                    if self._should_promote(p, user_status, promotion_cutoff):
+                        if not dry_run:
+                            user = User.objects.get(id=user_id)
+                            user.email = p["email"]
+                            user.subscription_status = (
+                                User.SubscriptionStatus.SUBSCRIBED
+                            )
+                            user.save()
+                        promoted_user_ids.add(user_id)
+                        promoted += 1
+                    else:
+                        secondary_emails.append(p["email"])
                     continue
 
                 if p["status"] is None:
@@ -139,15 +203,28 @@ class Command(BaseCommand):
                 )
                 primary += 1
 
-            if users_to_update:
+            users_to_update = [
+                u for u in users_to_update if u.id not in promoted_user_ids
+            ]
+            if users_to_update and not dry_run:
                 User.objects.bulk_update(users_to_update, ["subscription_status"])
 
+            prefix = "[dry-run] " if dry_run else ""
             self.stdout.write(
-                f"Pull: total={total}, primary={primary}, created={created}, "
-                f"secondaries={len(secondary_emails)}"
+                f"{prefix}Pull: total={total}, primary={primary}, created={created}, "
+                f"promoted={promoted}, secondaries={len(secondary_emails)}"
             )
 
         return secondary_emails
+
+    @staticmethod
+    def _should_promote(parsed, user_status, promotion_cutoff):
+        if parsed["status"] != User.SubscriptionStatus.SUBSCRIBED:
+            return False
+        if user_status != User.SubscriptionStatus.SUBSCRIBED:
+            return True
+        inserted_at = parsed["inserted_at"]
+        return inserted_at is not None and inserted_at >= promotion_cutoff
 
     def _push(self, session, list_id):
         queryset = User.objects.filter(email__isnull=False)
@@ -174,4 +251,5 @@ class Command(BaseCommand):
             "pronoun_id": pronoun_id_by_gender.get(subscriber.get("gender")),
             "status": ECOMAIL_TO_BIS_STATUS.get(item["status"]),
             "tags": subscriber.get("tags") or [],
+            "inserted_at": _parse_ecomail_datetime(item.get("inserted_at")),
         }
