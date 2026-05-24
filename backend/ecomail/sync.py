@@ -4,11 +4,25 @@ from collections.abc import Iterable, Iterator
 from bis.models import User
 from django.conf import settings
 from ecomail.tags import compute_tags
-from requests import Session
+from requests import HTTPError, Response, Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 BASE_URL = "https://api2.ecomailapp.cz"
+
+
+def _raise_for_status(response: Response, context: str) -> None:
+    try:
+        response.raise_for_status()
+    except HTTPError:
+        logging.error(
+            "ecomail %s failed: %s %s",
+            context,
+            response.status_code,
+            response.text,
+        )
+        raise
+
 
 PRONOUN_SLUG_TO_GENDER = {
     "woman": "female",
@@ -39,7 +53,7 @@ def iter_subscribers(
             params={"per_page": per_page, "page": page},
             timeout=60,
         )
-        response.raise_for_status()
+        _raise_for_status(response, f"iter_subscribers list={list_id} page={page}")
         data = response.json()
         yield from data["data"]
         if data["next_page_url"] is None:
@@ -97,7 +111,10 @@ def bulk_subscribe(
         },
         timeout=120,
     )
-    response.raise_for_status()
+    _raise_for_status(
+        response,
+        f"bulk_subscribe list={list_id} emails={[p['email'] for p in payloads]}",
+    )
 
 
 def remove_from_list(session: Session, list_id: int, email: str) -> None:
@@ -110,4 +127,4 @@ def remove_from_list(session: Session, list_id: int, email: str) -> None:
         json={"email": email},
         timeout=30,
     )
-    response.raise_for_status()
+    _raise_for_status(response, f"remove_from_list list={list_id} email={email}")
