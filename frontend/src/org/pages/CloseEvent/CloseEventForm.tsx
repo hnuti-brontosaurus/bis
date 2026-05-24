@@ -139,29 +139,31 @@ const initialData2form = (
   data: Partial<CloseEventFormShape>,
   event: FullEvent,
 ): Partial<CloseEventFormShape> => {
-  let attendance_list_type: ParticipantInputType | undefined =
+  let attendanceListType: ParticipantInputType | undefined =
     event.record?.attendance_list_type || undefined
 
-  if (!attendance_list_type) {
+  if (!attendanceListType) {
     if (event.group.slug === 'other') {
       if (event.record?.participants?.length) {
-        attendance_list_type = 'full-list'
+        attendanceListType = 'full-list'
       } else if (
         typeof event.record?.number_of_participants === 'number' &&
         event.record?.contacts &&
         event.record.contacts.length > 0
       ) {
-        attendance_list_type = 'simple-list'
+        attendanceListType = 'simple-list'
       } else if (typeof event.record?.number_of_participants === 'number') {
-        attendance_list_type = 'count'
+        attendanceListType = 'count'
       }
     } else {
-      attendance_list_type = 'full-list'
+      attendanceListType = 'full-list'
     }
   }
 
-  if (attendance_list_type) {
-    return merge({}, data, { record: { attendance_list_type } })
+  if (attendanceListType) {
+    return merge({}, data, {
+      record: { attendance_list_type: attendanceListType },
+    })
   } else return data as Partial<CloseEventFormShape>
 }
 
