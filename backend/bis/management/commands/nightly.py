@@ -34,6 +34,7 @@ class Command(BaseCommand):
         try_to_run(LoginCode.remove_expired)
         try_to_run(call_command, "clearsessions")
         try_to_run(call_command, "cleartokens")
+        try_to_run(call_command, "sync_ecomail")
 
         today = date.today()
 

@@ -258,8 +258,6 @@ class User(SearchMixin, AbstractBaseUser):
     birthday = m.DateField(null=True)
     photo = ThumbnailImageField(upload_to="user_photos", null=True, blank=True)
 
-    subscribed_to_newsletter = m.BooleanField(default=True)
-
     class SubscriptionStatus(m.IntegerChoices):
         SUBSCRIBED = 1, "Odebírá"
         UNSUBSCRIBED = 2, "Neodebírá"

@@ -1,7 +1,7 @@
 from collections.abc import Iterable, Iterator
 from itertools import islice
 
-from bis.helpers import skip_ecomail_push
+from bis.helpers import print_progress, skip_ecomail_push
 from bis.models import User, UserEmail
 from categories.models import PronounCategory
 from django.conf import settings
@@ -54,62 +54,34 @@ class Command(BaseCommand):
         "unsubscribes secondary BIS emails from ecomail."
     )
 
-    def handle(self, *args, **options):
-        list_id = settings.ECOMAIL_LIST_ID
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--input-list-id",
+            type=int,
+            default=settings.ECOMAIL_LIST_ID,
+            help="Ecomail list to pull subscribers from.",
+        )
+        parser.add_argument(
+            "--output-list-id",
+            type=int,
+            default=settings.ECOMAIL_LIST_ID,
+            help="Ecomail list to push BIS users to.",
+        )
+
+    def handle(self, *args, input_list_id, output_list_id, **options):
         session = get_session()
 
-        BASE_URL = "https://api2.ecomailapp.cz"
-
-        response = session.put(
-            f"{BASE_URL}/lists/{list_id}/update-subscriber",
-            json={
-                "email": "lamanchy@gmail.com",
-                "subscriber_data": {
-                    "tags": ["Test1"],
-                },
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        response = session.put(
-            f"{BASE_URL}/lists/{list_id}/update-subscriber",
-            json={
-                "email": "alena.salajkova@gmail.com",
-                "subscriber_data": {
-                    "tags": ["Test1"],
-                },
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        response = session.post(
-            f"{BASE_URL}/lists/{list_id}/subscribe-bulk",
-            json={
-                "subscriber_data": [
-                    {
-                        "email": "lamanchy@gmail.com",
-                        "tags": ["Test5"],
-                    },
-                    {
-                        "email": "alena.salajkova@gmail.com",
-                        "tags": ["Test5"],
-                    },
-                ],
-                "update_existing": True,
-                "trigger_autoresponders": False,
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-
-        secondary_emails = []
         with skip_ecomail_push():
-            secondary_emails = self._pull(session, list_id)
+            secondary_emails = self._pull(session, input_list_id)
 
-        for email in secondary_emails:
-            remove_from_list(session, list_id, email)
+        if input_list_id == output_list_id:
+            for i, email in enumerate(secondary_emails):
+                remove_from_list(session, input_list_id, email)
+                print_progress(
+                    "ecomail sync: removing secondaries", i, len(secondary_emails)
+                )
 
-        self._push(session, list_id)
+        self._push(session, output_list_id)
 
     def _pull(self, session, list_id):
         total = 0
@@ -178,10 +150,10 @@ class Command(BaseCommand):
         return secondary_emails
 
     def _push(self, session, list_id):
+        queryset = User.objects.filter(email__isnull=False)
+        total = queryset.count()
         users = (
-            # User.objects.filter(email__isnull=False)
-            User.objects.filter(email="lamanchy@gmail.com")
-            .select_related("pronoun", "address", "donor")
+            queryset.select_related("pronoun", "address", "donor")
             .prefetch_related("roles")
             .iterator(chunk_size=PUSH_BATCH_SIZE)
         )
@@ -189,7 +161,7 @@ class Command(BaseCommand):
         for batch in batched(users, PUSH_BATCH_SIZE):
             bulk_subscribe(session, list_id, batch)
             pushed += len(batch)
-            self.stdout.write(f"Push: {pushed}")
+            print_progress("ecomail sync: pushing users", pushed - 1, total)
 
     def _parse(self, item: dict, pronoun_id_by_gender: dict) -> dict:
         subscriber = item["subscriber"]
