@@ -33,7 +33,8 @@ export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
 
   const [createSimpleParticipant] =
     api.endpoints.createSimpleParticipant.useMutation()
-  const [updateEvent] = api.endpoints.updateEvent.useMutation()
+  const [removeEventParticipant] =
+    api.endpoints.removeEventParticipant.useMutation()
   const showMessage = useShowMessage()
 
   const addParticipants = async (toAdd: SimpleParticipantPayload[]) => {
@@ -56,13 +57,8 @@ export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
   }
 
   const removeParticipant = async (userId: string) => {
-    const remaining =
-      participants?.results.map(p => p.id).filter(id => id !== userId) ?? []
     try {
-      await updateEvent({
-        id: eventId,
-        event: { record: { participants: remaining } },
-      }).unwrap()
+      await removeEventParticipant({ eventId, userId }).unwrap()
     } catch {
       showMessage({
         type: 'error',
@@ -102,24 +98,34 @@ export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
           </tr>
         </thead>
         <tbody>
-          {participants?.results.map(p => (
-            <tr
-              key={p.id}
-              title={`${p.first_name || '?'} ${p.last_name || '?'}, ${
-                p.email || '—'
-              }, ${p.phone || '—'}`}
-            >
-              <td>{p.first_name}</td>
-              <td>{p.last_name}</td>
-              <td>{p.email}</td>
-              <td>{p.phone}</td>
-              <td>
-                <button type="button" onClick={() => removeParticipant(p.id)}>
-                  <FaTrash />
-                </button>
-              </td>
-            </tr>
-          ))}
+          {participants?.results.map(p => {
+            // Backend masks first_name/last_name/phone for users the
+            // current organizer can't see via the standard User filter,
+            // so an empty first_name marks a "real BIS user we can't
+            // expose here" — show a placeholder instead of blank cells.
+            const masked = !p.first_name
+            const placeholder = 'uloženo v BISu'
+            return (
+              <tr
+                key={p.id}
+                title={
+                  masked
+                    ? `${placeholder}, ${p.email}`
+                    : `${p.first_name} ${p.last_name}, ${p.email}, ${p.phone || '—'}`
+                }
+              >
+                <td>{masked ? placeholder : p.first_name}</td>
+                <td>{masked ? placeholder : p.last_name}</td>
+                <td>{p.email}</td>
+                <td>{masked ? placeholder : p.phone}</td>
+                <td>
+                  <button type="button" onClick={() => removeParticipant(p.id)}>
+                    <FaTrash />
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       {!participants?.results.length && (

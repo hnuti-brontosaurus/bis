@@ -16,6 +16,7 @@ from bis.models import (
     UserClosePerson,
     UserContactAddress,
 )
+from bis.permissions import Permissions
 from categories.models import OpportunityPriority
 from categories.serializers import (
     DietCategorySerializer,
@@ -596,17 +597,21 @@ class UpdatableListSerializer(ListSerializer):
 
 
 class SimpleParticipantSerializer(ModelSerializer):
-    """Create a simple-list participant from {first_name, last_name, email, phone}.
+    """Create / read a simple-list participant.
 
-    On create: if a User with the given email already exists (matched against
-    primary `email` or any secondary `UserEmail`), return that User unchanged
-    — name is not overwritten. Otherwise create a new User with validation
-    paused; birthday, address, qualifications etc. stay empty.
+    On create: if a User with the given email already exists (matched
+    against any UserEmail), reuse that User. Empty fields on the existing
+    record are filled from the payload but no value is ever overwritten —
+    so adding a known contact in simple-list mode can complete missing
+    pieces of their profile without trampling existing data.
 
-    Email and phone are declared explicitly so that format validation runs
-    on the serializer (paused validation on the model would otherwise let
-    malformed values through), while the model-level unique constraint on
-    email does not — dedup is handled in `create`.
+    On read: first_name / last_name / phone are masked for users the
+    requester wouldn't normally see through the standard User filter,
+    so the dedup path doesn't leak PII of unrelated existing users.
+
+    Email and phone are declared explicitly so format validation runs on
+    the serializer (paused validation on the model would otherwise let
+    malformed values through).
     """
 
     email = serializers.EmailField(required=True)
@@ -619,18 +624,54 @@ class SimpleParticipantSerializer(ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data["email"].lower().strip()
-        existing = User.get(email=email)
-        if existing is not None:
-            return existing
         first_name = validated_data["first_name"].strip()
         last_name = validated_data["last_name"].strip()
+        phone = validated_data.get("phone") or ""
+        existing = User.get(email=email)
+        if existing is not None:
+            return self._fill_missing(existing, first_name, last_name, phone)
         with paused_validation():
             return User.objects.create(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
-                phone=validated_data.get("phone") or "",
+                phone=phone,
             )
+
+    @staticmethod
+    def _fill_missing(user, first_name, last_name, phone):
+        updates = {}
+        if first_name and not user.first_name:
+            updates["first_name"] = first_name
+        if last_name and not user.last_name:
+            updates["last_name"] = last_name
+        if phone and not user.phone:
+            updates["phone"] = phone
+        if not updates:
+            return user
+        for field, value in updates.items():
+            setattr(user, field, value)
+        with paused_validation():
+            user.save()
+        return user
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request is None or self._is_visible_user(request.user, instance):
+            return data
+        data["first_name"] = ""
+        data["last_name"] = ""
+        data["phone"] = ""
+        return data
+
+    @staticmethod
+    def _is_visible_user(requester, instance):
+        return (
+            Permissions(requester, User, "frontend")
+            .filter_queryset(User.objects.filter(pk=instance.pk))
+            .exists()
+        )
 
 
 class FeedbackFormSerializer(ModelSerializer):
@@ -667,20 +708,30 @@ class RecordSerializer(ModelSerializer):
         # simple-list user's full profile can't be exposed by flipping the
         # event to full-list. The frontend handles this on the input-type
         # change handler.
-        if self.instance is not None:
-            new_type = attrs.get("attendance_list_type")
-            if new_type and new_type != self.instance.attendance_list_type:
-                participants = attrs.get("participants")
-                if participants is None and self.instance.participants.exists():
-                    raise ValidationError(
-                        "Při změně typu prezenční listiny je třeba "
-                        "vymazat existující účastníky."
-                    )
-                if participants:
-                    raise ValidationError(
-                        "Při změně typu prezenční listiny musí být seznam "
-                        "účastníků prázdný."
-                    )
+        if (
+            self.instance is not None
+            and "attendance_list_type" in attrs
+            and attrs["attendance_list_type"] != self.instance.attendance_list_type
+        ):
+            participants = attrs.get("participants")
+            if participants is None and self.instance.participants.exists():
+                raise ValidationError(
+                    {
+                        "attendance_list_type": [
+                            "Při změně typu prezenční listiny je třeba "
+                            "vymazat existující účastníky."
+                        ]
+                    }
+                )
+            if participants:
+                raise ValidationError(
+                    {
+                        "attendance_list_type": [
+                            "Při změně typu prezenční listiny musí být "
+                            "seznam účastníků prázdný."
+                        ]
+                    }
+                )
         return super().validate(attrs)
 
     def get_age_stats(self, instance) -> dict:

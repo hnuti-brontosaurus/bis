@@ -130,7 +130,12 @@ describe('Close event - evidence and participants', () => {
         cy.get('label:contains(Mám jen jméno + příjmení + email)')
           .should('be.visible')
           .click()
+        // The fixture's inferred attendance_list_type makes the radio
+        // change open the "you're changing the registration method" modal;
+        // its Pokračovat button confirms and fires the type-switch PATCH.
+        // Wait for that PATCH before the import so the two don't race.
         cy.get('button:contains(Pokračovat)').click()
+        cy.wait('@updateEvent')
 
         cy.get('label:contains(Importovat seznam)')
           .should('be.visible')

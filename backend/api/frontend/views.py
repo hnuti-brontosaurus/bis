@@ -36,6 +36,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from event.models import (
@@ -125,45 +126,70 @@ class UserViewSet(PermissionViewSetBase):
 class ParticipantsViewSet(UserViewSet):
     """Event participants resource.
 
-    For full-list events: read-only; participants are managed by PATCHing
-    `record.participants` on the event itself.
+    GET: returns participants; for simple-list events the response is the
+    minimal projection (id + four basic fields) — dedup must not leak the
+    full profile of an existing user matched by email.
 
-    For simple-list events: also accepts POST with {first_name, last_name,
-    email, phone}, which creates (or finds by email) a User and links them
-    to the event in one transaction. Requires edit permission on the event;
-    POST is rejected on events that aren't in simple-list mode, since the
-    minimal User shape would crash full-list views that expect
-    birthday/address.
+    POST: simple-list events only — creates (or finds by email) a User
+    with {first_name, last_name, email, phone} and links them to the event
+    in one transaction. The minimal payload is rejected on other modes so
+    sparse users don't crash full-list views that read birthday/address.
+
+    DELETE on /<user_id>/: unlinks the user from the event's participants
+    M2M (the User row is not touched). Used by the simple-list trash
+    button instead of PATCHing the full participants list, which would
+    race against the RTK Query cache.
+
+    Mutations require edit permission on the parent event. The User-add
+    permission check from BISPermissions still gates POST; DELETE bypasses
+    BISPermissions because the action is "unlink from event", not "delete
+    user", and organizers don't have User-delete in the role matrix.
     """
 
-    http_method_names = [*safe_http_methods, "post"]
+    http_method_names = [*safe_http_methods, "post", "delete"]
     kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_serializer_class(self):
-        # For simple-list events, expose only the four basic fields so that
-        # adding a real user by email (dedup) does not leak their full
-        # profile. The mode-switch handler in RecordSerializer.update clears
-        # participants whenever the type changes, so this projection is
-        # consistent with how the data is meant to be read.
-        if self._is_simple_list_event():
+        if self._is_simple_list_event:
             return SimpleParticipantSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):
+        # Simple-list participants are filtered out of User.filter_queryset
+        # (they shouldn't leak into the global User list), so go through
+        # User.objects directly here. Access is gated by the event-edit
+        # check in initial() instead of the global User visibility filter.
+        if self._is_simple_list_event:
+            return User.objects.filter(
+                participated_in_events__event=self.kwargs["event_id"]
+            )
         return (
             super()
             .get_queryset()
             .filter(participated_in_events__event=self.kwargs["event_id"])
         )
 
+    def get_permissions(self):
+        # DELETE here means "unlink from the event's M2M", not "delete the
+        # User row". BISPermissions would map destroy to
+        # Permissions(req.user, User, "frontend").has_delete_permission,
+        # which organizers don't have — that's the wrong gate for this
+        # action. The event-edit check in initial() is the real one.
+        if self.action == "destroy":
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if self.action != "create":
+        needs_event_check = self.action in ("create", "destroy") or (
+            self._is_simple_list_event and self.action in ("list", "retrieve")
+        )
+        if not needs_event_check:
             return
         self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
         if not self.event.has_edit_permission(request.user):
             raise PermissionDenied()
-        if not self._is_simple_list_event():
+        if self.action == "create" and not self._is_simple_list_event:
             raise ValidationError(
                 "Účastníky lze přidávat tímto endpointem jen u akcí se "
                 "zjednodušenou prezenční listinou."
@@ -174,6 +200,10 @@ class ParticipantsViewSet(UserViewSet):
         user = serializer.save()
         self.event.record.participants.add(user)
 
+    def perform_destroy(self, instance):
+        self.event.record.participants.remove(instance)
+
+    @cached_property
     def _is_simple_list_event(self):
         event_id = self.kwargs.get("event_id")
         if event_id is None:
