@@ -68,10 +68,8 @@ export type EvidenceStepFormShape = {
 export type ParticipantsStepFormShape = {
   record: Pick<
     Record,
-    | 'participants'
     | 'number_of_participants'
     | 'number_of_participants_under_26'
-    | 'contacts'
     | 'attendance_list_type'
   >
 }
@@ -102,11 +100,9 @@ const pickEvidenceData = (data: Partial<CloseEventFormShape>) =>
 const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
   pick(
     data,
-    //'record.participants',
     'record.number_of_participants',
     'record.number_of_participants_under_26',
     'record.attendance_list_type',
-    'record.contacts',
   )
 
 const pickFeedbackData = (data: Partial<CloseEventFormShape>) =>
@@ -117,17 +113,6 @@ const formData2payload = ({
   ...data
 }: CloseEventFormShape & { is_closed: boolean }): CloseEventPayload => {
   const payload = cloneDeep(data)
-
-  if (payload.record.attendance_list_type === 'full-list') {
-    payload.record.number_of_participants = null
-    payload.record.number_of_participants_under_26 = null
-    payload.record.contacts = []
-    // participants get saved separately
-    // so we don't want to overwrite them with potentially outdated list
-    delete payload.record.participants
-  } else {
-    payload.record.participants = []
-  }
 
   if (payload.finance && !payload.finance.bank_account_number)
     payload.finance.bank_account_number = ''
@@ -146,12 +131,6 @@ const initialData2form = (
     if (event.group.slug === 'other') {
       if (event.record?.participants?.length) {
         attendanceListType = 'full-list'
-      } else if (
-        typeof event.record?.number_of_participants === 'number' &&
-        event.record?.contacts &&
-        event.record.contacts.length > 0
-      ) {
-        attendanceListType = 'simple-list'
       } else if (typeof event.record?.number_of_participants === 'number') {
         attendanceListType = 'count'
       }
@@ -170,14 +149,6 @@ const initialData2form = (
 const validationSchema: yup.ObjectSchema<ParticipantsStepFormShape> =
   yup.object({
     record: yup.object({
-      contacts: yup.array(
-        yup.object({
-          first_name: yup.string().required(),
-          last_name: yup.string().required(),
-          email: yup.string().email().required(),
-          phone: yup.string(),
-        }),
-      ),
       attendance_list_type: yup
         .string()
         .oneOf(['full-list', 'simple-list', 'count'])

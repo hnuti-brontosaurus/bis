@@ -1,3 +1,5 @@
+import { useAppDispatch } from 'app/hooks'
+import { api } from 'app/services/bis'
 import { FullEvent } from 'app/services/bisTypes'
 import Counted from 'assets/counting.svg?react'
 import EmailList from 'assets/email-list.svg?react'
@@ -14,6 +16,7 @@ import {
   NumberInput,
 } from 'components'
 import { InlineSection } from 'components/FormLayout/FormLayout'
+import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useConfirmWithModal } from 'hooks/useConfirmWithModal'
 import { ParticipantsStep as ParticipantsList } from 'org/components/EventForm/steps/ParticipantsStep'
 import { useEffect } from 'react'
@@ -67,7 +70,7 @@ export const ParticipantsStep = ({
   areParticipantsRequired: boolean
   methods: UseFormReturn<ParticipantsStepFormShape>
 }) => {
-  const { watch, control, trigger, formState } = methods
+  const { watch, control, trigger, formState, setValue } = methods
 
   // list of participants is shown when it's required
   // or when organizers prefer it rather than filling just numbers
@@ -89,6 +92,55 @@ export const ParticipantsStep = ({
     message:
       'Je možné vybrat pouze jeden způsob registrace. Pokud chceš změnit způsob registrace, data, která jsou zadaná v počtu účastníků a seznamu účastníků, nebudou uložena. Chceš pokračovat?',
   })
+
+  const [updateEvent, updateEventStatus] =
+    api.endpoints.updateEvent.useMutation()
+  useShowApiErrorMessage(updateEventStatus.error)
+  const dispatch = useAppDispatch()
+
+  // Changing the type wipes the participant list (server-side and locally)
+  // before the new view mounts: the full-list view reads birthday/address
+  // and would crash on the projection returned for simple-list events,
+  // and a stale count would otherwise survive the switch.
+  const switchInputType = async (
+    newType: ParticipantInputType,
+    apply: () => void,
+  ) => {
+    const clearCounts = newType === 'full-list'
+    await updateEvent({
+      id: event.id,
+      event: {
+        record: {
+          participants: [],
+          attendance_list_type: newType,
+          ...(clearCounts && {
+            number_of_participants: null,
+            number_of_participants_under_26: null,
+          }),
+        },
+      },
+    }).unwrap()
+    if (clearCounts) {
+      setValue('record.number_of_participants', null)
+      setValue('record.number_of_participants_under_26', null)
+    }
+    // Clear the cached participants synchronously so the about-to-mount
+    // full-list view doesn't briefly render against the previous shape
+    // while the invalidation-triggered refetch is in flight.
+    dispatch(
+      api.util.updateQueryData(
+        'readEventParticipants',
+        { eventId: event.id },
+        draft => {
+          draft.count = 0
+          draft.next = null
+          draft.previous = null
+          draft.results = []
+        },
+      ),
+    )
+    apply()
+  }
 
   return (
     <FormProvider {...methods}>
@@ -120,12 +172,15 @@ export const ParticipantsStep = ({
                               value={id}
                               checked={id === field.value}
                               onChange={e => {
+                                const newType = e.target
+                                  .value as ParticipantInputType
+                                const apply = () => field.onChange(newType)
                                 if (inputType) {
                                   confirmWithModal(() =>
-                                    field.onChange(e.target.value),
+                                    switchInputType(newType, apply),
                                   )
                                 } else {
-                                  field.onChange(e.target.value)
+                                  switchInputType(newType, apply)
                                 }
                               }}
                             />
@@ -200,7 +255,7 @@ export const ParticipantsStep = ({
 
           {!areParticipantsRequired && inputType === 'simple-list' && (
             <FormSection required header="Seznam účastníků">
-              <SimpleParticipants />
+              <SimpleParticipants eventId={event.id} />
             </FormSection>
           )}
           {(areParticipantsRequired || inputType === 'full-list') && (

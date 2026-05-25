@@ -17,7 +17,6 @@ from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from event.models import (
     Event,
-    EventContact,
     EventPropagation,
     EventRecord,
     EventRegistration,
@@ -28,7 +27,6 @@ from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import (
     NestedModelAdmin,
     NestedStackedInline,
-    NestedTabularInline,
 )
 from rangefilter.filters import DateRangeFilter
 from translation.translate import _
@@ -37,11 +35,6 @@ from xlsx_export.export import (
     export_to_xlsx,
     get_attendance_list,
 )
-
-
-class EventContactAdmin(PermissionMixin, NestedTabularInline):
-    model = EventContact
-    classes = ("collapse",)
 
 
 class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
@@ -63,7 +56,6 @@ class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
 
 class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     model = EventRecord
-    inlines = (EventContactAdmin,)
 
     readonly_fields = (
         "attendance_list_type",

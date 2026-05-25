@@ -3034,12 +3034,6 @@ export type Registration = {
   is_event_full?: boolean
   questionnaire: Questionnaire | null
 }
-export type EventContact = {
-  first_name: string
-  last_name: string
-  email?: string
-  phone?: string
-}
 export type FeedbackForm = {
   introduction?: string
   after_submit_text?: string
@@ -3057,7 +3051,6 @@ export type Record = {
   /** Vyplň pouze pokud nejsou vyplnění konkrétní účastníci */
   number_of_participants_under_26?: number | null
   attendance_list_type?: AttendanceListTypeEnum | null
-  contacts?: EventContact[]
   is_event_closed_email_enabled?: boolean
 }
 export type Event = {

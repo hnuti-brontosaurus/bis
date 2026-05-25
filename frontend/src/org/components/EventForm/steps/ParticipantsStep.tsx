@@ -88,7 +88,6 @@ export const ParticipantsStep: FC<{
       event: {
         record: {
           participants: newParticipants,
-          contacts: [],
           number_of_participants: null,
           number_of_participants_under_26: null,
         },
