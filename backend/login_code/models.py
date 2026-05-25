@@ -85,3 +85,5 @@ class LoginCode(models.Model):
         if login_code is None:
             cls.add_throttled(user)
             raise AuthenticationFailed()
+
+        login_code.delete()

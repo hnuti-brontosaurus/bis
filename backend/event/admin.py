@@ -287,10 +287,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         return F1
 
     def save_related(self, request, form, formsets, change):
-        if request.method == "POST" and "_save_raw" in request.POST:
-            guard = paused_validation
-        else:
-            guard = nullcontext
+        guard = paused_validation if self.saving_raw(request) else nullcontext
 
         with guard():
             super().save_related(request, form, formsets, change)

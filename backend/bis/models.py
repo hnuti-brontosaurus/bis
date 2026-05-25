@@ -304,64 +304,68 @@ class User(SearchMixin, AbstractBaseUser):
         self._original_subscription_status = self.subscription_status
 
     @cached_property
+    def _role_slugs(self):
+        return set(self.roles.values_list("slug", flat=True))
+
+    @cached_property
     def is_director(self):
-        return self.roles.filter(slug="director").exists()
+        return "director" in self._role_slugs
 
     @cached_property
     def is_admin(self):
-        return self.roles.filter(slug="admin").exists()
+        return "admin" in self._role_slugs
 
     @cached_property
     def is_office_worker(self):
-        return self.roles.filter(slug="office_worker").exists()
+        return "office_worker" in self._role_slugs
 
     @cached_property
     def is_auditor(self):
-        return self.roles.filter(slug="auditor").exists()
+        return "auditor" in self._role_slugs
 
     @cached_property
     def is_executive(self):
-        return self.roles.filter(slug="executive").exists()
+        return "executive" in self._role_slugs
 
     @cached_property
     def is_education_member(self):
-        return self.roles.filter(slug="education_member").exists()
+        return "education_member" in self._role_slugs
 
     @cached_property
     def is_board_member(self):
-        return self.roles.filter(slug="board_member").exists()
+        return "board_member" in self._role_slugs
 
     @cached_property
     def is_chairman(self):
-        return self.roles.filter(slug="chairman").exists()
+        return "chairman" in self._role_slugs
 
     @cached_property
     def is_vice_chairman(self):
-        return self.roles.filter(slug="vice_chairman").exists()
+        return "vice_chairman" in self._role_slugs
 
     @cached_property
     def is_manager(self):
-        return self.roles.filter(slug="manager").exists()
+        return "manager" in self._role_slugs
 
     @cached_property
     def is_main_organizer(self):
-        return self.roles.filter(slug="main_organizer").exists()
+        return "main_organizer" in self._role_slugs
 
     @cached_property
     def is_organizer(self):
-        return self.roles.filter(slug="organizer").exists()
+        return "organizer" in self._role_slugs
 
     @cached_property
     def is_qualified_organizer(self):
-        return self.roles.filter(slug="qualified_organizer").exists()
+        return "qualified_organizer" in self._role_slugs
 
     @cached_property
     def is_fundraiser(self):
-        return self.roles.filter(slug="fundraiser").exists()
+        return "fundraiser" in self._role_slugs
 
     @cached_property
     def is_member_only(self):
-        return not self.roles.exists()
+        return not self._role_slugs
 
     @cached_property
     def is_chef(self):
@@ -396,6 +400,10 @@ class User(SearchMixin, AbstractBaseUser):
     @cached_property
     def is_superuser(self):
         return self.is_director or self.is_admin
+
+    @cached_property
+    def can_save_without_validation(self):
+        return self.is_superuser
 
     def has_perm(self, perm, obj=None):
         return True

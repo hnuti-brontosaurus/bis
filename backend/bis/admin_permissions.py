@@ -48,7 +48,12 @@ class PermissionMixin:
 
     @staticmethod
     def saving_raw(request):
-        return request.method == "POST" and "_save_raw" in request.POST
+        return (
+            request.method == "POST"
+            and "_save_raw" in request.POST
+            and request.user.is_authenticated
+            and request.user.can_save_without_validation
+        )
 
     def set_no_validation_if_raw_saving(self, request, kwargs):
         if self.saving_raw(request):

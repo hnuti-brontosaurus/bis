@@ -91,7 +91,7 @@ class Event(SearchMixin, m.Model):
     organizers_note = m.TextField(blank=True)
 
     _import_id = m.CharField(max_length=15, default="")
-    _search_field = m.CharField(max_length=128, blank=True)
+    _search_field = m.CharField(max_length=1024, blank=True)
     search_fields = ["name"]
     duration = m.PositiveIntegerField()
 

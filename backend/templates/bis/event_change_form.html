@@ -3,7 +3,7 @@
 {% block submit_buttons_bottom %}
     {% if original.id %}
         <div class="submit-row">
-            {% if request.user.is_superuser %}
+            {% if request.user.can_save_without_validation %}
                 <input type="submit" value="Ulož bez validace" name="_save_raw"/>
             {% endif %}
             <input type="submit" value="Export souborů" name="_files_export"/>

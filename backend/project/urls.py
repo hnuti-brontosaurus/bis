@@ -1,6 +1,4 @@
 from bis.views import (
-    CodeView,
-    LoginView,
     MCPClientRegistrationView,
     OAuthAuthorizationServerMetadataView,
 )
@@ -28,8 +26,6 @@ urlpatterns = [
         "admin/opportunities/opportunity/add/",
         RedirectView.as_view(url="/org/prilezitosti/vytvorit"),
     ),
-    path("admin/code_login/", LoginView.as_view()),
-    path("enter_code/", CodeView.as_view(), name="code"),
     path("admin/", admin.site.urls),
     path("_rest_framework/", include("rest_framework.urls")),
     path("_nested_admin/", include("nested_admin.urls")),
