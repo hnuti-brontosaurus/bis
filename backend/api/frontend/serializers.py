@@ -597,22 +597,12 @@ class UpdatableListSerializer(ListSerializer):
 
 
 class SimpleParticipantSerializer(ModelSerializer):
-    """Create / read a simple-list participant.
-
-    On create: if a User with the given email already exists (matched
-    against any UserEmail), reuse that User. Empty fields on the existing
-    record are filled from the payload but no value is ever overwritten —
-    so adding a known contact in simple-list mode can complete missing
-    pieces of their profile without trampling existing data.
-
-    On read: first_name / last_name / phone are masked for users the
-    requester wouldn't normally see through the standard User filter,
-    so the dedup path doesn't leak PII of unrelated existing users.
-
-    Email and phone are declared explicitly so format validation runs on
-    the serializer (paused validation on the model would otherwise let
-    malformed values through).
-    """
+    # Email and phone are declared explicitly so format validation runs on
+    # the serializer — paused_validation on save would otherwise let
+    # malformed values through. Existing users matched by email are
+    # returned (with PII masked in to_representation for users the
+    # requester can't normally see) so the dedup path doesn't leak
+    # profile data.
 
     email = serializers.EmailField(required=True)
     phone = PhoneNumberField(required=False, allow_blank=True)
@@ -630,13 +620,16 @@ class SimpleParticipantSerializer(ModelSerializer):
         existing = User.get(email=email)
         if existing is not None:
             return self._fill_missing(existing, first_name, last_name, phone)
+        user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+        )
+        user.set_unusable_password()
         with paused_validation():
-            return User.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                phone=phone,
-            )
+            user.save()
+        return user
 
     @staticmethod
     def _fill_missing(user, first_name, last_name, phone):

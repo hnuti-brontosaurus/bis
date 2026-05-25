@@ -98,32 +98,27 @@ export const ParticipantsStep = ({
   useShowApiErrorMessage(updateEventStatus.error)
   const dispatch = useAppDispatch()
 
-  // Changing the type wipes the participant list (server-side and locally)
-  // before the new view mounts: the full-list view reads birthday/address
-  // and would crash on the projection returned for simple-list events,
-  // and a stale count would otherwise survive the switch.
+  // Changing the type wipes the participant list and count fields
+  // (server-side and locally) before the new view mounts — counts from
+  // the previous mode shouldn't carry over into the new one, and the
+  // full-list view would crash on the simple-list projection.
   const switchInputType = async (
     newType: ParticipantInputType,
     apply: () => void,
   ) => {
-    const clearCounts = newType === 'full-list'
     await updateEvent({
       id: event.id,
       event: {
         record: {
           participants: [],
           attendance_list_type: newType,
-          ...(clearCounts && {
-            number_of_participants: null,
-            number_of_participants_under_26: null,
-          }),
+          number_of_participants: null,
+          number_of_participants_under_26: null,
         },
       },
     }).unwrap()
-    if (clearCounts) {
-      setValue('record.number_of_participants', null)
-      setValue('record.number_of_participants_under_26', null)
-    }
+    setValue('record.number_of_participants', null)
+    setValue('record.number_of_participants_under_26', null)
     // Clear the cached participants synchronously so the about-to-mount
     // full-list view doesn't briefly render against the previous shape
     // while the invalidation-triggered refetch is in flight.

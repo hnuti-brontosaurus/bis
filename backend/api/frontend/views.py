@@ -124,27 +124,10 @@ class UserViewSet(PermissionViewSetBase):
 
 
 class ParticipantsViewSet(UserViewSet):
-    """Event participants resource.
-
-    GET: returns participants; for simple-list events the response is the
-    minimal projection (id + four basic fields) — dedup must not leak the
-    full profile of an existing user matched by email.
-
-    POST: simple-list events only — creates (or finds by email) a User
-    with {first_name, last_name, email, phone} and links them to the event
-    in one transaction. The minimal payload is rejected on other modes so
-    sparse users don't crash full-list views that read birthday/address.
-
-    DELETE on /<user_id>/: unlinks the user from the event's participants
-    M2M (the User row is not touched). Used by the simple-list trash
-    button instead of PATCHing the full participants list, which would
-    race against the RTK Query cache.
-
-    Mutations require edit permission on the parent event. The User-add
-    permission check from BISPermissions still gates POST; DELETE bypasses
-    BISPermissions because the action is "unlink from event", not "delete
-    user", and organizers don't have User-delete in the role matrix.
-    """
+    # Simple-list events use a minimal {id, first_name, last_name, email,
+    # phone} projection; other modes use the standard User shape. POST and
+    # DELETE are simple-list only — full-list flows still go through the
+    # event PATCH for participant changes.
 
     http_method_names = [*safe_http_methods, "post", "delete"]
     kwargs_serializer_class = EventRouterKwargsSerializer
@@ -156,9 +139,8 @@ class ParticipantsViewSet(UserViewSet):
 
     def get_queryset(self):
         # Simple-list participants are filtered out of User.filter_queryset
-        # (they shouldn't leak into the global User list), so go through
-        # User.objects directly here. Access is gated by the event-edit
-        # check in initial() instead of the global User visibility filter.
+        # so they don't leak into the global User list; access is gated by
+        # the event-edit check in initial() instead.
         if self._is_simple_list_event:
             return User.objects.filter(
                 participated_in_events__event=self.kwargs["event_id"]
@@ -170,11 +152,8 @@ class ParticipantsViewSet(UserViewSet):
         )
 
     def get_permissions(self):
-        # DELETE here means "unlink from the event's M2M", not "delete the
-        # User row". BISPermissions would map destroy to
-        # Permissions(req.user, User, "frontend").has_delete_permission,
-        # which organizers don't have — that's the wrong gate for this
-        # action. The event-edit check in initial() is the real one.
+        # destroy = "unlink from event M2M", not "delete User row" — the
+        # event-edit check in initial() is the real gate.
         if self.action == "destroy":
             return [IsAuthenticated()]
         return super().get_permissions()
@@ -189,9 +168,9 @@ class ParticipantsViewSet(UserViewSet):
         self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
         if not self.event.has_edit_permission(request.user):
             raise PermissionDenied()
-        if self.action == "create" and not self._is_simple_list_event:
+        if self.action in ("create", "destroy") and not self._is_simple_list_event:
             raise ValidationError(
-                "Účastníky lze přidávat tímto endpointem jen u akcí se "
+                "Tímto endpointem lze měnit účastníky jen u akcí se "
                 "zjednodušenou prezenční listinou."
             )
 
