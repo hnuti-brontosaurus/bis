@@ -19,7 +19,6 @@ from categories.models import (
     EventTag,
     GrantCategory,
 )
-from common.abstract_models import BaseContact
 from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
@@ -402,17 +401,6 @@ class EventRecord(m.Model):
         return User.objects.filter(
             id__in=[p.id for p in self._get_all_participants_list()]
         )
-
-
-@translate_model
-class EventContact(BaseContact):
-    record = m.ForeignKey(EventRecord, on_delete=CASCADE, related_name="contacts")
-
-    def has_edit_permission(self, user):
-        return self.record.has_edit_permission(user)
-
-    def clean(self):
-        pass
 
 
 @translate_model
