@@ -53,9 +53,78 @@ describe('Close event - evidence and participants', () => {
     })
   })
 
-  describe('Simple participants list (contacts)', () => {
+  describe('Simple participants list', () => {
     describe('Import of simple participants list from xls', () => {
-      it('should load xls data to participants list form', () => {
+      it('should create users and add them as participants', () => {
+        // Start with no existing participants. The nested POST endpoint
+        // links each created user to the event server-side and invalidates
+        // the participants tag; the follow-up GET returns the four rows.
+        let createdCount = 0
+        cy.intercept(
+          {
+            method: 'GET',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          req => {
+            req.reply({
+              count: createdCount,
+              next: null,
+              previous: null,
+              results:
+                createdCount === 0
+                  ? []
+                  : [
+                      {
+                        id: 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                        first_name: 'Jan',
+                        last_name: 'Novák',
+                        email: 'jan.novak@example.com',
+                        phone: '761001000',
+                      },
+                      {
+                        id: 'bbbb2222-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+                        first_name: 'Eva',
+                        last_name: 'Dvořáková',
+                        email: 'eva.dvorakova@example.com',
+                        phone: '761001001',
+                      },
+                      {
+                        id: 'cccc3333-cccc-cccc-cccc-cccccccccccc',
+                        first_name: 'Karel',
+                        last_name: 'Svoboda',
+                        email: 'karel.svoboda@example.com',
+                        phone: '',
+                      },
+                      {
+                        id: 'dddd4444-dddd-dddd-dddd-dddddddddddd',
+                        first_name: 'Petr',
+                        last_name: 'Pan',
+                        email: 'petr.pan@example.com',
+                        phone: '761001002',
+                      },
+                    ],
+            })
+          },
+        ).as('readParticipants')
+
+        let nextId = 0
+        cy.intercept(
+          {
+            method: 'POST',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          req => {
+            nextId++
+            createdCount++
+            req.reply({ ...req.body, id: `created-${nextId}` })
+          },
+        ).as('createSimpleParticipant')
+
+        cy.intercept(
+          { method: 'PATCH', pathname: '/api/frontend/events/1000/' },
+          {},
+        ).as('updateEvent')
+
         cy.visit('/org/akce/1000/uzavrit')
 
         cy.get('label:contains(Mám jen jméno + příjmení + email)')
@@ -67,25 +136,23 @@ describe('Close event - evidence and participants', () => {
           .should('be.visible')
           .selectFile('cypress/e2e/simple-participants.xlsx')
 
+        cy.wait([
+          '@createSimpleParticipant',
+          '@createSimpleParticipant',
+          '@createSimpleParticipant',
+          '@createSimpleParticipant',
+        ])
+
+        // The table now reflects the participants returned by the refetch.
         cy.get('table[class^=ParticipantsStep-module__table] tbody tr')
           .should('have.length', 4)
           .last()
-          .find('td')
-          .first()
-          .find('input')
-          .should('have.value', 'Petr')
-          .parent()
-          .next()
-          .find('input')
-          .should('have.value', 'Pan')
-          .parent()
-          .next()
-          .find('input')
-          .should('have.value', 'petr.pan@example.com')
-          .parent()
-          .next()
-          .find('input')
-          .should('have.value', '761001002')
+          .within(() => {
+            cy.get('td').eq(0).should('contain.text', 'Petr')
+            cy.get('td').eq(1).should('contain.text', 'Pan')
+            cy.get('td').eq(2).should('contain.text', 'petr.pan@example.com')
+            cy.get('td').eq(3).should('contain.text', '761001002')
+          })
       })
     })
   })
@@ -152,13 +219,18 @@ describe('Close event - evidence and participants', () => {
     }
 
     describe('Adding non-existent user as participant', () => {
-      // do the initial visiting and clicking to open user form modal
+      // do the initial visiting and clicking to open user form modal.
+      // Switching attendance-list type fires its own PATCH (to clear the
+      // previous mode's participants + count fields server-side); waiting
+      // for it here keeps the per-test @updateEvent waits aligned with
+      // the actions they describe.
       const visitPage = () => {
         cy.visit('/org/akce/1000/uzavrit')
 
         cy.get('label:contains(Mám všechny informace)')
           .should('be.visible')
           .click()
+        cy.wait('@updateEvent')
         cy.get('button:contains(Pokračovat)').click()
       }
 
@@ -251,7 +323,6 @@ describe('Close event - evidence and participants', () => {
                 ...participantsExample.results.map(p => p.id),
                 newUserExample.id,
               ],
-              contacts: [],
               number_of_participants: null,
               number_of_participants_under_26: null,
             },
@@ -366,6 +437,9 @@ describe('Close event - evidence and participants', () => {
       cy.get('label:contains(Mám všechny informace)')
         .should('be.visible')
         .click()
+      // Switching attendance-list type fires its own PATCH; wait it out so
+      // the next @updateEvent below catches the delete-driven one.
+      cy.wait('@updateEvent')
       cy.get('button:contains(Pokračovat)').click()
 
       // click delete

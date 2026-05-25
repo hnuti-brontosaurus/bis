@@ -22,6 +22,7 @@ from api.frontend.serializers import (
     LocationSerializer,
     OpportunitySerializer,
     QuestionSerializer,
+    SimpleParticipantSerializer,
     UserRouterKwargsSerializer,
     UserSearchSerializer,
     UserSerializer,
@@ -31,6 +32,7 @@ from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import Location, User
 from bis.permissions import Permissions
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.utils import timezone
@@ -43,6 +45,7 @@ from event.models import (
     EventFinanceReceipt,
     EventPhoto,
     EventPropagationImage,
+    EventRecord,
 )
 from feedback.models import EventFeedback, Inquiry
 from login_code.models import get_unknown_user_throttle
@@ -50,7 +53,7 @@ from opportunities.models import Opportunity
 from other.models import Announcement, DashboardItem
 from questionnaire.models import EventApplication, Question
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
@@ -120,8 +123,31 @@ class UserViewSet(PermissionViewSetBase):
 
 
 class ParticipantsViewSet(UserViewSet):
-    http_method_names = safe_http_methods
+    """Event participants resource.
+
+    For full-list events: read-only; participants are managed by PATCHing
+    `record.participants` on the event itself.
+
+    For simple-list events: also accepts POST with {first_name, last_name,
+    email, phone}, which creates (or finds by email) a User and links them
+    to the event in one transaction. Requires edit permission on the event;
+    POST is rejected on events that aren't in simple-list mode, since the
+    minimal User shape would crash full-list views that expect
+    birthday/address.
+    """
+
+    http_method_names = [*safe_http_methods, "post"]
     kwargs_serializer_class = EventRouterKwargsSerializer
+
+    def get_serializer_class(self):
+        # For simple-list events, expose only the four basic fields so that
+        # adding a real user by email (dedup) does not leak their full
+        # profile. The mode-switch handler in RecordSerializer.update clears
+        # participants whenever the type changes, so this projection is
+        # consistent with how the data is meant to be read.
+        if self._is_simple_list_event():
+            return SimpleParticipantSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
         return (
@@ -129,6 +155,35 @@ class ParticipantsViewSet(UserViewSet):
             .get_queryset()
             .filter(participated_in_events__event=self.kwargs["event_id"])
         )
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if self.action != "create":
+            return
+        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        if not self.event.has_edit_permission(request.user):
+            raise PermissionDenied()
+        if not self._is_simple_list_event():
+            raise ValidationError(
+                "Účastníky lze přidávat tímto endpointem jen u akcí se "
+                "zjednodušenou prezenční listinou."
+            )
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        user = serializer.save()
+        self.event.record.participants.add(user)
+
+    def _is_simple_list_event(self):
+        event_id = self.kwargs.get("event_id")
+        if event_id is None:
+            return False
+        record_type = (
+            EventRecord.objects.filter(event_id=event_id)
+            .values_list("attendance_list_type", flat=True)
+            .first()
+        )
+        return record_type == EventRecord.AttendanceListType.SIMPLE_LIST
 
 
 class RegisteredViewSet(UserViewSet):
@@ -173,7 +228,6 @@ class EventViewSet(PermissionViewSetBase):
         "program",
     ).prefetch_related(
         "propagation__diets",
-        "record__contacts",
         "tags",
     )
 

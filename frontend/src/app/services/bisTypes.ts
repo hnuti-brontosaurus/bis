@@ -13,7 +13,6 @@ export type {
   AttendanceListTypeEnum,
   DietCategory,
   EventApplication,
-  EventContact,
   EventIntendedForCategory,
   EventProgramCategory,
   Finance,
@@ -140,6 +139,14 @@ export type Location = Overwrite<
 >
 
 export type AnswerPayload = Overwrite<original.Answer, { question: number }>
+
+export type SimpleParticipantPayload = {
+  first_name: string
+  last_name: string
+  email: string
+  phone?: string
+}
+export type SimpleParticipant = SimpleParticipantPayload & { id: string }
 
 // TODO: possibly replace with PatchedEventApplication from testApi
 export type EventApplicationPayload = Pick<

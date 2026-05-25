@@ -1,4 +1,5 @@
-import type { EventContact } from 'app/services/bisTypes'
+import { api } from 'app/services/bis'
+import type { SimpleParticipantPayload } from 'app/services/bisTypes'
 import spreadsheetTemplate from 'assets/templates/vzor_import-ucastniku-z-jednoduche-prezencky.xlsx'
 import classNames from 'classnames'
 import {
@@ -8,23 +9,15 @@ import {
   FormInputError,
   ImportExcelButton,
   InlineSection,
+  Loading,
 } from 'components'
-import { get } from 'lodash'
+import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import tableStyles from 'org/components/EventForm/steps/ParticipantsStep.module.scss'
-import { FormHTMLAttributes, TdHTMLAttributes, useEffect } from 'react'
+import { FormHTMLAttributes, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  FieldErrors,
-  FieldPath,
-  FieldValues,
-  FormProvider,
-  useFieldArray,
-  useForm,
-  useFormContext,
-} from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 import { FaCheck, FaTrash } from 'react-icons/fa'
 import * as validationMessages from 'utils/validationMessages'
-import type { ParticipantsStepFormShape } from './CloseEventForm'
 import styles from './SimpleParticipants.module.scss'
 
 const importMap = {
@@ -34,25 +27,58 @@ const importMap = {
   phone: 3,
 }
 
-export const SimpleParticipants = () => {
-  const {
-    control,
-    register,
-    trigger,
-    formState: { errors, isSubmitted },
-  } = useFormContext<ParticipantsStepFormShape>()
-  const peopleFields = useFieldArray({ control, name: 'record.contacts' })
+export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
+  const { data: participants, isLoading } =
+    api.endpoints.readEventParticipants.useQuery({ eventId })
 
-  useEffect(() => {
-    if (isSubmitted) trigger('record.contacts')
-  }, [isSubmitted, trigger, peopleFields.fields])
+  const [createSimpleParticipant] =
+    api.endpoints.createSimpleParticipant.useMutation()
+  const [updateEvent] = api.endpoints.updateEvent.useMutation()
+  const showMessage = useShowMessage()
+
+  const addParticipants = async (toAdd: SimpleParticipantPayload[]) => {
+    if (toAdd.length === 0) return
+    try {
+      await Promise.all(
+        toAdd.map(participant =>
+          createSimpleParticipant({ eventId, participant }).unwrap(),
+        ),
+      )
+    } catch {
+      showMessage({
+        type: 'error',
+        message:
+          toAdd.length === 1
+            ? 'Nepodařilo se přidat účastníka'
+            : 'Nepodařilo se přidat některé účastníky',
+      })
+    }
+  }
+
+  const removeParticipant = async (userId: string) => {
+    const remaining =
+      participants?.results.map(p => p.id).filter(id => id !== userId) ?? []
+    try {
+      await updateEvent({
+        id: eventId,
+        event: { record: { participants: remaining } },
+      }).unwrap()
+    } catch {
+      showMessage({
+        type: 'error',
+        message: 'Nepodařilo se odebrat účastníka',
+      })
+    }
+  }
+
+  if (isLoading) return <Loading>Načítáme účastníky</Loading>
 
   return (
     <div className={styles.container}>
       <div className={styles.importPart}>
-        <ImportExcelButton<EventContact>
+        <ImportExcelButton<SimpleParticipantPayload>
           keyMap={importMap}
-          onUpload={data => peopleFields.append(data)}
+          onUpload={addParticipants}
         >
           Importovat seznam účastníků z excelu
         </ImportExcelButton>{' '}
@@ -60,14 +86,12 @@ export const SimpleParticipants = () => {
           (vzor)
         </ExternalButtonLink>
       </div>
-      {/* <div className={classNames(styles.header, styles.userAndExportLine)}>
-        Nový účastník:{' '}
-      </div> */}
 
       <div className={styles.inputLine}>
-        <SimpleParticipantInput onSubmit={data => peopleFields.prepend(data)} />
+        <SimpleParticipantInput onSubmit={p => addParticipants([p])} />
       </div>
-      <table className={classNames(tableStyles.table, styles.contactTable)}>
+
+      <table className={classNames(tableStyles.table, styles.participantTable)}>
         <thead>
           <tr>
             <th>Jméno</th>
@@ -78,27 +102,19 @@ export const SimpleParticipants = () => {
           </tr>
         </thead>
         <tbody>
-          {peopleFields.fields.map((item, i) => (
+          {participants?.results.map(p => (
             <tr
-              key={item.id}
-              title={`${item.first_name || '?'} ${item.last_name || '?'}, ${
-                item.email || '—'
-              }, ${item.phone || '—'}`}
+              key={p.id}
+              title={`${p.first_name || '?'} ${p.last_name || '?'}, ${
+                p.email || '—'
+              }, ${p.phone || '—'}`}
             >
-              <TdErr name={`record.contacts.${i}.first_name`} errors={errors}>
-                <input {...register(`record.contacts.${i}.first_name`)} />
-              </TdErr>
-              <TdErr name={`record.contacts.${i}.last_name`} errors={errors}>
-                <input {...register(`record.contacts.${i}.last_name`)} />
-              </TdErr>
-              <TdErr name={`record.contacts.${i}.email`} errors={errors}>
-                <input {...register(`record.contacts.${i}.email`)} />
-              </TdErr>
-              <TdErr name={`record.contacts.${i}.phone`} errors={errors}>
-                <input {...register(`record.contacts.${i}.phone`)} />
-              </TdErr>
+              <td>{p.first_name}</td>
+              <td>{p.last_name}</td>
+              <td>{p.email}</td>
+              <td>{p.phone}</td>
               <td>
-                <button type="button" onClick={() => peopleFields.remove(i)}>
+                <button type="button" onClick={() => removeParticipant(p.id)}>
                   <FaTrash />
                 </button>
               </td>
@@ -106,32 +122,14 @@ export const SimpleParticipants = () => {
           ))}
         </tbody>
       </table>
-      {peopleFields.fields.length === 0 && (
+      {!participants?.results.length && (
         <div className={styles.emptyTable}>
-          <EmptyListPlaceholder label="Nejsou pridani zadne ucastniky" />
+          <EmptyListPlaceholder label="Nejsou přidáni žádní účastníci" />
         </div>
       )}
     </div>
   )
 }
-/**
- * table cell capable of displaying error
- */
-const TdErr = <T extends FieldValues>({
-  name,
-  errors,
-  ...props
-}: TdHTMLAttributes<HTMLTableCellElement> & {
-  errors: FieldErrors<T>
-  name: FieldPath<T>
-}) => (
-  <td className={classNames(get(errors, name) ? styles.error : undefined)}>
-    {props.children}
-    <div className={styles.errorMessage}>
-      {get(errors, name)?.message as string}
-    </div>
-  </td>
-)
 
 const SimpleParticipantInput = ({
   formId = 'simple-participant-form',
@@ -139,13 +137,12 @@ const SimpleParticipantInput = ({
   onSubmit,
 }: {
   formId?: string
-  defaultValues?: EventContact
-  onSubmit: (value: EventContact) => void
+  defaultValues?: SimpleParticipantPayload
+  onSubmit: (value: SimpleParticipantPayload) => void
 }) => {
-  const methods = useForm<EventContact>({ defaultValues })
+  const methods = useForm<SimpleParticipantPayload>({ defaultValues })
   const { register, handleSubmit, reset, setFocus } = methods
 
-  // change default values
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues)
@@ -159,55 +156,53 @@ const SimpleParticipantInput = ({
   })
 
   return (
-    <>
-      <FormProvider {...methods}>
-        <OutsideForm id={formId} onSubmit={handleFormSubmit} />
-        <InlineSection>
-          Nový účastník:
-          <FormInputError>
-            <input
-              form={formId}
-              type="text"
-              placeholder="Jméno*"
-              {...register('first_name', {
-                required: validationMessages.required,
-              })}
-            />
-          </FormInputError>
-          <FormInputError>
-            <input
-              form={formId}
-              type="text"
-              placeholder="Příjmení*"
-              {...register('last_name' as const, {
-                required: validationMessages.required,
-              })}
-            />
-          </FormInputError>
-          <FormInputError>
-            <input
-              form={formId}
-              type="email"
-              placeholder="E-mail*"
-              {...register('email' as const, {
-                required: validationMessages.required,
-              })}
-            />
-          </FormInputError>
-          <FormInputError>
-            <input
-              form={formId}
-              type="tel"
-              placeholder="Telefon"
-              {...register('phone' as const)}
-            />
-          </FormInputError>
-          <Button primary type="submit" form={formId}>
-            <FaCheck />
-          </Button>
-        </InlineSection>
-      </FormProvider>
-    </>
+    <FormProvider {...methods}>
+      <OutsideForm id={formId} onSubmit={handleFormSubmit} />
+      <InlineSection>
+        Nový účastník:
+        <FormInputError>
+          <input
+            form={formId}
+            type="text"
+            placeholder="Jméno*"
+            {...register('first_name', {
+              required: validationMessages.required,
+            })}
+          />
+        </FormInputError>
+        <FormInputError>
+          <input
+            form={formId}
+            type="text"
+            placeholder="Příjmení*"
+            {...register('last_name' as const, {
+              required: validationMessages.required,
+            })}
+          />
+        </FormInputError>
+        <FormInputError>
+          <input
+            form={formId}
+            type="email"
+            placeholder="E-mail*"
+            {...register('email' as const, {
+              required: validationMessages.required,
+            })}
+          />
+        </FormInputError>
+        <FormInputError>
+          <input
+            form={formId}
+            type="tel"
+            placeholder="Telefon"
+            {...register('phone' as const)}
+          />
+        </FormInputError>
+        <Button primary type="submit" form={formId}>
+          <FaCheck />
+        </Button>
+      </InlineSection>
+    </FormProvider>
   )
 }
 
