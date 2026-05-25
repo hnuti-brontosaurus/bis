@@ -1,5 +1,6 @@
 import logging
 import re
+import threading
 from collections import Counter
 from functools import wraps
 from time import time
@@ -12,6 +13,43 @@ from django.db import connection
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from unidecode import unidecode
+
+_thread_flags = threading.local()
+
+
+def _flag_is_set(name):
+    return getattr(_thread_flags, name, False)
+
+
+def _set_flag(name, value):
+    setattr(_thread_flags, name, value)
+
+
+def is_validation_paused():
+    return _flag_is_set("skip_validation")
+
+
+def are_emails_paused():
+    return _flag_is_set("emails_paused")
+
+
+def is_ecomail_push_skipped():
+    return _flag_is_set("skip_ecomail_push")
+
+
+class _ThreadFlag:
+    """Per-thread re-entrant flag. Outer `with` block owns the flag and clears it on exit; nested blocks are no-ops."""
+
+    flag = None
+
+    def __enter__(self):
+        self._was_owner = not _flag_is_set(self.flag)
+        if self._was_owner:
+            _set_flag(self.flag, True)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._was_owner:
+            _set_flag(self.flag, False)
 
 
 def try_to_run(fn, *args, **kwargs):
@@ -116,15 +154,8 @@ def update_roles(*roles):
     return decorator
 
 
-class paused_validation:
-    def __enter__(self):
-        self.validation_paused = not cache.get("skip_validation")
-        if self.validation_paused:
-            cache.set("skip_validation", True)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.validation_paused:
-            cache.set("skip_validation", False)
+class paused_validation(_ThreadFlag):
+    flag = "skip_validation"
 
 
 def with_paused_validation(f):
@@ -135,15 +166,8 @@ def with_paused_validation(f):
     return wrapper
 
 
-class paused_emails:
-    def __enter__(self):
-        self.emails_paused = not cache.get("emails_paused")
-        if self.emails_paused:
-            cache.set("emails_paused", True)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.emails_paused:
-            cache.set("emails_paused", False)
+class paused_emails(_ThreadFlag):
+    flag = "emails_paused"
 
 
 def with_paused_emails(f):
@@ -154,15 +178,8 @@ def with_paused_emails(f):
     return wrapper
 
 
-class skip_ecomail_push:
-    def __enter__(self):
-        self.skip = not cache.get("skip_ecomail_push")
-        if self.skip:
-            cache.set("skip_ecomail_push", True)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.skip:
-            cache.set("skip_ecomail_push", False)
+class skip_ecomail_push(_ThreadFlag):
+    flag = "skip_ecomail_push"
 
 
 def on_save(fn, when="always"):

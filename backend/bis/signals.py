@@ -1,9 +1,9 @@
 from datetime import date
 
 from bis import emails
+from bis.helpers import is_ecomail_push_skipped, is_validation_paused
 from bis.models import Location, Qualification, User, UserEmail
 from dateutil.relativedelta import relativedelta
-from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from ecomail.sync import bulk_subscribe, get_session
@@ -92,7 +92,7 @@ def set_primary_email(instance: User, **kwargs):
 @receiver(post_save, sender=UserEmail, dispatch_uid="set_users_primary_email")
 @receiver(post_delete, sender=UserEmail, dispatch_uid="set_users_primary_email_delete")
 def set_users_primary_email(instance: UserEmail, **kwargs):
-    if cache.get("skip_validation"):
+    if is_validation_paused():
         return
     first = getattr(instance.user.all_emails.first(), "email", None)
     if instance.user.email != first:
@@ -107,7 +107,7 @@ def update_roles(instance: User, **kwargs):
 
 @receiver(post_save, sender=User, dispatch_uid="push_to_ecomail")
 def push_to_ecomail(instance: User, created, **kwargs):
-    if cache.get("skip_ecomail_push"):
+    if is_ecomail_push_skipped():
         return
     if not instance.email:
         return

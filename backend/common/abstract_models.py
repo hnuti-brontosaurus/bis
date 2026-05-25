@@ -1,7 +1,7 @@
 import re
 
+from bis.helpers import is_validation_paused
 from django.apps import apps
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import PROTECT, CharField, EmailField, ForeignKey, Model
 from django.db.models.functions import Length
@@ -28,7 +28,7 @@ class BaseContact(Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         super().save(force_insert, force_update, using, update_fields)
 

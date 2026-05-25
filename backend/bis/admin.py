@@ -713,7 +713,7 @@ class MembershipAdminAddForm(forms.ModelForm):
                         }
                     )
                 cleaned_data["user"].birthday = cleaned_data["birthday"]
-                User.objects.bulk_update([cleaned_data["user"]], "birthday")
+                User.objects.bulk_update([cleaned_data["user"]], ["birthday"])
             cleaned_data["slug"] = MembershipCategory.get_individual(
                 cleaned_data["user"].birthday
             )

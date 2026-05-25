@@ -73,8 +73,8 @@ class EventFilter(FilterSet):
         choices=get_choices(Region, lambda x: (x.id, x.name)),
     )
     duration = NumberFilter(field_name="duration")
-    duration__lte = NumberFilter(field_name="duration", lookup_expr="gte")
-    duration__gte = NumberFilter(field_name="duration", lookup_expr="lte")
+    duration__lte = NumberFilter(field_name="duration", lookup_expr="lte")
+    duration__gte = NumberFilter(field_name="duration", lookup_expr="gte")
 
     start__lte = DateFilter(field_name="start", lookup_expr="lte")
     start__gte = DateFilter(field_name="start", lookup_expr="gte")

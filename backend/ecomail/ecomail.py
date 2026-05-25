@@ -1,7 +1,7 @@
 import logging
 
+from bis.helpers import are_emails_paused
 from django.conf import settings
-from django.core.cache import cache
 from ecomail.helpers import get_name_from_template, send
 from ecomail.models import Contact
 from ecomail.serializers import SendEmailSerializer
@@ -39,7 +39,7 @@ def send_email(
         reply_to=reply_to,
     )
 
-    if settings.ENVIRONMENT != "prod" or cache.get("emails_paused"):
+    if settings.ENVIRONMENT != "prod" or are_emails_paused():
         logging.info("Sending of emails disabled, email data: %s", data)
         return
 

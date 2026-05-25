@@ -1,4 +1,4 @@
-from bis.helpers import SearchMixin
+from bis.helpers import SearchMixin, is_validation_paused
 from bis.models import Location, User
 from categories.models import (
     EventProgramCategory,
@@ -9,7 +9,6 @@ from categories.models import (
 )
 from common.thumbnails import ThumbnailImageField
 from django.contrib.gis.db import models as m
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import CASCADE, PROTECT, Q
 from phonenumber_field.modelfields import PhoneNumberField
@@ -57,7 +56,7 @@ class Opportunity(SearchMixin, m.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         self.contact_email = self.contact_email.lower()
         super().save(force_insert, force_update, using, update_fields)

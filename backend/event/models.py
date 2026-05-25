@@ -4,6 +4,7 @@ from administration_units.models import AdministrationUnit
 from bis.helpers import (
     SearchMixin,
     filter_queryset_with_multiple_or_queries,
+    is_validation_paused,
     permission_cache,
     update_roles,
 )
@@ -24,7 +25,6 @@ from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.gis.db import models as m
 from django.contrib.gis.geos import Point
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import CASCADE, PROTECT, Index, Q
 from django.utils.safestring import mark_safe
@@ -124,7 +124,7 @@ class Event(SearchMixin, m.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         super().save(force_insert, force_update, using, update_fields)
 
@@ -273,7 +273,7 @@ class EventPropagation(m.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         self.contact_email = self.contact_email.lower()
         super().save(force_insert, force_update, using, update_fields)

@@ -10,6 +10,7 @@ from bis.email_validation import validate_email
 from bis.helpers import (
     SearchMixin,
     filter_queryset_with_multiple_or_queries,
+    is_validation_paused,
     paused_validation,
     permission_cache,
 )
@@ -31,7 +32,6 @@ from django.contrib import admin, messages
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.contrib.gis.db import models as m
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import CASCADE, PROTECT, Index, Q, UniqueConstraint
@@ -461,7 +461,7 @@ class User(SearchMixin, AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         self.email = self.email or None
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         super().save(*args, **kwargs)
 
@@ -939,7 +939,7 @@ class Membership(m.Model):
             )
 
     def save(self, *args, **kwargs):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         self._year = date(self.year, 1, 1)
         super().save(*args, **kwargs)
@@ -986,7 +986,7 @@ class Qualification(m.Model):
             )
 
     def save(self, *args, **kwargs):
-        if not cache.get("skip_validation"):
+        if not is_validation_paused():
             self.clean()
         super().save(*args, **kwargs)
 

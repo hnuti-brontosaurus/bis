@@ -981,6 +981,9 @@ class EventApplicationSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
+        validated_data.pop("user", None)
+        validated_data["state"] = "pending"
+        validated_data["paid_for"] = False
         validated_data["event_registration"] = Event.objects.get(
             id=self.context["view"].kwargs["event_id"]
         ).registration
@@ -1053,6 +1056,7 @@ class EventFeedbackSerializer(ModelSerializer):
 
     @catch_related_object_does_not_exist
     def create(self, validated_data):
+        validated_data.pop("user", None)
         validated_data["event"] = Event.objects.get(
             id=self.context["view"].kwargs["event_id"]
         )
