@@ -2,6 +2,7 @@ import logging
 
 import requests
 from administration_units.models import AdministrationUnit
+from bis.email_validation import repair_email
 from bis.helpers import print_progress
 from bis.models import User, UserAddress
 from categories.models import DonationSourceCategory
@@ -58,7 +59,9 @@ class Command(BaseCommand):
             if not transactions:
                 continue
 
-            email = donor["email"].lower()
+            email = repair_email(donor["email"].lower())
+            if not email:
+                continue
             user = User.objects.get_or_create(
                 all_emails__email=email,
                 defaults=dict(

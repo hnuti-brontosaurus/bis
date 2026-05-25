@@ -227,22 +227,23 @@ class Command(BaseCommand):
         return inserted_at is not None and inserted_at >= promotion_cutoff
 
     def _push(self, session, list_id):
-        queryset = User.objects.filter(email__isnull=False)
-        total = queryset.count()
-        users = (
-            queryset.select_related("pronoun", "address__region", "donor")
-            .prefetch_related(
-                "roles",
-                "memberships",
-                "qualifications__category",
-                "events_where_was_as_main_organizer",
-                "events_where_was_organizer",
-                "participated_in_events__event",
-            )
-            .iterator(chunk_size=PUSH_BATCH_SIZE)
-        )
+        base = User.objects.filter(email__isnull=False)
+        total = base.count()
         pushed = 0
-        for batch in batched(users, PUSH_BATCH_SIZE):
+        id_iter = base.values_list("id", flat=True).iterator(chunk_size=PUSH_BATCH_SIZE)
+        for batch_ids in batched(id_iter, PUSH_BATCH_SIZE):
+            batch = list(
+                User.objects.filter(id__in=batch_ids)
+                .select_related("pronoun", "address__region", "donor")
+                .prefetch_related(
+                    "roles",
+                    "memberships",
+                    "qualifications__category",
+                    "events_where_was_as_main_organizer",
+                    "events_where_was_organizer",
+                    "participated_in_events__event",
+                )
+            )
             bulk_subscribe(session, list_id, batch)
             pushed += len(batch)
             print_progress("ecomail sync: pushing users", pushed - 1, total)

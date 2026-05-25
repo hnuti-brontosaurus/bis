@@ -24,6 +24,9 @@ INVALID = [
     ("alice@sub.localhost", "reserved hostname localhost as TLD"),
     # Historic junk domain.
     ("foo@gk.zy", "historic junk domain gk.zy"),
+    # Single-letter TLDs (no real TLD is 1 char).
+    ("a@a.a", "1-letter TLD"),
+    ("foo@sub.bar.x", "1-letter TLD with subdomain"),
     # Typos that REPAIRS would auto-fix → reject as written.
     ("alice@server.ocm", "typo .ocm"),
     ("alice@server.comj", "typo .comj"),
