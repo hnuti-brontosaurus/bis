@@ -221,17 +221,17 @@ describe('Close event - evidence and participants', () => {
     describe('Adding non-existent user as participant', () => {
       // do the initial visiting and clicking to open user form modal.
       // Switching attendance-list type fires its own PATCH (to clear the
-      // previous mode's participants + count fields server-side); waiting
-      // for it here keeps the per-test @updateEvent waits aligned with
-      // the actions they describe.
+      // previous mode's participants + count fields server-side); the modal
+      // must be confirmed first (Pokračovat) before the PATCH fires, so we
+      // click the button before waiting for the intercept.
       const visitPage = () => {
         cy.visit('/org/akce/1000/uzavrit')
 
         cy.get('label:contains(Mám všechny informace)')
           .should('be.visible')
           .click()
-        cy.wait('@updateEvent')
         cy.get('button:contains(Pokračovat)').click()
+        cy.wait('@updateEvent')
       }
 
       const clickAddNewParticipant = () => {
@@ -437,10 +437,11 @@ describe('Close event - evidence and participants', () => {
       cy.get('label:contains(Mám všechny informace)')
         .should('be.visible')
         .click()
-      // Switching attendance-list type fires its own PATCH; wait it out so
-      // the next @updateEvent below catches the delete-driven one.
-      cy.wait('@updateEvent')
+      // Confirm the modal first (Pokračovat), which fires the PATCH; waiting
+      // after the click drains the type-switch PATCH so the next @updateEvent
+      // below catches only the delete-driven one.
       cy.get('button:contains(Pokračovat)').click()
+      cy.wait('@updateEvent')
 
       // click delete
       cy.get('button[aria-label="Smazat účastníka Jana Novak"]').click()
