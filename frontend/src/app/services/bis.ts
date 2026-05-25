@@ -168,6 +168,18 @@ export const api = createApi({
         { type: 'Participant' as const, id: 'PARTICIPANT_LIST' },
       ],
     }),
+    removeEventParticipant: build.mutation<
+      void,
+      { eventId: number; userId: string }
+    >({
+      query: ({ eventId, userId }) => ({
+        url: `frontend/events/${eventId}/record/participants/${userId}/`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: () => [
+        { type: 'Participant' as const, id: 'PARTICIPANT_LIST' },
+      ],
+    }),
     // frontendUsersRetrieve
     readUser: build.query<User, { id: string }>({
       query: ({ id }) => `frontend/users/${id}/`,
