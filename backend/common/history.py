@@ -1,22 +1,26 @@
-from datetime import timedelta
+from datetime import date
 
 from django.apps import apps
 from django.utils.safestring import mark_safe
 
+MAX_GAP_DAYS = 31
 
-def record_history(history: dict, date, user, position):
+
+def record_history(history: dict, day, user, position):
     if not user:
         return
     user_id = str(user.id)
     date_ranges = history.setdefault(position, {}).setdefault(user_id, [])
+    day_str = str(day)
     for date_range in date_ranges:
-        if date_range[1] == str(date - timedelta(days=1)):
-            date_range[1] = str(date)
-            break
-        if date_range[1] == str(date):
+        if date_range[0] <= day_str <= date_range[1]:
             return
+        gap = (day - date.fromisoformat(date_range[1])).days
+        if 0 < gap <= MAX_GAP_DAYS:
+            date_range[1] = day_str
+            break
     else:
-        date_ranges.append([str(date), str(date)])
+        date_ranges.append([day_str, day_str])
 
 
 def show_history(history: dict):
