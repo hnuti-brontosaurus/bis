@@ -1,4 +1,4 @@
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
@@ -22,7 +22,10 @@ from event.models import (
     VIPEventPropagation,
 )
 from feedback.models import EventFeedback
-from more_admin_filters import MultiSelectRelatedDropdownFilter
+from more_admin_filters import (
+    MultiSelectDropdownFilter,
+    MultiSelectRelatedDropdownFilter,
+)
 from nested_admin.nested import (
     NestedModelAdmin,
     NestedStackedInline,
@@ -34,6 +37,16 @@ from xlsx_export.export import (
     export_to_xlsx,
     get_attendance_list,
 )
+
+
+class AttendanceListTypeFilter(MultiSelectDropdownFilter):
+    def choices(self, changelist):
+        labels = dict(self.field.flatchoices)
+        for choice in super().choices(changelist):
+            display = choice["display"]
+            with suppress(TypeError):
+                choice["display"] = labels.get(display, display)
+            yield choice
 
 
 class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
@@ -144,6 +157,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "registration__is_registration_required",
         "registration__is_event_full",
         "is_attendance_list_required",
+        ("record__attendance_list_type", AttendanceListTypeFilter),
         ("location__region", MultiSelectRelatedDropdownFilter),
         ("main_organizer__birthday", EventStatsDateFilter),
         ("administration_units", MultiSelectRelatedDropdownFilter),
