@@ -43,7 +43,8 @@ class Command(BaseCommand):
             options["root_folder"],
             parent_id=settings.GOOGLE_SHARED_DRIVE_ID,
         )
-        existing_event_folders = list_subfolders(service, root_id)
+        year_folders = list_subfolders(service, root_id)
+        event_folders_by_year: dict[str, dict[str, str]] = {}
 
         cutoff = None if options["all"] else time.time() - options["since_days"] * 86400
 
@@ -55,23 +56,32 @@ class Command(BaseCommand):
             if not files:
                 continue
 
+            year = str(event.start.year)
+            year_id = year_folders.get(year)
+            if year_id is None:
+                year_id = get_or_create_folder(service, year, parent_id=root_id)
+                year_folders[year] = year_id
+            if year not in event_folders_by_year:
+                event_folders_by_year[year] = list_subfolders(service, year_id)
+
+            location = event.location.name if event.location else "bez lokality"
             event_folder_name = sanitize_name(
-                f"{event.start.isoformat()} - {event.name}"
+                f"{event.start.isoformat()} - {event.name} - {location}"
             )
-            folder_id = existing_event_folders.get(event_folder_name)
+            folder_id = event_folders_by_year[year].get(event_folder_name)
             if folder_id is None:
                 folder_id = get_or_create_folder(
                     service,
                     event_folder_name,
-                    parent_id=root_id,
+                    parent_id=year_id,
                 )
-                existing_event_folders[event_folder_name] = folder_id
+                event_folders_by_year[year][event_folder_name] = folder_id
 
             existing = get_existing_names(service, folder_id, [n for n, _ in files])
             for drive_name, path in files:
                 if drive_name in existing:
                     continue
-                logging.info(f"  Uploading: {event_folder_name}/{drive_name}")
+                logging.info(f"  Uploading: {year}/{event_folder_name}/{drive_name}")
                 upload_file(service, folder_id, drive_name, path)
                 uploaded += 1
 
