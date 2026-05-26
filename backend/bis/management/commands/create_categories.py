@@ -272,7 +272,7 @@ class Command(BaseCommand):
             },
             "section_meeting": {
                 "name": "pravidelné oddílové schůzky",
-                "description": "pravidelná dětská oddílová činnost BRĎO",
+                "description": "pravidelná dětská oddílová činnost BRĎO (cca minimálně 2x měsíčně)",
             },
             "internal": {
                 "name": "interní akce",
@@ -296,7 +296,7 @@ class Command(BaseCommand):
             },
             "evp": {
                 "name": "výukový program (EVP)",
-                "description": "pouze Environmentální vzdělávací přednášky EVP",
+                "description": "pouze Environmentální vzdělávací přednášky EVP pro školy a školní kolektivy",
             },
             "presentation": {
                 "name": "prezentační akce",
