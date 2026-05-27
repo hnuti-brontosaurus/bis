@@ -78,11 +78,44 @@ def _qualification_tags(user: User, today) -> list[str]:
     return tags
 
 
+MORAVA_REGION_KEYWORDS = (
+    "Jihomoravský",
+    "Olomoucký",
+    "Zlínský",
+    "Moravskoslezský",
+    "Vysočina",
+)
+
+CECHY_REGION_KEYWORDS = (
+    "Praha",
+    "Středočeský",
+    "Jihočeský",
+    "Plzeňský",
+    "Karlovarský",
+    "Ústecký",
+    "Liberecký",
+    "Královéhradecký",
+    "Pardubický",
+)
+
+
+def _macro_region_tag(region_name: str) -> str | None:
+    if any(keyword in region_name for keyword in MORAVA_REGION_KEYWORDS):
+        return "Morava"
+    if any(keyword in region_name for keyword in CECHY_REGION_KEYWORDS):
+        return "Čechy"
+    return None
+
+
 def _region_tags(user: User) -> list[str]:
-    address = getattr(user, "address", None)
-    if address and address.region:
-        return [address.region.name]
-    return []
+    address = getattr(user, "contact_address", None) or getattr(user, "address", None)
+    if not (address and address.region):
+        return []
+    tags = [address.region.name]
+    macro = _macro_region_tag(address.region.name)
+    if macro:
+        tags.append(macro)
+    return tags
 
 
 def compute_tags(user: User) -> list[str]:

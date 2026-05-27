@@ -26,7 +26,9 @@ def batched(iterable: Iterable, size: int) -> Iterator[list]:
 def _push_batch(session: Session, list_id: int, user_ids: Iterable) -> int:
     users = list(
         User.objects.filter(id__in=user_ids, email__isnull=False)
-        .select_related("pronoun", "address__region", "donor")
+        .select_related(
+            "pronoun", "address__region", "contact_address__region", "donor"
+        )
         .prefetch_related(
             "roles",
             "memberships",
