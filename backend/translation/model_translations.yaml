@@ -655,6 +655,14 @@ Announcement:
     start: Začátek
     end: Konec
 
+UserTag:
+  name: Dočasný štítek
+  name_plural: Dočasné štítky
+  fields:
+    name: Název
+    expires_at: Platnost do
+    users: Uživatelé
+
 DashboardItem:
   name: Termín
   name_plural: Termíny

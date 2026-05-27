@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<p>Akce bude provedena pro {{ queryset.count }} záznamů.</p>
+
+<form method="post">
+    {% csrf_token %}
+    {% for obj in queryset %}
+        <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}">
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_name }}">
+    <input type="hidden" name="select_across" value="0">
+
+    <p>
+        <label for="id_operation">Operace:</label>
+        <select name="operation" id="id_operation" required>
+            <option value="">---------</option>
+            {% for slug, label in operations %}
+                <option value="{{ slug }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        <label for="id_name">Štítek:</label>
+        <input type="text" name="name" id="id_name" list="existing-tags" required
+               placeholder="vyber existující nebo napiš nový">
+        <datalist id="existing-tags">
+            {% for tag in tags %}
+                <option value="{{ tag.name }}"></option>
+            {% endfor %}
+        </datalist>
+    </p>
+
+    <p>
+        <input type="submit" name="apply" value="Provést" class="default">
+        <a href="../">{% trans "Zrušit" %}</a>
+    </p>
+</form>
+{% endblock %}

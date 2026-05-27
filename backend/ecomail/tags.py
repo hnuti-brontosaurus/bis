@@ -96,4 +96,5 @@ def compute_tags(user: User) -> list[str]:
     tags.extend(_region_tags(user))
     if hasattr(user, "donor"):
         tags.append("Dárce")
+    tags.extend(tag.name for tag in user.tags.all())
     return tags

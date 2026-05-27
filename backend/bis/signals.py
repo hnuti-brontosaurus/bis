@@ -1,12 +1,15 @@
+import logging
+import threading
 from datetime import date
 
 from bis import emails
 from bis.helpers import is_ecomail_push_skipped, is_validation_paused
 from bis.models import Location, Qualification, User, UserEmail
 from dateutil.relativedelta import relativedelta
-from django.db.models.signals import post_delete, post_save, pre_save
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_save
 from django.dispatch import receiver
-from ecomail.sync import bulk_subscribe, get_session
+from ecomail.sync import bulk_subscribe, get_session, push_users
+from other.models import UserTag
 from project import settings
 from regions.models import Region
 from rest_framework.authtoken.models import Token
@@ -117,3 +120,29 @@ def push_to_ecomail(instance: User, created, **kwargs):
         return
     bulk_subscribe(get_session(), settings.ECOMAIL_LIST_ID, [instance])
     instance._original_subscription_status = new
+
+
+def _push_users_async(user_ids):
+    def _run():
+        try:
+            push_users(get_session(), settings.ECOMAIL_LIST_ID, user_ids)
+        except Exception:
+            logging.exception("ecomail push for user tag change failed")
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+@receiver(
+    m2m_changed,
+    sender=UserTag.users.through,
+    dispatch_uid="push_user_tag_to_ecomail",
+)
+def push_user_tag_to_ecomail(action, instance, reverse, pk_set, **kwargs):
+    if is_ecomail_push_skipped():
+        return
+    if action not in ("post_add", "post_remove"):
+        return
+    if not pk_set:
+        return
+    user_ids = [instance.pk] if reverse else list(pk_set)
+    _push_users_async(user_ids)

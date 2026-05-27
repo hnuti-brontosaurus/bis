@@ -1,6 +1,4 @@
-from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime, timedelta
-from itertools import islice
 
 from bis.helpers import print_progress, skip_ecomail_push
 from bis.models import User, UserEmail
@@ -8,7 +6,14 @@ from categories.models import PronounCategory
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
-from ecomail.sync import bulk_subscribe, get_session, iter_subscribers, remove_from_list
+from ecomail.sync import (
+    PUSH_BATCH_SIZE,
+    batched,
+    get_session,
+    iter_subscribers,
+    push_users,
+    remove_from_list,
+)
 
 GENDER_TO_PRONOUN_SLUG = {
     "female": "woman",
@@ -22,7 +27,6 @@ ECOMAIL_TO_BIS_STATUS = {
 }
 
 PULL_BATCH_SIZE = 100
-PUSH_BATCH_SIZE = 100
 
 
 def _parse_ecomail_datetime(value):
@@ -35,15 +39,6 @@ def _parse_ecomail_datetime(value):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=UTC)
     return dt
-
-
-def batched(iterable: Iterable, size: int) -> Iterator[list]:
-    it = iter(iterable)
-    while True:
-        chunk = list(islice(it, size))
-        if not chunk:
-            return
-        yield chunk
 
 
 def clean_name(value):
@@ -232,20 +227,7 @@ class Command(BaseCommand):
         pushed = 0
         id_iter = base.values_list("id", flat=True).iterator(chunk_size=PUSH_BATCH_SIZE)
         for batch_ids in batched(id_iter, PUSH_BATCH_SIZE):
-            batch = list(
-                User.objects.filter(id__in=batch_ids)
-                .select_related("pronoun", "address__region", "donor")
-                .prefetch_related(
-                    "roles",
-                    "memberships",
-                    "qualifications__category",
-                    "events_where_was_as_main_organizer",
-                    "events_where_was_organizer",
-                    "participated_in_events__event",
-                )
-            )
-            bulk_subscribe(session, list_id, batch)
-            pushed += len(batch)
+            pushed += push_users(session, list_id, batch_ids)
             print_progress("ecomail sync: pushing users", pushed - 1, total)
 
     def _parse(self, item: dict, pronoun_id_by_gender: dict) -> dict:

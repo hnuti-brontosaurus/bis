@@ -26,7 +26,13 @@ from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
 from event.models import Event, EventDraft
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
-from other.models import Announcement, DashboardItem, DonationPoints, DuplicateUser
+from other.models import (
+    Announcement,
+    DashboardItem,
+    DonationPoints,
+    DuplicateUser,
+    UserTag,
+)
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -108,7 +114,7 @@ class Permissions:
         ]:
             return self.user.can_see_all
 
-        if self.model in [UploadBankRecords, DashboardItem, Announcement] or (
+        if self.model in [UploadBankRecords, DashboardItem, Announcement, UserTag] or (
             not obj and self.model in [DuplicateUser]
         ):
             return self.user.is_superuser or self.user.is_office_worker

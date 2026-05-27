@@ -15,6 +15,27 @@ from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
+def _default_user_tag_expires_at():
+    return today().date() + timedelta(days=7)
+
+
+@translate_model
+class UserTag(m.Model):
+    name = m.CharField(max_length=63, unique=True)
+    expires_at = m.DateField(default=_default_user_tag_expires_at)
+    users = m.ManyToManyField(User, related_name="tags", blank=True)
+
+    class Meta:
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def remove_expired(cls):
+        cls.objects.filter(expires_at__lt=today().date()).delete()
+
+
 @translate_model
 class Announcement(m.Model):
     SEVERITY_CHOICES = [

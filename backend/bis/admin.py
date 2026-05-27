@@ -53,7 +53,7 @@ from categories.models import MembershipCategory, PronounCategory, Qualification
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
-from django.contrib.admin import ModelAdmin, action
+from django.contrib.admin import ModelAdmin, action, helpers
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth.models import Group
@@ -61,8 +61,10 @@ from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from donations.models import Donor
 from login_code.models import guess_birthday_throttle
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -73,7 +75,7 @@ from nested_admin.nested import (
     NestedTabularInline,
 )
 from opportunities.models import OfferedHelp
-from other.models import DuplicateUser
+from other.models import DuplicateUser, UserTag
 from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
 from rest_framework.exceptions import Throttled
@@ -251,6 +253,70 @@ def get_add_members_actions(administration_units):
     ]
 
 
+TAG_OPERATIONS = [
+    ("add", "Přidat štítek"),
+    ("remove", "Odebrat štítek"),
+]
+
+
+@admin.action(description="Přidat / odebrat dočasný štítek…")
+def change_user_tag(model_admin, request, queryset):
+    if not (request.user.is_superuser or request.user.is_office_worker):
+        return model_admin.message_user(request, "Nemáš právo upravovat štítky", ERROR)
+
+    if model_admin.model is Donor:
+        users_qs = User.objects.filter(donor__in=queryset)
+    else:
+        users_qs = queryset
+
+    if "apply" in request.POST:
+        operation = request.POST.get("operation")
+        name = (request.POST.get("name") or "").strip()
+
+        if operation not in dict(TAG_OPERATIONS):
+            messages.error(request, "Vyber operaci.")
+            return
+        if not name:
+            messages.error(request, "Vyplň název štítku.")
+            return
+
+        tag = UserTag.objects.filter(name=name).first()
+
+        if operation == "add":
+            if tag is None:
+                tag = UserTag.objects.create(name=name)
+            tag.users.add(*users_qs)
+            messages.success(
+                request,
+                f"Přidán štítek „{tag}“ pro {users_qs.count()} uživatelů.",
+            )
+        else:
+            if tag is None:
+                messages.error(request, f"Štítek „{name}“ neexistuje.")
+                return
+            tag.users.remove(*users_qs)
+            messages.success(
+                request,
+                f"Odebrán štítek „{tag}“ pro {users_qs.count()} uživatelů.",
+            )
+        return
+
+    return TemplateResponse(
+        request,
+        "bis/change_user_tag_action.html",
+        {
+            **model_admin.admin_site.each_context(request),
+            "title": "Přidat / odebrat dočasný štítek",
+            "queryset": queryset,
+            "tags": UserTag.objects.order_by("name"),
+            "operations": TAG_OPERATIONS,
+            "action_name": "change_user_tag",
+            "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            "opts": model_admin.model._meta,
+        },
+    )
+
+
 @action(description="Vypiš e-maily")
 def export_emails(view, request, queryset):
     emails = queryset.values_list("email", flat=True)
@@ -276,6 +342,13 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         for action_func in get_add_members_actions(administration_units):
             name = action_func.__name__
             actions[name] = (action_func, name, action_func.short_description)
+
+        if request.user.is_superuser or request.user.is_office_worker:
+            actions["change_user_tag"] = (
+                change_user_tag,
+                "change_user_tag",
+                change_user_tag.short_description,
+            )
 
         return actions
 
@@ -449,6 +522,7 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
         ("offers__team_roles", MultiSelectRelatedDropdownFilter),
         list_filter_extra_title("Ostatní"),
         ("roles", MultiSelectRelatedDropdownFilter),
+        ("tags", MultiSelectRelatedDropdownFilter),
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
         NoLoginFilter,

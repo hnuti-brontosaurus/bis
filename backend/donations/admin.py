@@ -1,4 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
+from bis.admin import change_user_tag
 from bis.admin_filters import (
     DonationSumAmountFilter,
     DonationSumRangeFilter,
@@ -259,6 +260,17 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         export_to_xlsx,
         change_fundraising_campaign,
     ]
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if request.user.is_superuser or request.user.is_office_worker:
+            actions["change_user_tag"] = (
+                change_user_tag,
+                "change_user_tag",
+                change_user_tag.short_description,
+            )
+        return actions
+
     list_display = (
         "user",
         "get_user_email",
@@ -322,7 +334,18 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         ("events__campaign", MultiSelectRelatedDropdownFilter),
         ("events__event_type", MultiSelectRelatedDropdownAndCampaignFilter),
         HasPledgeInCampaignFilter,
+        ("user__tags", MultiSelectRelatedDropdownFilter),
     )
+
+    def get_list_filter(self, request):
+        filters = super().get_list_filter(request)
+        if not (request.user.is_superuser or request.user.is_office_worker):
+            filters = tuple(
+                f
+                for f in filters
+                if not (isinstance(f, tuple) and f[0] == "user__tags")
+            )
+        return filters
 
     autocomplete_fields = "regional_center_support", "basic_section_support", "user"
 

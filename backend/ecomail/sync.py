@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Iterable, Iterator
+from itertools import islice
 
 from bis.models import User
 from django.conf import settings
@@ -9,6 +10,42 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 BASE_URL = "https://api2.ecomailapp.cz"
+
+PUSH_BATCH_SIZE = 100
+
+
+def batched(iterable: Iterable, size: int) -> Iterator[list]:
+    it = iter(iterable)
+    while True:
+        chunk = list(islice(it, size))
+        if not chunk:
+            return
+        yield chunk
+
+
+def _push_batch(session: Session, list_id: int, user_ids: Iterable) -> int:
+    users = list(
+        User.objects.filter(id__in=user_ids, email__isnull=False)
+        .select_related("pronoun", "address__region", "donor")
+        .prefetch_related(
+            "roles",
+            "memberships",
+            "qualifications__category",
+            "events_where_was_as_main_organizer",
+            "events_where_was_organizer",
+            "participated_in_events__event",
+            "tags",
+        )
+    )
+    bulk_subscribe(session, list_id, users)
+    return len(users)
+
+
+def push_users(session: Session, list_id: int, user_ids: Iterable) -> int:
+    pushed = 0
+    for batch_ids in batched(user_ids, PUSH_BATCH_SIZE):
+        pushed += _push_batch(session, list_id, batch_ids)
+    return pushed
 
 
 def _raise_for_status(response: Response, context: str) -> None:

@@ -17,6 +17,7 @@ from other.models import (
     DonationPointsColumn,
     DonationPointsSection,
     DuplicateUser,
+    UserTag,
 )
 
 
@@ -128,3 +129,15 @@ class DonationPointsAdmin(PermissionMixin, NestedModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.save()
+
+
+@admin.register(UserTag)
+class UserTagAdmin(PermissionMixin, admin.ModelAdmin):
+    list_display = ("name", "expires_at", "get_user_count")
+    fields = ("name", "expires_at", "get_user_count")
+    readonly_fields = ("get_user_count",)
+    search_fields = ("name",)
+
+    @admin.display(description="Počet uživatelů")
+    def get_user_count(self, obj):
+        return obj.users.count()
