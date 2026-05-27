@@ -13,7 +13,7 @@
     margin: 1rem 0;
   }
   @include media.for-phone-only {
-    margin: 5x 0 0;
+    margin: 5px 0 0;
     padding: 5px 10px 5px;
   }
   @include media.for-tablet-portrait-up {
