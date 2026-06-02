@@ -522,6 +522,7 @@ def send_feedback_request(event):
                 "event_date": event.get_date(),
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
                 "email_content": ecomail.style_html(event.feedback_form.email_content),
+                "vokativ": participant.vokativ,
             },
         )
 

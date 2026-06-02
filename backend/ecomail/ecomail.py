@@ -32,6 +32,8 @@ def style_html(html: str) -> str:
         html, css_text=_EMAIL_CSS, remove_classes=True, disable_validation=True
     ).transform()
     body = lxml_html.fromstring(inlined).find("body")
+    if body is None:
+        return inlined
     return (body.text or "") + "".join(
         lxml_html.tostring(child, encoding="unicode") for child in body
     )
