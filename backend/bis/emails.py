@@ -514,14 +514,15 @@ def send_feedback_request(event):
     for participant in event.record.participants.all():
         ecomail.send_email(
             emails["bis"],
-            305,
+            356,
             [participant.email],
-            subject=f"🦕 Jaký to bylo? Zpětná vazba z akce {event.name}",
+            subject=event.feedback_form.email_subject,
             variables={
                 "event_name": event.name,
                 "event_date": event.get_date(),
-                "vokativ": participant.vokativ,
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
+                "email_content": ecomail.style_html(event.feedback_form.email_content),
+                "vokativ": participant.vokativ,
             },
         )
 

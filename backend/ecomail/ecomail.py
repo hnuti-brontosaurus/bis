@@ -5,6 +5,38 @@ from django.conf import settings
 from ecomail.helpers import get_name_from_template, send
 from ecomail.models import Contact
 from ecomail.serializers import SendEmailSerializer
+from lxml import html as lxml_html
+from premailer import Premailer
+
+_EMAIL_CSS = """
+ul, ol, li {
+    font-size: 16px;
+    font-family: Ubuntu, Helvetica, Arial, sans-serif;
+    color: #000000;
+    line-height: 1.5;
+}
+p {
+    font-size: 16px;
+    margin: 0 0 13px;
+}
+a {
+    color: #1E9646;
+}
+"""
+
+
+def style_html(html: str) -> str:
+    if not html:
+        return html
+    inlined = Premailer(
+        html, css_text=_EMAIL_CSS, remove_classes=True, disable_validation=True
+    ).transform()
+    body = lxml_html.fromstring(inlined).find("body")
+    if body is None:
+        return inlined
+    return (body.text or "") + "".join(
+        lxml_html.tostring(child, encoding="unicode") for child in body
+    )
 
 
 def send_email(

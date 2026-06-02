@@ -76,6 +76,8 @@ export const CreateEvent = () => {
         feedback_form: {
           introduction: formTexts.feedback_form.introduction.initial,
           after_submit_text: formTexts.feedback_form.after_submit_text.initial,
+          email_subject: formTexts.feedback_form.email_subject.initial,
+          email_content: formTexts.feedback_form.email_content.initial,
         },
       }
     }

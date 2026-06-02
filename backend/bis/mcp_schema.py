@@ -85,6 +85,7 @@ class LocationType:
 
 @strawberry_django.type(FeedbackForm, fields="__all__")
 class FeedbackFormType:
+    email_content: str
     inquiries: list[InquiryType]
 
 
