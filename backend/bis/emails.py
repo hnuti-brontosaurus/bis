@@ -71,7 +71,10 @@ def password_reset_link(user, email, login_code):
 
 def application_created(application):
     event = application.event_registration.event
-    contact_email = event.propagation.contact_email or event.main_organizer.email
+    propagation = getattr(event, "propagation", None)
+    contact_email = (
+        propagation and propagation.contact_email
+    ) or event.main_organizer.email
     variables = {
         "event_name": event.name,
         "event_date": event.get_date(),
