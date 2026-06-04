@@ -1,4 +1,4 @@
-from bis.helpers import skip_ecomail_push
+from bis.helpers import paused_validation, skip_ecomail_push
 from bis.models import User
 from django.db import migrations
 
@@ -34,7 +34,8 @@ def migrate_contacts_to_participants(apps, schema_editor):
                     phone=contact.phone or "",
                 )
                 user.set_unusable_password()
-                user.save()
+                with paused_validation():
+                    user.save()
 
             contact.record.participants.add(user.pk)
             contact.delete()
