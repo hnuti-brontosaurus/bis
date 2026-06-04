@@ -515,6 +515,10 @@ def send_feedback_request(event):
         return
 
     for participant in event.record.participants.all():
+        email_content = ecomail.replace_variables(
+            event.feedback_form.email_content,
+            {"vokativ": participant.vokativ, "event_name": event.name},
+        )
         ecomail.send_email(
             emails["bis"],
             356,
@@ -524,7 +528,7 @@ def send_feedback_request(event):
                 "event_name": event.name,
                 "event_date": event.get_date(),
                 "feedback_link": f"{settings.FULL_HOSTNAME}/akce/{event.id}/zpetna_vazba",
-                "email_content": ecomail.style_html(event.feedback_form.email_content),
+                "email_content": ecomail.style_html(email_content),
             },
         )
 

@@ -39,6 +39,12 @@ def style_html(html: str) -> str:
     )
 
 
+def replace_variables(html: str, variables: dict[str, str]) -> str:
+    for name, value in variables.items():
+        html = html.replace(f"*|{name}|*", value)
+    return html
+
+
 def send_email(
     sender: tuple[str, str],
     template_id: int,
