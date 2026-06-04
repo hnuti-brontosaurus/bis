@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 798710c8e1365309
+// source-hash: 62081b8b4791bd6d
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
