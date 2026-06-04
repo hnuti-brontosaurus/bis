@@ -24,7 +24,7 @@ export const form = {
     },
     email_content: {
       initial: `
-        <p>Ahoj *|vokativ|*,</p>
+        <p>Ahoj,</p>
         <p>&hellip; doufáme, že se po *|event_name|* cítíš jenom dobře! 😊</p>
         <p><br></p>
         <p> A teď upřímně — <b>jaký to bylo?</b></p>
