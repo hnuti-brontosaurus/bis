@@ -148,7 +148,6 @@ describe('Close event - evidence and participants', () => {
           '@createSimpleParticipant',
         ])
 
-        // The table now reflects the participants returned by the refetch.
         cy.get('table[class^=ParticipantsStep-module__table] tbody tr')
           .should('have.length', 4)
           .last()
