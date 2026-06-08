@@ -2,7 +2,7 @@ from datetime import date
 
 from api.helpers import catch_related_object_does_not_exist
 from bis import emails
-from bis.helpers import AgeStats, get_locked_year
+from bis.helpers import AgeStats, get_locked_year, paused_validation
 from bis.models import (
     EYCACard,
     Location,
@@ -16,6 +16,7 @@ from bis.models import (
     UserClosePerson,
     UserContactAddress,
 )
+from bis.permissions import Permissions
 from categories.models import OpportunityPriority
 from categories.serializers import (
     DietCategorySerializer,
@@ -44,7 +45,6 @@ from donations.models import Donation, Donor
 from event.models import (
     Event,
     EventAttendanceListPage,
-    EventContact,
     EventDraft,
     EventFinance,
     EventFinanceReceipt,
@@ -58,6 +58,7 @@ from event.models import (
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
 from other.models import Announcement, DashboardItem
+from phonenumber_field.serializerfields import PhoneNumberField
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -67,6 +68,7 @@ from questionnaire.models import (
     Questionnaire,
 )
 from regions.serializers import RegionSerializer
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import (
     CharField,
@@ -594,10 +596,75 @@ class UpdatableListSerializer(ListSerializer):
         return self.create(validated_data)
 
 
-class EventContactSerializer(BaseContactSerializer):
-    class Meta(BaseContactSerializer.Meta):
-        model = EventContact
-        list_serializer_class = UpdatableListSerializer
+class SimpleParticipantSerializer(ModelSerializer):
+    # Email and phone are declared explicitly so format validation runs on
+    # the serializer — paused_validation on save would otherwise let
+    # malformed values through. Existing users matched by email are
+    # returned (with PII masked in to_representation for users the
+    # requester can't normally see) so the dedup path doesn't leak
+    # profile data.
+
+    email = serializers.EmailField(required=True)
+    phone = PhoneNumberField(required=False, allow_blank=True)
+
+    class Meta:
+        model = User
+        fields = ("id", "first_name", "last_name", "email", "phone")
+        read_only_fields = ("id",)
+
+    def create(self, validated_data):
+        email = validated_data["email"].lower().strip()
+        first_name = validated_data["first_name"].strip()
+        last_name = validated_data["last_name"].strip()
+        phone = validated_data.get("phone") or ""
+        existing = User.get(email=email)
+        if existing is not None:
+            return self._fill_missing(existing, first_name, last_name, phone)
+        user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+        )
+        user.set_unusable_password()
+        with paused_validation():
+            user.save()
+        return user
+
+    @staticmethod
+    def _fill_missing(user, first_name, last_name, phone):
+        updates = {}
+        if first_name and not user.first_name:
+            updates["first_name"] = first_name
+        if last_name and not user.last_name:
+            updates["last_name"] = last_name
+        if phone and not user.phone:
+            updates["phone"] = phone
+        if not updates:
+            return user
+        for field, value in updates.items():
+            setattr(user, field, value)
+        with paused_validation():
+            user.save()
+        return user
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request is None or self._is_visible_user(request.user, instance):
+            return data
+        data["first_name"] = ""
+        data["last_name"] = ""
+        data["phone"] = ""
+        return data
+
+    @staticmethod
+    def _is_visible_user(requester, instance):
+        return (
+            Permissions(requester, User, "frontend")
+            .filter_queryset(User.objects.filter(pk=instance.pk))
+            .exists()
+        )
 
 
 class FeedbackFormSerializer(ModelSerializer):
@@ -613,8 +680,6 @@ class FeedbackFormSerializer(ModelSerializer):
 
 
 class RecordSerializer(ModelSerializer):
-    contacts = EventContactSerializer(many=True, required=False)
-
     age_stats = SerializerMethodField()
 
     class Meta:
@@ -625,10 +690,42 @@ class RecordSerializer(ModelSerializer):
             "participants",
             "number_of_participants",
             "number_of_participants_under_26",
+            "attendance_list_type",
             "is_event_closed_email_enabled",
-            "contacts",
             "age_stats",
         )
+
+    def validate(self, attrs):
+        # Changing the attendance mode invalidates the existing participant
+        # list — require the client to clear it in the same PATCH, so a
+        # simple-list user's full profile can't be exposed by flipping the
+        # event to full-list. The frontend handles this on the input-type
+        # change handler.
+        if (
+            self.instance is not None
+            and "attendance_list_type" in attrs
+            and attrs["attendance_list_type"] != self.instance.attendance_list_type
+        ):
+            participants = attrs.get("participants")
+            if participants is None and self.instance.participants.exists():
+                raise ValidationError(
+                    {
+                        "attendance_list_type": [
+                            "Při změně typu prezenční listiny je třeba "
+                            "vymazat existující účastníky."
+                        ]
+                    }
+                )
+            if participants:
+                raise ValidationError(
+                    {
+                        "attendance_list_type": [
+                            "Při změně typu prezenční listiny musí být "
+                            "seznam účastníků prázdný."
+                        ]
+                    }
+                )
+        return super().validate(attrs)
 
     def get_age_stats(self, instance) -> dict:
         return {

@@ -42,3 +42,4 @@ __pycache__
 
 /event_images
 /backend/old_database_dump/db.json
+/deployments

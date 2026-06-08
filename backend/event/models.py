@@ -18,7 +18,6 @@ from categories.models import (
     EventTag,
     GrantCategory,
 )
-from common.abstract_models import BaseContact
 from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
 from dateutil.relativedelta import relativedelta
@@ -325,6 +324,11 @@ class EventRegistration(m.Model):
 
 @translate_model
 class EventRecord(m.Model):
+    class AttendanceListType(m.TextChoices):
+        FULL_LIST = "full-list", "Plná prezenční listina"
+        SIMPLE_LIST = "simple-list", "Zjednodušená prezenční listina"
+        COUNT = "count", "Pouze počet účastníků"
+
     event = m.OneToOneField(Event, related_name="record", on_delete=PROTECT)
 
     total_hours_worked = m.PositiveIntegerField(null=True, blank=True)
@@ -332,6 +336,12 @@ class EventRecord(m.Model):
     participants = m.ManyToManyField(User, "participated_in_events", blank=True)
     number_of_participants = m.PositiveIntegerField(null=True, blank=True)
     number_of_participants_under_26 = m.PositiveIntegerField(null=True, blank=True)
+    attendance_list_type = m.CharField(
+        max_length=16,
+        choices=AttendanceListType.choices,
+        null=True,
+        blank=True,
+    )
 
     is_event_closed_email_enabled = m.BooleanField(default=True)
 
@@ -387,17 +397,6 @@ class EventRecord(m.Model):
         return User.objects.filter(
             id__in=[p.id for p in self._get_all_participants_list()]
         )
-
-
-@translate_model
-class EventContact(BaseContact):
-    record = m.ForeignKey(EventRecord, on_delete=CASCADE, related_name="contacts")
-
-    def has_edit_permission(self, user):
-        return self.record.has_edit_permission(user)
-
-    def clean(self):
-        pass
 
 
 @translate_model

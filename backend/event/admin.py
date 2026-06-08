@@ -1,4 +1,4 @@
-from contextlib import nullcontext
+from contextlib import nullcontext, suppress
 from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
@@ -16,18 +16,19 @@ from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from event.models import (
     Event,
-    EventContact,
     EventPropagation,
     EventRecord,
     EventRegistration,
     VIPEventPropagation,
 )
 from feedback.models import EventFeedback
-from more_admin_filters import MultiSelectRelatedDropdownFilter
+from more_admin_filters import (
+    MultiSelectDropdownFilter,
+    MultiSelectRelatedDropdownFilter,
+)
 from nested_admin.nested import (
     NestedModelAdmin,
     NestedStackedInline,
-    NestedTabularInline,
 )
 from rangefilter.filters import DateRangeFilter
 from translation.translate import _
@@ -38,9 +39,14 @@ from xlsx_export.export import (
 )
 
 
-class EventContactAdmin(PermissionMixin, NestedTabularInline):
-    model = EventContact
-    classes = ("collapse",)
+class AttendanceListTypeFilter(MultiSelectDropdownFilter):
+    def choices(self, changelist):
+        labels = dict(self.field.flatchoices)
+        for choice in super().choices(changelist):
+            display = choice["display"]
+            with suppress(TypeError):
+                choice["display"] = labels.get(display, display)
+            yield choice
 
 
 class EventPropagationAdmin(PermissionMixin, NestedStackedInline):
@@ -62,9 +68,9 @@ class EventRegistrationAdmin(PermissionMixin, NestedStackedInline):
 
 class EventRecordAdmin(PermissionMixin, NestedStackedInline):
     model = EventRecord
-    inlines = (EventContactAdmin,)
 
     readonly_fields = (
+        "attendance_list_type",
         "get_participants_age_stats_event_start",
         "get_participants_age_stats_year_start",
     )
@@ -74,6 +80,8 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         description="Statistika věku účastníků a organizátorů k začátku akce"
     )
     def get_participants_age_stats_event_start(self, obj):
+        if obj.attendance_list_type != EventRecord.AttendanceListType.FULL_LIST:
+            return "—"
         return AgeStats(
             "účastníků", obj.get_all_participants(), obj.event.start
         ).as_table()
@@ -82,6 +90,8 @@ class EventRecordAdmin(PermissionMixin, NestedStackedInline):
         description="Statistika věku účastníků a organizátorů k začátku roku"
     )
     def get_participants_age_stats_year_start(self, obj):
+        if obj.attendance_list_type != EventRecord.AttendanceListType.FULL_LIST:
+            return "—"
         return AgeStats(
             "účastníků", obj.get_all_participants(), date(obj.event.start.year, 1, 1)
         ).as_table()
@@ -147,6 +157,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "registration__is_registration_required",
         "registration__is_event_full",
         "is_attendance_list_required",
+        ("record__attendance_list_type", AttendanceListTypeFilter),
         ("location__region", MultiSelectRelatedDropdownFilter),
         ("main_organizer__birthday", EventStatsDateFilter),
         ("administration_units", MultiSelectRelatedDropdownFilter),

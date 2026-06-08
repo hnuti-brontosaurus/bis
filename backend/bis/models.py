@@ -655,11 +655,20 @@ class User(SearchMixin, AbstractBaseUser):
 
         queries = [Q(id=perm.user.id)]  # me
 
+        # Simple-list participations don't count toward "I see this user
+        # because they participated in an event of mine" — the minimal
+        # users created by the simple-list flow stay scoped to that
+        # event's participants endpoint, not the global User list.
+        full_list = "full-list"
+
         if perm.source != "backend":
             if perm.user.is_organizer:
                 queries += [
                     # lidi kolem akci, kde perm.user byl organizer
-                    Q(participated_in_events__event__other_organizers=perm.user),
+                    Q(
+                        participated_in_events__event__other_organizers=perm.user,
+                        participated_in_events__attendance_list_type=full_list,
+                    ),
                     Q(events_where_was_organizer__other_organizers=perm.user),
                     Q(
                         applications__event_registration__event__other_organizers=perm.user
@@ -670,7 +679,8 @@ class User(SearchMixin, AbstractBaseUser):
             queries += [
                 # lidi kolem akci od clanku kde perm.user je board member
                 Q(
-                    participated_in_events__event__administration_units__board_members=perm.user
+                    participated_in_events__event__administration_units__board_members=perm.user,
+                    participated_in_events__attendance_list_type=full_list,
                 ),
                 Q(
                     events_where_was_organizer__administration_units__board_members=perm.user

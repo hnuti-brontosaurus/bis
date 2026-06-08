@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 16240cd69e304a4a
+// source-hash: 62081b8b4791bd6d
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -380,12 +380,7 @@ export const eventRecord = {
   ],
   is_event_closed_email_enabled:
     'Má se odeslat automatický e-mail po uzavření akce?',
-} as const
-
-export const eventContact = {
-  _name: 'Zjednodušená prezenční listina z jednodenní akce',
-  _name_plural: 'Zjednodušená prezenční listina z jednodenní akce',
-  record: 'Záznam z akce',
+  attendance_list_type: 'Typ prezenční listiny',
 } as const
 
 export const eventPropagationImage = {

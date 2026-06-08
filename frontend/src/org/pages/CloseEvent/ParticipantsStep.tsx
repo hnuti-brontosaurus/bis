@@ -1,3 +1,5 @@
+import { useAppDispatch } from 'app/hooks'
+import { api } from 'app/services/bis'
 import { FullEvent } from 'app/services/bisTypes'
 import Counted from 'assets/counting.svg?react'
 import EmailList from 'assets/email-list.svg?react'
@@ -14,6 +16,7 @@ import {
   NumberInput,
 } from 'components'
 import { InlineSection } from 'components/FormLayout/FormLayout'
+import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useConfirmWithModal } from 'hooks/useConfirmWithModal'
 import { ParticipantsStep as ParticipantsList } from 'org/components/EventForm/steps/ParticipantsStep'
 import { useEffect } from 'react'
@@ -21,13 +24,14 @@ import { Controller, FormProvider, UseFormReturn } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import type {
   CloseEventFormShape,
-  ParticipantsStepFormInnerShape,
+  ParticipantsStepFormShape,
 } from './CloseEventForm'
 import styles from './ParticipantsStep.module.scss'
 import { SimpleParticipants } from './SimpleParticipants'
 
-type ParticipantInputType =
-  CloseEventFormShape['record']['participantInputType']
+type ParticipantInputType = NonNullable<
+  CloseEventFormShape['record']['attendance_list_type']
+>
 
 const optionButtonConfig: {
   [key: string]: {
@@ -64,20 +68,20 @@ export const ParticipantsStep = ({
 }: {
   event: FullEvent
   areParticipantsRequired: boolean
-  methods: UseFormReturn<ParticipantsStepFormInnerShape>
+  methods: UseFormReturn<ParticipantsStepFormShape>
 }) => {
-  const { watch, control, trigger, formState } = methods
+  const { watch, control, trigger, formState, setValue } = methods
 
   // list of participants is shown when it's required
   // or when organizers prefer it rather than filling just numbers
 
-  const inputType = watch('record.participantInputType')
+  const inputType = watch('record.attendance_list_type')
 
   useEffect(() => {
     const subscription = watch((values, { name }) => {
       if (formState.isSubmitted && name === 'record.number_of_participants')
         trigger('record.number_of_participants_under_26')
-      if (formState.isSubmitted && name === 'record.participantInputType')
+      if (formState.isSubmitted && name === 'record.attendance_list_type')
         trigger()
     })
     return () => subscription.unsubscribe()
@@ -89,6 +93,50 @@ export const ParticipantsStep = ({
       'Je možné vybrat pouze jeden způsob registrace. Pokud chceš změnit způsob registrace, data, která jsou zadaná v počtu účastníků a seznamu účastníků, nebudou uložena. Chceš pokračovat?',
   })
 
+  const [updateEvent, updateEventStatus] =
+    api.endpoints.updateEvent.useMutation()
+  useShowApiErrorMessage(updateEventStatus.error)
+  const dispatch = useAppDispatch()
+
+  // Changing the type wipes the participant list and count fields
+  // (server-side and locally) before the new view mounts — counts from
+  // the previous mode shouldn't carry over into the new one, and the
+  // full-list view would crash on the simple-list projection.
+  const switchInputType = async (
+    newType: ParticipantInputType,
+    apply: () => void,
+  ) => {
+    await updateEvent({
+      id: event.id,
+      event: {
+        record: {
+          participants: [],
+          attendance_list_type: newType,
+          number_of_participants: null,
+          number_of_participants_under_26: null,
+        },
+      },
+    }).unwrap()
+    setValue('record.number_of_participants', null)
+    setValue('record.number_of_participants_under_26', null)
+    // Clear the cached participants synchronously so the about-to-mount
+    // full-list view doesn't briefly render against the previous shape
+    // while the invalidation-triggered refetch is in flight.
+    dispatch(
+      api.util.updateQueryData(
+        'readEventParticipants',
+        { eventId: event.id },
+        draft => {
+          draft.count = 0
+          draft.next = null
+          draft.previous = null
+          draft.results = []
+        },
+      ),
+    )
+    apply()
+  }
+
   return (
     <FormProvider {...methods}>
       <form>
@@ -98,9 +146,9 @@ export const ParticipantsStep = ({
         <FormSectionGroup>
           {!areParticipantsRequired && (
             <FormSection required header="Způsob registrace účastníků">
-              <FormInputError name="participantInputType">
+              <FormInputError name="attendance_list_type">
                 <Controller
-                  name="record.participantInputType"
+                  name="record.attendance_list_type"
                   control={control}
                   rules={{ required }}
                   render={({ field }) => (
@@ -119,12 +167,15 @@ export const ParticipantsStep = ({
                               value={id}
                               checked={id === field.value}
                               onChange={e => {
+                                const newType = e.target
+                                  .value as ParticipantInputType
+                                const apply = () => field.onChange(newType)
                                 if (inputType) {
                                   confirmWithModal(() =>
-                                    field.onChange(e.target.value),
+                                    switchInputType(newType, apply),
                                   )
                                 } else {
-                                  field.onChange(e.target.value)
+                                  switchInputType(newType, apply)
                                 }
                               }}
                             />
@@ -199,7 +250,7 @@ export const ParticipantsStep = ({
 
           {!areParticipantsRequired && inputType === 'simple-list' && (
             <FormSection required header="Seznam účastníků">
-              <SimpleParticipants />
+              <SimpleParticipants eventId={event.id} />
             </FormSection>
           )}
           {(areParticipantsRequired || inputType === 'full-list') && (
