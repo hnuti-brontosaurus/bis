@@ -20,12 +20,12 @@ export const form = {
       help: 'Tento text dojde účastníkům po vyplnění zpětné vazby. Doporučujeme jako odměnu přidat např. odkaz na fotky z akce, adresář či jiné drobnosti.',
     },
     email_subject: {
-      initial: 'Jaký to bylo? Zpětná vazba z akce',
+      initial: 'Jaký to bylo? Zpětná vazba z akce *|nazev_akce|*',
     },
     email_content: {
       initial: `
-        <p>Ahoj *|vokativ|*,</p>
-        <p>&hellip; doufáme, že se po *|event_name|* cítíš jenom dobře! 😊</p>
+        <p>Ahoj *|osloveni|*,</p>
+        <p>&hellip; doufáme, že se po *|nazev_akce|* cítíš jenom dobře! 😊</p>
         <p><br></p>
         <p> A teď upřímně — <b>jaký to bylo?</b></p>
         <p>Když připravujeme akce, vždycky se opíráme hlavně o to, co nám napíšete do zpětné vazby.</p>

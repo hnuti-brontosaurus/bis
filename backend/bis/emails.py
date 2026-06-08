@@ -515,15 +515,18 @@ def send_feedback_request(event):
         return
 
     for participant in event.record.participants.all():
+        variables = {"osloveni": participant.vokativ, "nazev_akce": event.name}
         email_content = ecomail.replace_variables(
-            event.feedback_form.email_content,
-            {"vokativ": participant.vokativ, "event_name": event.name},
+            event.feedback_form.email_content, variables
+        )
+        subject = ecomail.replace_variables(
+            event.feedback_form.email_subject, variables
         )
         ecomail.send_email(
             emails["bis"],
             356,
             [participant.email],
-            subject=event.feedback_form.email_subject,
+            subject=subject,
             variables={
                 "event_name": event.name,
                 "event_date": event.get_date(),
