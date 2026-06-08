@@ -1034,12 +1034,12 @@ class Qualification(m.Model):
             "internal__section_meeting",
             "public__volunteering",
             "public__only_experiential",
-            "public__sports",
             "public__educational__course",
             "public__educational__ohb",
             "public__other__for_public",
             # new slugs
             "section_meeting",
+            "section_event",
             "volunteering",
             "experiential",
             "public_educational",
@@ -1050,10 +1050,10 @@ class Qualification(m.Model):
         section_meeting_categories = {
             "internal__section_meeting",
             "section_meeting",
+            "section_event",
         }
         ohb_categories = {
             "public__educational__ohb",
-            "internal_educational",
             "internal_educational_full",
         }
 
@@ -1091,7 +1091,7 @@ class Qualification(m.Model):
                 required_one_of = {"weekend_organizer"}
 
         if category in ohb_categories:
-            required_one_of = {"instructor", "consultant_for_kids"}
+            required_one_of = {"instructor"}
 
         if required_one_of:
             if not cls.user_has_required_qualification(

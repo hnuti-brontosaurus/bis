@@ -34,7 +34,6 @@ export const getRequiredQualifications = (
   ]
   const ohbCategories = [
     'public__educational__ohb',
-    'internal_educational',
     'internal_educational_full',
   ]
 
