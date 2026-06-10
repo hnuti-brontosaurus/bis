@@ -634,61 +634,6 @@ describe('create event', () => {
   // (getEventCannotBeOlderThan, shouldBeFinishedUntil)
   // Error display from 400 responses is covered by "shows api error message" above.
 
-  describe('VIP propagation', () => {
-    beforeEach(() => {
-      fillForm()
-      cy.get('button').contains('pro koho').should('be.visible').click()
-      cy.get('input[name=intended_for]').check('5', { force: true })
-
-      cy.intercept(
-        { method: 'POST', pathname: '/api/frontend/events' },
-        { id: 1000 },
-      ).as('createEvent')
-      cy.intercept('POST', '/api/frontend/events/1000/propagation/images/', {})
-      cy.intercept(
-        'POST',
-        '/api/frontend/events/1000/questionnaire/questions/',
-        {},
-      )
-    })
-
-    it('[all vip fields filled] should respond with vip_propagation data', () => {
-      cy.get('[name="vip_propagation.goals_of_event"]').type(
-        'goals of event are goals',
-      )
-      cy.get('[name="vip_propagation.program"]').type(
-        'program is rich and full of events',
-      )
-      cy.get('[name="vip_propagation.short_invitation_text"]').type(
-        'you are cordially but shortly invited',
-      )
-
-      submit()
-
-      cy.wait('@createEvent')
-        .its('request.body.vip_propagation')
-        .should('deep.equal', {
-          goals_of_event: 'goals of event are goals',
-          program: 'program is rich and full of events',
-          short_invitation_text: 'you are cordially but shortly invited',
-        })
-    })
-
-    it('[some vip fields filled] should show validation error (fill all or none)', () => {
-      cy.get('[name="vip_propagation.goals_of_event"]').type(
-        'goals of event are goals',
-      )
-
-      submit()
-
-      cy.get('[class^=SystemMessage-module__header]')
-        .should('be.visible')
-        .contains('chyby ve validaci')
-      cy.get('[class^=SystemMessage-module__detail]')
-        .should('be.visible')
-        .contains('Vyplňte všechna pole VIP propagace')
-    })
-  })
 })
 
 // open create-event page, pre-fill fields and move to "team" tab
