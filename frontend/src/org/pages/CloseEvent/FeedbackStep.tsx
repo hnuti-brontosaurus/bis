@@ -13,6 +13,7 @@ import { FC } from 'react'
 import { Controller, FormProvider, UseFormReturn } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import { FeedbackStepFormShape } from './CloseEventForm'
+import { ExternalHeaderLink } from './ExternalHeaderLink'
 import { FeedbackStepInfo } from './FeedbackStepInfo'
 import { InquiriesFormSection } from './InquiriesFormSection'
 
@@ -35,6 +36,22 @@ export const FeedbackStep: FC<Props> = ({
           header="e-mail po akci"
           help="Po akci se automaticky posílá e-mail se zpětnou vazbou. Tady si můžete upravit jeho znění."
         >
+          <InfoBox>
+            <p>
+              {feedbackRequired
+                ? 'Zpětná vazba bude po skončení akce automaticky odeslána účastníkům e-mailem.'
+                : 'Po skončení akce můžeš účastníkům poslat zpětnou vazbu emailem.'}
+              <ExternalHeaderLink href="https://drive.google.com/file/d/1rETo1BiZjOi0wVUUWxoGdQ0yFwxfqTS7/view?usp=sharing">
+                Ukázkový email se zpětnou vazbou
+              </ExternalHeaderLink>
+            </p>
+            <p>
+              Text e-mailu si můžeš upravit. Proměnná <b>*|nazev_akce|*</b> se
+              automaticky nahradí názvem akce a <b>*|osloveni|*</b> jménem
+              účastníka. Pokud chceš tyto údaje v e-mailu zachovat, proměnné
+              nemaž ani neupravuj.
+            </p>
+          </InfoBox>
           <FormSubsection header="Předmět e-mailu">
             <FormInputError isBlock>
               <FullSizeElement>
