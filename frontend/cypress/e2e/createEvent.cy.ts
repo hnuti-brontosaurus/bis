@@ -633,7 +633,6 @@ describe('create event', () => {
   // unit tested in src/utils/__tests__/helpers.test.ts
   // (getEventCannotBeOlderThan, shouldBeFinishedUntil)
   // Error display from 400 responses is covered by "shows api error message" above.
-
 })
 
 // open create-event page, pre-fill fields and move to "team" tab
