@@ -99,7 +99,9 @@ export const RegistrationStep = ({
                   },
                   { name: 'Jiná elektronická přihláška', value: 'other' },
                   {
-                    name: 'Registrace není potřeba, stačí přijít',
+                    name: watch('propagation.is_shown_on_web')
+                      ? 'Registrace není potřeba, stačí přijít'
+                      : 'Přihlášení není potřeba',
                     value: 'none',
                   },
                 ].map(({ name, value }) => (
