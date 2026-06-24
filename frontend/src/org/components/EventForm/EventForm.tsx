@@ -498,6 +498,9 @@ export const EventForm: FC<{
 
   const isNotOnWeb =
     methods.registration.watch('propagation.is_shown_on_web') === false
+  const registrationMethod = methods.registration.watch('registrationMethod')
+  const hasRegistrationForm =
+    registrationMethod === 'standard' || registrationMethod === 'other'
 
   return (
     <Steps
@@ -536,6 +539,7 @@ export const EventForm: FC<{
           isWeekendEvent={isWeekendEvent}
           isCamp={isCamp}
           isInternalSectionMeeting={isInternalSectionMeeting}
+          hasRegistrationForm={hasRegistrationForm}
         />
       </Step>
       <Step
@@ -549,6 +553,7 @@ export const EventForm: FC<{
           isWeekendEvent={isWeekendEvent}
           isCamp={isCamp}
           isInternalSectionMeeting={isInternalSectionMeeting}
+          hasRegistrationForm={hasRegistrationForm}
         />
       </Step>
       <Step
@@ -562,6 +567,7 @@ export const EventForm: FC<{
           isWeekendEvent={isWeekendEvent}
           isCamp={isCamp}
           isInternalSectionMeeting={isInternalSectionMeeting}
+          hasRegistrationForm={hasRegistrationForm}
         />
       </Step>
       <Step name="přihlášky" hidden={!initialData?.id}>

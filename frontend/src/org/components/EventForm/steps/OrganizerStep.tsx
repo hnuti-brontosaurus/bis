@@ -41,6 +41,7 @@ export const OrganizerStep = ({
   isWeekendEvent,
   isCamp,
   isInternalSectionMeeting,
+  hasRegistrationForm,
 }: {
   methods: MethodsShapes['organizers']
   mainOrganizerDependencies: {
@@ -53,6 +54,7 @@ export const OrganizerStep = ({
   isWeekendEvent: boolean
   isCamp: boolean
   isInternalSectionMeeting: boolean
+  hasRegistrationForm: boolean
 }) => {
   const { control, watch, trigger, register, setValue, getValues } = methods
   const { data: allQualifications } =
@@ -161,12 +163,12 @@ export const OrganizerStep = ({
     allQualifications.results.find(q => q.slug === slug),
   ) as QualificationCategory[]
 
-  const sectionStartIndex = isNotOnWeb
-    ? 11
-    : (isWeekendEvent || isCamp) &&
-        !(isWeekendEvent && isInternalSectionMeeting)
-      ? 22
-      : 20
+  const isOvernight =
+    (isWeekendEvent || isCamp) && !(isWeekendEvent && isInternalSectionMeeting)
+  let sectionStartIndex = isNotOnWeb ? 12 : isOvernight ? 22 : 20
+  if (hasRegistrationForm) {
+    sectionStartIndex += 1
+  }
 
   return (
     <FormProvider {...methods}>
