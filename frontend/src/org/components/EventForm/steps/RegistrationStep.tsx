@@ -36,6 +36,8 @@ export const RegistrationStep = ({
     setShowInfo(!showInfo)
   }
 
+  const shownOnWeb = watch('propagation.is_shown_on_web')
+
   return (
     <FormProvider {...methods}>
       <form>
@@ -94,12 +96,14 @@ export const RegistrationStep = ({
               <fieldset>
                 {[
                   {
-                    name: 'Standardní přihláška na brontowebu',
+                    name: shownOnWeb
+                      ? 'Standardní přihláška na brontowebu'
+                      : 'Standardní přihláška',
                     value: 'standard',
                   },
                   { name: 'Jiná elektronická přihláška', value: 'other' },
                   {
-                    name: watch('propagation.is_shown_on_web')
+                    name: shownOnWeb
                       ? 'Registrace není potřeba, stačí přijít'
                       : 'Přihlášení není potřeba',
                     value: 'none',
@@ -121,7 +125,7 @@ export const RegistrationStep = ({
             </FormInputError>
           </FormSection>
 
-          {canBeFull && (
+          {canBeFull && shownOnWeb && (
             <FormSection
               header={formTexts.registration.is_event_full.name}
               help={formTexts.registration.is_event_full.help}
