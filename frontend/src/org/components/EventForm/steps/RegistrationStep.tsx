@@ -123,25 +123,25 @@ export const RegistrationStep = ({
                 ))}
               </fieldset>
             </FormInputError>
+            {hasRegistrationForm && shownOnWeb && (
+              <FormSubsection
+                header={formTexts.registration.is_event_full.name}
+                help={formTexts.registration.is_event_full.help}
+              >
+                <FormInputError>
+                  <label className="checkboxLabel">
+                    <input
+                      type="checkbox"
+                      {...register('registration.is_event_full')}
+                    />{' '}
+                    Na webu zobrazit informaci, že je akce plně obsazena.
+                    (zobrazí se: "Máme bohužel plno, zkuste jinou z našich
+                    akcí").
+                  </label>
+                </FormInputError>
+              </FormSubsection>
+            )}
           </FormSection>
-
-          {hasRegistrationForm && shownOnWeb && (
-            <FormSection
-              header={formTexts.registration.is_event_full.name}
-              help={formTexts.registration.is_event_full.help}
-            >
-              <FormInputError>
-                <label className="checkboxLabel">
-                  <input
-                    type="checkbox"
-                    {...register('registration.is_event_full')}
-                  />{' '}
-                  Na webu zobrazit informaci, že je akce plně obsazena. (zobrazí
-                  se: "Máme bohužel plno, zkuste jinou z našich akcí").
-                </label>
-              </FormInputError>
-            </FormSection>
-          )}
 
           {hasRegistrationForm && (
             <FormSection
