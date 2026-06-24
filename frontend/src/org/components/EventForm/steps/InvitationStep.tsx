@@ -22,26 +22,28 @@ export const InvitationStep = ({
   isWeekendEvent,
   isCamp,
   isInternalSectionMeeting,
+  hasRegistrationForm,
 }: {
   methods: MethodsShapes['invitation']
   isVolunteering: boolean
   isWeekendEvent: boolean
   isCamp: boolean
   isInternalSectionMeeting: boolean
+  hasRegistrationForm: boolean
 }) => {
   const { control } = methods
+
+  const isOvernight =
+    (isWeekendEvent || isCamp) && !(isWeekendEvent && isInternalSectionMeeting)
+  let sectionStartIndex = isOvernight ? 19 : 17
+  if (hasRegistrationForm) {
+    sectionStartIndex += 1
+  }
 
   return (
     <FormProvider {...methods}>
       <form>
-        <FormSectionGroup
-          startIndex={
-            (isWeekendEvent || isCamp) &&
-            !(isWeekendEvent && isInternalSectionMeeting)
-              ? 19
-              : 17
-          }
-        >
+        <FormSectionGroup startIndex={sectionStartIndex}>
           <FormSection header="Pozvánka">
             <FullSizeElement>
               <FormSubheader

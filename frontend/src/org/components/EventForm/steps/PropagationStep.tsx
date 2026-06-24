@@ -47,12 +47,14 @@ export const PropagationStep = ({
   isWeekendEvent,
   isCamp,
   isInternalSectionMeeting,
+  hasRegistrationForm,
 }: {
   methods: MethodsShapes['propagation']
   isVolunteering: boolean
   isWeekendEvent: boolean
   isCamp: boolean
   isInternalSectionMeeting: boolean
+  hasRegistrationForm: boolean
 }) => {
   const { control, register, getValues, watch, trigger } = methods
   const { data: diets } = api.endpoints.readDiets.useQuery(undefined)
@@ -71,7 +73,7 @@ export const PropagationStep = ({
   return (
     <FormProvider {...methods}>
       <form>
-        <FormSectionGroup startIndex={12}>
+        <FormSectionGroup startIndex={hasRegistrationForm ? 13 : 12}>
           <FormSection
             onWeb
             required
