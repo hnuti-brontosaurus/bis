@@ -147,12 +147,12 @@ export const RegistrationStep = ({
             <FormSection
               header="přihláška"
               help={
-                watch('registrationMethod') === 'standard'
+                registrationMethod === 'standard'
                   ? formTexts.registration.questionnaire.help
                   : null
               }
             >
-              {watch('registrationMethod') === 'other' && (
+              {registrationMethod === 'other' && (
                 <InlineSection>
                   <InfoBox>
                     Opravdu nechcete použít Standardní přihlášku?
@@ -187,7 +187,7 @@ export const RegistrationStep = ({
                 </InlineSection>
               )}
 
-              {watch('registrationMethod') === 'standard' && (
+              {registrationMethod === 'standard' && (
                 <FormSubsection header="">
                   <button
                     type="button"
