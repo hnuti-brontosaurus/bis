@@ -283,11 +283,11 @@ class Command(BaseCommand):
                 "description": "Akce zcela bez dobrovolnické činnosti. Kluby se zážitkovým programem (např. deskovky, háčkování…). Brďo výpravy a tábory bez dobrovolnické práce (pravidelné oddílové schůzky mají vlastní typ akce)",
             },
             "public_educational": {
-                "name": "vzdělávací pro veřejnost",
+                "name": "vzdělávání - odborné",
                 "description": "zaměřené na různá témata např. environmentální vzdělávání, péče o přírodu a památky - zahrnuje přednášky, workshopy, promítání, kluby nebo semináře, semináře Akce Příroda např. typu OSF",
             },
             "internal_educational": {
-                "name": "vzdělávací pro organizátory HB",
+                "name": "vzdělávání - organizátorské",
                 "description": "malá OHB, BRĎO kurzy, rozvoj organizátorských dovedností, vzdělávání pro ústředí",
             },
             "internal_educational_full": {
