@@ -49,6 +49,8 @@ class Announcement(m.Model):
     start = m.DateTimeField()
     end = m.DateTimeField()
 
+    for_roles = m.ManyToManyField(RoleCategory, related_name="announcements")
+
     class Meta:
         ordering = ("-start",)
 

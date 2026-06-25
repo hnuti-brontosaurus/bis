@@ -224,16 +224,21 @@ class DashboardItemViewSet(PermissionViewSetBase):
 class AnnouncementViewSet(ListModelMixin, GenericViewSet):
     lookup_field = "id"
     permission_classes = []
-    authentication_classes = []
     pagination_class = None
     serializer_class = AnnouncementSerializer
 
     def get_queryset(self):
         current_time = timezone.now()
-        return Announcement.objects.filter(
+        queryset = Announcement.objects.filter(
             start__lte=current_time,
             end__gte=current_time,
         )
+        user = self.request.user
+        if user.is_authenticated:
+            return queryset.filter(
+                Q(for_roles__isnull=True) | Q(for_roles__in=user.roles.all())
+            ).distinct()
+        return queryset.filter(for_roles__isnull=True)
 
 
 class LocationViewSet(PermissionViewSetBase):

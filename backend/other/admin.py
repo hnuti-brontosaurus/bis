@@ -85,8 +85,15 @@ def mark_as_resolved(model_admin, request, queryset):
 
 @admin.register(Announcement)
 class AnnouncementAdmin(PermissionMixin, NestedModelAdmin):
-    list_display = ("severity", "start", "end", "text")
+    list_display = ("severity", "start", "end", "text", "get_roles")
     list_filter = ("severity",)
+
+    @admin.display(description="Pro role")
+    def get_roles(self, obj):
+        return mark_safe("<br>".join(str(role) for role in obj.for_roles.all()))
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("for_roles")
 
 
 @admin.register(DashboardItem)

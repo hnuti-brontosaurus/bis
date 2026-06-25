@@ -654,6 +654,9 @@ Announcement:
     severity: Závažnost
     start: Začátek
     end: Konec
+    for_roles:
+      - Pro role
+      - Pokud nezvolíš žádnou roli, oznámení uvidí všichni uživatelé.
 
 UserTag:
   name: Dočasný štítek
