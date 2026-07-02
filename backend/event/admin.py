@@ -8,6 +8,7 @@ from bis.admin_helpers import list_filter_extra_text
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats, paused_validation
 from bis.models import User
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
@@ -254,7 +255,7 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         "administration_units",
     )
 
-    exclude = "_import_id", "_search_field"
+    exclude = "_import_id", "_search_field", "shared_folder_url"
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
@@ -320,6 +321,10 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
                 return HttpResponseRedirect(f"/org/akce/{object_id}/uzavrit")
             if "_files_export" in request.POST:
                 return export_files(obj)
+            if "_shared_folder" in request.POST:
+                return HttpResponseRedirect(
+                    f"/{settings.API_BASE}frontend/events/{obj.uid}/shared_folder/"
+                )
 
         return super().changeform_view(request, object_id, form_url, extra_context)
 

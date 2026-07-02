@@ -10,6 +10,9 @@ from googleapiclient.http import MediaFileUpload
 
 _FORBIDDEN_NAME_CHARS = re.compile(r'[<>:"/\\|?*]')
 
+ROOT_FOLDER_NAME = "BIS export"
+SHARED_SUBFOLDER_NAME = "Sdílené"
+
 
 def build_drive_service():
     credentials_info = json.loads(settings.GOOGLE_CREDENTIALS)
@@ -107,6 +110,40 @@ def get_existing_names(service, folder_id, names):
         .execute()
     )
     return {f["name"] for f in results.get("files", [])}
+
+
+def event_folder_name(event):
+    location = event.location.name if event.location else "bez lokality"
+    return sanitize_name(f"{event.start.isoformat()} - {event.name} - {location}")
+
+
+def get_or_create_shared_folder_url(event):
+    if event.shared_folder_url:
+        return event.shared_folder_url
+
+    if settings.ENVIRONMENT != "prod":
+        return None
+
+    from event.models import Event
+
+    service = build_drive_service()
+    root_id = get_or_create_folder(
+        service, ROOT_FOLDER_NAME, settings.GOOGLE_SHARED_DRIVE_ID
+    )
+    year_id = get_or_create_folder(service, str(event.start.year), root_id)
+    event_folder_id = get_or_create_folder(service, event_folder_name(event), year_id)
+    shared_id = get_or_create_folder(service, SHARED_SUBFOLDER_NAME, event_folder_id)
+
+    service.permissions().create(
+        fileId=shared_id,
+        body={"type": "anyone", "role": "writer"},
+        supportsAllDrives=True,
+        fields="id",
+    ).execute()
+
+    url = f"https://drive.google.com/drive/folders/{shared_id}"
+    Event.objects.filter(pk=event.pk).update(shared_folder_url=url)
+    return url
 
 
 def upload_file(service, folder_id, name, path):

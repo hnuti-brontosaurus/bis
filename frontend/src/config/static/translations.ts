@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: e09f5732f3bbe54a
+// source-hash: 62d8bf3293fce553
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -248,6 +248,8 @@ export const event = {
     'Odkaz na připojení k online akci',
     'Vyplňte, pokud se akce koná online',
   ],
+  uid: 'Identifikátor akce',
+  shared_folder_url: 'Odkaz na sdílenou složku',
   number_of_sub_events: 'Počet akcí v uvedeném období',
   administration_units: 'Organizační jednotky',
   main_organizer: 'Hlavní organizátor',

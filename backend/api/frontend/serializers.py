@@ -681,6 +681,7 @@ class EventSerializer(ModelSerializer):
             "is_attendance_list_required",
             "organizers_note",
             "duration",
+            "uid",
             "finance",
             "propagation",
             "vip_propagation",
@@ -688,7 +689,7 @@ class EventSerializer(ModelSerializer):
             "record",
             "feedback_form",
         )
-        read_only_fields = ["duration"]
+        read_only_fields = ["duration", "uid"]
 
     def get_excluded_fields(self, fields):
         if self.context["request"].user.is_member_only:

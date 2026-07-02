@@ -4,6 +4,7 @@ import time
 
 from bis.drive import (
     build_drive_service,
+    event_folder_name,
     get_existing_names,
     get_or_create_folder,
     list_subfolders,
@@ -64,24 +65,21 @@ class Command(BaseCommand):
             if year not in event_folders_by_year:
                 event_folders_by_year[year] = list_subfolders(service, year_id)
 
-            location = event.location.name if event.location else "bez lokality"
-            event_folder_name = sanitize_name(
-                f"{event.start.isoformat()} - {event.name} - {location}"
-            )
-            folder_id = event_folders_by_year[year].get(event_folder_name)
+            folder_name = event_folder_name(event)
+            folder_id = event_folders_by_year[year].get(folder_name)
             if folder_id is None:
                 folder_id = get_or_create_folder(
                     service,
-                    event_folder_name,
+                    folder_name,
                     parent_id=year_id,
                 )
-                event_folders_by_year[year][event_folder_name] = folder_id
+                event_folders_by_year[year][folder_name] = folder_id
 
             existing = get_existing_names(service, folder_id, [n for n, _ in files])
             for drive_name, path in files:
                 if drive_name in existing:
                     continue
-                logging.info(f"  Uploading: {year}/{event_folder_name}/{drive_name}")
+                logging.info(f"  Uploading: {year}/{folder_name}/{drive_name}")
                 upload_file(service, folder_id, drive_name, path)
                 uploaded += 1
 

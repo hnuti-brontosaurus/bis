@@ -62,6 +62,8 @@ docker exec -it bis-backend python manage.py testing_db cookbook # Minimal idemp
 
 Containers run as the host UID/GID (`user: ${UID}:${GID}` in `docker-compose.yaml`, exported by the Makefile), so files written from inside (migrations, fixtures, build output) are owned by your host user. No `-u` flag or `sudo chown` needed.
 
+If you need a running container (backend shell, management command, Python with the project's deps like `googleapiclient`/`google-auth`, DB access, etc.) and none is up, ask the user to run `make dev` (or the relevant `make` target) in a separate terminal rather than installing deps on the host or starting containers yourself. The backend has real credentials (e.g. `GOOGLE_CREDENTIALS`) wired in via env, so run Google Drive / external-service code inside `bis-backend`, not in a host venv.
+
 ### Frontend-specific
 ```bash
 yarn --cwd frontend generate-api       # Regenerate RTK-Query types from the deployed dev backend (https://dev.bis.brontosaurus.cz/api/schema/) — needs internet

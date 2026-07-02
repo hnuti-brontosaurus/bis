@@ -230,6 +230,8 @@ Event:
     online_link:
       - Odkaz na připojení k online akci
       - Vyplňte, pokud se akce koná online
+    uid: Identifikátor akce
+    shared_folder_url: Odkaz na sdílenou složku
     number_of_sub_events: Počet akcí v uvedeném období
     administration_units: Organizační jednotky
     main_organizer: Hlavní organizátor

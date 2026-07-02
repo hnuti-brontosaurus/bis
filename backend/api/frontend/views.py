@@ -27,12 +27,17 @@ from api.frontend.serializers import (
     UserSerializer,
 )
 from api.helpers import LightPagination, parse_request_data
+from bis.drive import get_or_create_shared_folder_url
 from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import Location, User
 from bis.permissions import Permissions
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+)
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -486,6 +491,16 @@ def export_files(request, event_id):
         return HttpResponseForbidden()
 
     return export.export_files(event)
+
+
+def shared_folder(request, event_uid):
+    event = get_object_or_404(Event, uid=event_uid)
+    url = get_or_create_shared_folder_url(event)
+    if url is None:
+        return HttpResponse(
+            "Sdílené složky se vytvářejí pouze v produkčním prostředí.", status=503
+        )
+    return HttpResponseRedirect(url)
 
 
 @login_required

@@ -1,4 +1,5 @@
 from os.path import basename
+from uuid import uuid4
 
 from administration_units.models import AdministrationUnit
 from bis.helpers import (
@@ -60,6 +61,9 @@ class Event(SearchMixin, m.Model):
     number_of_sub_events = m.PositiveIntegerField(default=1)
     location = m.ForeignKey(Location, on_delete=PROTECT, related_name="events")
     online_link = m.URLField(blank=True)
+
+    uid = m.UUIDField(default=uuid4, unique=True, editable=False, null=True)
+    shared_folder_url = m.URLField(blank=True, default="")
 
     group = m.ForeignKey(EventGroupCategory, on_delete=PROTECT, related_name="events")
     category = m.ForeignKey(EventCategory, on_delete=PROTECT, related_name="events")
