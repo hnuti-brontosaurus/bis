@@ -11,7 +11,6 @@ from googleapiclient.http import MediaFileUpload
 _FORBIDDEN_NAME_CHARS = re.compile(r'[<>:"/\\|?*]')
 
 ROOT_FOLDER_NAME = "BIS export"
-SHARED_SUBFOLDER_NAME = "Sdílené"
 
 
 def build_drive_service():
@@ -117,6 +116,10 @@ def event_folder_name(event):
     return sanitize_name(f"{event.start.isoformat()} - {event.name} - {location}")
 
 
+def shared_folder_name(event):
+    return sanitize_name(f"{event.name} {event.start.year}")
+
+
 def get_or_create_shared_folder_url(event):
     if event.shared_folder_url:
         return event.shared_folder_url
@@ -132,7 +135,9 @@ def get_or_create_shared_folder_url(event):
     )
     year_id = get_or_create_folder(service, str(event.start.year), root_id)
     event_folder_id = get_or_create_folder(service, event_folder_name(event), year_id)
-    shared_id = get_or_create_folder(service, SHARED_SUBFOLDER_NAME, event_folder_id)
+    shared_id = get_or_create_folder(
+        service, shared_folder_name(event), event_folder_id
+    )
 
     service.permissions().create(
         fileId=shared_id,

@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from administration_units.models import AdministrationUnit
+from bis.background import in_background
 from bis.helpers import make_a, make_ul
 from bis.models import Qualification
 from categories.models import DonorEventCategory, EventProgramCategory, PronounCategory
@@ -38,10 +39,6 @@ emails = {
 }
 
 
-def login_code(email, code):
-    text([email], "Kód pro přihlášení", f"tvůj kód pro přihlášení je {code}.")
-
-
 def text(recipients, subject, content, reply_to=None, attachments=None):
     content = content.replace("\n", "<br>")
     ecomail.send_email(
@@ -69,6 +66,7 @@ def password_reset_link(user, email, login_code):
     )
 
 
+@in_background
 def application_created(application):
     event = application.event_registration.event
     propagation = getattr(event, "propagation", None)
@@ -120,6 +118,7 @@ def application_created(application):
     )
 
 
+@in_background
 def event_created(event):
     ecomail.send_email(
         emails["bis"],
@@ -257,6 +256,7 @@ def event_not_closed_20_days():
         )
 
 
+@in_background
 def event_end_participants_notification(event):
     if not hasattr(event, "record"):
         return
@@ -401,6 +401,7 @@ def qualification_created(qualification: Qualification):
     )
 
 
+@in_background
 def opportunity_created(opportunity: Opportunity):
     recipient_email = opportunity.contact_email or opportunity.contact_person.email
     created_by_email = opportunity.contact_person.email
@@ -496,6 +497,7 @@ def send_opportunities_summary():
     )
 
 
+@in_background
 def feedback_created(feedback):
     event = feedback.event
     ecomail.send_email(
@@ -510,7 +512,12 @@ def feedback_created(feedback):
     )
 
 
+@in_background
 def send_feedback_request(event):
+    do_send_feedback_request(event)
+
+
+def do_send_feedback_request(event):
     if not hasattr(event, "record"):
         return
 
@@ -556,7 +563,7 @@ def send_automatic_feedback():
         )
         .exclude(number_of_sub_events__gt=1)
     ):
-        send_feedback_request(event)
+        do_send_feedback_request(event)
         event.feedback_form.sent_at = timezone.now().date()
         event.feedback_form.save()
 
