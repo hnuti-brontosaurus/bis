@@ -57,6 +57,10 @@ repos:
           ]
         additional_dependencies:
           - eslint@8.56.0
+          # tsutils (via @typescript-eslint 5.x) has an unbounded typescript peer
+          # range, so npm pulls TS 7, whose CJS entry drops TypeFlags and crashes
+          # the plugin on load. Keep in sync with frontend/package.json.
+          - typescript@4.8.3
           - "@typescript-eslint/eslint-plugin@5.62.0"
           - "@typescript-eslint/parser@5.62.0"
           - eslint-plugin-react@7.33.0
