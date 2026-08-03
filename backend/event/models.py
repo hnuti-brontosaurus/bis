@@ -436,7 +436,7 @@ class EventAttendanceListPage(m.Model):
     record = m.ForeignKey(
         EventRecord, on_delete=CASCADE, related_name="attendance_list_pages"
     )
-    page = m.FileField(upload_to="attendance_list_pages", null=True, blank=True)
+    page = m.FileField(upload_to="attendance_list_pages", blank=True)
     created_at = m.DateTimeField(auto_now_add=True)
 
     class Meta:

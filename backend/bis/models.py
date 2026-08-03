@@ -257,7 +257,7 @@ class User(SearchMixin, AbstractBaseUser):
     phone = PhoneNumberField(blank=True)
     email = m.EmailField(unique=True, blank=True, null=True)
     birthday = m.DateField(null=True)
-    photo = ThumbnailImageField(upload_to="user_photos", null=True, blank=True)
+    photo = ThumbnailImageField(upload_to="user_photos", blank=True)
 
     class SubscriptionStatus(m.IntegerChoices):
         SUBSCRIBED = 1, "Odebírá"

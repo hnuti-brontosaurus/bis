@@ -165,12 +165,46 @@ def test_recipe_get_then_patch_roundtrip(api_client, recipe):
     response = api_client.get(f"/api/cookbook/recipes/{recipe.id}/")
     assert response.status_code == 200, response.data
     body = response.data
-    # Strip the photo dict (write side wants either no key or a fresh upload).
-    body.pop("photo", None)
     response = api_client.patch(
         f"/api/cookbook/recipes/{recipe.id}/", body, format="json"
     )
     assert response.status_code == 200, response.data
+    recipe.refresh_from_db()
+    assert recipe.photo
+
+
+@pytest.mark.django_db
+def test_recipe_create_with_null_photo(api_client, chef, difficulty, required_time):
+    """A draft saved before its photo upload sends photo=null."""
+    response = api_client.post(
+        "/api/cookbook/recipes/",
+        {
+            "name": "Draft",
+            "chef_id": chef.id,
+            "difficulty_id": difficulty.id,
+            "required_time_id": required_time.id,
+            "is_public": False,
+            "photo": None,
+            "steps": [{"order": 0, "name": "Step", "photo": None}],
+        },
+        format="json",
+    )
+    assert response.status_code == 201, response.data
+    assert response.data["photo"] is None
+
+
+@pytest.mark.django_db
+def test_recipe_patch_null_photo_clears_it(api_client, recipe):
+    """Null is how the frontend renders "no photo" — writing it back clears."""
+    assert recipe.photo
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {"photo": None},
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    recipe.refresh_from_db()
+    assert not recipe.photo
 
 
 @pytest.mark.django_db

@@ -70,7 +70,7 @@ class RecipeStep(BaseModel):
     name = m.CharField(max_length=63)
     order = m.PositiveSmallIntegerField()
     description = m.TextField(blank=True)
-    photo = ThumbnailImageField(upload_to="recipe_steps", blank=True, null=True)
+    photo = ThumbnailImageField(upload_to="recipe_steps", blank=True)
     is_optional = m.BooleanField(default=False)
 
     class Meta:

@@ -105,6 +105,22 @@ cookbook/             # Vue 3 SPA (separate from main frontend)
 - Types must be re-exported through `bisTypes.ts` - never import directly from `testApi`
 - Run `yarn generate-api` when API changes
 
+### Image / file fields
+Every model `ImageField`/`FileField`/`ThumbnailImageField` is serialized by the
+Base64 mixin in `backend/api/helpers.py`. Reads render thumbnail URL dicts
+(`{small, medium, large, original}`) or `null` when empty. Writes accept:
+- a data-URI string (`data:image/png;filename=x.png;base64,...`) — uploads it
+- a dict — ignored (`SkipField`), so a read payload can be PATCHed back as-is
+- `null` — clears the file, but only where the model field is `blank=True`;
+  required image fields still reject it. The columns are NOT NULL, so null is
+  stored as `""`.
+
+Model convention: a file field is either required (no kwargs) or optional
+(`blank=True`) — never `null=True`. Empty is always `""`, never NULL.
+
+Frontend consequence: an empty photo must be sent as `null`, never `undefined`
+(`JSON.stringify` drops undefined keys, so the field would go untouched).
+
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API
 2. API validates via Django models → PostgreSQL + PostGIS (geospatial)

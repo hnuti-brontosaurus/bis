@@ -123,7 +123,12 @@ const onDelete = () => {
 
     <template #extra>
       <n-flex>
-        <n-image :src="recipe.photo.large" :alt="recipe.name" height="300" />
+        <n-image
+          v-if="recipe.photo"
+          :src="recipe.photo.large"
+          :alt="recipe.name"
+          height="300"
+        />
         <n-list>
           <n-list-item v-if="recipe.chef">
             <template #prefix>{{ _.recipes.chef }}:</template>{{ recipe.chef.name }}

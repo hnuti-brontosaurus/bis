@@ -233,7 +233,9 @@ const shownInputs = computed(() =>
                       },
                     ]
                   : [],
-              set: value => (input.value.value = value[0]),
+              // null, not undefined: JSON.stringify drops undefined keys, so a
+              // removed photo would never reach the backend as "clear this".
+              set: value => (input.value.value = value[0] ?? null),
             }),
           },
     ),

@@ -50,6 +50,13 @@ def catch_related_object_does_not_exist(fn):
 class Base64FieldMixin:
     EMPTY_VALUES = None, "", [], (), {}
 
+    def validate_empty_values(self, data):
+        # Read renders "no file" as null, so writes have to accept null back.
+        # The columns are NOT NULL — Django stores an empty file as "".
+        if data is None and not self.required:
+            return True, ""
+        return super().validate_empty_values(data)
+
     def to_internal_value(self, base64_data):
         if isinstance(base64_data, dict):
             raise SkipField()

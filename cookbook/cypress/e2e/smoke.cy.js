@@ -398,6 +398,80 @@ describe("cookbook smoke", () => {
     })
   })
 
+  it("removes the photo from a recipe that already has one", () => {
+    // The write side has to accept `photo: null` — that's how both "never
+    // had a photo" and "user removed it" reach the backend. Runs against a
+    // throwaway recipe so the seeded one keeps the photo other specs need.
+    const auth = getStoredAuth()
+    const token = auth.user?.token
+    const headers = { Authorization: `Token ${token}` }
+
+    cy.request({ url: `${API_BASE_URL}/recipe_difficulties/`, headers }).then(
+      ({ body: difficulties }) => {
+        cy.request({ url: `${API_BASE_URL}/recipe_required_times/`, headers }).then(
+          ({ body: requiredTimes }) => {
+            cy.fixture("upload/red-pixel.png", "base64").then(base64 => {
+              cy.request({
+                method: "POST",
+                url: `${API_BASE_URL}/recipes/`,
+                headers,
+                body: {
+                  name: `cypress-${Date.now()}`,
+                  chef_id: auth.chef?.id,
+                  difficulty_id: difficulties.results[0].id,
+                  required_time_id: requiredTimes.results[0].id,
+                  is_public: false,
+                  photo: `data:image/png;filename=red-pixel.png;base64,${base64}`,
+                },
+              }).then(({ body: created }) => {
+                expect(created.photo, "seeded photo").to.not.be.null
+
+                cy.intercept("PATCH", `**/api/cookbook/recipes/${created.id}/`).as(
+                  "recipePatch",
+                )
+                cy.visit(`/recipe/${created.id}/edit/`)
+                cy.get("textarea", { timeout: 15000 }).should("have.length.gte", 1)
+
+                // image-card upload renders its remove button inside the
+                // file card; it only shows on hover, hence force.
+                cy.get(".n-upload-file-list .n-upload-file")
+                  .first()
+                  .find("button")
+                  .last()
+                  .click({ force: true })
+
+                cy.contains("button", "Uložit").click({ force: true })
+                cy.wait("@recipePatch", { timeout: 30000 }).then(({ request }) => {
+                  expect(request.body.photo, "cleared photo payload").to.be.null
+                })
+
+                cy.location("pathname", { timeout: 30000 }).should(
+                  "equal",
+                  `/cookbook/recipe/${created.id}/`,
+                )
+                // Detail page of a photo-less recipe must render — reading
+                // photo.large unguarded used to throw here.
+                cy.contains("Autorstvo", { timeout: 10000 }).should("be.visible")
+
+                cy.request({
+                  url: `${API_BASE_URL}/recipes/${created.id}/`,
+                  headers,
+                }).then(({ body }) => {
+                  expect(body.photo, "photo after removal").to.be.null
+                })
+                cy.request({
+                  method: "DELETE",
+                  url: `${API_BASE_URL}/recipes/${created.id}/`,
+                  headers,
+                })
+              })
+            })
+          },
+        )
+      },
+    )
+  })
+
   it("renders chefs view", () => {
     cy.visit("/chefs/")
     cy.contains("Kuchařstvo").should("exist")
