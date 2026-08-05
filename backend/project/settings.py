@@ -212,7 +212,9 @@ MEDIA_URL = "/media/"
 STATIC_ROOT = join(BASE_DIR, "backend_static")
 MEDIA_ROOT = join(BASE_DIR, "media")
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+# Above the ingress' proxy-body-size (25M) so nginx is what rejects oversized
+# uploads, with a 413 rather than a Django 400.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 
