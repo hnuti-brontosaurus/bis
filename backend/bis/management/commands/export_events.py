@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from collections import defaultdict
 
 from bis.drive import (
     build_drive_service,
@@ -8,6 +9,7 @@ from bis.drive import (
     get_existing_names,
     get_or_create_folder,
     list_subfolders,
+    program_folder_name,
     sanitize_name,
     upload_file,
 )
@@ -44,49 +46,60 @@ class Command(BaseCommand):
             options["root_folder"],
             parent_id=settings.GOOGLE_SHARED_DRIVE_ID,
         )
-        year_folders = list_subfolders(service, root_id)
-        event_folders_by_year: dict[str, dict[str, str]] = {}
+        self.subfolders: dict[str, dict[str, str]] = {}
 
         cutoff = None if options["all"] else time.time() - options["since_days"] * 86400
 
-        events = Event.objects.filter(is_archived=False).order_by("start").iterator()
+        events = (
+            Event.objects.filter(is_archived=False)
+            .select_related("program", "location")
+            .order_by("start")
+            .iterator()
+        )
 
         uploaded = 0
         for event in events:
-            files = list(self._candidate_files(event, cutoff))
-            if not files:
+            files_by_section = defaultdict(list)
+            for section, drive_name, path in self._candidate_files(event, cutoff):
+                files_by_section[section].append((drive_name, path))
+            if not files_by_section:
                 continue
 
             year = str(event.start.year)
-            year_id = year_folders.get(year)
-            if year_id is None:
-                year_id = get_or_create_folder(service, year, parent_id=root_id)
-                year_folders[year] = year_id
-            if year not in event_folders_by_year:
-                event_folders_by_year[year] = list_subfolders(service, year_id)
-
+            program = program_folder_name(event)
             folder_name = event_folder_name(event)
-            folder_id = event_folders_by_year[year].get(folder_name)
-            if folder_id is None:
-                folder_id = get_or_create_folder(
-                    service,
-                    folder_name,
-                    parent_id=year_id,
-                )
-                event_folders_by_year[year][folder_name] = folder_id
 
-            existing = get_existing_names(service, folder_id, [n for n, _ in files])
-            for drive_name, path in files:
-                if drive_name in existing:
-                    continue
-                logging.info(f"  Uploading: {year}/{folder_name}/{drive_name}")
-                upload_file(service, folder_id, drive_name, path)
-                uploaded += 1
+            year_id = self._subfolder(service, root_id, year)
+            program_id = self._subfolder(service, year_id, program)
+            event_id = self._subfolder(service, program_id, folder_name)
+
+            for section, files in files_by_section.items():
+                section_id = self._subfolder(service, event_id, section)
+                existing = get_existing_names(
+                    service, section_id, [name for name, _ in files]
+                )
+                for drive_name, path in files:
+                    if drive_name in existing:
+                        continue
+                    logging.info(
+                        f"  Uploading: {year}/{program}/{folder_name}/{section}/{drive_name}"
+                    )
+                    upload_file(service, section_id, drive_name, path)
+                    uploaded += 1
 
         logging.info(f"Done. Uploaded: {uploaded}")
 
+    def _subfolder(self, service, parent_id, name):
+        if parent_id not in self.subfolders:
+            self.subfolders[parent_id] = list_subfolders(service, parent_id)
+        folder_id = self.subfolders[parent_id].get(name)
+        if folder_id is None:
+            folder_id = get_or_create_folder(service, name, parent_id=parent_id)
+            self.subfolders[parent_id][name] = folder_id
+        return folder_id
+
     def _candidate_files(self, event, cutoff):
-        for kind, file_field in self._iter_event_files(event):
+        for section, kind, file_field in self._iter_event_files(event):
             try:
                 path = file_field.path
                 mtime = os.path.getmtime(path)
@@ -96,23 +109,23 @@ class Command(BaseCommand):
                 continue
             original = os.path.basename(file_field.name)
             drive_name = sanitize_name(f"{event.name} - {kind} - {original}")
-            yield drive_name, path
+            yield section, drive_name, path
 
     def _iter_event_files(self, event):
         if hasattr(event, "finance"):
             if event.finance.budget:
-                yield "rozpočet", event.finance.budget
-            for r in event.finance.receipts.all():
-                if r.receipt:
-                    yield "účtenka", r.receipt
+                yield "DOKUMENTACE", "rozpočet", event.finance.budget
+            for receipt in event.finance.receipts.all():
+                if receipt.receipt:
+                    yield "DOKUMENTACE", "účtenka", receipt.receipt
         if hasattr(event, "propagation"):
-            for img in event.propagation.images.all():
-                if img.image:
-                    yield "propagace", img.image
+            for image in event.propagation.images.all():
+                if image.image:
+                    yield "PROPAGACE", "propagace", image.image
         if hasattr(event, "record"):
-            for p in event.record.attendance_list_pages.all():
-                if p.page:
-                    yield "prezenčka", p.page
-            for ph in event.record.photos.all():
-                if ph.photo:
-                    yield "fotka", ph.photo
+            for page in event.record.attendance_list_pages.all():
+                if page.page:
+                    yield "DOKUMENTACE", "prezenčka", page.page
+            for photo in event.record.photos.all():
+                if photo.photo:
+                    yield "FOTKY", "fotka", photo.photo

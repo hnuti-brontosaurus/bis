@@ -111,6 +111,12 @@ class HasRecurrentDonationFilter(admin.SimpleListFilter):
             return queryset.filter(has_active_recurrent_donation=False)
 
 
+class IsCompanyDonorFilter(YesNoFilter):
+    title = "Firemní dárce"
+    parameter_name = "is_company_donor"
+    query = {"company__isnull": False}
+
+
 class RecurringDonorWhoStoppedFilter(admin.SimpleListFilter):
     title = "Pravidelný dárce bez daru za poslední 2 měsíce"
     parameter_name = "reccuring_donor_who_stopped"

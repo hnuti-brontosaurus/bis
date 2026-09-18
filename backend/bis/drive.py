@@ -111,6 +111,10 @@ def get_existing_names(service, folder_id, names):
     return {f["name"] for f in results.get("files", [])}
 
 
+def program_folder_name(event):
+    return sanitize_name(event.program.name)
+
+
 def event_folder_name(event):
     location = event.location.name if event.location else "bez lokality"
     return sanitize_name(f"{event.start.isoformat()} - {event.name} - {location}")
@@ -134,7 +138,10 @@ def get_or_create_shared_folder_url(event):
         service, ROOT_FOLDER_NAME, settings.GOOGLE_SHARED_DRIVE_ID
     )
     year_id = get_or_create_folder(service, str(event.start.year), root_id)
-    event_folder_id = get_or_create_folder(service, event_folder_name(event), year_id)
+    program_id = get_or_create_folder(service, program_folder_name(event), year_id)
+    event_folder_id = get_or_create_folder(
+        service, event_folder_name(event), program_id
+    )
     shared_id = get_or_create_folder(
         service, shared_folder_name(event), event_folder_id
     )
