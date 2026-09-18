@@ -706,8 +706,12 @@ class EventSerializer(ModelSerializer):
         validated_data["created_by"] = user
         instance = super().create(validated_data)
 
-        if self.context["request"].user != instance.main_organizer:
+        if user != instance.main_organizer:
             emails.event_created(instance)
+
+        emails.event_added_to_administration_units(
+            instance, list(instance.administration_units.all())
+        )
 
         if (
             instance.main_organizer.id == "1e82e062-9fd0-4f1a-af14-6d3645b1195a"
@@ -739,9 +743,19 @@ class EventSerializer(ModelSerializer):
         if is_closing:
             validated_data["closed_at"] = date.today()
 
+        previous_administration_units = set(instance.administration_units.all())
+
         instance = super().update(instance, validated_data)
         if is_closing:
             emails.event_end_participants_notification(instance)
+
+        added_administration_units = (
+            set(instance.administration_units.all()) - previous_administration_units
+        )
+        if added_administration_units:
+            emails.event_added_to_administration_units(
+                instance, sorted(added_administration_units, key=lambda au: au.id)
+            )
 
         if should_send_feedback:
             emails.send_feedback_request(instance)

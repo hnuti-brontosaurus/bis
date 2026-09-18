@@ -133,9 +133,10 @@ def event_created(event):
         },
     )
 
-    recipients = [
-        (au.email or au.chairman.email) for au in event.administration_units.all()
-    ]
+
+@in_background
+def event_added_to_administration_units(event, administration_units):
+    recipients = [(au.email or au.chairman.email) for au in administration_units]
     recipients = [email for email in recipients if email != event.main_organizer.email]
     ecomail.send_email(
         emails["bis"],
