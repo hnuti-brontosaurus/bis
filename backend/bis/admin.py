@@ -146,7 +146,11 @@ class LocationAdmin(PermissionMixin, ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if not (request.user.is_superuser or request.user.is_office_worker):
+        if not (
+            request.user.is_superuser
+            or request.user.is_office_worker
+            or request.user.is_chairman
+        ):
             del actions["merge_selected_first"]
             del actions["merge_selected_last"]
         return actions
