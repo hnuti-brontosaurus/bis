@@ -114,18 +114,18 @@ class Command(BaseCommand):
     def _iter_event_files(self, event):
         if hasattr(event, "finance"):
             if event.finance.budget:
-                yield "DOKUMENTACE", "rozpočet", event.finance.budget
+                yield "dokumentace", "rozpočet", event.finance.budget
             for receipt in event.finance.receipts.all():
                 if receipt.receipt:
-                    yield "DOKUMENTACE", "účtenka", receipt.receipt
+                    yield "dokumentace", "účtenka", receipt.receipt
         if hasattr(event, "propagation"):
             for image in event.propagation.images.all():
                 if image.image:
-                    yield "PROPAGACE", "propagace", image.image
+                    yield "propagace", "propagace", image.image
         if hasattr(event, "record"):
             for page in event.record.attendance_list_pages.all():
                 if page.page:
-                    yield "DOKUMENTACE", "prezenčka", page.page
+                    yield "dokumentace", "prezenčka", page.page
             for photo in event.record.photos.all():
                 if photo.photo:
-                    yield "FOTKY", "fotka", photo.photo
+                    yield "fotky", "fotka", photo.photo
