@@ -1,4 +1,5 @@
 import logging
+import re
 
 from bis.helpers import are_emails_paused
 from django.conf import settings
@@ -39,9 +40,12 @@ def style_html(html: str) -> str:
     )
 
 
+UNRESOLVED_VARIABLE = re.compile(r"\*\|\w+\|\*")
+
+
 def replace_variables(html: str, variables: dict[str, str]) -> str:
     for name, value in variables.items():
-        html = html.replace(f"*|{name}|*", value)
+        html = html.replace(f"*|{name}|*", str(value))
     return html
 
 
@@ -56,15 +60,20 @@ def send_email(
     attachments=None,
 ):
     from_name, from_email = sender
-    if subject is None:
-        subject = get_name_from_template(template_id)
     if attachments is None:
         attachments = []
     if variables is None:
         variables = {}
     if reply_to is None:
         reply_to = [from_email]
+    if subject is None:
+        subject = replace_variables(get_name_from_template(template_id), variables)
     recipients = [recipient for recipient in recipients if recipient]
+
+    if UNRESOLVED_VARIABLE.search(subject):
+        logging.error(
+            "Subject of template %s has unknown variables: %s", template_id, subject
+        )
 
     data = dict(
         from_email=from_email,

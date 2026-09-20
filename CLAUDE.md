@@ -105,6 +105,27 @@ cookbook/             # Vue 3 SPA (separate from main frontend)
 - Types must be re-exported through `bisTypes.ts` - never import directly from `testApi`
 - Run `yarn generate-api` when API changes
 
+### Transactional emails (Ecomail)
+All emails are sent through Ecomail templates referenced by hardcoded
+`template_id` in `backend/bis/emails.py`. The template's **name in Ecomail is
+the email subject** (`get_name_from_template`, cached 5 minutes) and may contain
+`*|variable|*` placeholders — Ecomail substitutes variables in the body only, so
+`send_email` fills the subject itself; an unfilled placeholder is logged as an
+error and sent as is, never raised, so one bad subject cannot block a batch.
+
+The Ecomail API (`https://api2.ecomailapp.cz/`, header `key:`) can list
+(`GET /templates`, paginated) and read (`GET /template/{id}`, includes `html` but
+never `mjml`). `PUT /templates/{id}` exists and preserves the html byte for byte,
+but it **switches the template to HTML mode and loses the drag-and-drop editor**,
+so edits and renames are manual work in the Ecomail UI — verified on template 162.
+Never create a new template instead of editing one; the id is in the code.
+
+Triggers are either Django signals / DRF serializers, or the `daily` command run
+by `backend/bis/scheduler.py` at 7:00 Prague (`nightly` at 5:00).
+
+A per-email overview (trigger, recipients, variables, code reference) lives in
+the "přehled emailů" tab of the Automatické emaily spreadsheet.
+
 ### Image / file fields
 Every model `ImageField`/`FileField`/`ThumbnailImageField` is serialized by the
 Base64 mixin in `backend/api/helpers.py`. Reads render thumbnail URL dicts

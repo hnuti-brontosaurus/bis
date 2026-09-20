@@ -1,4 +1,3 @@
-import re
 import time
 from functools import lru_cache
 
@@ -50,7 +49,6 @@ def send(contacts: Contact | list[Contact], method, uri, data=None, params=None)
 
 
 DEFAULT_TEMPLATE_NAME = "Brontosauří informační systém"
-TEMPLATE_NAME_PATTERN = re.compile(r"^\s*[\d\w]+\.\s*(.+)$")
 
 
 @lru_cache(maxsize=64)
@@ -76,10 +74,7 @@ def _get_cached_name(template_id: int, time_hash: int) -> str:
             if not template_name or not isinstance(template_name, str):
                 return DEFAULT_TEMPLATE_NAME
 
-            match = TEMPLATE_NAME_PATTERN.match(template_name)
-            result = match.group(1).strip() if match else template_name.strip()
-
-            return result
+            return template_name.strip()
 
     except Exception as e:
         print(f"Error fetching Ecomail template {template_id}: {e}")
@@ -90,12 +85,10 @@ def get_name_from_template(template_id: int) -> str:
     """
     Retrieve template name from Ecomail API with 5-minute caching.
 
-    Returns cleaned template name or default on error.
+    The template name is used as the email subject, so it may contain
+    *|variable|* placeholders filled in by send_email.
 
-    Examples:
-        "  31.Jaký to bylo? " -> "Jaký to bylo?"
-        "8a. Konec kvalifikace konzultantů" -> "Konec kvalifikace konzultantů"
-        "Beze změny" -> "Beze změny"
+    Returns the name or default on error.
     """
     ttl_hash = int(
         time.time() / 300
