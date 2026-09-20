@@ -1,7 +1,6 @@
 import pytest
 from bis.models import User
 from django.test import RequestFactory
-from project.urls import MCPPermission
 
 
 def make_user(email):
@@ -11,6 +10,15 @@ def make_user(email):
         last_name="User",
         _str="Test User",
     )
+
+
+@pytest.fixture
+def mcp_permission(db):
+    # project.urls pulls in api.urls, whose filters query the DB at import
+    # time, so it must only be imported once the db fixture is active.
+    from project.urls import MCPPermission
+
+    return MCPPermission()
 
 
 @pytest.fixture
@@ -24,29 +32,29 @@ def request_with_user(db, django_user_model):
 
 
 @pytest.mark.django_db
-def test_anonymous_user_denied(request_with_user):
+def test_anonymous_user_denied(request_with_user, mcp_permission):
     class AnonymousUser:
         is_staff = False
         email = None
 
     request = request_with_user(AnonymousUser())
-    assert not MCPPermission().has_permission(request, None)
+    assert not mcp_permission.has_permission(request, None)
 
 
 @pytest.mark.django_db
-def test_non_staff_user_denied(request_with_user):
+def test_non_staff_user_denied(request_with_user, mcp_permission):
     request = request_with_user(make_user("member@example.com"))
-    assert not MCPPermission().has_permission(request, None)
+    assert not mcp_permission.has_permission(request, None)
 
 
 @pytest.mark.django_db
-def test_brontobot_allowed_without_staff(request_with_user):
+def test_brontobot_allowed_without_staff(request_with_user, mcp_permission):
     request = request_with_user(make_user("brontosaurus.bot@gmail.com"))
-    assert MCPPermission().has_permission(request, None)
+    assert mcp_permission.has_permission(request, None)
 
 
 @pytest.mark.django_db
-def test_staff_user_allowed(request_with_user):
+def test_staff_user_allowed(request_with_user, mcp_permission):
     from bis.models import RoleCategory
 
     role = RoleCategory.objects.get_or_create(
@@ -55,4 +63,4 @@ def test_staff_user_allowed(request_with_user):
     user = make_user("staff@example.com")
     user.roles.add(role)
     request = request_with_user(user)
-    assert MCPPermission().has_permission(request, None)
+    assert mcp_permission.has_permission(request, None)
