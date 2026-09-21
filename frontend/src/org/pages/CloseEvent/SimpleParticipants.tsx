@@ -11,7 +11,8 @@ import {
   InlineSection,
   Loading,
 } from 'components'
-import { useShowMessage } from 'features/systemMessage/useSystemMessage'
+import * as translations from 'config/static/combinedTranslations'
+import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import tableStyles from 'org/components/EventForm/steps/ParticipantsStep.module.scss'
 import { FormHTMLAttributes, useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -31,41 +32,30 @@ export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
   const { data: participants, isLoading } =
     api.endpoints.readEventParticipants.useQuery({ eventId })
 
-  const [createSimpleParticipant] =
+  const [createSimpleParticipant, createStatus] =
     api.endpoints.createSimpleParticipant.useMutation()
-  const [removeEventParticipant] =
+  const [removeEventParticipant, removeStatus] =
     api.endpoints.removeEventParticipant.useMutation()
-  const showMessage = useShowMessage()
+  // the API tells us which field was wrong, pass it through instead of a
+  // generic "something went wrong"
+  useShowApiErrorMessage(
+    createStatus.error,
+    'Nepodařilo se přidat účastníka',
+    translations.user,
+  )
+  useShowApiErrorMessage(removeStatus.error, 'Nepodařilo se odebrat účastníka')
 
   const addParticipants = async (toAdd: SimpleParticipantPayload[]) => {
-    if (toAdd.length === 0) return
-    try {
-      await Promise.all(
-        toAdd.map(participant =>
-          createSimpleParticipant({ eventId, participant }).unwrap(),
-        ),
-      )
-    } catch {
-      showMessage({
-        type: 'error',
-        message:
-          toAdd.length === 1
-            ? 'Nepodařilo se přidat účastníka'
-            : 'Nepodařilo se přidat některé účastníky',
-      })
-    }
+    const results = await Promise.allSettled(
+      toAdd.map(participant =>
+        createSimpleParticipant({ eventId, participant }).unwrap(),
+      ),
+    )
+    return results.every(result => result.status === 'fulfilled')
   }
 
-  const removeParticipant = async (userId: string) => {
-    try {
-      await removeEventParticipant({ eventId, userId }).unwrap()
-    } catch {
-      showMessage({
-        type: 'error',
-        message: 'Nepodařilo se odebrat účastníka',
-      })
-    }
-  }
+  const removeParticipant = (userId: string) =>
+    removeEventParticipant({ eventId, userId })
 
   if (isLoading) return <Loading>Načítáme účastníky</Loading>
 
@@ -139,24 +129,20 @@ export const SimpleParticipants = ({ eventId }: { eventId: number }) => {
 
 const SimpleParticipantInput = ({
   formId = 'simple-participant-form',
-  defaultValues,
   onSubmit,
 }: {
   formId?: string
-  defaultValues?: SimpleParticipantPayload
-  onSubmit: (value: SimpleParticipantPayload) => void
+  onSubmit: (value: SimpleParticipantPayload) => Promise<boolean>
 }) => {
-  const methods = useForm<SimpleParticipantPayload>({ defaultValues })
-  const { register, handleSubmit, reset, setFocus } = methods
+  const methods = useForm<SimpleParticipantPayload>()
+  const { register, handleSubmit, reset, setFocus, formState } = methods
 
-  useEffect(() => {
-    if (defaultValues) {
-      reset(defaultValues)
-    }
-  }, [defaultValues, reset, setFocus])
-
-  const handleFormSubmit = handleSubmit(data => {
-    onSubmit(data)
+  const handleFormSubmit = handleSubmit(async data => {
+    // keep what was typed when the API rejects it, so the organizer can fix
+    // the offending value instead of filling the whole row again
+    if (!(await onSubmit(data))) return
+    // focus first — reset re-registers the inputs, so right after it
+    // setFocus can't find the field yet
     setFocus('first_name')
     reset({ first_name: '', last_name: '', email: '', phone: '' })
   })
@@ -204,7 +190,12 @@ const SimpleParticipantInput = ({
             {...register('phone' as const)}
           />
         </FormInputError>
-        <Button primary type="submit" form={formId}>
+        <Button
+          primary
+          type="submit"
+          form={formId}
+          disabled={formState.isSubmitting}
+        >
           <FaCheck />
         </Button>
       </InlineSection>
