@@ -15,13 +15,35 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from django.conf import settings
+from django.db import close_old_connections
 
 logger = logging.getLogger(__name__)
 
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="bis-background")
 
 
+def closes_db_connection(fn):
+    """Release the thread's database connection once fn returns.
+
+    Django closes connections on the request_finished signal, which never fires
+    on a background thread, so its connection stays in the thread local for the
+    life of the thread. One broken by a database restart then poisons every
+    later call on that thread, and a thread that exits without closing leaks its
+    connection to the server instead of returning it.
+    """
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            close_old_connections()
+
+    return wrapper
+
+
 def run_in_background(fn, *args, **kwargs):
+    @closes_db_connection
     def run():
         try:
             fn(*args, **kwargs)

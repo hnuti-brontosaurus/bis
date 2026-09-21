@@ -3,6 +3,7 @@ import threading
 from datetime import date
 
 from bis import emails
+from bis.background import closes_db_connection
 from bis.helpers import is_ecomail_push_skipped, is_validation_paused
 from bis.models import Location, Qualification, User, UserEmail
 from dateutil.relativedelta import relativedelta
@@ -123,6 +124,7 @@ def push_to_ecomail(instance: User, created, **kwargs):
 
 
 def _push_users_async(user_ids):
+    @closes_db_connection
     def _run():
         try:
             push_users(get_session(), settings.ECOMAIL_LIST_ID, user_ids)

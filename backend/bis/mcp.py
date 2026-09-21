@@ -9,12 +9,14 @@ Export mode sends full XLSX (with PII) to the authenticated user's email.
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
+from bis.background import closes_db_connection
 from django.conf import settings
 from mcp_server import MCPToolset
 
 logger = logging.getLogger(__name__)
 
 
+@closes_db_connection
 def _export_and_email(queryset, user_email, subject_label):
     """Run do_export_to_xlsx, save to SavedFile, and email the link."""
     from bis import emails

@@ -9,6 +9,7 @@ import threading
 import time
 from datetime import datetime
 
+from bis.background import closes_db_connection
 from django.conf import settings
 
 _scheduler_started = False
@@ -45,6 +46,7 @@ def is_running_under_server():
     return len(sys.argv) > 1 and "runserver" in sys.argv[1]
 
 
+@closes_db_connection
 def run_command(name):
     """Run a management command, logging success/failure."""
     from django.core.management import call_command

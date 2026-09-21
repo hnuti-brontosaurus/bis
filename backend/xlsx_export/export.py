@@ -14,6 +14,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 import xlsxwriter
 from bis import emails
+from bis.background import closes_db_connection
 from bis.helpers import print_progress
 from bis.models import User
 from django.conf import settings
@@ -403,6 +404,7 @@ class XLSXWriter:
 executor = ThreadPoolExecutor(max_workers=1)
 
 
+@closes_db_connection
 def send_later(request, result):
     try:
         file = result.result()
@@ -421,7 +423,7 @@ def send_later(request, result):
 
 @admin.action(description="Exportuj data")
 def export_to_xlsx(model_admin, request, queryset):
-    result = executor.submit(do_export_to_xlsx, queryset)
+    result = executor.submit(closes_db_connection(do_export_to_xlsx), queryset)
     for __ in range(20):
         sleep(1)
         if result.done():

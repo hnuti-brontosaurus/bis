@@ -60,6 +60,7 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
+from django.db.models import prefetch_related_objects
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -574,12 +575,21 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
             .prefetch_related(
                 "memberships__administration_unit",
                 "qualifications__category",
-                "events_where_was_organizer",
-                "participated_in_events__event",
                 "memberships",
                 "memberships__category",
             )
         )
+
+    def get_object(self, request, object_id, from_field=None):
+        obj = super().get_object(request, object_id, from_field)
+        if obj is not None:
+            # Only the change form renders these; in get_queryset they would
+            # also load for every row of the changelist and of the xlsx export,
+            # which reuses that queryset.
+            prefetch_related_objects(
+                [obj], "events_where_was_organizer", "participated_in_events__event"
+            )
+        return obj
 
     @admin.display(description="V předsednictvu organizačních jednotek")
     def get_board_member_of(self, obj):
