@@ -29,7 +29,10 @@ export const NumberInput = forwardRef<
         ref={ref}
         className={styles.input}
         type="number"
-        value={value ?? undefined}
+        // never `undefined` — that would flip the input to uncontrolled and
+        // React would leave the previously typed value in the DOM when the
+        // form clears the field
+        value={value ?? ''}
         min={min}
         max={max}
         onChange={e =>
