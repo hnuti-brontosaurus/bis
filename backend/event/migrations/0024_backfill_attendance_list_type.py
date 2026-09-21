@@ -37,7 +37,7 @@ def backfill(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("event", "0022_eventrecord_attendance_list_type"),
+        ("event", "0023_eventrecord_attendance_list_type"),
     ]
 
     operations = [
