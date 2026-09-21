@@ -6,9 +6,11 @@ This project uses English, although primary text of the final application is Cze
 
 ## React
 
-For best practices, refer to documentation of [React](https://reactjs.org/) and [Create React App](https://create-react-app.dev/)
+For best practices, refer to documentation of [React](https://reactjs.org/) and [Vite](https://vite.dev/)
 
 These best practices are preferred when in conflict with practices of this project
+
+Form-specific conventions live in [forms.md](forms.md).
 
 ## Naming conventions
 
@@ -44,7 +46,7 @@ We care about commit messages.
 
 There are some [good resources](https://www.freecodecamp.org/news/writing-good-commit-messages-a-practical-guide/) suggesting how to write a good commit message.
 
-When a pull request contains many related small commits, we _squash_ and merge when merging to `main` branch. There are exceptions to this rule, e.g. when your commits in the PR are independent and large. When in doubt, squash!
+When a pull request contains many related small commits, we _squash_ and merge when merging to `master` branch. There are exceptions to this rule, e.g. when your commits in the PR are independent and large. When in doubt, squash!
 
 We follow at least these rules for commit messages:
 
@@ -60,10 +62,34 @@ Run `git log` to see examples.
 
 ## Comments
 
-Of course, we could do better job, documenting. Let's not take the current state as an example worth following. :)
-
-Let's try to comment our progress, include relevant links (stack overflow etc...), and describe what's going on, rather than focusing on implementation details.
-
-Let's not assume that the code is self-explanatory. Let's document it well.
-
 Comment language is English.
+
+Default to no comments. Code with well-named identifiers explains itself &mdash;
+when it doesn't, rewrite the code to be more readable rather than describing it
+in prose.
+
+Write a comment only for a non-obvious **why**: a constraint, an invariant, a
+workaround for a specific bug, or behavior that would surprise a reader.
+Linking the source of a workaround (an issue, a stack overflow answer) is
+useful; the link belongs in the comment that explains the constraint.
+
+```tsx
+// never `undefined` — that would flip the input to uncontrolled and
+// React would leave the previously typed value in the DOM when the
+// form clears the field
+value={value ?? ''}
+```
+
+Don't write:
+
+- section banners (`// ---- Helpers ----`)
+- restatements of the next line
+- references to tasks, PRs or tickets
+- commented-out code &mdash; that's what git history is for
+- framework template boilerplate
+
+If deleting the comment wouldn't confuse a competent reader, don't write it.
+
+The same rules are stated in [CLAUDE.md](../../CLAUDE.md) so that AI-assisted
+changes follow them too. Plenty of existing comments predate this policy &mdash;
+don't take the current state as an example worth following.
