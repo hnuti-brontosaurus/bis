@@ -11,6 +11,7 @@ def get_command():
 @pytest.fixture
 def command(db):
     LocationProgramCategory.objects.create(name="Příroda", slug="nature")
+    LocationProgramCategory.objects.create(name="Památky", slug="monuments")
     LocationAccessibilityCategory.objects.create(name="Snadná", slug="good")
     LocationAccessibilityCategory.objects.create(name="Střední", slug="ok")
     LocationAccessibilityCategory.objects.create(name="Obtížná", slug="bad")
