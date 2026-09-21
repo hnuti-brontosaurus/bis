@@ -97,9 +97,19 @@ class Command(BaseCommand):
     def get_images(self, location_id):
         return requests.get(self.base_url + f"pois/{location_id}/images/").json()
 
+    @staticmethod
+    def normalize_attribute_value(value):
+        # Mapotic returns select values as lists, but a POI edited in a
+        # certain way returns a bare string, which indexing would silently
+        # cut to its first character.
+        if isinstance(value, str):
+            return [value]
+        return value
+
     def parse_attribute(self, attr):
         if attr["attribute"]["id"] == 2259:
-            return dict(is_full=bool(attr["value"] and attr["value"][0] == "nrrx"))
+            value = self.normalize_attribute_value(attr["value"])
+            return dict(is_full=bool(value and value[0] == "nrrx"))
         if attr["attribute"]["id"] == 2260:
             return dict(description=attr["value"])
         if attr["attribute"]["id"] == 2261:
@@ -139,20 +149,18 @@ class Command(BaseCommand):
         if attr["attribute"]["id"] == 2266:
             return dict(web=attr["value"])
         if attr["attribute"]["id"] == 8118:
-            if not attr["value"]:
+            options = self.normalize_attribute_value(attr["value"])
+            if not options:
                 return dict()
             return dict(
-                accessibility_from_brno=self.location_accessibility_map[
-                    attr["value"][0]
-                ]
+                accessibility_from_brno=self.location_accessibility_map[options[0]]
             )
         if attr["attribute"]["id"] == 8119:
-            if not attr["value"]:
+            options = self.normalize_attribute_value(attr["value"])
+            if not options:
                 return dict()
             return dict(
-                accessibility_from_prague=self.location_accessibility_map[
-                    attr["value"][0]
-                ]
+                accessibility_from_prague=self.location_accessibility_map[options[0]]
             )
 
         raise RuntimeError("unknown attribute")
