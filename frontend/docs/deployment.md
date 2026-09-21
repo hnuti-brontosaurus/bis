@@ -2,19 +2,25 @@
 
 ## Deployment to development server https://dev.bis.brontosaurus.cz
 
-Make a commit to https://github.com/hnuti-brontosaurus/bis which includes `#deploy`. It works with every branch, including feature branches. When the app builds and tests pass, it gets deployed to [development server](https://dev.bis.brontosaurus.cz)
+Every push to `master` is deployed to the [development server](https://dev.bis.brontosaurus.cz) once the app builds and the tests pass.
 
-So, e.g. you can update its frontend submodule, and make a commit with message `chore: update frontend #deploy`. In any case, please use commit messages consistent with current backend commit style.
+From any other branch, including feature branches, put `#deploy` in the commit message and that commit gets deployed too, e.g. `chore: update frontend #deploy`. In any case, please use commit messages consistent with current backend commit style.
+
+Both are driven by [ci.yml](../../.github/workflows/ci.yml).
 
 ## Deployment to production server
 
-When commit in https://github.com/hnuti-brontosaurus/bis is tagged with tag `v*.*.*`, a production build gets created. Then an administrator has to confirm the deployment.
+When a commit is tagged with tag `v*.*.*`, a production build gets created. Then an administrator has to confirm the deployment.
 
 ## Deployment to github pages
 
-Currently, we have a [development deployment](https://github.com/hnuti-brontosaurus/bis-frontend-build-dev) which gets built on every commit/merge to main.
+> **Stale.** This describes the frontend when it lived in its own repository. The
+> `deploy-dev.yml` workflow it refers to no longer exists here, and the frontend
+> is now built and served by the backend image (see [ci.yml](../../.github/workflows/ci.yml)).
+> The `yarn deploy` script and the variables below are kept for reference until
+> someone confirms whether the github-pages build is still used.
 
-You could also make a production deployment which would get build on every merge to e.g. production branch. To do this, copy and edit workflow [deploy-dev.yml](../.github/workflows/deploy-dev.yml) accordingly. You'll also need to set up the environment variables and secrets for the new environment:
+You'll need to set up the following environment variables and secrets for such an environment:
 
 ### Deployment variables
 

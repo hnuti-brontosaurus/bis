@@ -18,7 +18,18 @@ Whenever API changes, or whenever you feel like, run
 yarn generate-api
 ```
 
-This updates the automatically generated `testApi.ts` mentioned above.
+This updates the automatically generated `testApi.ts` mentioned above. It reads
+the schema of the deployed development backend, so it needs internet access.
+
+To generate from the backend running on your own machine instead (`make dev` or
+`make backend` has to be up), run
+
+```sh
+yarn generate-api-local
+```
+
+The two are configured by `openapi-config.json` and `openapi-config.local.json`
+next to `testApi.ts`.
 
 All the available endpoints.read exported here, and also the TypeScript types related to API.
 

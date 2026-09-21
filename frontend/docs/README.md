@@ -7,6 +7,7 @@ Check out documents in this folder to read more
 - [Start contributing](contributing.md)
 - [Programming style guide](style-guide.md)
 - [Api endpoints](api.md)
-- [Forms]()
+- [Forms](forms.md)
+- [Persistent forms](persistent-forms.md)
 - [Testing](testing.md)
 - [Deployment](deployment.md)

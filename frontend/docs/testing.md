@@ -8,16 +8,32 @@ Three layers, all runnable with one command from the repo root:
 | unit       | vitest         | `src/**/__tests__/*.test.ts` |
 | end-to-end | Playwright     | [`e2e/`](../e2e)             |
 
-```bash
-make test_frontend                                # types + unit + e2e
-make test_frontend spec=e2e/login.spec.ts         # one spec
-make test_frontend grep='can sign in'             # by test title
-make test_frontend workers=1                      # serial, for debugging
-make e2e_frontend                                 # Playwright UI → http://localhost:8101
+## Run tests
+
+### From the repository root (containerized)
+
+This is how CI runs them, and it needs no node toolchain on your machine — the
+type check, the unit tests and Playwright all run inside containers.
+
+```sh
+make test_frontend                            # types + unit + e2e
+make test_frontend spec=e2e/login.spec.ts     # one spec
+make test_frontend grep='can sign in'         # by test title
+make test_frontend workers=1                  # serial, for debugging
+make e2e_frontend                             # Playwright UI → http://localhost:8101
 ```
 
-Everything runs in containers — no host Node toolchain is needed. See the
-Testing section of the repo-root `CLAUDE.md` for the compose profiles.
+See the testing section of [`CLAUDE.md`](../../CLAUDE.md) for the compose
+profiles behind these targets.
+
+### From `frontend/` with a local toolchain
+
+```sh
+yarn test:types  # tsc --noEmit, for src/ and e2e/
+yarn test:unit   # vitest run
+yarn test:e2e    # playwright test; set PW_BASE_URL to point at a running app
+yarn test        # all three
+```
 
 ## How the specs are written
 
@@ -47,7 +63,10 @@ debounces to 0ms (`src/hooks/debouncedState.ts`).
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs `make test` on every push.
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs `pre-commit`
+and `make test` (backend + frontend + cookbook) on every push. A push to
+`master`, or any commit whose message contains `#deploy`, also deploys to the
+[development server](https://dev.bis.brontosaurus.cz).
 
 Failures leave a trace in `test-results/`; open it with
 `npx playwright show-trace <path>` for a full timeline with DOM snapshots.

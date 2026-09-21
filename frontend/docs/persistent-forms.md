@@ -18,4 +18,4 @@ The logic of saving, retrieving and clearing the persistent data is implemented 
 
 ## Usage
 
-see how it's used in [OpportunityForm](../src/org/OpportunityForm.tsx) and [CloseEventForm](../src/org/CloseEvent/CloseEventForm.tsx)
+see how it's used in [OpportunityForm](../src/org/components/OpportunityForm/OpportunityForm.tsx) and [CloseEventForm](../src/org/pages/CloseEvent/CloseEventForm.tsx)

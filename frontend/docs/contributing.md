@@ -2,11 +2,11 @@
 
 This is an intro how to start fixing or adding features
 
-This project is written in [React](https://reactjs.org/) and [Typescript](https://www.typescriptlang.org/). It's a single page application and it was initialized with [Create React App](https://create-react-app.dev/).
+This project is written in [React](https://reactjs.org/) and [Typescript](https://www.typescriptlang.org/). It's a single page application, bundled with [Vite](https://vite.dev/). (It was initialized with Create React App and migrated later, which is why you may still meet CRA leftovers such as [README-CRA.md](../README-CRA.md).)
 
 Some of the extensively used libraries are
 
-- [react-hook-form](https://react-hook-form.com/) for managing html forms
+- [react-hook-form](https://react-hook-form.com/) for managing html forms, with [yup](https://github.com/jquense/yup) for validation &mdash; see [forms.md](forms.md)
 - redux with [redux-toolkit](https://redux-toolkit.js.org/), and [rtk-query](https://redux-toolkit.js.org/rtk-query/overview) to manage application-wide state, and api calls, respectively
 - [react-router](https://reactrouter.com/en/main) for application routing
 
@@ -28,7 +28,7 @@ But at first, it may be more relevant for you to start at `src/App.tsx`. You'll 
 
 - all the app code is in `src/`
 - public stuff is in `public/`
-- and some configurations are in the root. `package.json` and `tsconfig.json` might be the most important
+- and some configurations are in the root. `package.json`, `tsconfig.json` and `vite.config.ts` might be the most important
 
 Within the `src/`, you may find the following structure:
 
@@ -37,6 +37,7 @@ Within the `src/`, you may find the following structure:
 - `components/` - reusable components
 - `utils/` - helper functions
 - `styles/` - scss stylesheets that are not bound to any particular tsx component
+- `config/` - app configuration and the generated Czech translations of model fields
 - `hooks/` - reusable component logic extracted in the form of react hooks
 - `features/` and `app/` - redux stuff
 - `app/services/` - connection to [api](api.md)
