@@ -33,9 +33,7 @@ def request_with_user(db, django_user_model):
 
 @pytest.mark.django_db
 def test_anonymous_user_denied(request_with_user, mcp_permission):
-    class AnonymousUser:
-        is_staff = False
-        email = None
+    from django.contrib.auth.models import AnonymousUser
 
     request = request_with_user(AnonymousUser())
     assert not mcp_permission.has_permission(request, None)

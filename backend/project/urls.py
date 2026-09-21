@@ -16,9 +16,10 @@ BRONTOBOT_EMAIL = "brontosaurus.bot@gmail.com"
 
 class MCPPermission(BasePermission):
     def has_permission(self, request, view):
-        return request.user and (
-            request.user.is_staff or request.user.email == BRONTOBOT_EMAIL
-        )
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        return user.is_staff or user.email == BRONTOBOT_EMAIL
 
 
 urlpatterns = [
