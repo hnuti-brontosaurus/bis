@@ -707,16 +707,12 @@ class RecordSerializer(ModelSerializer):
             and attrs["attendance_list_type"] != self.instance.attendance_list_type
         ):
             participants = attrs.get("participants")
-            if participants is None and self.instance.participants.exists():
-                raise ValidationError(
-                    {
-                        "attendance_list_type": [
-                            "Při změně typu prezenční listiny je třeba "
-                            "vymazat existující účastníky."
-                        ]
-                    }
-                )
-            if participants:
+            keeps_participants = (
+                self.instance.participants.exists()
+                if participants is None
+                else bool(participants)
+            )
+            if keeps_participants:
                 raise ValidationError(
                     {
                         "attendance_list_type": [
