@@ -1,4 +1,4 @@
-from contextlib import nullcontext, suppress
+from contextlib import nullcontext
 from datetime import date
 
 from admin_auto_filters.filters import AutocompleteFilterFactory
@@ -41,12 +41,11 @@ from xlsx_export.export import (
 
 
 class AttendanceListTypeFilter(MultiSelectDropdownFilter):
+    # the base filter lists the raw db values, show the labels instead
     def choices(self, changelist):
         labels = dict(self.field.flatchoices)
         for choice in super().choices(changelist):
-            display = choice["display"]
-            with suppress(TypeError):
-                choice["display"] = labels.get(display, display)
+            choice["display"] = labels.get(choice["display"], choice["display"])
             yield choice
 
 
