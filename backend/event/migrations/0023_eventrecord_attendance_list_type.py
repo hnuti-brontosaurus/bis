@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("event", "0021_move_section_event_to_section_meeting"),
+        ("event", "0022_alter_eventattendancelistpage_page"),
     ]
 
     operations = [

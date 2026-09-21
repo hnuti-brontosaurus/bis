@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("event", "0024_eventcontact_to_participants"),
+        ("event", "0025_eventcontact_to_participants"),
     ]
 
     operations = [

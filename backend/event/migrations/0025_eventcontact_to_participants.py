@@ -43,7 +43,7 @@ def migrate_contacts_to_participants(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("event", "0023_backfill_attendance_list_type"),
+        ("event", "0024_backfill_attendance_list_type"),
     ]
 
     operations = [
