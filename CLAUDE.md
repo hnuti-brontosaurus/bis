@@ -78,9 +78,11 @@ another; that coupling is what the `.gitkeep` files above replaced.
 The e2e jobs start the ~2 GB Playwright image pull in the background right
 after checkout, so it finishes while buildx builds the app image.
 
-Frontend e2e worker count: leave Playwright's `50%` default. `workers=4` on the
-4-core runner measured *slower* (2.0m vs 1.8m) — Chromium plus the Vite dev
-server already saturate the box.
+The frontend e2e suite takes 1.2m-2.0m for the same 48 specs on an unchanged
+config, so a single run cannot measure anything smaller than roughly a 40%
+change. Repeat a run before believing a tuning result. `workers=4` and
+disabling the dev server's type-checker were both tried this way and neither
+showed a gain that survived the noise.
 
 Frontend type-check + unit tests also run in-container — `make check_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
 
