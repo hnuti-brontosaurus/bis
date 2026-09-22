@@ -211,7 +211,10 @@ adding a module-scope import of anything heavy:
   because admin autodiscovery loads that module on every start.
 
 `make dev` still runs `migrate` and then `runserver`, so it pays the import
-twice over. Migrations themselves are not the cost.
+twice over. Migrations themselves are not the cost: of a ~4.5s no-op `migrate`,
+reading all 299 migration files is 116ms and planning 29ms, against 2.3s of app
+import and 0.6s of system checks. `migrate` therefore passes `--skip-checks`,
+since `runserver` runs the checks itself moments later.
 
 `bis/scheduler.py` must start the scheduler in exactly one process. Under
 `runserver` that is the reloader child (`RUN_MAIN`), except with `--noreload`

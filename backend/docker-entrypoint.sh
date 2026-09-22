@@ -8,7 +8,9 @@ case "$1" in
         python -m pytest --durations=3
     ;;
     dev)
-        python manage.py migrate
+        # --skip-checks: runserver runs the system checks itself a moment later,
+        # and they cost ~0.6s.
+        python manage.py migrate --skip-checks
         PYTHONUNBUFFERED=1 python manage.py runserver ${APP_HOST}:${APP_PORT}
     ;;
     testing)
@@ -16,7 +18,7 @@ case "$1" in
         # creates tables directly from current models against a fresh DB.
         # -v 0 suppresses the post-migrate autodetector check, which crashes in
         # --run-syncdb mode on swappable-model deps.
-        python manage.py migrate --run-syncdb -v 0
+        python manage.py migrate --run-syncdb -v 0 --skip-checks
         # --noreload: the autoreloader forks a second process that repeats the
         # whole app import, and nothing edits the code during a test run.
         PYTHONUNBUFFERED=1 python manage.py runserver --noreload ${APP_HOST}:${APP_PORT}
