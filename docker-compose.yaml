@@ -113,7 +113,12 @@ services:
     ports:
       - 127.0.0.1:5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      # -h forces TCP. Without it pg_isready goes through the unix socket and
+      # answers for the temporary server the image's entrypoint runs during
+      # initdb, which listens on the socket only — the backend would then be
+      # started against a port nothing accepts yet.
+      test:
+        ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 1s
       retries: 600
     environment:

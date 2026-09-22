@@ -59,6 +59,13 @@ the frontend image is on Node 22.
 Interactive runs use Playwright UI mode, served over HTTP on a published port —
 no X server needed. `--headed` / `--debug` still work via the WSLg / X11 mounts.
 
+The postgres healthcheck has to force TCP (`pg_isready -h 127.0.0.1`). Over the
+unix socket it answers for the temporary server the image runs during initdb,
+which listens on the socket only, so compose calls postgres healthy and starts
+the backend against a port nothing is accepting on yet. The test stack sets
+`restart: "no"`, so one lost race fails the whole job; dev's `restart: always`
+retries and hides it.
+
 Every compose bind-mount source must exist in the checkout, owned by the host
 user. Docker creates a missing one itself, as **root**, and the containers run
 as `${UID}:${GID}` — so the mount silently becomes unwritable. That is why
