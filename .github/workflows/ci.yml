@@ -102,9 +102,10 @@ jobs:
           while kill -0 "$(cat /tmp/pw-pull.pid)" 2>/dev/null; do sleep 1; done
           cat /tmp/pw-pull.log
 
-      # The runner has 4 cores; Playwright's "50%" default would leave half of
-      # them idle on a suite that is I/O-bound on a mocked dev server.
-      - run: make e2e_frontend workers=4
+      # Leave the "50%" worker default alone: on the 4-core runner, workers=4
+      # measured slower than the default 2 (2.0m vs 1.8m) — Chromium and the
+      # Vite dev server already saturate the box.
+      - run: make e2e_frontend
 
       - uses: actions/upload-artifact@v4
         if: failure()
