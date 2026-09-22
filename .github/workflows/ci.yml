@@ -102,10 +102,10 @@ jobs:
           while kill -0 "$(cat /tmp/pw-pull.pid)" 2>/dev/null; do sleep 1; done
           cat /tmp/pw-pull.log
 
-      # Leave the "50%" worker default alone. workers=4 was tried and showed no
-      # gain, but the suite varies 1.2m-2.0m run to run on an unchanged config,
-      # so that is not a measurement either — it takes repeated runs to tell.
-      - run: make e2e_frontend
+      # 4 workers rather than Playwright's "50%" (= 2 here): measured 108s vs
+      # 110.5s, interleaved on one runner. The gain is small because the suite
+      # is bound by per-test browser/app startup, not by CPU.
+      - run: make e2e_frontend workers=4
 
       - uses: actions/upload-artifact@v4
         if: failure()

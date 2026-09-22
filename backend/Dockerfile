@@ -1,32 +1,41 @@
+FROM python:3.12-slim AS builder
+
+COPY --from=ghcr.io/astral-sh/uv:0.11.10 /uv /uvx /bin/
+
+# One dependency is a git+https URL, so resolving the lock file needs git.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV UV_PROJECT_ENVIRONMENT=/venv
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project
+
+
 FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.10 /uv /uvx /bin/
 
-RUN mkdir -p /app /logs/backend
-WORKDIR /app
-
-# System dependencies:
-# - binutils, libproj-dev, gdal-bin: GDAL/GEOS/PROJ for PostGIS/GeoDjango
-# - postgresql-client: psql used in docker-entrypoint.sh
-# - libheif-dev, build-essential, pkg-config: building pyheif from source
-# - libpango-1.0-0, libpangoft2-1.0-0: weasyprint runtime deps
+# Runtime shared libraries only — the toolchain that builds the venv stays in
+# the builder stage. pyheif needs nothing here: its wheel bundles its own
+# libheif/libde265/libaom under site-packages/pyheif.libs.
+# - libgdal36, libgeos-c1t64: GeoDjango dlopens these by path, see settings.py
+# - libpango*, fonts-dejavu-*: weasyprint PDF rendering
+# - nano, htop: for `docker exec -it bis-backend sh`
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    binutils libproj-dev gdal-bin \
-    postgresql-client \
-    libheif-dev build-essential pkg-config git \
-    libpango-1.0-0 libpangoft2-1.0-0 \
+    libgdal36 libgeos-c1t64 \
+    libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core fonts-dejavu-mono \
     nano htop \
  && rm -rf /var/lib/apt/lists/*
 
 # Place venv outside /app to avoid conflicts with volume mounts in dev
 ENV UV_PROJECT_ENVIRONMENT=/venv
 ENV PATH="/venv/bin:$PATH"
+COPY --from=builder /venv /venv
 
-# Install dependencies (cached Docker layer - only re-runs when deps change)
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project
-
+RUN mkdir -p /app /logs/backend
 WORKDIR /app
 COPY . .
 

@@ -79,10 +79,11 @@ The e2e jobs start the ~2 GB Playwright image pull in the background right
 after checkout, so it finishes while buildx builds the app image.
 
 The frontend e2e suite takes 1.2m-2.0m for the same 48 specs on an unchanged
-config, so a single run cannot measure anything smaller than roughly a 40%
-change. Repeat a run before believing a tuning result. `workers=4` and
-disabling the dev server's type-checker were both tried this way and neither
-showed a gain that survived the noise.
+config, so comparing two CI runs cannot resolve anything smaller than roughly
+a 40% change. Measure a tuning change by running both settings back to back in
+one job instead. Done that way, `workers=4` beats the `50%` default by only
+108s to 110.5s — the suite is bound by per-test browser and app startup, not
+by CPU, so there is little to win by giving it more cores.
 
 Frontend type-check + unit tests also run in-container — `make check_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
 
@@ -175,6 +176,25 @@ by `backend/bis/scheduler.py` at 7:00 Prague (`nightly` at 5:00).
 
 A per-email overview (trigger, recipients, variables, code reference) lives in
 the "přehled emailů" tab of the Automatické emaily spreadsheet.
+
+### Backend image
+`backend/Dockerfile` is multi-stage: the builder installs `git` (one dependency
+is a `git+https` URL) and runs `uv sync`; the runtime stage copies `/venv` and
+installs only the shared libraries that are loaded at runtime rather than
+imported —
+
+- `libgdal36`, `libgeos-c1t64` — GeoDjango globs for these by path, see the
+  `GDAL_LIBRARY_PATH` / `GEOS_LIBRARY_PATH` block in `project/settings.py`
+- `libpango-1.0-0`, `libpangoft2-1.0-0`, `fonts-dejavu-*` — weasyprint. Without
+  a font installed it still emits a PDF, just with the glyphs dropped.
+
+pyheif needs nothing: its wheel bundles libheif/libde265/libaom/libx265 under
+`site-packages/pyheif.libs`. It is no longer compiled from source, so
+`build-essential`, `pkg-config` and `libheif-dev` are not needed anywhere.
+
+Because none of these are `import`ed, a missing one fails only at runtime.
+`project/tests/test_runtime_libraries.py` exercises each; keep it in step when
+changing the apt list.
 
 ### Image / file fields
 Every model `ImageField`/`FileField`/`ThumbnailImageField` is serialized by the

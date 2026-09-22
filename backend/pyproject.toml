@@ -36,8 +36,6 @@ dependencies = [
     # Server
     "gunicorn>=20.1",
     # Data processing
-    "numpy>=1.26",
-    "pandas>=2.1",
     "openpyxl>=3.1",
     "XlsxWriter>=3.1",
     # PDF
@@ -51,8 +49,6 @@ dependencies = [
     "sentry-sdk>=1.21",
     # Utils
     "premailer>=3.10",
-    "python-dotenv>=1.0",
-    "python-monkey-business>=1.0",
     "PyYAML>=6.0.1",
     "simplejson>=3.19",
     "phonenumbers>=8.13",
