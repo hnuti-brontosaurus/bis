@@ -142,10 +142,13 @@ class EventType:
 
 
 def _permitted_events(info):
+    user = info.context["request"].user
+    if user.is_bot:
+        # Bots have no roles, so per-user Permissions filtering would hide
+        # everything; the bot account gets full read visibility instead.
+        return Event.objects.all()
     qs = Event.objects.all()
-    return Permissions(info.context["request"].user, Event, "backend").filter_queryset(
-        qs
-    )
+    return Permissions(user, Event, "backend").filter_queryset(qs)
 
 
 def _apply_filters(qs, filters):

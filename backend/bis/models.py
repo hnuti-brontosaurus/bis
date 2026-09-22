@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
+from bis.constants import BRONTOBOT_EMAIL
 from bis.email_validation import validate_email
 from bis.helpers import (
     SearchMixin,
@@ -362,6 +363,10 @@ class User(SearchMixin, AbstractBaseUser):
     @cached_property
     def is_fundraiser(self):
         return "fundraiser" in self._role_slugs
+
+    @cached_property
+    def is_bot(self):
+        return self.email == BRONTOBOT_EMAIL
 
     @cached_property
     def is_member_only(self):

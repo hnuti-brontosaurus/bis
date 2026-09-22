@@ -11,15 +11,13 @@ from mcp_server.views import MCPServerStreamableHttpView
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.permissions import BasePermission
 
-BRONTOBOT_EMAIL = "brontosaurus.bot@gmail.com"
-
 
 class MCPPermission(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         if not user or not user.is_authenticated:
             return False
-        return user.is_staff or user.email == BRONTOBOT_EMAIL
+        return user.is_staff or user.is_bot
 
 
 urlpatterns = [
