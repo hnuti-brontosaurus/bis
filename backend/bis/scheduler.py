@@ -4,6 +4,7 @@ This replaces django-q2 with a lightweight custom solution.
 """
 
 import logging
+import os
 import sys
 import threading
 import time
@@ -42,8 +43,14 @@ def is_running_under_server():
     if "gunicorn" in sys.modules:
         return True
 
-    # Check for runserver in command line args
-    return len(sys.argv) > 1 and "runserver" in sys.argv[1]
+    if not (len(sys.argv) > 1 and "runserver" in sys.argv[1]):
+        return False
+
+    # runserver's autoreloader runs the app twice: in the parent that watches
+    # files and in the child that serves. Both reach ready(), so without this
+    # the scheduler runs twice and every scheduled command fires twice. Only
+    # the child gets RUN_MAIN; --noreload has no child and never sets it.
+    return os.environ.get("RUN_MAIN") == "true" or "--noreload" in sys.argv
 
 
 @closes_db_connection

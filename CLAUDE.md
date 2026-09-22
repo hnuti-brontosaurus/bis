@@ -213,9 +213,11 @@ adding a module-scope import of anything heavy:
 `make dev` still runs `migrate` and then `runserver`, so it pays the import
 twice over. Migrations themselves are not the cost.
 
-Known bug: `bis/scheduler.py` decides it is "running under a server" from
-`sys.argv`, which is true in both of `runserver`'s processes, so `make dev`
-starts two scheduler threads. The usual guard is `os.environ["RUN_MAIN"]`.
+`bis/scheduler.py` must start the scheduler in exactly one process. Under
+`runserver` that is the reloader child (`RUN_MAIN`), except with `--noreload`
+where there is no child and no `RUN_MAIN`; under gunicorn it is the worker.
+`bis/tests/test_scheduler.py` pins all of those, because getting it wrong
+either runs every scheduled command twice or stops them firing at all.
 
 ### Image / file fields
 Every model `ImageField`/`FileField`/`ThumbnailImageField` is serialized by the
