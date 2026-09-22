@@ -196,6 +196,10 @@ Because none of these are `import`ed, a missing one fails only at runtime.
 `project/tests/test_runtime_libraries.py` exercises each; keep it in step when
 changing the apt list.
 
+`requests` is floored at 2.34 because premailer pulls cssutils → encutils →
+chardet 7, and older requests assert `chardet < 6` — every management command
+then opens with a `RequestsDependencyWarning`.
+
 ### Backend startup
 `django.setup()` imports ~2600 modules. Three things made that slow, all fixed;
 the numbers are what a fresh container measured, so keep them in mind before

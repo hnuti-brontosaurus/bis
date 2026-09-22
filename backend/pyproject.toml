@@ -44,7 +44,7 @@ dependencies = [
     "Pillow>=10.1",
     "pyheif>=0.8",
     # API & HTTP
-    "requests>=2.29",
+    "requests>=2.34",
     # Monitoring
     "sentry-sdk>=1.21",
     # Utils
