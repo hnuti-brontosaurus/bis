@@ -31,7 +31,6 @@ from other.models import SavedFile
 from questionnaire.models import EventApplication
 from rest_framework.serializers import ModelSerializer
 from translation.translate import _
-from weasyprint import HTML
 from xlsx_export.serializers import (
     AdministrationUnitExportSerializer,
     DonationExportSerializer,
@@ -565,6 +564,11 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
     tmp_pdf = NamedTemporaryFile(
         mode="w", suffix=".pdf", newline="", encoding="utf8", prefix="attendance_list_"
     )
+    # Imported here, not at module scope: weasyprint costs ~0.9s to import
+    # and admin autodiscovery loads this module on every startup, but only
+    # PDF export ever needs it.
+    from weasyprint import HTML
+
     HTML(string=html_content, base_url=str(template_path.parent)).write_pdf(
         tmp_pdf.name
     )
@@ -678,6 +682,11 @@ def get_donation_confirmation(donor):
         encoding="utf8",
         prefix="donation_confirmation_",
     )
+    # Imported here, not at module scope: weasyprint costs ~0.9s to import
+    # and admin autodiscovery loads this module on every startup, but only
+    # PDF export ever needs it.
+    from weasyprint import HTML
+
     HTML(string=html_content, base_url=str(template_path.parent)).write_pdf(
         tmp_pdf.name
     )

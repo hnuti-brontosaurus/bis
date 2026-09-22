@@ -196,6 +196,27 @@ Because none of these are `import`ed, a missing one fails only at runtime.
 `project/tests/test_runtime_libraries.py` exercises each; keep it in step when
 changing the apt list.
 
+### Backend startup
+`django.setup()` imports ~2600 modules. Three things made that slow, all fixed;
+the numbers are what a fresh container measured, so keep them in mind before
+adding a module-scope import of anything heavy:
+
+- The venv ships precompiled (`uv sync --compile-bytecode`). Without it Python
+  recompiles ~5900 files on every start — 5.8s instead of 2.25s — and throws
+  the result away with the container.
+- `runserver`'s autoreloader repeats the whole import in a second process, so
+  the `testing` entrypoint passes `--noreload`. `dev` keeps the reloader, and
+  therefore still pays for two.
+- weasyprint (~0.9s) is imported at its use site in `xlsx_export/export.py`,
+  because admin autodiscovery loads that module on every start.
+
+`make dev` still runs `migrate` and then `runserver`, so it pays the import
+twice over. Migrations themselves are not the cost.
+
+Known bug: `bis/scheduler.py` decides it is "running under a server" from
+`sys.argv`, which is true in both of `runserver`'s processes, so `make dev`
+starts two scheduler threads. The usual guard is `os.environ["RUN_MAIN"]`.
+
 ### Image / file fields
 Every model `ImageField`/`FileField`/`ThumbnailImageField` is serialized by the
 Base64 mixin in `backend/api/helpers.py`. Reads render thumbnail URL dicts

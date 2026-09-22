@@ -17,7 +17,9 @@ case "$1" in
         # -v 0 suppresses the post-migrate autodetector check, which crashes in
         # --run-syncdb mode on swappable-model deps.
         python manage.py migrate --run-syncdb -v 0
-        PYTHONUNBUFFERED=1 python manage.py runserver ${APP_HOST}:${APP_PORT}
+        # --noreload: the autoreloader forks a second process that repeats the
+        # whole app import, and nothing edits the code during a test run.
+        PYTHONUNBUFFERED=1 python manage.py runserver --noreload ${APP_HOST}:${APP_PORT}
     ;;
     *)
         python manage.py collectstatic --no-input

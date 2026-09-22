@@ -10,7 +10,10 @@ RUN apt-get update \
 ENV UV_PROJECT_ENVIRONMENT=/venv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project
+# --compile-bytecode: without it the venv ships ~10 .pyc for ~5900 .py files and
+# every container start recompiles the whole dependency tree, which costs ~3.5s
+# and is then thrown away with the container's writable layer.
+RUN uv sync --frozen --no-install-project --compile-bytecode
 
 
 FROM python:3.12-slim
