@@ -1,4 +1,4 @@
-# BIS backend + administration
+# BIS backend
 
 `git clone`
 
