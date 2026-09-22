@@ -203,7 +203,7 @@ adding a module-scope import of anything heavy:
 
 - The venv ships precompiled (`uv sync --compile-bytecode`). Without it Python
   recompiles ~5900 files on every start — 5.8s instead of 2.25s — and throws
-  the result away with the container.
+  the result away with the container. Costs 74MB of image.
 - `runserver`'s autoreloader repeats the whole import in a second process, so
   the `testing` entrypoint passes `--noreload`. `dev` keeps the reloader, and
   therefore still pays for two.
