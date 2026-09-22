@@ -242,6 +242,16 @@ Model convention: a file field is either required (no kwargs) or optional
 Frontend consequence: an empty photo must be sent as `null`, never `undefined`
 (`JSON.stringify` drops undefined keys, so the field would go untouched).
 
+### Cookbook models
+
+`cookbook` is the only app whose models live in a package. Django imports just
+`cookbook/models/__init__.py`, so every model module has to be imported there —
+a missing one is invisible to the app registry, and `migrate` announces the
+models "have changes that are not yet reflected in a migration" because the
+autodetector wants to delete the table. The model still works at runtime, since
+admin autodiscovery or a viewset import registers it late — `migrate` is the
+only place the omission shows up.
+
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API
 2. API validates via Django models → PostgreSQL + PostGIS (geospatial)
