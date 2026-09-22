@@ -18,7 +18,8 @@ TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
 TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile playwright --profile playwright-frontend down -t 0 -v --remove-orphans
 
 .PHONY: build dev clean test test_backend test_frontend test_cookbook \
-        e2e_frontend e2e_cookbook build_frontend build_cookbook
+        check_frontend check_cookbook e2e_frontend e2e_cookbook \
+        ui_frontend ui_cookbook build_frontend build_cookbook
 
 build: .env
 	docker compose build
@@ -26,31 +27,37 @@ build: .env
 .env:
 	cp .example.env .env
 
-dev: clean
+dev: clean .env
 	trap '$(CLEANUP)' EXIT
 	docker compose up
 
-clean:
+clean: .env
 	$(CLEANUP)
 
 test: test_backend test_frontend test_cookbook
 
 # Backend pytest. Brings up only postgres + backend in the bis-test project,
 # runs the entrypoint's `test` mode (pytest), tears down with the volume.
-test_backend:
+test_backend: .env
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm --quiet-pull backend sh docker-entrypoint.sh test
 
 # Frontend e2e — FULLY MOCKED. Specs stub every API call with page.route,
 # so no backend, postgres, or seeded user is needed. The `frontend` compose
 # profile only brings up nginx + frontend; Playwright itself runs in the
-# upstream mcr.microsoft.com/playwright image. Type-check and unit tests also
-# run inside the frontend container — no host yarn needed.
+# upstream mcr.microsoft.com/playwright image.
 #
 # `spec=` filters by file, `grep=` by title, `workers=` overrides parallelism.
-test_frontend:
+test_frontend: check_frontend e2e_frontend
+
+# Type-check and unit tests inside the frontend container — no host yarn
+# needed. Split out from test_frontend so CI can run it as its own job.
+check_frontend: .env
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh check
+
+e2e_frontend: .env
+	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile playwright-frontend run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright-frontend test $(spec) $(if $(grep),--grep '$(grep)',)
 
@@ -59,28 +66,33 @@ test_frontend:
 # container on the same docker network — no host Node toolchain involved.
 # Seeding lives in cookbook/e2e/global-setup.js, which POSTs to
 # /api/cookbook/testing/seed/.
-test_cookbook:
+test_cookbook: check_cookbook e2e_cookbook
+
+check_cookbook: .env
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm cookbook sh docker-entrypoint.sh check
+
+e2e_cookbook: .env
+	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright test $(spec) $(if $(grep),--grep '$(grep)',)
 
 # Interactive Playwright for the frontend. UI mode is served over HTTP, so
 # open http://localhost:8101 once the container reports it is listening.
-e2e_frontend:
+ui_frontend: .env
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile frontend --profile playwright-frontend run --rm --service-ports playwright-frontend test --ui --ui-host=0.0.0.0 --ui-port=8100
 
 # Interactive Playwright for the cookbook — same real-backend stack as
 # test_cookbook. Open http://localhost:8100.
-e2e_cookbook:
+ui_cookbook: .env
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm --service-ports playwright test --ui --ui-host=0.0.0.0 --ui-port=8100
 
-build_frontend:
+build_frontend: .env
 	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build
 
-build_cookbook:
+build_cookbook: .env
 	docker compose run --rm cookbook sh docker-entrypoint.sh build

@@ -25,18 +25,25 @@ make clean            # Stop all containers and remove orphans
 ```bash
 make test              # Run all tests (backend + frontend + cookbook)
 make test_backend      # Run pytest tests only
-make test_frontend     # Frontend Playwright — FULLY MOCKED (page.route). Containerized.
-make test_cookbook     # Cookbook Playwright — REAL e2e against backend + postgres. Containerized.
-make e2e_frontend      # Interactive frontend Playwright UI mode → http://localhost:8101
-make e2e_cookbook      # Interactive cookbook Playwright UI mode → http://localhost:8100
+make test_frontend     # check_frontend + e2e_frontend
+make test_cookbook     # check_cookbook + e2e_cookbook
+make check_frontend    # Frontend type-check + vitest, in-container
+make check_cookbook    # Cookbook vitest, in-container
+make e2e_frontend      # Frontend Playwright — FULLY MOCKED (page.route). Containerized.
+make e2e_cookbook      # Cookbook Playwright — REAL e2e against backend + postgres. Containerized.
+make ui_frontend       # Interactive frontend Playwright UI mode → http://localhost:8101
+make ui_cookbook       # Interactive cookbook Playwright UI mode → http://localhost:8100
 ```
 
-`test_frontend` / `test_cookbook` accept `spec=<path>`, `grep=<title>` and
-`workers=<n>` (e.g. `make test_frontend spec=e2e/login.spec.ts workers=1`).
+The `check_*` / `e2e_*` split exists so CI can run them as separate parallel
+jobs; locally `make test_frontend` still runs both.
+
+`e2e_frontend` / `e2e_cookbook` accept `spec=<path>`, `grep=<title>` and
+`workers=<n>` (e.g. `make e2e_frontend spec=e2e/login.spec.ts workers=1`).
 
 Test stack profiles (`docker-compose.test.yaml`):
-- `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `e2e_frontend`.
-- `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `e2e_cookbook`.
+- `frontend` profile → nginx + frontend (no backend/DB) — used by `check_frontend` / `e2e_frontend` / `ui_frontend`.
+- `cookbook` profile → nginx + cookbook + backend + postgres — used by `check_cookbook` / `e2e_cookbook` / `ui_cookbook`.
 - `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
 - `playwright` profile → cookbook Playwright runner (`mcr.microsoft.com/playwright`). Started on demand via `docker compose run --rm playwright`, never by `up`.
 - `playwright-frontend` profile → frontend Playwright runner. Same image, mounts `frontend/` instead.
@@ -52,9 +59,9 @@ the frontend image is on Node 22.
 Interactive runs use Playwright UI mode, served over HTTP on a published port —
 no X server needed. `--headed` / `--debug` still work via the WSLg / X11 mounts.
 
-Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
+Frontend type-check + unit tests also run in-container — `make check_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
 
-Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make test_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check` before the e2e run. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
+Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make check_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check`. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
 
 Frontend specs are fully mocked and start signed in: `frontend/e2e/support/test.ts`
 seeds the `persist:auth` localStorage entry through Playwright's `storageState`

@@ -6,6 +6,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
+# The test jobs read the buildx layer cache but never write it — only `build`
+# writes, so parallel jobs cannot race each other on the same GHA cache scope.
+# Same split for the node_modules caches.
+
 jobs:
   pre-commit:
     runs-on: ubuntu-22.04
@@ -16,9 +20,147 @@ jobs:
           python-version: '3.12'
       - uses: pre-commit/action@v3.0.1
 
+  test-backend:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          build-args: APP_PORT=8000
+          load: true
+          tags: bis-backend:latest
+          cache-from: type=gha,scope=backend
+      - run: make test_backend
+
+  check-frontend:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          load: true
+          tags: bis-frontend:latest
+          cache-from: type=gha,scope=frontend
+      - uses: actions/cache/restore@v4
+        with:
+          path: frontend/node_modules
+          key: frontend-deps-${{ hashFiles('frontend/yarn.lock') }}
+      - run: make check_frontend
+
+  check-cookbook:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build cookbook image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cookbook
+          load: true
+          tags: bis-cookbook:latest
+          cache-from: type=gha,scope=cookbook
+      - uses: actions/cache/restore@v4
+        with:
+          path: cookbook/node_modules
+          key: cookbook-deps-${{ hashFiles('cookbook/yarn.lock') }}
+      - run: make check_cookbook
+
+  e2e-frontend:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fetching the ~2 GB Playwright image takes ~35s. Start it now so it
+      # overlaps with the buildx build and the node_modules restore.
+      - name: Start the Playwright image pull
+        run: |
+          image=$(grep -om1 'mcr\.microsoft\.com/playwright:[^ ]*' docker-compose.test.yaml)
+          docker pull -q "$image" >/tmp/pw-pull.log 2>&1 &
+          echo $! > /tmp/pw-pull.pid
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          load: true
+          tags: bis-frontend:latest
+          cache-from: type=gha,scope=frontend
+      - uses: actions/cache/restore@v4
+        with:
+          path: frontend/node_modules
+          key: frontend-deps-${{ hashFiles('frontend/yarn.lock') }}
+
+      - name: Wait for the Playwright image
+        run: |
+          while kill -0 "$(cat /tmp/pw-pull.pid)" 2>/dev/null; do sleep 1; done
+          cat /tmp/pw-pull.log
+
+      # The runner has 4 cores; Playwright's "50%" default would leave half of
+      # them idle on a suite that is I/O-bound on a mocked dev server.
+      - run: make e2e_frontend workers=4
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-frontend
+          path: frontend/playwright-report
+          retention-days: 7
+
+  e2e-cookbook:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the Playwright image pull
+        run: |
+          image=$(grep -om1 'mcr\.microsoft\.com/playwright:[^ ]*' docker-compose.test.yaml)
+          docker pull -q "$image" >/tmp/pw-pull.log 2>&1 &
+          echo $! > /tmp/pw-pull.pid
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          build-args: APP_PORT=8000
+          load: true
+          tags: bis-backend:latest
+          cache-from: type=gha,scope=backend
+      - name: Build cookbook image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cookbook
+          load: true
+          tags: bis-cookbook:latest
+          cache-from: type=gha,scope=cookbook
+      - uses: actions/cache/restore@v4
+        with:
+          path: cookbook/node_modules
+          key: cookbook-deps-${{ hashFiles('cookbook/yarn.lock') }}
+
+      - name: Wait for the Playwright image
+        run: |
+          while kill -0 "$(cat /tmp/pw-pull.pid)" 2>/dev/null; do sleep 1; done
+          cat /tmp/pw-pull.log
+
+      - run: make e2e_cookbook
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-cookbook
+          path: cookbook/playwright-report
+          retention-days: 7
+
   build:
     runs-on: ubuntu-22.04
-
     steps:
       - uses: actions/checkout@v4
 
@@ -29,21 +171,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up environment
-        run: cp .example.env .env
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          build-args: APP_PORT=8000
-          load: true
-          tags: bis-backend:latest
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
+      - uses: docker/setup-buildx-action@v3
 
       - name: Build frontend image
         uses: docker/build-push-action@v6
@@ -75,9 +203,6 @@ jobs:
           path: cookbook/node_modules
           key: cookbook-deps-${{ hashFiles('cookbook/yarn.lock') }}
 
-      - name: Run tests
-        run: make test
-
       - name: Build frontend
         env:
           VITE_ENVIRONMENT: ${{ startsWith(github.ref, 'refs/tags/v') && 'prod' || 'dev' }}
@@ -92,6 +217,9 @@ jobs:
       - name: Copy cookbook static files to backend
         run: cp -r cookbook/dist/* backend/cookbook_static/
 
+      # The only layer this adds over the cached backend image is `COPY . .`
+      # with the static files in place, so it reuses the apt/uv layers and
+      # takes a few seconds. It writes the backend cache scope for everyone.
       - name: Build and push final image
         uses: docker/build-push-action@v6
         with:
@@ -103,7 +231,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
   deploy-dev:
-    needs: [pre-commit, build]
+    needs: [pre-commit, test-backend, check-frontend, check-cookbook, e2e-frontend, e2e-cookbook, build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || contains(github.event.head_commit.message, '#deploy')
 
@@ -112,7 +240,7 @@ jobs:
         run: curl -X POST --fail -F token=${{ secrets.GITLAB_TOKEN }} -F "ref=main" -F "variables[TARGET_ENV]=devel" -F "variables[TARGET_TAG]=$GITHUB_SHA" https://gitlab.com/api/v4/projects/43999052/trigger/pipeline
 
   deploy-prod:
-    needs: [pre-commit, build]
+    needs: [pre-commit, test-backend, check-frontend, check-cookbook, e2e-frontend, e2e-cookbook, build]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
 

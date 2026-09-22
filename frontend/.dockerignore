@@ -1,0 +1,4 @@
+# The image only needs docker-entrypoint.sh; everything else arrives via the
+# bind mount at runtime. Without this the build context is ~1.6 GB.
+*
+!docker-entrypoint.sh
