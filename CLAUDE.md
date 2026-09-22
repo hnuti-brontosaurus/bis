@@ -59,6 +59,29 @@ the frontend image is on Node 22.
 Interactive runs use Playwright UI mode, served over HTTP on a published port —
 no X server needed. `--headed` / `--debug` still work via the WSLg / X11 mounts.
 
+Every compose bind-mount source must exist in the checkout, owned by the host
+user. Docker creates a missing one itself, as **root**, and the containers run
+as `${UID}:${GID}` — so the mount silently becomes unwritable. That is why
+`backend/media`, `backend/frontend_static` and `backend/cookbook_static` each
+carry a force-added `.gitkeep` despite being gitignored.
+
+### CI (`.github/workflows/ci.yml`)
+`pre-commit`, `test-backend`, `check-frontend`, `check-cookbook`,
+`e2e-frontend`, `e2e-cookbook` and `build` all run in parallel; the deploy jobs
+need all seven. Only `build` writes the buildx (`cache-to: type=gha`) and
+node_modules caches — the rest restore only, so parallel jobs cannot race on a
+cache scope.
+
+Do not add ordering between the test jobs to make one set something up for
+another; that coupling is what the `.gitkeep` files above replaced.
+
+The e2e jobs start the ~2 GB Playwright image pull in the background right
+after checkout, so it finishes while buildx builds the app image.
+
+Frontend e2e worker count: leave Playwright's `50%` default. `workers=4` on the
+4-core runner measured *slower* (2.0m vs 1.8m) — Chromium plus the Vite dev
+server already saturate the box.
+
 Frontend type-check + unit tests also run in-container — `make check_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
 
 Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make check_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check`. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
