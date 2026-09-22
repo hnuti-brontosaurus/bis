@@ -10,7 +10,7 @@ from rest_framework.response import Response
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def seed(request):
-    """Idempotent cookbook seed for Cypress's before:spec hook. TESTING-only."""
+    """Idempotent cookbook seed for the e2e global setup. TESTING-only."""
     if not settings.TESTING:
         raise Http404
     call_command("testing_db", "cookbook")
@@ -20,8 +20,8 @@ def seed(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def auth_token(request):
-    """Return the auth token for a seeded user — replaces the cypress
-    loginAsChef shell-out to `docker exec`. TESTING-only."""
+    """Return the auth token for a seeded user, so the e2e runner needs no
+    shell access to this container. TESTING-only."""
     if not settings.TESTING:
         raise Http404
     email = request.data.get("email")

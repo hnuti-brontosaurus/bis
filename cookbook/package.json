@@ -9,7 +9,8 @@
     "dev": "vite --config vite.config.js",
     "build": "vite --config vite.config.js build",
     "lint": "eslint --fix",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.63.0",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/eslint-config-prettier": "^10.2.0",
     "eslint": "^9.39.2",

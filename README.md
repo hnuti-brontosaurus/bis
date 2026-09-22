@@ -13,9 +13,9 @@
 `docker exec -it bis-backend sh` + `python manage.py reset` - import old db
 
 ```bash
-# Testing uses plugin for local storage
-npm i --save-dev cypress-localstorage-commands
-make open_cypress  # open cypress
+make test          # run everything
+make e2e_frontend  # interactive Playwright UI mode for the frontend
+make e2e_cookbook  # interactive Playwright UI mode for the cookbook
 ```
 
 `/admin/code_login/` - login without frontend

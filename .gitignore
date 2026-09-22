@@ -28,11 +28,10 @@ __pycache__
 /package.json
 /yarn.lock
 
-/cypress/videos
-/cypress/screenshots
-/cookbook/cypress/videos
-/cookbook/cypress/screenshots
-/cookbook/cypress/downloads
+/cookbook/test-results
+/cookbook/playwright-report
+/frontend/test-results
+/frontend/playwright-report
 
 /postgresqldata_test
 /.env

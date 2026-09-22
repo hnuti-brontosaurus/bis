@@ -146,7 +146,7 @@ DATABASES = {
 if TESTING:
     # Skip migrations on the test stack — `migrate --run-syncdb` creates
     # tables directly from current models against a fresh DB. Keeps the
-    # cookbook cypress stack and pytest in sync (pytest sets the same flag
+    # cookbook e2e stack and pytest in sync (pytest sets the same flag
     # via pyproject.toml's `addopts = --no-migrations`).
     class _DisableMigrations(dict):
         def __contains__(self, item):

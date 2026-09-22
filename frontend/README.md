@@ -82,10 +82,12 @@ yarn analyze
 yarn test:unit
 ```
 
-### Integration tests (cypress)
+### End-to-end tests (Playwright)
 
-**Dev server must be running on `localhost://3000`!**
+Run them from the repo root so the containerized stack comes up:
 
 ```sh
-yarn test:e2e
+make test_frontend
 ```
+
+See [docs/testing.md](docs/testing.md).

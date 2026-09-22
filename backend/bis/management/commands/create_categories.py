@@ -92,7 +92,7 @@ class Command(BaseCommand):
             choices=["bis", "game_book", "cookbook"],
             help="Single category group to create. Default: all. "
             "`testing_db cookbook` passes --group cookbook to keep the "
-            "cypress seed fast.",
+            "e2e seed fast.",
         )
 
     def handle(self, *args, group=None, **options):

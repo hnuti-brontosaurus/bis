@@ -10,38 +10,11 @@ const globals = require("globals")
 
 module.exports = [
   {
-    ignores: [
-      "dist/**",
-      "node_modules/**",
-      "cypress/screenshots/**",
-      "cypress/videos/**",
-    ],
+    ignores: ["dist/**", "node_modules/**", "test-results/**", "playwright-report/**"],
   },
   js.configs.recommended,
   ...pluginVue.configs["flat/essential"],
   skipFormatting,
-  {
-    files: ["**/cypress/**/*.js"],
-    languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        cy: "readonly",
-        Cypress: "readonly",
-        expect: "readonly",
-        describe: "readonly",
-        it: "readonly",
-        before: "readonly",
-        beforeEach: "readonly",
-        after: "readonly",
-        afterEach: "readonly",
-        context: "readonly",
-        specify: "readonly",
-      },
-    },
-  },
   {
     plugins: { "unused-imports": unusedImports, local: localRules },
     languageOptions: {
@@ -63,5 +36,16 @@ module.exports = [
       ],
       "local/missing-translation": "error",
     },
+  },
+  {
+    // Playwright specs are plain node modules — no implicit test globals, and
+    // the local/missing-translation rule has nothing to say about them.
+    files: ["e2e/**/*.js", "playwright.config.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+    rules: { "local/missing-translation": "off" },
   },
 ]

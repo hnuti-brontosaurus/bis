@@ -25,30 +25,48 @@ make clean            # Stop all containers and remove orphans
 ```bash
 make test              # Run all tests (backend + frontend + cookbook)
 make test_backend      # Run pytest tests only
-make test_frontend     # Frontend Cypress — FULLY MOCKED (cy.intercept). Containerized cypress.
-make test_cookbook     # Cookbook Cypress — REAL e2e against backend + postgres. Containerized cypress.
-make cypress_frontend  # Interactive frontend Cypress (containerized; uses WSLg / X11 to show GUI).
-make cypress_cookbook  # Interactive cookbook Cypress (containerized; uses WSLg / X11 to show GUI).
+make test_frontend     # Frontend Playwright — FULLY MOCKED (page.route). Containerized.
+make test_cookbook     # Cookbook Playwright — REAL e2e against backend + postgres. Containerized.
+make e2e_frontend      # Interactive frontend Playwright UI mode → http://localhost:8101
+make e2e_cookbook      # Interactive cookbook Playwright UI mode → http://localhost:8100
 ```
 
+`test_frontend` / `test_cookbook` accept `spec=<path>`, `grep=<title>` and
+`workers=<n>` (e.g. `make test_frontend spec=e2e/login.spec.ts workers=1`).
+
 Test stack profiles (`docker-compose.test.yaml`):
-- `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `cypress_frontend`.
-- `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `cypress_cookbook`.
+- `frontend` profile → nginx + frontend (no backend/DB) — used by `test_frontend` / `e2e_frontend`.
+- `cookbook` profile → nginx + cookbook + backend + postgres — used by `test_cookbook` / `e2e_cookbook`.
 - `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
-- `cypress` profile → cookbook cypress runner. Uses upstream `cypress/included` image directly. Started on demand via `docker compose run --rm cypress`, never by `up`.
-- `cypress-frontend` profile → frontend cypress runner. Same upstream image, mounts `frontend/` instead. Started via `docker compose run --rm cypress-frontend`.
+- `playwright` profile → cookbook Playwright runner (`mcr.microsoft.com/playwright`). Started on demand via `docker compose run --rm playwright`, never by `up`.
+- `playwright-frontend` profile → frontend Playwright runner. Same image, mounts `frontend/` instead.
 
-Both cypress runners are fully containerized — no host cypress binary is needed. They join the test docker network so `baseUrl` is `http://nginx/...`, mount `/tmp/.X11-unix` + `/mnt/wslg` (forwarding `DISPLAY` / `WAYLAND_DISPLAY` / `PULSE_SERVER`) so `cypress open` shows up via WSLg on Windows or native X11 on Linux.
+Both runners are fully containerized — no host Node toolchain is needed. The
+image ships the browsers at `/ms-playwright`; `@playwright/test` itself comes
+from the app's `node_modules` via the bind mount, so **the version pinned in
+`frontend/package.json` and `cookbook/package.json` must match the image tag in
+`docker-compose.test.yaml`**. The runners join the test docker network, so
+`baseURL` is `http://nginx`. Playwright 1.63 requires Node ≥ 20, which is why
+the frontend image is on Node 22.
 
-Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all.
+Interactive runs use Playwright UI mode, served over HTTP on a published port —
+no X server needed. `--headed` / `--debug` still work via the WSLg / X11 mounts.
 
-Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make test_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check` before the cypress run. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
+Frontend type-check + unit tests also run in-container — `make test_frontend` invokes `docker compose run --rm frontend sh docker-entrypoint.sh check` (see `frontend/docker-entrypoint.sh` for the `check` mode), so no host yarn install is needed at all. `test:types` covers `e2e/` too via `frontend/e2e/tsconfig.json`; Playwright itself does not type-check.
 
-Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookbook/testing/seed/` (`api/cookbook/views/testing.py`) — gated by `settings.TEST` so it 404s in production. The `before:spec` hook in `cookbook/cypress.config.js` `fetch`es it instead of shelling out to `docker exec`, which lets the cypress container stay minimal (no docker CLI, no socket mount, no docker-group GID handling).
+Cookbook unit tests use vitest + jsdom and run inside the cookbook container — `make test_cookbook` invokes `docker compose run --rm cookbook sh docker-entrypoint.sh check` before the e2e run. Specs live next to the source as `src/**/__tests__/*.test.js` and shouldn't depend on the dev backend (mock @/data modules).
 
-Cookbook chef seeding lives in `cookbook/cypress.config.js` (`before:spec` hook), not in the Makefile, so interactive runs seed too. It calls `python manage.py testing_db cookbook`, which is idempotent.
+Frontend specs are fully mocked and start signed in: `frontend/e2e/support/test.ts`
+seeds the `persist:auth` localStorage entry through Playwright's `storageState`
+instead of driving the login form, so only `login.spec.ts` walks the real sign-in
+flow. `support/api.ts` wraps `page.route` with a Cypress-like matcher plus a
+`Recorder` that replaces `cy.wait('@alias')` — Playwright runs route handlers
+newest-first, so a stub registered in a test overrides one from `beforeEach`,
+the same precedence `cy.intercept` had.
 
-Cookbook tests rely on real backend state. The `testing_db cookbook` seed provides everything specs need (chef + canonical recipe with photo); specs talk to the same HTTP API the SPA uses, not the ORM directly. Mutations within a test use uniquely-tagged values (e.g. `cypress-${Date.now()}`) so the assertion only depends on what *that* test wrote — not on global counts. The test DB volume is wiped on teardown.
+Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookbook/testing/seed/` (`api/cookbook/views/testing.py`) — gated by `settings.TESTING` so it 404s in production. `cookbook/e2e/global-setup.js` POSTs to it once per run, which keeps the runner container minimal (no docker CLI, no socket mount).
+
+Cookbook tests run against real backend state. The `testing_db cookbook` seed provides the chef, the ingredients and one canonical recipe; beyond that, the `recipe` fixture in `cookbook/e2e/support/test.js` creates a throwaway recipe per test and deletes it afterwards, so specs can mutate freely and run in parallel. The chef logs in over the API once per worker. The test DB volume is wiped on teardown.
 
 ### Backend-specific
 ```bash

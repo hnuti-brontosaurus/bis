@@ -15,10 +15,10 @@ CLEANUP := docker compose down -t 0 --remove-orphans
 TEST_PROJECT := bis-test
 TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
 TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
-TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile cypress --profile cypress-frontend down -t 0 -v --remove-orphans
+TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile playwright --profile playwright-frontend down -t 0 -v --remove-orphans
 
 .PHONY: build dev clean test test_backend test_frontend test_cookbook \
-        cypress_frontend cypress_cookbook build_frontend build_cookbook
+        e2e_frontend e2e_cookbook build_frontend build_cookbook
 
 build: .env
 	docker compose build
@@ -41,44 +41,43 @@ test_backend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm --quiet-pull backend sh docker-entrypoint.sh test
 
-# Frontend cypress — FULLY MOCKED. Specs use cy.intercept for every API call,
+# Frontend e2e — FULLY MOCKED. Specs stub every API call with page.route,
 # so no backend, postgres, or seeded user is needed. The `frontend` compose
-# profile only brings up nginx + frontend; cypress itself runs in the upstream
-# cypress/included image. Type-check and unit tests also run inside the
-# frontend container — no host yarn needed.
+# profile only brings up nginx + frontend; Playwright itself runs in the
+# upstream mcr.microsoft.com/playwright image. Type-check and unit tests also
+# run inside the frontend container — no host yarn needed.
+#
+# `spec=` filters by file, `grep=` by title, `workers=` overrides parallelism.
 test_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm frontend sh docker-entrypoint.sh check
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
-	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+	$(TEST_COMPOSE) --profile frontend --profile playwright-frontend run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright-frontend test $(spec) $(if $(grep),--grep '$(grep)',)
 
-# Cookbook cypress — REAL e2e against backend + postgres. The `cookbook`
-# profile brings up nginx + cookbook + backend + postgres. Cypress itself
-# runs in a third container (`cypress` profile, upstream cypress/included
-# image) on the same docker network — no host Node toolchain involved.
-# Chef seeding lives in cookbook/cypress.config.js (`before:spec`) and
-# fetches `/api/cookbook/testing/seed/` directly.
+# Cookbook e2e — REAL e2e against backend + postgres. The `cookbook` profile
+# brings up nginx + cookbook + backend + postgres. Playwright runs in a third
+# container on the same docker network — no host Node toolchain involved.
+# Seeding lives in cookbook/e2e/global-setup.js, which POSTs to
+# /api/cookbook/testing/seed/.
 test_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) run --rm cookbook sh docker-entrypoint.sh check
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
-	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress run $(if $(spec),--spec '$(spec)',) $(if $(grep),--env grep='$(grep)',)
+	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright test $(spec) $(if $(grep),--grep '$(grep)',)
 
-# Interactive cypress for the frontend. WSLg / X11 socket forwarding gives
-# the GUI a Windows window like any other WSL app.
-cypress_frontend:
+# Interactive Playwright for the frontend. UI mode is served over HTTP, so
+# open http://localhost:8101 once the container reports it is listening.
+e2e_frontend:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile frontend up --quiet-pull --wait -d
-	$(TEST_COMPOSE) --profile frontend --profile cypress-frontend run --rm cypress-frontend open --project /e2e
+	$(TEST_COMPOSE) --profile frontend --profile playwright-frontend run --rm --service-ports playwright-frontend test --ui --ui-host=0.0.0.0 --ui-port=8100
 
-# Interactive cypress for the cookbook — same real-backend stack as test_cookbook.
-# The cypress container forwards X11 / Wayland sockets to the host (WSLg on
-# Windows, native X11 on Linux) so the Cypress GUI shows up like any other
-# WSL/Linux app.
-cypress_cookbook:
+# Interactive Playwright for the cookbook — same real-backend stack as
+# test_cookbook. Open http://localhost:8100.
+e2e_cookbook:
 	trap '$(TEST_CLEANUP)' EXIT
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
-	$(TEST_COMPOSE) --profile cookbook --profile cypress run --rm cypress open --project /e2e
+	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm --service-ports playwright test --ui --ui-host=0.0.0.0 --ui-port=8100
 
 build_frontend:
 	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build

@@ -30,9 +30,9 @@ from PIL import Image
 from project.settings import BASE_DIR
 from rest_framework.authtoken.models import Token
 
-# Email for the seeded cookbook chef used by Cypress smoke tests.
-# Mirrors TEST_USER_EMAIL in the Makefile cypress target.
-CYPRESS_CHEF_EMAIL = "test@test.nope"
+# Email for the seeded cookbook chef used by the cookbook e2e specs.
+# Mirrors TEST_USER_EMAIL in cookbook/e2e/support/test.js.
+E2E_CHEF_EMAIL = "test@test.nope"
 
 
 class Command(BaseCommand):
@@ -52,7 +52,7 @@ class Command(BaseCommand):
             help=(
                 "dev: full demo seed for dev.bis.brontosaurus.cz "
                 "(flush + categories + regions + zip codes + ~80 demo entities). "
-                "cookbook: minimal idempotent seed for Cypress cookbook tests "
+                "cookbook: minimal idempotent seed for the cookbook e2e specs "
                 "(categories + chef). No flush — safe to re-run."
             ),
         )
@@ -68,7 +68,7 @@ class Command(BaseCommand):
         elif target == "cookbook":
             # Idempotent: create_categories uses update_or_create, and
             # create_cookbook_chef uses get_or_create. --group cookbook skips
-            # the BIS + game book taxonomies the cypress suite never touches.
+            # the BIS + game book taxonomies the e2e specs never touch.
             call_command("create_categories", group="cookbook")
             self.create_cookbook_chef()
 
@@ -299,17 +299,17 @@ class Command(BaseCommand):
         return event
 
     def create_cookbook_chef(self):
-        # Cypress smoke tests log in as this chef via a token short-circuit
+        # The cookbook e2e specs log in as this chef via a token short-circuit
         # (see api/cookbook/views/auth.login). Seeded here so the test suite
         # does not need to mutate the DB on every run.
         user, _ = User.objects.get_or_create(
-            email=CYPRESS_CHEF_EMAIL,
-            defaults={"first_name": "Cypress", "last_name": "Tester"},
+            email=E2E_CHEF_EMAIL,
+            defaults={"first_name": "E2E", "last_name": "Tester"},
         )
         Token.objects.get_or_create(user=user)
         chef, _ = Chef.objects.get_or_create(
             user=user,
-            defaults={"name": "Cypress Chef", "email": user.email},
+            defaults={"name": "E2E Chef", "email": user.email},
         )
         if not chef.photo:
             buf = BytesIO()
@@ -318,14 +318,14 @@ class Command(BaseCommand):
                 "chef.png",
                 SimpleUploadedFile("chef.png", buf.getvalue(), "image/png"),
             )
-        # A handful of ingredients so cypress specs can pick existing rows
+        # A handful of ingredients so the e2e specs can pick existing rows
         # in the recipe edit form without having to also exercise the
         # "create new ingredient" dialog.
         # Use the normalized (lower().capitalize()) form so get_or_create is
         # idempotent — the pre_save signal in cookbook.signals capitalizes the
         # name on insert, so "cukr" lookups would never match the stored "Cukr"
         # and re-runs would hit the unique-name constraint.
-        # Cukr has g_per_liter so the unit-change cypress flow can switch
+        # Cukr has g_per_liter so the unit-change e2e flow can switch
         # between weight and volume on the same ingredient.
         ingredient_seeds = [
             ("Cukr", {"g_per_liter": 850}),
@@ -334,7 +334,7 @@ class Command(BaseCommand):
         ]
         for name, defaults in ingredient_seeds:
             Ingredient.objects.update_or_create(name=name, defaults=defaults)
-        # One canonical owned recipe so cypress specs can edit a real row
+        # One canonical owned recipe so the e2e specs can edit a real row
         # without reaching into the ORM. The edit form renders the photo, so
         # the file must actually exist on disk — `chef.recipes` is filtered to
         # rows whose photo file is present, and one is created if none qualify.
@@ -346,7 +346,7 @@ class Command(BaseCommand):
             buf = BytesIO()
             Image.new("RGB", (8, 8), "red").save(buf, format="PNG")
             Recipe.objects.create(
-                name="Cypress seed",
+                name="E2E seed",
                 chef=chef,
                 difficulty=difficulty,
                 required_time=required_time,
@@ -360,7 +360,7 @@ class Command(BaseCommand):
     def create_testing_db(self):
         # Brontosaurus movement
         self.create_brontosaurus()
-        # Cookbook chef for Cypress smoke tests
+        # Cookbook chef for the cookbook e2e specs
         self.create_cookbook_chef()
         # Virtual basic section
         zc_chairman = self.create_user(

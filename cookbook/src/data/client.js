@@ -44,8 +44,8 @@ export { client }
  *
  * DRF returns absolute `next` URLs built from the request's Host header,
  * which can point to a different origin/port than the SPA (matters under
- * cypress where the test stack runs on a non-default port and the dev
- * stack might also be up). Strip scheme+host AND the axios baseURL prefix
+ * the e2e stack, which runs on a non-default port while the dev stack
+ * might also be up). Strip scheme+host AND the axios baseURL prefix
  * so axios re-prepends the right one.
  */
 const baseURL = client.defaults.baseURL ?? ""

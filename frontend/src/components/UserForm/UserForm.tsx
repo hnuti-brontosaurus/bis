@@ -334,7 +334,7 @@ export const UserForm = ({
         cancelPersist()
       } catch {
         // here we just catch the api error when it appears
-        // that's to satisfy cypress tests
+        // that's to satisfy the e2e specs
       } finally {
         setIsSaving(false)
       }

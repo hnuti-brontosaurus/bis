@@ -1,32 +1,53 @@
 # Testing
 
-We use [Cypress](https://www.cypress.io/) for testing.
+Three layers, all runnable with one command from the repo root:
 
-The testing files are placed in [`cypress/`](../cypress) folder and [cypress config](../cypress.config.ts)
+| layer      | tool           | where                        |
+| ---------- | -------------- | ---------------------------- |
+| types      | `tsc --noEmit` | `src/` and `e2e/`            |
+| unit       | vitest         | `src/**/__tests__/*.test.ts` |
+| end-to-end | Playwright     | [`e2e/`](../e2e)             |
 
-We have integration tests in [`cypress/e2e/`](../cypress/e2e/). For these tests, we stub api calls. The api therefore doesn't have to be set up before running these tests
+```bash
+make test_frontend                                # types + unit + e2e
+make test_frontend spec=e2e/login.spec.ts         # one spec
+make test_frontend grep='can sign in'             # by test title
+make test_frontend workers=1                      # serial, for debugging
+make e2e_frontend                                 # Playwright UI → http://localhost:8101
+```
 
-## Run tests
+Everything runs in containers — no host Node toolchain is needed. See the
+Testing section of the repo-root `CLAUDE.md` for the compose profiles.
 
-### Interactive
+## How the specs are written
 
-To run tests interactively,
+The e2e specs stub **every** API call, so they need neither a backend nor a
+database. The helpers live in [`e2e/support/`](../e2e/support):
 
-1. `BROWSER=none yarn start` - run the app on default port 3000 without any specific api settings
-   If other app is running on port 3000, you'll have to stop it first
-1. `yarn cypress open`
-1. Select e2e tests from the available options
-1. Select your preferred browser
-1. Select a test file to run from list
+- **`api.ts`** — `mock(page, matcher, reply)` wraps `page.route` with matching
+  on method + pathname (glob or regex). It returns a `Recorder`, whose
+  `first()` / `nth()` / `all()` resolve once the request has been made, so
+  assertions on request bodies read like the old `cy.wait('@alias')`.
+  Playwright runs route handlers newest-first, so a stub registered inside a
+  test overrides one from `beforeEach`.
+- **`mocks.ts`** — the recurring bundles: `mockCurrentUser`, `mockCategories`,
+  `mockFullEvent`.
+- **`test.ts`** — the `test` export starts every spec already signed in by
+  seeding redux-persist's `persist:auth` entry via Playwright's
+  `storageState`. Use `anonymousTest` for specs that drive the login form
+  themselves. `expectPath` and `expectText` stand in for
+  `cy.location('pathname')` and `cy.contains`.
 
-### Automatic
+Fixtures are plain JSON in [`e2e/fixtures/`](../e2e/fixtures), read with
+`fixture('name')`. Binary inputs (images, spreadsheets) live in
+[`e2e/assets/`](../e2e/assets) and are resolved with `asset('name.png')`.
 
-To run tests automatically, run `yarn e2e`. Be careful, this command will kill all your node processes at the end (this should be fixed, but currently we don't know any better...)
+`VITE_E2E=true` is set for the test stack; the app reads it to drop input
+debounces to 0ms (`src/hooks/debouncedState.ts`).
 
-### Continuous integration
+## Continuous integration
 
-We also have CI[^ci] [set up with github workflows](../.github/workflows/main.yml). It runs tests on github after every push and merge to `main` branch there.
+`.github/workflows/ci.yml` runs `make test` on every push.
 
-[^ci]: continuous integration
-
-We haven't figured out how to run tests against live api without stubbing, yet.
+Failures leave a trace in `test-results/`; open it with
+`npx playwright show-trace <path>` for a full timeline with DOM snapshots.

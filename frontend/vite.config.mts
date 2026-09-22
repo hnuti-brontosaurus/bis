@@ -22,5 +22,7 @@ export default defineConfig(({mode}) => ({
   test: {
     globals: true,
     environment: 'node',
+    // Playwright specs are also *.spec.ts; keep vitest to the unit tests.
+    include: ['src/**/__tests__/**/*.{test,spec}.{ts,tsx}'],
   },
 }))
