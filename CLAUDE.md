@@ -108,6 +108,19 @@ Cookbook seeding is exposed as a TEST-only Django endpoint at `POST /api/cookboo
 
 Cookbook tests run against real backend state. The `testing_db cookbook` seed provides the chef, the ingredients and one canonical recipe; beyond that, the `recipe` fixture in `cookbook/e2e/support/test.js` creates a throwaway recipe per test and deletes it afterwards, so specs can mutate freely and run in parallel. The chef logs in over the API once per worker. The test DB volume is wiped on teardown.
 
+Backend pytest specs live in `<app>/tests/test_*.py`. Building a usable BIS
+object graph in a fixture has three non-obvious requirements — see
+`backend/api/frontend/tests/conftest.py`:
+- `Event.clean()` demands a qualified main organizer and a geolocated venue,
+  so create events inside `paused_validation()`.
+- `User.update_roles()` returns early unless the `BrontosaurusMovement`
+  singleton and the matching `RoleCategory` rows exist. Without roles every
+  organizer is rejected by `Permissions`, so an API test 403s.
+- `BrontosaurusMovement.get()` caches the singleton in redis, *outside* the
+  test transaction. A fixture that creates one must `cache.delete(
+  "brontosaurus_movement")` both before and after, or the rolled-back row
+  leaks into unrelated tests and their FK derefs raise `User.DoesNotExist`.
+
 ### Backend-specific
 ```bash
 docker exec -it bis-backend sh                          # Shell into backend container

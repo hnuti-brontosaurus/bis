@@ -61,6 +61,8 @@ import type {
   Questionnaire,
   Record,
   Registration,
+  SimpleParticipant,
+  SimpleParticipantPayload,
   TokenResponse,
   User,
   UserPayload,
@@ -151,6 +153,32 @@ export const api = createApi({
         body: queryArg,
       }),
       invalidatesTags: () => [{ type: 'User' as const, id: 'USER_LIST' }],
+    }),
+    createSimpleParticipant: build.mutation<
+      SimpleParticipant,
+      { eventId: number; participant: SimpleParticipantPayload }
+    >({
+      query: ({ eventId, participant }) => ({
+        url: `frontend/events/${eventId}/record/participants/`,
+        method: 'POST',
+        body: participant,
+      }),
+      invalidatesTags: () => [
+        { type: 'User' as const, id: 'USER_LIST' },
+        { type: 'Participant' as const, id: 'PARTICIPANT_LIST' },
+      ],
+    }),
+    removeEventParticipant: build.mutation<
+      void,
+      { eventId: number; userId: string }
+    >({
+      query: ({ eventId, userId }) => ({
+        url: `frontend/events/${eventId}/record/participants/${userId}/`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: () => [
+        { type: 'Participant' as const, id: 'PARTICIPANT_LIST' },
+      ],
     }),
     // frontendUsersRetrieve
     readUser: build.query<User, { id: string }>({

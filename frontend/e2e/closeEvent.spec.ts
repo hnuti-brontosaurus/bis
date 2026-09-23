@@ -68,7 +68,7 @@ test.describe('Close event - evidence and participants', () => {
 
     test('should show the participant input type options', async ({ page }) => {
       await expect(
-        page.locator('[name="record.participantInputType"]'),
+        page.locator('[name="record.attendance_list_type"]'),
       ).toHaveCount(3)
     })
 
@@ -85,27 +85,218 @@ test.describe('Close event - evidence and participants', () => {
       await page.getByText('Mám jen jméno + příjmení + email').click()
       await expectText(page, 'Měníš způsob registrace účastníků')
     })
+
+    test('should clear the filled counts when the input type changes', async ({
+      page,
+    }) => {
+      const updateEvent = await mock(page, {
+        method: 'PATCH',
+        pathname: '/api/frontend/events/1000/',
+      })
+
+      // the fixture event is a 'count' one, so both counts are pre-filled
+      await expect(
+        page.locator('input[name="record.number_of_participants"]'),
+      ).toHaveValue('4')
+
+      await page.getByText('Mám jen jméno + příjmení + email').click()
+      await page.locator('button', { hasText: 'Pokračovat' }).first().click()
+      await updateEvent.first()
+
+      await expect(
+        page.locator('input[name="record.number_of_participants"]'),
+      ).toHaveValue('')
+      await expect(
+        page.locator('input[name="record.number_of_participants_under_26"]'),
+      ).toHaveValue('')
+    })
   })
 
-  test.describe('Simple participants list (contacts)', () => {
+  test.describe('Simple participants list', () => {
+    const simpleParticipants = [
+      {
+        id: 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        first_name: 'Jan',
+        last_name: 'Novák',
+        email: 'jan.novak@example.com',
+        phone: '761001000',
+      },
+      {
+        id: 'bbbb2222-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        first_name: 'Eva',
+        last_name: 'Dvořáková',
+        email: 'eva.dvorakova@example.com',
+        phone: '761001001',
+      },
+      {
+        id: 'cccc3333-cccc-cccc-cccc-cccccccccccc',
+        first_name: 'Karel',
+        last_name: 'Svoboda',
+        email: 'karel.svoboda@example.com',
+        phone: '',
+      },
+      {
+        id: 'dddd4444-dddd-dddd-dddd-dddddddddddd',
+        first_name: 'Petr',
+        last_name: 'Pan',
+        email: 'petr.pan@example.com',
+        phone: '761001002',
+      },
+    ]
+
+    /**
+     * The fixture event's inferred attendance_list_type makes the radio change
+     * open the "you're changing the registration method" modal; confirming it
+     * fires the type-switch PATCH. Draining that PATCH here keeps it from
+     * racing whatever the test does next.
+     */
+    const switchToSimpleList = async (page: Page, updateEvent: Recorder) => {
+      await page.goto('/org/akce/1000/uzavrit')
+      await page
+        .locator('label', { hasText: 'Mám jen jméno + příjmení + email' })
+        .first()
+        .click()
+      await page.locator('button', { hasText: 'Pokračovat' }).first().click()
+      await updateEvent.first()
+    }
+
     test.describe('Import of simple participants list from xls', () => {
-      test('should load xls data to participants list form', async ({
+      test('should create users and add them as participants', async ({
         page,
       }) => {
-        await openParticipantsStep(page, 'Mám jen jméno + příjmení + email')
+        // Start with no existing participants. The nested POST endpoint links
+        // each created user to the event server-side and invalidates the
+        // participants tag; the follow-up GET returns the four rows.
+        let createdCount = 0
+        await mock(
+          page,
+          {
+            method: 'GET',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          () => ({
+            body: {
+              count: createdCount,
+              next: null,
+              previous: null,
+              results: createdCount === 0 ? [] : simpleParticipants,
+            },
+          }),
+        )
+
+        let nextId = 0
+        const createParticipant = await mock(
+          page,
+          {
+            method: 'POST',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          request => {
+            nextId++
+            createdCount++
+            return {
+              body: { ...request.postDataJSON(), id: `created-${nextId}` },
+            }
+          },
+        )
+
+        const updateEvent = await mock(page, {
+          method: 'PATCH',
+          pathname: '/api/frontend/events/1000/',
+        })
+
+        await switchToSimpleList(page, updateEvent)
 
         await selectExcel(page, 'Importovat seznam', 'simple-participants.xlsx')
+
+        await createParticipant.all(4)
 
         const rows = participantRows(page)
         await expect(rows).toHaveCount(4)
 
         const cells = rows.last().locator('td')
-        await expect(cells.nth(0).locator('input')).toHaveValue('Petr')
-        await expect(cells.nth(1).locator('input')).toHaveValue('Pan')
-        await expect(cells.nth(2).locator('input')).toHaveValue(
-          'petr.pan@example.com',
+        await expect(cells.nth(0)).toContainText('Petr')
+        await expect(cells.nth(1)).toContainText('Pan')
+        await expect(cells.nth(2)).toContainText('petr.pan@example.com')
+        await expect(cells.nth(3)).toContainText('761001002')
+      })
+    })
+
+    test.describe('Manual entry of a simple participant', () => {
+      test.beforeEach(async ({ page }) => {
+        await mock(
+          page,
+          {
+            method: 'GET',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          { body: { count: 0, next: null, previous: null, results: [] } },
         )
-        await expect(cells.nth(3).locator('input')).toHaveValue('761001002')
+        const updateEvent = await mock(page, {
+          method: 'PATCH',
+          pathname: '/api/frontend/events/1000/',
+        })
+
+        await switchToSimpleList(page, updateEvent)
+
+        await page.locator('input[placeholder="Jméno*"]').fill('Jan')
+        await page.locator('input[placeholder="Příjmení*"]').fill('Novák')
+        await page
+          .locator('input[placeholder="E-mail*"]')
+          .fill('jan.novak@example.com')
+      })
+
+      test('should keep the filled values and show the reason when the api rejects them', async ({
+        page,
+      }) => {
+        const createParticipant = await mock(
+          page,
+          {
+            method: 'POST',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          {
+            status: 400,
+            body: { email: ['Zadejte platnou e-mailovou adresu.'] },
+          },
+        )
+
+        await page.locator('button[form=simple-participant-form]').click()
+        await createParticipant.first()
+
+        await expectText(page, 'Zadejte platnou e-mailovou adresu.')
+        await expect(page.locator('input[placeholder="Jméno*"]')).toHaveValue(
+          'Jan',
+        )
+        await expect(
+          page.locator('input[placeholder="Příjmení*"]'),
+        ).toHaveValue('Novák')
+        await expect(page.locator('input[placeholder="E-mail*"]')).toHaveValue(
+          'jan.novak@example.com',
+        )
+      })
+
+      test('should clear the form when the participant is created', async ({
+        page,
+      }) => {
+        const createParticipant = await mock(
+          page,
+          {
+            method: 'POST',
+            pathname: '/api/frontend/events/1000/record/participants/',
+          },
+          request => ({ body: { ...request.postDataJSON(), id: 'created-1' } }),
+        )
+
+        await page.locator('button[form=simple-participant-form]').click()
+        await createParticipant.first()
+
+        await expect(page.locator('input[placeholder="Jméno*"]')).toHaveValue(
+          '',
+        )
+        await expect(page.locator('input[placeholder="E-mail*"]')).toHaveValue(
+          '',
+        )
       })
     })
   })
@@ -268,13 +459,12 @@ test.describe('Close event - evidence and participants', () => {
           eyca_card: null,
         })
 
-        expect((await updateEvent.first()).body).toEqual({
+        expect((await updateEvent.nth(1)).body).toEqual({
           record: {
             participants: [
               ...participantsExample.results.map((p: { id: string }) => p.id),
               newUserExample.id,
             ],
-            contacts: [],
             number_of_participants: null,
             number_of_participants_under_26: null,
           },
@@ -309,7 +499,7 @@ test.describe('Close event - evidence and participants', () => {
           .click()
 
         expect((await createUser.first()).body.email).toBeNull()
-        await updateEvent.first()
+        await updateEvent.nth(1)
       })
 
       test('[api error] should show error and keep modal open', async ({
@@ -399,7 +589,7 @@ test.describe('Close event - evidence and participants', () => {
         .first()
         .click()
 
-      const participants = (await updateEvent.first()).body.record.participants
+      const participants = (await updateEvent.nth(1)).body.record.participants
       expect(participants).toContain('11111111-1111-1111-1111-111111111111')
       expect(participants).not.toContain('00000000-1111-2222-3333-444444444444')
     })
@@ -652,7 +842,7 @@ test.describe('Close event - evidence and participants', () => {
 
         // order is not certain, because of create-user stubs' uncertain order
         expect(
-          (await updateEvent.first()).body.record.participants,
+          (await updateEvent.nth(1)).body.record.participants,
         ).toHaveLength(6)
 
         await fetchParticipants.first()

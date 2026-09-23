@@ -309,10 +309,12 @@ class RecordExportSerializer(ModelSerializer):
 
     has_participants_list = SerializerMethodField(label="Má prezenčku")
     has_photos = SerializerMethodField(label="Má fotky")
+    get_attendance_list_type_display = ReadOnlyField(label="Typ prezenční listiny")
 
     class Meta:
         model = EventRecord
         fields = (
+            "get_attendance_list_type_display",
             "has_participants_list",
             "has_photos",
             "get_participants_count",

@@ -11,6 +11,7 @@ import {
   IconSelectGroup,
   InfoBox,
   Label,
+  Loading,
   NumberInput,
 } from 'components'
 import { InlineSection } from 'components/FormLayout/FormLayout'
@@ -21,13 +22,15 @@ import { Controller, FormProvider, UseFormReturn } from 'react-hook-form'
 import { required } from 'utils/validationMessages'
 import type {
   CloseEventFormShape,
-  ParticipantsStepFormInnerShape,
+  ParticipantsStepFormShape,
 } from './CloseEventForm'
 import styles from './ParticipantsStep.module.scss'
 import { SimpleParticipants } from './SimpleParticipants'
+import { useSwitchAttendanceListType } from './useSwitchAttendanceListType'
 
-type ParticipantInputType =
-  CloseEventFormShape['record']['participantInputType']
+type ParticipantInputType = NonNullable<
+  CloseEventFormShape['record']['attendance_list_type']
+>
 
 const optionButtonConfig: {
   [key: string]: {
@@ -64,20 +67,20 @@ export const ParticipantsStep = ({
 }: {
   event: FullEvent
   areParticipantsRequired: boolean
-  methods: UseFormReturn<ParticipantsStepFormInnerShape>
+  methods: UseFormReturn<ParticipantsStepFormShape>
 }) => {
-  const { watch, control, trigger, formState } = methods
+  const { watch, control, trigger, formState, setValue } = methods
 
   // list of participants is shown when it's required
   // or when organizers prefer it rather than filling just numbers
 
-  const inputType = watch('record.participantInputType')
+  const inputType = watch('record.attendance_list_type')
 
   useEffect(() => {
     const subscription = watch((values, { name }) => {
       if (formState.isSubmitted && name === 'record.number_of_participants')
         trigger('record.number_of_participants_under_26')
-      if (formState.isSubmitted && name === 'record.participantInputType')
+      if (formState.isSubmitted && name === 'record.attendance_list_type')
         trigger()
     })
     return () => subscription.unsubscribe()
@@ -89,6 +92,21 @@ export const ParticipantsStep = ({
       'Je možné vybrat pouze jeden způsob registrace. Pokud chceš změnit způsob registrace, data, která jsou zadaná v počtu účastníků a seznamu účastníků, nebudou uložena. Chceš pokračovat?',
   })
 
+  const [switchAttendanceListType, isSwitching] = useSwitchAttendanceListType(
+    event.id,
+  )
+
+  const selectInputType = async (
+    newType: ParticipantInputType,
+    setFieldValue: (value: ParticipantInputType) => void,
+  ) => {
+    if (!(await switchAttendanceListType(newType))) return
+    // the switch wiped both counts server-side, mirror that into the form
+    setFieldValue(newType)
+    setValue('record.number_of_participants', null)
+    setValue('record.number_of_participants_under_26', null)
+  }
+
   return (
     <FormProvider {...methods}>
       <form>
@@ -98,9 +116,9 @@ export const ParticipantsStep = ({
         <FormSectionGroup>
           {!areParticipantsRequired && (
             <FormSection required header="Způsob registrace účastníků">
-              <FormInputError name="participantInputType">
+              <FormInputError name="attendance_list_type">
                 <Controller
-                  name="record.participantInputType"
+                  name="record.attendance_list_type"
                   control={control}
                   rules={{ required }}
                   render={({ field }) => (
@@ -119,12 +137,14 @@ export const ParticipantsStep = ({
                               value={id}
                               checked={id === field.value}
                               onChange={e => {
+                                const newType = e.target
+                                  .value as ParticipantInputType
+                                const select = () =>
+                                  selectInputType(newType, field.onChange)
                                 if (inputType) {
-                                  confirmWithModal(() =>
-                                    field.onChange(e.target.value),
-                                  )
+                                  confirmWithModal(select)
                                 } else {
-                                  field.onChange(e.target.value)
+                                  select()
                                 }
                               }}
                             />
@@ -144,68 +164,74 @@ export const ParticipantsStep = ({
             </FormSection>
           )}
 
-          {!areParticipantsRequired &&
-            (inputType === 'count' || inputType === 'simple-list') && (
-              <div>
-                <FormSection required header="Počet účastníků">
-                  {event.number_of_sub_events &&
-                    event.number_of_sub_events > 1 && (
-                      <InfoBox>
-                        Tato akce je zadaná jako opakovaná. Zadejte tedy celkový
-                        počet všech účastníků, kteří se opakovaných akcí
-                        účastnili. Např. pokud se akce opakuje 3x s průměrnou
-                        účastí 10 lidí, pak je počet účastníků 30.
-                      </InfoBox>
-                    )}
-                  <InlineSection>
-                    <Label required>
-                      Počet účastníků celkem (včetně organizátorů)
-                    </Label>
-                    <FormInputError>
-                      <Controller
-                        control={control}
-                        name="record.number_of_participants"
-                        render={({ field }) => (
-                          <NumberInput
-                            {...field}
-                            min={0}
+          {isSwitching ? (
+            <Loading>Měníme způsob zadání účastníků</Loading>
+          ) : (
+            <>
+              {!areParticipantsRequired &&
+                (inputType === 'count' || inputType === 'simple-list') && (
+                  <div>
+                    <FormSection required header="Počet účastníků">
+                      {event.number_of_sub_events &&
+                        event.number_of_sub_events > 1 && (
+                          <InfoBox>
+                            Tato akce je zadaná jako opakovaná. Zadejte tedy
+                            celkový počet všech účastníků, kteří se opakovaných
+                            akcí účastnili. Např. pokud se akce opakuje 3x s
+                            průměrnou účastí 10 lidí, pak je počet účastníků 30.
+                          </InfoBox>
+                        )}
+                      <InlineSection>
+                        <Label required>
+                          Počet účastníků celkem (včetně organizátorů)
+                        </Label>
+                        <FormInputError>
+                          <Controller
+                            control={control}
                             name="record.number_of_participants"
-                          ></NumberInput>
-                        )}
-                      />
-                    </FormInputError>
-                  </InlineSection>
-                  <InlineSection>
-                    <Label required>
-                      Z toho počet účastníků do 26 let (včetně organizátorů)
-                    </Label>
-                    <FormInputError>
-                      <Controller
-                        control={control}
-                        name="record.number_of_participants_under_26"
-                        render={({ field }) => (
-                          <NumberInput
-                            {...field}
-                            min={0}
+                            render={({ field }) => (
+                              <NumberInput
+                                {...field}
+                                min={0}
+                                name="record.number_of_participants"
+                              ></NumberInput>
+                            )}
+                          />
+                        </FormInputError>
+                      </InlineSection>
+                      <InlineSection>
+                        <Label required>
+                          Z toho počet účastníků do 26 let (včetně organizátorů)
+                        </Label>
+                        <FormInputError>
+                          <Controller
+                            control={control}
                             name="record.number_of_participants_under_26"
-                          ></NumberInput>
-                        )}
-                      />
-                    </FormInputError>
-                  </InlineSection>
-                </FormSection>
-              </div>
-            )}
+                            render={({ field }) => (
+                              <NumberInput
+                                {...field}
+                                min={0}
+                                name="record.number_of_participants_under_26"
+                              ></NumberInput>
+                            )}
+                          />
+                        </FormInputError>
+                      </InlineSection>
+                    </FormSection>
+                  </div>
+                )}
 
-          {!areParticipantsRequired && inputType === 'simple-list' && (
-            <FormSection required header="Seznam účastníků">
-              <SimpleParticipants />
-            </FormSection>
-          )}
-          {(areParticipantsRequired || inputType === 'full-list') && (
-            <FormSection required header="Seznam účastníků">
-              <ParticipantsList event={event} />
-            </FormSection>
+              {!areParticipantsRequired && inputType === 'simple-list' && (
+                <FormSection required header="Seznam účastníků">
+                  <SimpleParticipants eventId={event.id} />
+                </FormSection>
+              )}
+              {(areParticipantsRequired || inputType === 'full-list') && (
+                <FormSection required header="Seznam účastníků">
+                  <ParticipantsList event={event} />
+                </FormSection>
+              )}
+            </>
           )}
         </FormSectionGroup>
       </form>
