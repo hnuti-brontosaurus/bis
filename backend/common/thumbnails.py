@@ -51,7 +51,10 @@ class ThumbnailImageField(ImageField):
 
         def new_init(_self, *args, **kwargs):
             old_init(_self, *args, **kwargs)
-            setattr(_self, f"old_{name}", getattr(_self, name))
+            # Reading a deferred field reloads it into a new instance, whose
+            # __init__ would read its own deferred copy again, endlessly.
+            deferred = name in _self.get_deferred_fields()
+            setattr(_self, f"old_{name}", None if deferred else getattr(_self, name))
 
         cls.__init__ = new_init
 
