@@ -25,6 +25,7 @@ from django.db.models import Count
 from django.http import FileResponse
 from django.template import Context, Template
 from django.utils.formats import date_format
+from django.utils.text import get_valid_filename
 from event.models import Event
 from feedback.models import EventFeedback
 from other.models import SavedFile
@@ -404,17 +405,14 @@ executor = ThreadPoolExecutor(max_workers=1)
 
 
 @closes_db_connection
-def send_later(request, result):
+def send_later(request, result, name):
     try:
         file = result.result()
-        saved_file = SavedFile.objects.create(name=file.name)
-        name = f"saved_file_{saved_file.id}.xlsx"
-        with open(file.name, "rb") as f:
-            saved_file.file.save(name, f, save=False)
+        saved_file = SavedFile.store(file.name, f"{name}.xlsx")
         emails.text(
             [request.user.email],
             "Vygenerovaný export",
-            f"tu: {settings.FULL_HOSTNAME}/media/saved_files/{name} máš!",
+            f"tu: {saved_file.get_absolute_url()} máš!",
         )
     except Exception as e:
         logging.exception(f"Error sending xlsx export to email: {e}")
@@ -429,7 +427,8 @@ def export_to_xlsx(model_admin, request, queryset):
             file = result.result()
             return FileResponse(open(file.name, "rb"))
 
-    executor.submit(send_later, request, result)
+    name = get_valid_filename(queryset.model._meta.verbose_name_plural)
+    executor.submit(send_later, request, result, name)
     messages.warning(
         request,
         f"Buď tvůj export trvá dlouho, nebo se čeká na dokončení exportů ostatních, až bude hotov, pošlu ti ho na e-mail {request.user.email}",
@@ -441,22 +440,24 @@ def export_to_xlsx_response(queryset):
     return FileResponse(open(file.name, "rb"))
 
 
+EXPORT_SERIALIZERS = {
+    serializer.Meta.model: serializer
+    for serializer in [
+        UserExportSerializer,
+        EventExportSerializer,
+        DonorExportSerializer,
+        DonationExportSerializer,
+        AdministrationUnitExportSerializer,
+        EventApplicationExportSerializer,
+        MembershipExportSerializer,
+        EventFeedbackExportSerializer,
+        LocationExportSerializer,
+    ]
+}
+
+
 def do_export_to_xlsx(queryset):
-    serializer_class = next(
-        s
-        for s in [
-            UserExportSerializer,
-            EventExportSerializer,
-            DonorExportSerializer,
-            DonationExportSerializer,
-            AdministrationUnitExportSerializer,
-            EventApplicationExportSerializer,
-            MembershipExportSerializer,
-            EventFeedbackExportSerializer,
-            LocationExportSerializer,
-        ]
-        if s.Meta.model is queryset.model
-    )
+    serializer_class = EXPORT_SERIALIZERS[queryset.model]
     writer = XLSXWriter(queryset.model._meta.verbose_name_plural)
     writer.from_queryset(queryset, serializer_class)
     if queryset.model is Event:

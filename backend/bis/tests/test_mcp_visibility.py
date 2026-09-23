@@ -44,9 +44,9 @@ def permitted_events(db):
     # project.urls pulls in api.urls, whose filters query the DB at import
     # time, so bis.mcp_schema must only be imported once the db fixture is
     # active.
-    from bis.mcp_schema import _permitted_events
+    from bis.mcp_schema import _permitted
 
-    return _permitted_events
+    return lambda info: _permitted(info, Event)
 
 
 def make_info(user):

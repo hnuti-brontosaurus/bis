@@ -1,7 +1,7 @@
 """
 MCP (Model Context Protocol) tools for BIS.
 
-Single GraphQL-based tool for event and feedback analysis.
+Single GraphQL-based tool for BIS data analysis.
 The LLM writes GraphQL queries to select exactly the fields it needs.
 Export mode sends full XLSX (with PII) to the authenticated user's email.
 """
@@ -10,70 +10,72 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 
 from bis.background import closes_db_connection
-from django.conf import settings
+from django.utils.text import get_valid_filename
 from mcp_server import MCPToolset
+from other.models import SavedFile
 
 logger = logging.getLogger(__name__)
 
 
 @closes_db_connection
-def _export_and_email(queryset, user_email, subject_label):
+def _export_and_email(queryset, user_email, name):
     """Run do_export_to_xlsx, save to SavedFile, and email the link."""
     from bis import emails
-    from other.models import SavedFile
     from xlsx_export.export import do_export_to_xlsx
 
     try:
         file = do_export_to_xlsx(queryset)
-        saved_file = SavedFile.objects.create(name=file.name)
-        name = f"saved_file_{saved_file.id}.xlsx"
-        with open(file.name, "rb") as f:
-            saved_file.file.save(name, f, save=False)
+        saved_file = SavedFile.store(file.name, f"{name}.xlsx")
         emails.text(
             [user_email],
-            f"Export: {subject_label}",
-            f"tu: {settings.FULL_HOSTNAME}/media/saved_files/{name} máš!",
+            f"Export: {name}",
+            f"tu: {saved_file.get_absolute_url()} máš!",
         )
     except Exception as e:
-        logger.exception(f"Error exporting {subject_label} to email: {e}")
+        logger.exception(f"Error exporting {name} to email: {e}")
 
 
 _export_executor = ThreadPoolExecutor(max_workers=1)
 
 
 class BISTools(MCPToolset):
-    """BIS event and feedback analysis via GraphQL."""
+    """BIS data analysis via GraphQL."""
 
     def query(
         self,
         query: str,
         variables: dict | None = None,
         export: bool = False,
+        export_name: str | None = None,
     ) -> dict | str:
         """Execute a GraphQL query against BIS data.
 
-        The schema exposes events with their locations, categories, feedback
-        forms, individual feedbacks with replies, and event records.
-        PII fields (organizer names/emails, feedback author info) are excluded.
+        The schema exposes events, feedbacks, applications, users, memberships,
+        donors, donations, opportunities, locations and administration units,
+        plus an `aggregate` root for counts and sums. PII (names, emails,
+        phones, birthdays, addresses) is excluded; people appear as
+        anonymous users with a birth year and region.
 
-        When export=True, matching data is exported as full XLSX (including PII)
-        and emailed to you instead of being returned.
+        When export=True, all matching data (no limit) is exported as full XLSX
+        (including PII) and emailed to you instead of being returned.
 
         Args:
             query: A GraphQL query string.
             variables: Optional dict of GraphQL variables.
             export: If true, exports matching data as XLSX to your email.
+            export_name: File name (without .xlsx) and email subject of the
+                export; defaults to the dataset name.
 
         Returns:
             Query result dict, or confirmation message when export=True.
         """
         try:
-            return self._execute_query(query, variables, export)
+            return self._execute_query(query, variables, export, export_name)
         except Exception as e:
             logger.exception("MCP query error")
             return f"Error: {type(e).__name__}: {e}"
 
-    def _execute_query(self, query, variables, export):
+    def _execute_query(self, query, variables, export, export_name):
         from bis.mcp_schema import schema
 
         context = {
@@ -109,10 +111,25 @@ class BISTools(MCPToolset):
             if not context["_export_qs"]:
                 return "No data matched for export."
 
-            for label, qs in context["_export_qs"].items():
-                _export_executor.submit(_export_and_email, qs, user_email, label)
+            datasets = context["_export_qs"]
+            names = {
+                dataset: get_valid_filename(
+                    f"{export_name}_{dataset}"
+                    if export_name and len(datasets) > 1
+                    else export_name or dataset
+                )
+                for dataset in datasets
+            }
+            max_length = SavedFile._meta.get_field("name").max_length - len(".xlsx")
+            if any(len(name) > max_length for name in names.values()):
+                return f"Error: export_name is too long, use at most {max_length} characters."
 
-            exported = ", ".join(context["_export_qs"].keys())
+            for dataset, queryset in datasets.items():
+                _export_executor.submit(
+                    _export_and_email, queryset, user_email, names[dataset]
+                )
+
+            exported = ", ".join(names.values())
             return f"Exporting {exported}. You will receive an email at {user_email}."
 
         return result.data

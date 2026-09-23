@@ -249,6 +249,28 @@ Model convention: a file field is either required (no kwargs) or optional
 Frontend consequence: an empty photo must be sent as `null`, never `undefined`
 (`JSON.stringify` drops undefined keys, so the field would go untouched).
 
+### MCP server
+`/mcp` exposes one GraphQL `query` tool (`bis/mcp.py`, schema in
+`bis/mcp_schema.py`) for staff and the Brontobot account. The one rule is **no
+PII**: names, emails (organisation ones included), phones, birthdays and
+addresses (only the region is kept) never appear in results. People are
+anonymous `UserType` rows (id, birth year, region). Filter-based oracles (`filters: {user__email__startswith: …}`) are accepted.
+The game book and cookbook are deliberately left out.
+
+- Person models (`User`, `EventApplication`, `Donor`, the address types) list
+  their fields explicitly, so a new model field stays hidden until reviewed.
+  Other models use `exclude=`.
+- `aggregate` group/sum paths may only walk fields the schema exposes
+  (`EXPOSED_FIELDS`), so grouping cannot print a hidden value. `birth_year` is
+  an alias for `birthday__year`.
+- `export=true` emails a full-PII XLSX. It only works for models that are in
+  `EXPORT_SERIALIZERS` in `xlsx_export/export.py`. Emailed exports go through
+  `SavedFile.store`, which puts each file in a random directory: `/media` is
+  served without authentication, so the directory name is the only thing
+  keeping the file private. `nightly` deletes them after 14 days.
+- `bis/tests/test_mcp_schema.py` denylists PII field names across the schema.
+  Add to `ALLOWED` only after deciding the field is not PII.
+
 ### Cookbook models
 
 `cookbook` is the only app whose models live in a package. Django imports just

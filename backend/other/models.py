@@ -1,5 +1,7 @@
+import secrets
 from datetime import timedelta
 from io import BytesIO
+from pathlib import Path
 
 import openpyxl
 from administration_units.models import AdministrationUnit
@@ -7,6 +9,7 @@ from bis.helpers import AgeStats
 from bis.models import User
 from categories.models import RoleCategory
 from dateutil.utils import today
+from django.conf import settings
 from django.contrib.gis.db import models as m
 from django.core.files import File
 from django.db.models import CASCADE, PROTECT, Index, Q, UniqueConstraint
@@ -398,5 +401,24 @@ class SavedFile(m.Model):
     created_at = m.DateField(auto_now_add=True)
 
     @classmethod
+    def store(cls, path, name):
+        saved_file = cls.objects.create(name=name)
+        with open(path, "rb") as f:
+            # /media is served without authentication and exports hold PII,
+            # so the unguessable directory is the only thing keeping them private.
+            saved_file.file.save(f"{secrets.token_urlsafe(16)}/{name}", f)
+        return saved_file
+
+    def get_absolute_url(self):
+        return f"{settings.FULL_HOSTNAME}{self.file.url}"
+
+    @classmethod
     def remove_old(cls):
-        SavedFile.objects.filter(created_at__lte=today() - timedelta(days=14)).delete()
+        for saved_file in cls.objects.filter(
+            created_at__lte=today() - timedelta(days=14)
+        ):
+            if saved_file.file:
+                directory = Path(saved_file.file.path).parent
+                saved_file.file.delete(save=False)
+                directory.rmdir()
+            saved_file.delete()

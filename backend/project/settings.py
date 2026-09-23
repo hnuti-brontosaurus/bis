@@ -267,16 +267,15 @@ DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
         "BIS (Brontosaurus Information System) MCP server.\n\n"
         "Use the `query` tool to execute GraphQL queries. Request only the fields you need.\n"
         "DB joins are automatically optimized based on your query.\n\n"
-        "ROOT QUERIES:\n"
-        "- events(filters, ordering, limit, offset): List events.\n"
-        "- feedbacks(eventFilters, limit, offset): List feedbacks.\n\n"
-        "GRAPH: Event -> location, category, group, program, intendedFor, tags,\n"
-        "administrationUnits, feedbacks -> replies -> inquiry, feedbackForm -> inquiries,\n"
-        "record (with participantsCount).\n\n"
-        "FILTERING: The filters/eventFilters argument is a JSON dict of Django ORM lookups.\n"
-        'Example: {start__year: 2024, category__slug: "public__volunteering"}\n\n'
+        "COUNTING: use the `aggregate` root instead of listing rows, e.g.\n"
+        '{aggregate(dataset: EVENTS, filters: {start__year: 2024}, groupBy: ["category__slug"], '
+        'sumOf: ["record__total_hours_worked"])}\n\n'
+        "FILTERING: `filters` is a JSON dict of Django ORM lookups on the root model, e.g.\n"
+        '{start__year: 2024, category__slug: "public__volunteering"}. '
+        "`ordering` takes Django order_by fields. At most 1000 rows per request; page with offset.\n\n"
         "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n\n"
-        "PII fields (organizer names/emails, feedback author info) are excluded from query results.\n"
+        "PII (names, emails, phones, birthdays, addresses) is never returned; "
+        "people are anonymous users with a birth year and region.\n"
         "Results are limited to what the authenticated user has permission to view."
     ),
     "stateless": False,
