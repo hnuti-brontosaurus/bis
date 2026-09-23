@@ -249,6 +249,12 @@ Model convention: a file field is either required (no kwargs) or optional
 Frontend consequence: an empty photo must be sent as `null`, never `undefined`
 (`JSON.stringify` drops undefined keys, so the field would go untouched).
 
+`django_cleanup` deletes a file on commit once its row is deleted or the field
+is replaced, and `ThumbnailImageField` removes its thumbnails alongside. Neither
+checks whether another row still references the file name, so moving a file
+between rows means copying it (`field.save(name, other.field.file)`), never
+assigning `other.field` — see `User.merge_with`.
+
 ### MCP server
 `/mcp` exposes one GraphQL `query` tool (`bis/mcp.py`, schema in
 `bis/mcp_schema.py`) for staff and the Brontobot account. The one rule is **no

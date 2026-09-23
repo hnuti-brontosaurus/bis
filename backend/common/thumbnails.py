@@ -65,9 +65,7 @@ class ThumbnailImageField(ImageField):
         self.do_remove_thumbnails(old_file)
 
         if file := getattr(instance, self.attname):
-            thumbnail_dir_path = join(
-                settings.BASE_DIR, "media", "thumbnails", self.upload_to
-            )
+            thumbnail_dir_path = join(settings.MEDIA_ROOT, "thumbnails", self.upload_to)
             makedirs(thumbnail_dir_path, exist_ok=True)
 
             file_path = join(settings.MEDIA_ROOT, file.name)

@@ -518,12 +518,19 @@ class User(SearchMixin, AbstractBaseUser):
                     "pronoun",
                     "subscription_status",
                     "office_workers_note",
-                    "photo",
                     "last_after_event_email",
                     "is_contact_information_verified",
                 ]:
                     if not getattr(self, field.name) and getattr(other, field.name):
                         setattr(self, field.name, getattr(other, field.name))
+
+                elif field.name == "photo":
+                    # django_cleanup deletes other's file once other is deleted,
+                    # so sharing its name would leave self with a missing photo.
+                    if not self.photo and other.photo:
+                        self.photo.save(
+                            basename(other.photo.name), other.photo.file, save=False
+                        )
 
                 else:
                     raise RuntimeError(
