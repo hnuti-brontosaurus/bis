@@ -2,7 +2,17 @@ from datetime import timedelta
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import (
+    Count,
+    Exists,
+    Max,
+    Min,
+    OuterRef,
+    Subquery,
+    Sum,
+    Value,
+)
 from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor, Pledge
 from event.models import (
@@ -190,6 +200,28 @@ class DonorExportSerializer(BaseDonorExportSerializer):
     first_donation = DateField()
     last_donation = DateField()
     donation_sources = ListField()
+
+    @staticmethod
+    def get_related(queryset):
+        # The admin list pre-annotates these with request-dependent filters
+        # (by donation source or date range), which must win over the plain
+        # lifetime values, so only annotate what is missing.
+        missing_annotations = {
+            "first_donation": Min("donations__donated_at"),
+            "last_donation": Max("donations__donated_at"),
+            "donation_sources": ArrayAgg(
+                "donations__donation_source__name", distinct=True
+            ),
+            "donations_sum": Coalesce(Sum("donations__amount"), Value(0)),
+        }
+        queryset = BaseDonorExportSerializer.get_related(queryset)
+        return queryset.annotate(
+            **{
+                name: expression
+                for name, expression in missing_annotations.items()
+                if name not in queryset.query.annotations
+            }
+        )
 
     class Meta(BaseDonorExportSerializer.Meta):
         model = Donor
