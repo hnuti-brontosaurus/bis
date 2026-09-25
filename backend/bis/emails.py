@@ -782,13 +782,21 @@ def donates_for_years():
     for year, quantifier in years.items():
         cutoff = today - relativedelta(years=year)
 
+        # Exclude donors already notified at this tier or higher, so each
+        # donor gets at most one milestone email per run (descending order
+        # handles donors crossing several tiers at once) while lower-tier
+        # events from earlier years don't block the next milestone.
+        higher_event_types = DonorEventCategory.objects.filter(
+            slug__in=[f"pledge_{y}y" for y in years if y >= year]
+        )
+
         donors = (
             Donor.objects.filter(
                 pledges__is_recurrent=True,
                 pledges__recurrent_state=RecurrentState.COLLECTING,
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(events__event_type__slug__icontains="pledge_")
+            .exclude(events__event_type__in=higher_event_types)
             .distinct()
         )
 
