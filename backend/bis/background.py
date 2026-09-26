@@ -11,13 +11,21 @@ management command returns. Only an abrupt kill (SIGKILL, OOM) drops it.
 """
 
 import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from django.conf import settings
 from django.db import close_old_connections
+from django.db.utils import InterfaceError, OperationalError
 
 logger = logging.getLogger(__name__)
+
+# Connection-level driver errors (Postgres restart mid-task, idle kill): almost
+# always transient, and a dropped background task is lost work.
+CONNECTION_ERRORS = (InterfaceError, OperationalError)
+
+RETRY_DELAY_SECONDS = 2
 
 _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="bis-background")
 
@@ -44,9 +52,22 @@ def closes_db_connection(fn):
 
 def run_in_background(fn, *args, **kwargs):
     @closes_db_connection
+    def attempt():
+        fn(*args, **kwargs)
+
     def run():
         try:
-            fn(*args, **kwargs)
+            attempt()
+        except CONNECTION_ERRORS as exc:
+            logger.warning(
+                f"background task {fn.__name__} failed with a connection error, "
+                f"retrying once: {exc}"
+            )
+            time.sleep(RETRY_DELAY_SECONDS)
+            try:
+                attempt()
+            except Exception:
+                logger.exception(f"background task {fn.__name__} failed")
         except Exception:
             logger.exception(f"background task {fn.__name__} failed")
 
