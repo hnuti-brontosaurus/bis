@@ -3127,6 +3127,8 @@ export type Donor = {
   subscribed_to_newsletter?: boolean
   /** na webu a v závěrečné zprávě */
   is_public?: boolean
+  do_not_call?: boolean
+  do_not_solicit?: boolean
   date_joined: string
   regional_center_support?: number | null
   basic_section_support?: number | null

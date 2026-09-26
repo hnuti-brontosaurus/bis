@@ -305,6 +305,8 @@ class DonorSerializer(ModelSerializer):
         fields = (
             "subscribed_to_newsletter",
             "is_public",
+            "do_not_call",
+            "do_not_solicit",
             "date_joined",
             "regional_center_support",
             "basic_section_support",
@@ -505,7 +507,13 @@ class UserSerializer(ModelSerializer):
         return super().update(instance, validated_data)
 
     def get_excluded_fields(self, fields):
-        if self.context["request"].user.id != fields.get("id"):
+        # On reads, `fields` is the representation (id present as a string);
+        # on writes it is the validated data, which has no id (it is
+        # read-only), so compare against the updated instance instead.
+        edited_user_id = fields.get("id") or (
+            str(self.instance.id) if self.instance else None
+        )
+        if str(self.context["request"].user.id) != edited_user_id:
             return ["donor"]
 
         return []
