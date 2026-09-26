@@ -3,7 +3,12 @@
  */
 import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from 'app/services/bis'
-import { EventApplication, User, UserPayload } from 'app/services/bisTypes'
+import {
+  EventApplication,
+  Donor,
+  User,
+  UserPayload,
+} from 'app/services/bisTypes'
 import {
   Actions,
   BirthdayInput,
@@ -42,9 +47,11 @@ import { AddressSubform } from './AddressSubform'
 
 export type UserFormShape = Omit<
   Optional<UserPayload, 'pronoun'>,
-  'all_emails'
+  'all_emails' | 'donor'
 > & {
   isChild?: boolean
+  // only the flag fields are registered in the form
+  donor?: Partial<Donor> | null
 }
 
 // transform user data to initial form data
@@ -102,6 +109,7 @@ export const data2form = (
 export const form2payload = (
   data: UserFormShape,
   isSelf = false,
+  hasDonor = false,
 ): Partial<UserPayload> => {
   const contact_address =
     data.contact_address?.city &&
@@ -118,7 +126,15 @@ export const form2payload = (
       ? data.close_person
       : null
 
-  const finalData: Partial<UserPayload> = merge(
+  // Send the donor sub-object only when the user already is a donor or one
+  // of the flags is set — otherwise every self-profile save would create
+  // an empty donor record.
+  const donor =
+    hasDonor || data.donor?.do_not_call || data.donor?.do_not_solicit
+      ? data.donor
+      : null
+
+  const withoutDonor = merge(
     { eyca_card: null },
     pick(
       data,
@@ -132,7 +148,6 @@ export const form2payload = (
       'phone',
       'subscribed_to_newsletter',
       'address',
-      'donor',
       'offers',
       'eyca_card',
     ),
@@ -143,6 +158,11 @@ export const form2payload = (
       close_person,
     },
   )
+
+  const finalData = {
+    ...withoutDonor,
+    donor,
+  } as Partial<UserPayload>
 
   // if email is empty string, set it to null
   // (maybe deleting it would also work)
@@ -199,6 +219,11 @@ const validationSchema: yup.ObjectSchema<UserFormShape> = yup.object({
   // }),
   phone: yup.string(),
   subscribed_to_newsletter: yup.boolean().required(),
+  // donor flags are only editable for the requesting user themself
+  donor: yup.object().nullable().shape({
+    do_not_call: yup.boolean(),
+    do_not_solicit: yup.boolean(),
+  }),
   address: yup
     .object()
     .shape({
@@ -327,7 +352,11 @@ export const UserForm = ({
       setIsSaving(true)
       try {
         await onSubmit(
-          form2payload(data, isSelf) as UserPayload,
+          form2payload(
+            data,
+            isSelf,
+            Boolean(initialData?.donor),
+          ) as UserPayload,
           initialData?.id,
         )
         // TODO on success clear the form
@@ -477,6 +506,30 @@ export const UserForm = ({
               <AddressSubform name="contact_address" />
             </FormSubsection>
           </FormSection>
+          {isSelf && (
+            <FormSection header="Dárce">
+              <InlineSection>
+                <Label htmlFor="donor.do_not_call">Nevolat</Label>
+                <FormInputError>
+                  <input
+                    type="checkbox"
+                    id="donor.do_not_call"
+                    {...register('donor.do_not_call')}
+                  />
+                </FormInputError>
+              </InlineSection>
+              <InlineSection>
+                <Label htmlFor="donor.do_not_solicit">Nežádat o dary</Label>
+                <FormInputError>
+                  <input
+                    type="checkbox"
+                    id="donor.do_not_solicit"
+                    {...register('donor.do_not_solicit')}
+                  />
+                </FormInputError>
+              </InlineSection>
+            </FormSection>
+          )}
           <FormSection
             header={isChild ? 'Rodič/zákonný zástupce' : 'Blízká osoba'}
             required={isChild}

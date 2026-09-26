@@ -11,6 +11,7 @@ export type {
   Answer,
   AttendanceListPage,
   DietCategory,
+  Donor,
   EventApplication,
   EventContact,
   EventIntendedForCategory,
@@ -174,6 +175,7 @@ type UserPayloadFields =
   | 'health_issues'
   | 'all_emails'
   | 'subscribed_to_newsletter'
+  | 'donor'
 
 export type UserPayload = Optional<
   Overwrite<
