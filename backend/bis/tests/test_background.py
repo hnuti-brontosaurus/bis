@@ -101,7 +101,9 @@ def test_retried_task_receives_args(executor):
 
     def task(arg, kwarg=None):
         calls.append((arg, kwarg))
+        if len(calls) == 1:
+            raise django.db.utils.OperationalError("server closed the connection")
 
     run_task(task, "a", kwarg="b")
 
-    assert calls == [("a", "b")]
+    assert calls == [("a", "b"), ("a", "b")]
