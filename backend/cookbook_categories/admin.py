@@ -1,6 +1,7 @@
 from bis.admin_permissions import PermissionMixin
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -32,4 +33,9 @@ class UnitAdmin(PermissionMixin, NestedModelAdmin):
 
 @admin.register(Allergen)
 class AllergenAdmin(PermissionMixin, NestedModelAdmin):
+    search_fields = ["name"]
+
+
+@admin.register(IngredientCategory)
+class IngredientCategoryAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = ["name"]

@@ -31,6 +31,7 @@ from cookbook.models.recipes import (
 )
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -63,6 +64,12 @@ class IngredientSerializer(serializers.ModelSerializer):
         many=True,
         required=False,
     )
+    category_id = PrimaryKeyRelatedField(
+        source="category",
+        queryset=IngredientCategory.objects.all(),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = Ingredient
@@ -73,6 +80,7 @@ class IngredientSerializer(serializers.ModelSerializer):
             "g_per_piece",
             "g_per_liter",
             "g_per_serving",
+            "category_id",
             "allergen_ids",
         )
 

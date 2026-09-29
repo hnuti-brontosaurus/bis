@@ -5,10 +5,12 @@ import { useRoute, useRouter } from "vue-router"
 import axios from "axios"
 import AppPage from "@/components/app/AppPage.vue"
 import GenericForm from "@/contrib/components/GenericForm.vue"
-import { scrollToFirstFormError } from "@/contrib/composables/helpers.js"
+import { propertyRef, scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useAllergensStore } from "@/data/allergens.js"
+import { useIngredientCategoriesStore } from "@/data/ingredientCategories.js"
+import { storeOptions } from "@/data/helpers.js"
 import { _ } from "@/composables/translations.js"
 
 const route = useRoute()
@@ -19,10 +21,15 @@ const form = ref()
 const ingredientsStore = useIngredientsStore()
 const allergensStore = useAllergensStore()
 allergensStore.fetchAll()
+const ingredientCategoriesStore = useIngredientCategoriesStore()
+ingredientCategoriesStore.fetchAll()
+const categoryOptions = storeOptions(ingredientCategoriesStore)
 
 const ingredient_id = route.params.id
 const ingredient = ref(
-  ingredient_id ? null : { name: "", state: "solid", allergen_ids: [] },
+  ingredient_id
+    ? null
+    : { name: "", state: "solid", category_id: null, allergen_ids: [] },
 )
 
 onMounted(async () => {
@@ -49,6 +56,13 @@ const inputs = computed(() => {
       key: "state",
       required: true,
       options: stateOptions.value,
+    },
+    {
+      type: "select",
+      key: "category",
+      path: "category_id",
+      options: categoryOptions.value,
+      value: propertyRef(ingredient, "category_id"),
     },
     { type: "number", key: "g_per_piece" },
     { type: "number", key: "g_per_liter" },

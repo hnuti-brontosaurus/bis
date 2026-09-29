@@ -7,6 +7,7 @@ from cookbook.models.ingredients import Ingredient
 from cookbook.models.recipes import Recipe, RecipeIngredient, RecipeStep, RecipeTip
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -98,6 +99,16 @@ def allergens(db):
         slug: Allergen.objects.create(slug=slug, name=name, order=i)
         for i, (slug, name) in enumerate(
             [("gluten", "lepek"), ("soya", "sója"), ("nuts", "oříšky")]
+        )
+    }
+
+
+@pytest.fixture
+def ingredient_categories(db):
+    return {
+        slug: IngredientCategory.objects.create(slug=slug, name=name, order=i)
+        for i, (slug, name) in enumerate(
+            [("chilled", "Nemléčné a chlazené"), ("baking", "Pečení")]
         )
     }
 

@@ -6,10 +6,12 @@ import ShoppingList from "@/components/cart/ShoppingList.vue"
 import EditCart from "@/components/cart/EditCart.vue"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
+import { useIngredientCategoriesStore } from "@/data/ingredientCategories.js"
 import { _ } from "@/composables/translations.js"
 
 useIngredientsStore().fetchAll()
 useUnitsStore().fetchAll()
+useIngredientCategoriesStore().fetchAll()
 
 const activeTab = ref("shopping")
 const focusedGroupId = ref(null)

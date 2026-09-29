@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: a385caff3d41d7ac
+// source-hash: b8dbe7b922890bb9
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -999,6 +999,7 @@ export const ingredient = {
   state: 'Konzistence',
   reasoning: 'Popis',
   allergens: 'Typicky obsahuje alergeny',
+  category: 'Kategorie',
 } as const
 
 export const recipe = {
@@ -1087,6 +1088,11 @@ export const recipeRequiredTime = {
 } as const
 
 export const allergen = { _name: 'Alergen', _name_plural: 'Alergen' } as const
+
+export const ingredientCategory = {
+  _name: 'Kategorie přísad',
+  _name_plural: 'Kategorie přísad',
+} as const
 
 export const generic = {
   user: 'Uživatel',
@@ -1312,6 +1318,7 @@ export const cookbook = {
     all_bought: 'Všechno nakoupeno',
     hide_bought: 'Skrýt nakoupené',
     custom_group: 'Vlastní seznam',
+    uncategorized: 'Bez kategorie',
     new_group_placeholder: 'Název nového seznamu',
     replace: 'Nahradit',
     append: 'Přidat ke stávajícímu',

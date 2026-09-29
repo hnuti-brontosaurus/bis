@@ -24,6 +24,7 @@ from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe, RecipeStep
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -49,6 +50,7 @@ class CookbookAccessPermission(BasePermission):
         if model in (
             Ingredient,
             Allergen,
+            IngredientCategory,
             RecipeDifficulty,
             RecipeRequiredTime,
             RecipeTag,

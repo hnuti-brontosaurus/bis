@@ -35,6 +35,11 @@ class Allergen(BaseCategory):
 
 
 @translate_model
+class IngredientCategory(BaseCategory):
+    pass
+
+
+@translate_model
 class Unit(BaseCategory):
     name2 = CharField(max_length=31)
     name5 = CharField(max_length=31)

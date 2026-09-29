@@ -226,6 +226,7 @@ cookbook:
     all_bought: Všechno nakoupeno
     hide_bought: Skrýt nakoupené
     custom_group: Vlastní seznam
+    uncategorized: Bez kategorie
     new_group_placeholder: Název nového seznamu
     replace: Nahradit
     append: Přidat ke stávajícímu

@@ -6,6 +6,7 @@ import { useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useAllergensStore } from "@/data/allergens.js"
+import { useIngredientCategoriesStore } from "@/data/ingredientCategories.js"
 import { useAuthStore } from "@/data/auth.js"
 import AppPage from "@/components/app/AppPage.vue"
 import { _ } from "@/composables/translations.js"
@@ -13,11 +14,13 @@ import { _ } from "@/composables/translations.js"
 const router = useRouter()
 const ingredientsStore = useIngredientsStore()
 const allergensStore = useAllergensStore()
+const ingredientCategoriesStore = useIngredientCategoriesStore()
 const { isChef } = storeToRefs(useAuthStore())
 
 onMounted(() => {
   ingredientsStore.fetchAll()
   allergensStore.fetchAll()
+  ingredientCategoriesStore.fetchAll()
 })
 
 const stateLabel = state =>
@@ -42,6 +45,11 @@ const columns = computed(() => [
     title: _.value.ingredients.state,
     key: "state",
     render: row => stateLabel(row.state),
+  },
+  {
+    title: _.value.Ingredient.category,
+    key: "category_id",
+    render: row => ingredientCategoriesStore.byId[row.category_id]?.name ?? "",
   },
   { title: _.value.ingredients.g_per_piece, key: "g_per_piece" },
   { title: _.value.ingredients.g_per_liter, key: "g_per_liter" },

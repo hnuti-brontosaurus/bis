@@ -28,6 +28,7 @@ from categories.models import (
 )
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -986,5 +987,23 @@ class Command(BaseCommand):
                 "gluten": dict(name="lepek"),
                 "soya": dict(name="sója"),
                 "nuts": dict(name="oříšky"),
+            },
+        )
+
+        self.update_categories(
+            IngredientCategory,
+            {
+                "fruit_vegetables": dict(name="Ovoce a zelenina"),
+                "bakery": dict(name="Pečivo"),
+                "chilled": dict(name="Nemléčné a chlazené"),
+                "pantry": dict(name="Trvanlivé"),
+                "baking": dict(name="Pečení"),
+                "sweets": dict(name="Sladké"),
+                "nuts_seeds": dict(name="Ořechy a semínka"),
+                "spices": dict(name="Koření"),
+                "oils_sauces": dict(name="Oleje a omáčky"),
+                "drinks": dict(name="Nápoje"),
+                "frozen": dict(name="Mražené"),
+                "other": dict(name="Ostatní"),
             },
         )

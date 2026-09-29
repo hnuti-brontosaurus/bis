@@ -880,6 +880,7 @@ Ingredient:
     state: Konzistence
     reasoning: Popis
     allergens: Typicky obsahuje alergeny
+    category: Kategorie
 
 Recipe:
   name: Recept
@@ -958,3 +959,7 @@ RecipeRequiredTime:
 Allergen:
   name: Alergen
   name_plural: Alergeny
+
+IngredientCategory:
+  name: Kategorie přísad
+  name_plural: Kategorie přísad

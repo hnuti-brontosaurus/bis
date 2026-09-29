@@ -14,7 +14,7 @@ import json
 
 import groq
 from cookbook.models.ingredients import Ingredient
-from cookbook_categories.models import Allergen
+from cookbook_categories.models import Allergen, IngredientCategory
 from django.conf import settings
 
 # https://console.groq.com/playground
@@ -37,6 +37,7 @@ Vždy vrať všechny klíče v tomto schématu:
   "g_per_piece": integer | null,
   "g_per_serving": integer | null,
   "allergens": list of strings z {"gluten","soya","nuts"},
+  "category": string,
   "reasoning": string
 }
 
@@ -72,7 +73,23 @@ Pravidla:
 - Pokud surovina žádný z těchto alergenů typicky neobsahuje, vrať [].
 - Buď opatrný — vrať alergen jen tehdy, je-li v surovině typicky obsažen v běžně prodávané variantě.
 
-6) Nejednoznačný nebo nesmyslný vstup
+6) "category"
+- Oddělení obchodu, kde se surovina typicky kupuje. Kuchařka je veganská, "mléko", "smetana" apod. jsou vždy rostlinné.
+- Vrať přesně jeden z těchto slugů:
+  - "fruit_vegetables" — čerstvé ovoce, zelenina, brambory, cibule, česnek, čerstvé bylinky, citrusová kůra
+  - "bakery" — chleba, rohlíky, tortilly, pečivo
+  - "chilled" — rostlinná mléka, smetany a jogurty, tofu, tempeh, margarín, čerstvé droždí
+  - "pantry" — rýže, těstoviny, vločky, luštěniny, konzervy, passata, pyré
+  - "baking" — mouky, cukry, škroby, prášek do pečiva, jedlá soda, vanilka, kakao
+  - "sweets" — čokoláda, sirupy, marmelády, kandované ovoce, sladkosti
+  - "nuts_seeds" — ořechy, semínka, kokos, sušené ovoce
+  - "spices" — sůl, pepř, sušené koření, lahůdkové droždí
+  - "oils_sauces" — oleje, octy, sójová omáčka, kečup, hořčice, tahini
+  - "drinks" — voda, káva, čaj, džusy, alkohol
+  - "frozen" — mražená zelenina a ovoce, zmrzlina
+  - "other" — nic z výše uvedeného
+
+7) Nejednoznačný nebo nesmyslný vstup
 - Pokus se o nejlepší možný odhad.
 - Pokud ani tak nelze rozhodnout, použij tento fallback:
   {
@@ -80,10 +97,11 @@ Pravidla:
     "g_per_liter": null,
     "g_per_piece": null,
     "g_per_serving": null,
-    "allergens": []
+    "allergens": [],
+    "category": "other"
   }
 
-7) Výstup
+8) Výstup
 - Musí být validní JSON.
 - Používej pouze dvojité uvozovky.
 - Žádné trailing čárky.
@@ -92,23 +110,23 @@ Pravidla:
 Příklady (vstup -> výstup):
 
 brambory ->
-{"state":"solid","g_per_liter":null,"g_per_piece":85,"g_per_serving":250,"allergens":[],"reasoning":"Brambory jsou pevná surovina, která se běžně používá v kusech a jako příloha. Průměrná brambora váží kolem 85g a typická porce je asi 250g."}
+{"state":"solid","g_per_liter":null,"g_per_piece":85,"g_per_serving":250,"allergens":[],"category":"fruit_vegetables","reasoning":"Brambory jsou pevná surovina, která se běžně používá v kusech a jako příloha. Průměrná brambora váží kolem 85g a typická porce je asi 250g."}
 
 mléko ->
-{"state":"liquid","g_per_liter":1030,"g_per_piece":null,"g_per_serving":null,"allergens":[],"reasoning":"Mléko je tekutá surovina s hustotou přibližně 1030g/l. Nepočítá se na kusy a nemá standardní porci."}
+{"state":"liquid","g_per_liter":1030,"g_per_piece":null,"g_per_serving":null,"allergens":[],"category":"chilled","reasoning":"Mléko je tekutá surovina s hustotou přibližně 1030g/l. Nepočítá se na kusy a nemá standardní porci."}
 
 mouka ->
-{"state":"solid","g_per_liter":600,"g_per_piece":null,"g_per_serving":null,"allergens":["gluten"],"reasoning":"Hladká pšeničná mouka je sypká pevná surovina s objemovou hustotou kolem 600g/l. Obsahuje lepek."}
+{"state":"solid","g_per_liter":600,"g_per_piece":null,"g_per_serving":null,"allergens":["gluten"],"category":"baking","reasoning":"Hladká pšeničná mouka je sypká pevná surovina s objemovou hustotou kolem 600g/l. Obsahuje lepek."}
 
 vlašské ořechy ->
-{"state":"solid","g_per_liter":null,"g_per_piece":5,"g_per_serving":30,"allergens":["nuts"],"reasoning":"Vlašské ořechy se běžně počítají na kusy (~5g) a typická porce je hrst (~30g). Patří mezi ořechy."}
+{"state":"solid","g_per_liter":null,"g_per_piece":5,"g_per_serving":30,"allergens":["nuts"],"category":"nuts_seeds","reasoning":"Vlašské ořechy se běžně počítají na kusy (~5g) a typická porce je hrst (~30g). Patří mezi ořechy."}
 
 tofu ->
-{"state":"solid","g_per_liter":null,"g_per_piece":null,"g_per_serving":150,"allergens":["soya"],"reasoning":"Tofu je sójový výrobek; běžná porce 150g. Obsahuje sóju."}"""
+{"state":"solid","g_per_liter":null,"g_per_piece":null,"g_per_serving":150,"allergens":["soya"],"category":"chilled","reasoning":"Tofu je sójový výrobek; běžná porce 150g. Obsahuje sóju."}"""
 
 
 def enrich_ingredient(instance: Ingredient) -> bool:
-    """Fill state / g_per_* / reasoning on `instance` via Groq.
+    """Fill state / g_per_* / category / reasoning on `instance` via Groq.
 
     Returns True if the instance was modified and should be saved by the
     caller, False if enrichment was skipped (no API key, empty name).
@@ -148,6 +166,7 @@ def enrich_ingredient(instance: Ingredient) -> bool:
         instance.g_per_serving = int(g_per_serving)
     if reasoning := data.get("reasoning"):
         instance.reasoning = reasoning
+    instance.category = IngredientCategory.objects.get(slug=data["category"])
 
     # Allergens are M2M and require an existing PK; the caller (post-create)
     # already has one. Replace the set even when empty so a reclassification

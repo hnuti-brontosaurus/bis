@@ -30,7 +30,9 @@ def test_create_ingredient_no_groq_key(api_client, chef, settings):
 
 
 @pytest.mark.django_db
-def test_create_ingredient_runs_groq_enrichment(api_client, chef, settings):
+def test_create_ingredient_runs_groq_enrichment(
+    api_client, chef, ingredient_categories, settings
+):
     """With an API key, the view dispatches to Groq and writes back fields."""
     settings.GROQ_API_KEY = "test-key"
 
@@ -40,7 +42,7 @@ def test_create_ingredient_runs_groq_enrichment(api_client, chef, settings):
             message=MagicMock(
                 content=(
                     '{"state": "liquid", "g_per_liter": 1030, "g_per_piece": null,'
-                    ' "g_per_serving": null, "allergens": [],'
+                    ' "g_per_serving": null, "allergens": [], "category": "chilled",'
                     ' "reasoning": "Mléko je tekutina."}'
                 )
             )
@@ -66,14 +68,16 @@ def test_create_ingredient_runs_groq_enrichment(api_client, chef, settings):
     assert instance.state == "liquid"
     assert instance.g_per_liter == 1030
     assert instance.reasoning == "Mléko je tekutina."
+    assert instance.category == ingredient_categories["chilled"]
     # Response shape mirrors the serializer fields.
     assert response.data["state"] == "liquid"
     assert response.data["g_per_liter"] == 1030
+    assert response.data["category_id"] == ingredient_categories["chilled"].id
 
 
 @pytest.mark.django_db
 def test_create_ingredient_groq_attaches_allergens(
-    api_client, chef, allergens, settings
+    api_client, chef, allergens, ingredient_categories, settings
 ):
     """Allergen slugs returned by Groq become an M2M attachment."""
     from cookbook_categories.models import Allergen
@@ -86,6 +90,7 @@ def test_create_ingredient_groq_attaches_allergens(
                 content=(
                     '{"state": "solid", "g_per_liter": 600, "g_per_piece": null,'
                     ' "g_per_serving": null, "allergens": ["gluten"],'
+                    ' "category": "baking",'
                     ' "reasoning": "Pšeničná mouka obsahuje lepek."}'
                 )
             )
@@ -155,3 +160,27 @@ def test_recipe_allergen_ids_unions_ingredient_allergens(
     response = api_client.get(f"/api/cookbook/recipes/{recipe.id}/")
     assert response.status_code == 200, response.data
     assert response.data["allergen_ids"] == sorted([gluten.id, nuts.id])
+
+
+@pytest.mark.django_db
+def test_update_ingredient_category(
+    api_client, chef, ingredient, ingredient_categories
+):
+    category = ingredient_categories["baking"]
+    response = api_client.patch(
+        f"/api/cookbook/ingredients/{ingredient.id}/",
+        {"category_id": category.id},
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    ingredient.refresh_from_db()
+    assert ingredient.category == category
+
+    response = api_client.patch(
+        f"/api/cookbook/ingredients/{ingredient.id}/",
+        {"category_id": None},
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    ingredient.refresh_from_db()
+    assert ingredient.category is None

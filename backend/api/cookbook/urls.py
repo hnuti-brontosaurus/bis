@@ -4,6 +4,7 @@ import api.cookbook.views.testing
 from api.cookbook.views.cart import CartViewSet
 from api.cookbook.views.categories import (
     AllergenViewSet,
+    IngredientCategoryViewSet,
     RecipeDifficultyViewSet,
     RecipeRequiredTimeViewSet,
     RecipeTagViewSet,
@@ -33,6 +34,9 @@ router.register(
 )
 router.register("recipe_tags", RecipeTagViewSet, "recipe_tags")
 router.register("allergens", AllergenViewSet, "allergens")
+router.register(
+    "ingredient_categories", IngredientCategoryViewSet, "ingredient_categories"
+)
 
 urlpatterns = [
     path("", include(router.urls)),

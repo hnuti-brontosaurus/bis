@@ -1,6 +1,7 @@
 from bis.cache import CachedViewSetMixin
 from cookbook_categories.models import (
     Allergen,
+    IngredientCategory,
     RecipeDifficulty,
     RecipeRequiredTime,
     RecipeTag,
@@ -8,6 +9,7 @@ from cookbook_categories.models import (
 )
 from cookbook_categories.serializers import (
     AllergenSerializer,
+    IngredientCategorySerializer,
     RecipeDifficultySerializer,
     RecipeRequiredTimeSerializer,
     RecipeTagSerializer,
@@ -45,3 +47,8 @@ class UnitViewSet(CachedCookbookCategoryViewSet):
 class AllergenViewSet(CachedCookbookCategoryViewSet):
     serializer_class = AllergenSerializer
     queryset = Allergen.objects.all()
+
+
+class IngredientCategoryViewSet(CachedCookbookCategoryViewSet):
+    serializer_class = IngredientCategorySerializer
+    queryset = IngredientCategory.objects.all()
