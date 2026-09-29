@@ -16,6 +16,8 @@ Field-shape rules:
   drf-writable-nested.
 """
 
+from itertools import groupby
+
 from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
@@ -86,6 +88,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "order",
+            "part",
             "ingredient_id",
             "unit_id",
             "amount",
@@ -173,6 +176,17 @@ class RecipeSerializer(WritableNestedModelSerializer):
             "created_at",
         )
         read_only_fields = ("created_at",)
+
+    def validate_ingredients(self, ingredients):
+        ordered = sorted(ingredients, key=lambda ingredient: ingredient["order"])
+        parts = [part for part, _ in groupby(i.get("part", "") for i in ordered)]
+        if len(parts) > 1 and "" in parts:
+            raise serializers.ValidationError("Pojmenuj všechny části receptu.")
+        if len(parts) != len(set(parts)):
+            raise serializers.ValidationError(
+                "Každá část receptu musí mít jiný název a být vcelku."
+            )
+        return ingredients
 
     def validate(self, attrs):
         # photo/intro/sources are required only when the recipe is public.

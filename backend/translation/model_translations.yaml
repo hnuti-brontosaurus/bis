@@ -901,6 +901,7 @@ RecipeIngredient:
     amount: Množství
     ingredient: Přísada
     is_optional: Nepovinné?
+    part: Část receptu
     recipe: Recept
     unit: Jednotka
 RecipeStep:

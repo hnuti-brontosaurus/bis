@@ -20,6 +20,7 @@ import { useUnitsStore } from "@/data/units.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useAuthStore } from "@/data/auth.js"
 import { storeOptions } from "@/data/helpers.js"
+import { withPartHeadings, withoutPartHeadings } from "@/data/ingredientParts.js"
 
 const route = useRoute()
 const router = useRouter()
@@ -70,8 +71,11 @@ onMounted(async () => {
     }
     // Local working copy — deep-cloned so edits don't mutate cache directly.
     recipe.value = JSON.parse(JSON.stringify(fresh))
+    ingredientRows.value = withPartHeadings(recipe.value.ingredients)
   }
 })
+
+const ingredientRows = ref([])
 
 const tagIds = computed(() => recipe.value?.tag_ids ?? [])
 const tagGroups = computed(() => [
@@ -156,6 +160,7 @@ const inputs = computed(() => {
       hide_label: true,
       type: "section",
       key: "ingredients",
+      value: ingredientRows,
       span: 2,
     },
     {
@@ -218,7 +223,7 @@ const save = async () => {
     await form.value.validate()
     // `order` mirrors the list position the user sees; assign it here so
     // reordering in the dynamic-input UI is what gets persisted.
-    recipe.value.ingredients.forEach((row, i) => (row.order = i))
+    recipe.value.ingredients = withoutPartHeadings(ingredientRows.value)
     recipe.value.steps.forEach((row, i) => (row.order = i))
 
     showUploadDialog.value = true

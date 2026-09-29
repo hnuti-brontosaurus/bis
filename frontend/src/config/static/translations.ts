@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 62d8bf3293fce553
+// source-hash: a385caff3d41d7ac
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1021,6 +1021,7 @@ export const recipeIngredient = {
   amount: 'Množství',
   ingredient: 'Přísada',
   is_optional: 'Nepovinné?',
+  part: 'Část receptu',
   recipe: 'Recept',
   unit: 'Jednotka',
 } as const
@@ -1266,12 +1267,15 @@ export const cookbook = {
     save: 'Uložit',
     save_error: 'Chyba při uložení',
     add: 'Přidat',
+    split_into_parts: 'Rozdělit na části',
+    add_part: 'Přidat část',
+    part_placeholder: 'Název části, např. krém',
   },
   home: {
     title: 'Veganská Brontosauří kuchařka',
     subtitle: '*nejen pro Brontosaury',
   },
-  section: { tips: 'tip', steps: 'krok', ingredients: 'přísada' },
+  section: { tips: 'tip', steps: 'krok', ingredients: 'přísada', part: 'část' },
   ingredients: {
     title: 'Přísady',
     new: 'Nová přísada',

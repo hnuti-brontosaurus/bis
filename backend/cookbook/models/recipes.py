@@ -49,6 +49,7 @@ class Recipe(ChangeMixin, BaseModel):
 class RecipeIngredient(BaseModel):
     recipe = m.ForeignKey(Recipe, related_name="ingredients", on_delete=CASCADE)
     order = m.PositiveSmallIntegerField()
+    part = m.CharField(max_length=63, blank=True)
     ingredient = m.ForeignKey(
         Ingredient, related_name="recipe_ingredients", on_delete=PROTECT
     )

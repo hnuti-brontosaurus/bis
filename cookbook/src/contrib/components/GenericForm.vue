@@ -38,10 +38,12 @@ import {
   faTrash,
   faPlus,
   faComment,
+  faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
 import { SHOW_COMMENT, SHOW_DETAILS } from "@/contrib/composables/expandFlags.js"
+import { addPart, isPartHeading } from "@/data/ingredientParts.js"
 
 const props = defineProps({
   inputs: Array,
@@ -247,6 +249,13 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
 const toggleFlag = (row, flag) => (row[flag] = !row[flag])
 const isShown = (row, flag) => !!row?.[flag]
 const ingredientHasContent = row => !!row?.comment || !!row?.is_optional
+const rowLabel = (input, index) => {
+  const rows = input.value.value
+  if (input.key === "ingredients" && isPartHeading(rows[index]))
+    return _.value.section.part
+  const partStart = rows.findLastIndex((row, i) => i < index && isPartHeading(row))
+  return `${index - partStart}. ${_.value.section[input.key]}`
+}
 const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_optional
 </script>
 
@@ -369,11 +378,18 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
               <template #create-button-default>&nbsp;</template>
               <template #default="{ value, index }">
                 <n-flex vertical style="width: 100%">
+                  <n-input
+                    v-if="input.key === 'ingredients' && isPartHeading(value)"
+                    v-model:value="value.name"
+                    :placeholder="_.edit_recipe.part_placeholder"
+                    :maxlength="63"
+                    class="part-heading"
+                  />
                   <IngredientInput
                     :index="index"
                     :value="value"
                     :show-comment="isShown(value, SHOW_COMMENT)"
-                    v-if="input.key === 'ingredients'"
+                    v-else-if="input.key === 'ingredients'"
                   />
                   <StepsInput
                     :index="index"
@@ -386,26 +402,41 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
                     :value="value"
                     v-if="input.key === 'tips'"
                   />
-                  <n-button
-                    @click="
-                      () =>
-                        input.value.value.push(
-                          input.key === 'steps' ? { [SHOW_DETAILS]: true } : {},
-                        )
-                    "
-                    v-if="index + 1 === input.value.value.length"
-                    ghost
-                    dashed
-                    :render-icon="icon(faPlus)"
-                    size="small"
-                  ></n-button>
+                  <n-flex v-if="index + 1 === input.value.value.length" :wrap="false">
+                    <n-button
+                      @click="
+                        () =>
+                          input.value.value.push(
+                            input.key === 'steps' ? { [SHOW_DETAILS]: true } : {},
+                          )
+                      "
+                      ghost
+                      dashed
+                      :render-icon="icon(faPlus)"
+                      size="small"
+                      style="flex-grow: 1"
+                    ></n-button>
+                    <n-button
+                      v-if="input.key === 'ingredients'"
+                      @click="addPart(input.value.value)"
+                      ghost
+                      dashed
+                      :render-icon="icon(faLayerGroup)"
+                      size="small"
+                      >{{
+                        input.value.value.some(isPartHeading)
+                          ? _.edit_recipe.add_part
+                          : _.edit_recipe.split_into_parts
+                      }}</n-button
+                    >
+                  </n-flex>
                 </n-flex>
               </template>
               <template #action="{ index, create, remove, move }">
                 <n-flex style="width: 100%" :wrap="false">
-                  <n-divider title-placement="left"
-                    >{{ index + 1 }}. {{ _.section[input.key] }}</n-divider
-                  >
+                  <n-divider title-placement="left">{{
+                    rowLabel(input, index)
+                  }}</n-divider>
                   <n-button-group style="margin-left: 1rem; align-items: center">
                     <n-button
                       @click="() => remove(index)"
@@ -428,7 +459,10 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
                       size="tiny"
                     />
                     <n-button
-                      v-if="input.key === 'ingredients'"
+                      v-if="
+                        input.key === 'ingredients' &&
+                        !isPartHeading(input.value.value[index])
+                      "
                       @click="toggleFlag(input.value.value[index], SHOW_COMMENT)"
                       :render-icon="icon(faComment)"
                       :type="
@@ -503,3 +537,9 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
     </n-form-item-gi>
   </n-grid>
 </template>
+
+<style scoped>
+.part-heading :deep(input) {
+  font-weight: 600;
+}
+</style>

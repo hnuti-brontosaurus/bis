@@ -21,6 +21,7 @@ import { _ } from "@/composables/translations.js"
 import { pluralizeUnit } from "@/data/unitConversion.js"
 import { useCartStore } from "@/data/cart.js"
 import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
+import { isPartHeading, withPartHeadings } from "@/data/ingredientParts.js"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
@@ -40,8 +41,14 @@ const columns = computed(() => {
     },
     {
       key: "ingredient.name",
-      render: row =>
-        row.is_optional ? h("em", {}, row.ingredient?.name) : row.ingredient?.name,
+      colSpan: row => (isPartHeading(row) ? 3 : 1),
+      render: row => {
+        if (isPartHeading(row))
+          return h(NText, { strong: true, type: "primary" }, () => row.name)
+        return row.is_optional
+          ? h("em", {}, row.ingredient?.name)
+          : row.ingredient?.name
+      },
     },
     {
       key: "amount",
@@ -51,7 +58,7 @@ const columns = computed(() => {
         return row.is_optional ? h("em", {}, text) : text
       },
     },
-    { type: "selection" },
+    { type: "selection", disabled: isPartHeading },
   ]
 })
 
@@ -66,10 +73,9 @@ const expandAll = () => {
 }
 
 const data = computed(() => {
-  return recipe.value.ingredients.map(ingredient => ({
-    ...ingredient,
-    key: ingredient.id,
-  }))
+  return withPartHeadings(recipe.value.ingredients).map(row =>
+    isPartHeading(row) ? { ...row, key: `part-${row.name}` } : { ...row, key: row.id },
+  )
 })
 
 const dialog = useDialog()

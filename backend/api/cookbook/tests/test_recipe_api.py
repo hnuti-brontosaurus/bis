@@ -134,6 +134,59 @@ def test_recipe_nested_ingredient_roundtrip(api_client, recipe, ingredient, unit
     assert ings[1].amount == 3.0
 
 
+def _patch_parts(api_client, recipe, ingredient, unit, parts):
+    return api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {
+            "ingredients": [
+                {
+                    "order": order,
+                    "part": part,
+                    "ingredient_id": ingredient.id,
+                    "unit_id": unit.id,
+                    "amount": 1.0,
+                }
+                for order, part in enumerate(parts)
+            ]
+        },
+        format="json",
+    )
+
+
+@pytest.mark.django_db
+def test_recipe_ingredient_parts_roundtrip(api_client, recipe, ingredient, unit):
+    response = _patch_parts(
+        api_client, recipe, ingredient, unit, ["Korpus", "Korpus", "Krém"]
+    )
+    assert response.status_code == 200, response.data
+    assert [i["part"] for i in response.data["ingredients"]] == [
+        "Korpus",
+        "Korpus",
+        "Krém",
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("parts", [["", "Krém"], ["Krém", ""]])
+def test_recipe_ingredient_parts_must_all_be_named(
+    api_client, recipe, ingredient, unit, parts
+):
+    response = _patch_parts(api_client, recipe, ingredient, unit, parts)
+    assert response.status_code == 400
+    assert "ingredients" in response.data
+
+
+@pytest.mark.django_db
+def test_recipe_ingredient_part_must_be_contiguous(
+    api_client, recipe, ingredient, unit
+):
+    response = _patch_parts(
+        api_client, recipe, ingredient, unit, ["Korpus", "Krém", "Korpus"]
+    )
+    assert response.status_code == 400
+    assert "ingredients" in response.data
+
+
 @pytest.mark.django_db
 def test_recipe_nested_steps_and_tips_roundtrip(api_client, recipe):
     response = api_client.patch(

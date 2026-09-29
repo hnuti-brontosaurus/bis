@@ -279,6 +279,50 @@ test.describe("cookbook smoke", () => {
     expect(ingredient.amount).toBe(2000)
   })
 
+  test("splits ingredients into named parts", async ({ page, api, recipe }) => {
+    const { results: ingredients } = await api
+      .get(`${API_BASE}/ingredients/?search=Cukr`)
+      .then(response => response.json())
+    const cukr = ingredients.find(ingredient => ingredient.name === "Cukr")
+    const unitsBody = await api
+      .get(`${API_BASE}/units/`)
+      .then(response => response.json())
+    const grams = (unitsBody.results || unitsBody).find(unit => unit.slug === "grams")
+
+    await api.patch(`${API_BASE}/recipes/${recipe.id}/`, {
+      data: {
+        ingredients: [
+          { order: 0, ingredient_id: cukr.id, unit_id: grams.id, amount: 100 },
+        ],
+      },
+    })
+
+    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await expect(page.locator("textarea").first()).toBeVisible()
+
+    const section = await openSection(page, "Ingredience")
+    await section.getByRole("button", { name: "Rozdělit na části" }).click()
+    const headings = section.locator(".part-heading input")
+    await headings.nth(0).fill("Korpus")
+    await headings.nth(1).fill("Krém")
+
+    await section
+      .getByRole("button", { name: "Přidat část" })
+      .locator("xpath=preceding-sibling::button[1]")
+      .click()
+    await pickOption(page, section.locator(".n-base-selection").nth(2))
+
+    await save(page)
+    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page.getByText("Korpus").first()).toBeVisible()
+    await expect(page.getByText("Krém").first()).toBeVisible()
+
+    const saved = await api
+      .get(`${API_BASE}/recipes/${recipe.id}/`)
+      .then(response => response.json())
+    expect(saved.ingredients.map(row => row.part)).toEqual(["Korpus", "Krém"])
+  })
+
   test("removes the photo from a recipe that already has one", async ({
     page,
     api,
