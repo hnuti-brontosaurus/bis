@@ -28,8 +28,7 @@ from django.contrib.admin import helpers
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
-from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Exists, Max, Min, OuterRef, Q
+from django.db.models import Exists, OuterRef, Q
 from django.http import FileResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
@@ -44,6 +43,7 @@ from donations.models import (
     Pledge,
     UploadBankRecords,
     VariableSymbol,
+    annotate_donation_stats,
 )
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
@@ -395,19 +395,6 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
             source_ids = next(iter(source_ids))
             annotate_filter = Q(donations__donation_source_id__in=source_ids)
 
-        queryset = queryset.annotate(
-            first_donation=Min("donations__donated_at", filter=annotate_filter)
-        )
-        queryset = queryset.annotate(
-            last_donation=Max("donations__donated_at", filter=annotate_filter)
-        )
-        queryset = queryset.annotate(
-            donation_sources=ArrayAgg(
-                "donations__donation_source__name",
-                distinct=True,
-                filter=annotate_filter,
-            )
-        )
         donations_sum_filter = DonationSumRangeFilter(
             field=Donation.donated_at,
             request=request,
@@ -416,7 +403,11 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
             model_admin=self,
             field_path="donations__donated_at",
         )
-        return donations_sum_filter.annotate(request, queryset, annotate_filter)
+        return annotate_donation_stats(
+            queryset,
+            donation_filter=annotate_filter,
+            sum_filter=donations_sum_filter.narrow(request, annotate_filter),
+        )
 
     @admin.display(description="Suma darů")
     def get_donations_sum(self, obj):

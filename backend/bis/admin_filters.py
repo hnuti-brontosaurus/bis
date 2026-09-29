@@ -11,8 +11,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.core.exceptions import ValidationError
-from django.db.models import Min, Q, Sum, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Min, Q
 from django.utils import timezone
 from django.utils.timezone import now
 from more_admin_filters import MultiSelectRelatedDropdownFilter
@@ -136,7 +135,7 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
     custom_field_path = "donated_at"
     custom_title = "Suma darů z rozmezí"
 
-    def annotate(self, request, queryset, annotate_filter):
+    def narrow(self, request, annotate_filter):
         if self.form.is_valid():
             validated_data = dict(self.form.cleaned_data.items())
             if validated_data:
@@ -149,11 +148,7 @@ class DonationSumRangeFilter(CustomDateRangeFilter):
                     else:
                         annotate_filter = q
 
-        return queryset.annotate(
-            donations_sum=Coalesce(
-                Sum("donations__amount", filter=annotate_filter), Value(0)
-            )
-        )
+        return annotate_filter
 
     def queryset(self, request, queryset):
         return queryset

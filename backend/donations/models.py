@@ -4,13 +4,36 @@ from bis.models import User
 from categories.models import DonationSourceCategory, DonorEventCategory
 from dateutil.utils import today
 from django.contrib.gis.db import models as m
-from django.db.models import CASCADE, PROTECT, Index, Q, TextChoices
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import (
+    CASCADE,
+    PROTECT,
+    Index,
+    Max,
+    Min,
+    Q,
+    Sum,
+    TextChoices,
+    Value,
+)
+from django.db.models.functions import Coalesce
 from solo.models import SingletonModel
 from translation.translate import translate_model
 
 
 def get_today():
     return today().date()
+
+
+def annotate_donation_stats(donors, donation_filter=None, sum_filter=None):
+    return donors.annotate(
+        first_donation=Min("donations__donated_at", filter=donation_filter),
+        last_donation=Max("donations__donated_at", filter=donation_filter),
+        donation_sources=ArrayAgg(
+            "donations__donation_source__name", distinct=True, filter=donation_filter
+        ),
+        donations_sum=Coalesce(Sum("donations__amount", filter=sum_filter), Value(0)),
+    )
 
 
 @translate_model

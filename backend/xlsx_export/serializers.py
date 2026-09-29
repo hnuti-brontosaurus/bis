@@ -4,7 +4,7 @@ from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
 from django.db.models import Count, Exists, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
-from donations.models import Donation, Donor, Pledge
+from donations.models import Donation, Donor, Pledge, annotate_donation_stats
 from event.models import (
     Event,
     EventFinance,
@@ -200,6 +200,16 @@ class DonorExportSerializer(BaseDonorExportSerializer):
             "last_donation",
             "donation_sources",
         )
+
+    @staticmethod
+    def get_related(queryset):
+        queryset = BaseDonorExportSerializer.get_related(queryset)
+        # DonorAdmin.get_queryset already annotates these, scoped to the
+        # changelist's donation source and date filters; annotating again
+        # would silently replace them with lifetime totals.
+        if "donations_sum" in queryset.query.annotations:
+            return queryset
+        return annotate_donation_stats(queryset)
 
 
 class MembershipExportSerializer(ModelSerializer):
