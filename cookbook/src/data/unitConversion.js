@@ -10,8 +10,9 @@
  * a group, units convert directly (cup ↔ ml without g_per_liter).
  *
  * SPECIAL_UNIT_GRAMS pins a slug → grams factor for ingredient-specific
- * piece units (e.g. česnek → stroužek, palička). Those units only show up
- * for ingredients listed here.
+ * piece units (e.g. Česnek → stroužek, palička). Those units only show up
+ * for ingredients listed here. Keys must match the stored name, which the
+ * backend always saves as lower().capitalize() (cookbook/signals.py).
  */
 
 export const WEIGHT_GRAMS = {
@@ -30,7 +31,7 @@ export const VOLUME_ML = {
 }
 
 export const SPECIAL_UNIT_GRAMS = {
-  česnek: { clove: 5, bulb: 50 },
+  Česnek: { clove: 5, bulb: 50 },
 }
 
 const naturalGroup = ingredient =>

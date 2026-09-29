@@ -49,8 +49,8 @@ describe("isUnitAllowed — solid", () => {
     expect(isUnitAllowed(UNITS.bulb, { ...solid, g_per_piece: 50 })).toBe(false)
   })
 
-  it("exposes clove/bulb only for česnek", () => {
-    const garlic = { state: "solid", name: "česnek", g_per_piece: 5 }
+  it("exposes clove/bulb only for Česnek", () => {
+    const garlic = { state: "solid", name: "Česnek", g_per_piece: 5 }
     expect(isUnitAllowed(UNITS.clove, garlic)).toBe(true)
     expect(isUnitAllowed(UNITS.bulb, garlic)).toBe(true)
   })
@@ -105,8 +105,8 @@ describe("convertAmount", () => {
     expect(convertAmount(2, UNITS.piece, UNITS.g, ing)).toBe(100)
   })
 
-  it("uses special factors for česnek's clove", () => {
-    const garlic = { state: "solid", name: "česnek", g_per_piece: 5 }
+  it("uses special factors for Česnek's clove", () => {
+    const garlic = { state: "solid", name: "Česnek", g_per_piece: 5 }
     expect(convertAmount(2, UNITS.clove, UNITS.g, garlic)).toBe(10)
     expect(convertAmount(50, UNITS.g, UNITS.bulb, garlic)).toBe(1)
   })
