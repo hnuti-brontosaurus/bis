@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: b8dbe7b922890bb9
+// source-hash: 856681a06704623d
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1319,6 +1319,9 @@ export const cookbook = {
     hide_bought: 'Skrýt nakoupené',
     custom_group: 'Vlastní seznam',
     uncategorized: 'Bez kategorie',
+    other_items: 'Ostatní položky',
+    other_item_placeholder: 'Např. toaletní papír',
+    pieces: 'ks',
     new_group_placeholder: 'Název nového seznamu',
     replace: 'Nahradit',
     append: 'Přidat ke stávajícímu',

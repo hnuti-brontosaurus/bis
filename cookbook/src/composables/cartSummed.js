@@ -105,7 +105,11 @@ export const useCartSummed = () => {
     })
   })
 
-  const unboughtCount = computed(() => summed.value.filter(row => !row.bought).length)
+  const unboughtCount = computed(
+    () =>
+      summed.value.filter(row => !row.bought).length +
+      cart.otherItems.filter(item => !item.bought).length,
+  )
 
   /**
    * Compute the displayed amount for a summed row given a chosen unit_id.

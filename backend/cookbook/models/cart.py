@@ -7,4 +7,5 @@ from django.db.models import CASCADE
 class Cart(BaseModel):
     user = m.OneToOneField(User, related_name="cart", on_delete=CASCADE)
     items = m.JSONField(default=list)
+    other_items = m.JSONField(default=list)
     updated_at = m.DateTimeField(auto_now=True)

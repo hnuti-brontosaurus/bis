@@ -3,6 +3,7 @@ import { NCard, NFlex, NButton, NEmpty, NInput, NCheckbox } from "naive-ui"
 import { nextTick, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import IngredientInput from "@/contrib/components/IngredientInput.vue"
+import OtherItems from "@/components/cart/OtherItems.vue"
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
 import { useCartStore } from "@/data/cart.js"
@@ -142,6 +143,10 @@ const onAddCustomGroup = () => {
           {{ _.cart.add_group }}
         </n-button>
       </n-flex>
+    </n-card>
+
+    <n-card size="small" :bordered="true">
+      <OtherItems editable />
     </n-card>
   </n-flex>
 </template>

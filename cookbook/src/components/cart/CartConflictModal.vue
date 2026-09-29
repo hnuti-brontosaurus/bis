@@ -8,12 +8,11 @@ import { _ } from "@/composables/translations.js"
 const cartStore = useCartStore()
 const { conflict } = storeToRefs(cartStore)
 
+const count = state => state.items.length + state.other_items.length
+
 const counts = computed(() =>
   conflict.value
-    ? {
-        local: conflict.value.local.length,
-        server: conflict.value.server.length,
-      }
+    ? { local: count(conflict.value.local), server: count(conflict.value.server) }
     : { local: 0, server: 0 },
 )
 </script>

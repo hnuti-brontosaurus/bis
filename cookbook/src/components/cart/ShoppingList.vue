@@ -16,6 +16,7 @@ import { useCartStore } from "@/data/cart.js"
 import { useUnitsStore } from "@/data/units.js"
 import { useIngredientCategoriesStore } from "@/data/ingredientCategories.js"
 import { useCartSummed } from "@/composables/cartSummed.js"
+import OtherItems from "@/components/cart/OtherItems.vue"
 import { convertAmount, isUnitAllowed } from "@/data/unitConversion.js"
 import { _ } from "@/composables/translations.js"
 
@@ -37,6 +38,10 @@ const expanded = ref({})
 
 const visibleRows = computed(() =>
   hideBought.value ? summed.value.filter(row => !row.bought) : summed.value,
+)
+
+const visibleOtherItems = computed(() =>
+  hideBought.value ? cart.otherItems.filter(item => !item.bought) : cart.otherItems,
 )
 
 const categoryOrder = row =>
@@ -118,8 +123,10 @@ const toggleExpand = id => {
 <template>
   <n-flex vertical :size="16">
     <n-empty
-      v-if="!visibleRows.length"
-      :description="summed.length ? _.cart.all_bought : _.cart.empty"
+      v-if="!visibleRows.length && !visibleOtherItems.length"
+      :description="
+        summed.length || cart.otherItems.length ? _.cart.all_bought : _.cart.empty
+      "
     />
 
     <template v-for="section in sections" :key="section.key">
@@ -220,5 +227,7 @@ const toggleExpand = id => {
         </n-collapse-transition>
       </n-flex>
     </template>
+
+    <OtherItems :hide-bought="hideBought" />
   </n-flex>
 </template>

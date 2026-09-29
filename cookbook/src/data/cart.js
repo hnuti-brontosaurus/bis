@@ -26,20 +26,32 @@ const normalizeGroup = group => ({
   ingredients: (group.ingredients ?? []).map(normalizeIngredient),
 })
 
+const normalizeOtherItem = item => ({
+  id: item.id ?? newId(),
+  name: item.name ?? "",
+  count: item.count ?? 1,
+  bought: !!item.bought,
+})
+
 const sanitize = items => (Array.isArray(items) ? items.map(normalizeGroup) : [])
+
+const sanitizeOther = otherItems =>
+  Array.isArray(otherItems) ? otherItems.map(normalizeOtherItem) : []
 
 const groupIsAllBought = group =>
   group.ingredients.length > 0 && group.ingredients.every(entry => entry.bought)
 
 export const cartApi = {
   fetch: () => client.get("/cart/").then(r => r.data),
-  update: items => client.patch("/cart/", { items }).then(r => r.data),
+  update: (items, other_items) =>
+    client.patch("/cart/", { items, other_items }).then(r => r.data),
 }
 
 export const useCartStore = defineStore(
   "cart",
   () => {
     const items = ref([])
+    const otherItems = ref([])
     const conflict = ref(null)
 
     let reconciled = false
@@ -68,7 +80,7 @@ export const useCartStore = defineStore(
       clearTimeout(pushTimer)
       pushTimer = setTimeout(async () => {
         try {
-          await cartApi.update(items.value)
+          await cartApi.update(items.value, otherItems.value)
         } catch (e) {
           handleAxiosError("Failed to sync cart")(e)
         }
@@ -128,6 +140,14 @@ export const useCartStore = defineStore(
       schedulePush()
     }
 
+    const addOtherItem = (name, count) => {
+      otherItems.value = [...otherItems.value, normalizeOtherItem({ name, count })]
+    }
+
+    const removeOtherItem = itemId => {
+      otherItems.value = otherItems.value.filter(item => item.id !== itemId)
+    }
+
     const addCustomGroup = name => {
       const group = normalizeGroup({ recipe_id: null, recipe_name: name })
       items.value = [...items.value, group]
@@ -135,29 +155,45 @@ export const useCartStore = defineStore(
       return group.id
     }
 
+    const apply = state => {
+      items.value = state.items
+      otherItems.value = state.other_items
+    }
+
     const resolveConflict = strategy => {
       if (!conflict.value) return
       const { local, server } = conflict.value
-      if (strategy === "keep_server") items.value = sanitize(server)
-      else if (strategy === "use_local") items.value = sanitize(local)
+      if (strategy === "keep_server") apply(server)
+      else if (strategy === "use_local") apply(local)
       else if (strategy === "merge")
-        items.value = [...sanitize(server), ...sanitize(local)]
+        apply({
+          items: [...server.items, ...local.items],
+          other_items: [...server.other_items, ...local.other_items],
+        })
       conflict.value = null
       schedulePush()
     }
 
     const reconcile = async () => {
-      let serverItems
+      let serverCart
       try {
-        serverItems = (await cartApi.fetch()).items ?? []
+        serverCart = await cartApi.fetch()
       } catch (e) {
         handleAxiosError("Failed to fetch cart")(e)
         return
       }
-      // Drop fully-bought groups from both sides — they're stale shopping
+      // Drop everything already bought from both sides — it's stale shopping
       // history, not data the user wants to reconcile.
-      const server = sanitize(serverItems).filter(group => !groupIsAllBought(group))
-      const local = items.value.filter(group => !groupIsAllBought(group))
+      const unbought = (groups, others) => ({
+        items: groups.filter(group => !groupIsAllBought(group)),
+        other_items: others.filter(item => !item.bought),
+      })
+      const server = unbought(
+        sanitize(serverCart.items),
+        sanitizeOther(serverCart.other_items),
+      )
+      const local = unbought(items.value, otherItems.value)
+      const hasContent = state => state.items.length || state.other_items.length
       // After a successful sync the two sides are byte-identical (we just
       // wrote them). Without this check, every refresh would re-fire the
       // conflict modal.
@@ -165,14 +201,14 @@ export const useCartStore = defineStore(
       suppressWatchPush = true
       try {
         if (sameAsServer) {
-          items.value = server
+          apply(server)
           return
         }
-        if (server.length && local.length) {
+        if (hasContent(server) && hasContent(local)) {
           conflict.value = { local, server }
           return
         }
-        items.value = server.length ? server : local
+        apply(hasContent(server) ? server : local)
       } finally {
         suppressWatchPush = false
       }
@@ -183,7 +219,7 @@ export const useCartStore = defineStore(
     // (e.g. IngredientInput rewriting amount / unit_id) and still trigger
     // a debounced sync without each callsite having to call schedulePush.
     watch(
-      items,
+      [items, otherItems],
       () => {
         if (!suppressWatchPush) schedulePush()
       },
@@ -206,6 +242,7 @@ export const useCartStore = defineStore(
 
     return {
       items,
+      otherItems,
       conflict,
       meaningful,
       isStale,
@@ -218,8 +255,10 @@ export const useCartStore = defineStore(
       setIngredientBought,
       setIngredientBoughtAcross,
       addCustomGroup,
+      addOtherItem,
+      removeOtherItem,
       resolveConflict,
     }
   },
-  { persist: { key: "cookbook:cart:v1", pick: ["items"] } },
+  { persist: { key: "cookbook:cart:v1", pick: ["items", "otherItems"] } },
 )

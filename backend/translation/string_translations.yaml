@@ -227,6 +227,9 @@ cookbook:
     hide_bought: Skrýt nakoupené
     custom_group: Vlastní seznam
     uncategorized: Bez kategorie
+    other_items: Ostatní položky
+    other_item_placeholder: Např. toaletní papír
+    pieces: ks
     new_group_placeholder: Název nového seznamu
     replace: Nahradit
     append: Přidat ke stávajícímu
