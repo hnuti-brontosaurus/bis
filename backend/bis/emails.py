@@ -781,6 +781,9 @@ def donates_for_years():
 
     for year, quantifier in years.items():
         cutoff = today - relativedelta(years=year)
+        # Tiers are walked from the highest down, so the milestone just sent
+        # keeps the donor out of the lower ones for the rest of this run.
+        reached_milestones = [f"pledge_{y}y" for y in years if y >= year]
 
         donors = (
             Donor.objects.filter(
@@ -788,7 +791,7 @@ def donates_for_years():
                 pledges__recurrent_state=RecurrentState.COLLECTING,
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(events__event_type__slug__icontains="pledge_")
+            .exclude(events__event_type__slug__in=reached_milestones)
             .distinct()
         )
 
