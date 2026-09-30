@@ -62,18 +62,18 @@ const mapReply = (reply: Reply, inquiries: InquiryRead[]): Reply => {
             : reply.reply
         return { ...reply, reply: value, value: [value] }
       }
-      case 'scale':
+      case 'scale': {
+        const rating = reply.reply ? Number(reply.reply) : null
         return {
           ...reply,
-          reply: reply.data?.comment
-            ? `${reply.reply} ${reply.data.comment}`
-            : reply.reply,
-          value: Number(reply.reply),
+          reply: [reply.reply, reply.data?.comment].filter(Boolean).join(' '),
+          value: rating,
           data: {
             ...reply.data,
-            rating: Number(reply.reply),
+            rating,
           },
         }
+      }
       default:
         return reply
     }
