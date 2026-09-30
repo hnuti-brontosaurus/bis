@@ -2,7 +2,7 @@
 
 ## Deployment to development server https://dev.bis.brontosaurus.cz
 
-Every push to `master` is deployed to the [development server](https://dev.bis.brontosaurus.cz) once the app builds and the tests pass.
+Every push to `main` is deployed to the [development server](https://dev.bis.brontosaurus.cz) once the app builds and the tests pass.
 
 From any other branch, including feature branches, put `#deploy` in the commit message and that commit gets deployed too, e.g. `chore: update frontend #deploy`. In any case, please use commit messages consistent with current backend commit style.
 

@@ -65,7 +65,7 @@ debounces to 0ms (`src/hooks/debouncedState.ts`).
 
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs `pre-commit`
 and `make test` (backend + frontend + cookbook) on every push. A push to
-`master`, or any commit whose message contains `#deploy`, also deploys to the
+`main`, or any commit whose message contains `#deploy`, also deploys to the
 [development server](https://dev.bis.brontosaurus.cz).
 
 Failures leave a trace in `test-results/`; open it with

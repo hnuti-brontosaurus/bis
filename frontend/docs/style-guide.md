@@ -46,7 +46,7 @@ We care about commit messages.
 
 There are some [good resources](https://www.freecodecamp.org/news/writing-good-commit-messages-a-practical-guide/) suggesting how to write a good commit message.
 
-When a pull request contains many related small commits, we _squash_ and merge when merging to `master` branch. There are exceptions to this rule, e.g. when your commits in the PR are independent and large. When in doubt, squash!
+When a pull request contains many related small commits, we _squash_ and merge when merging to `main` branch. There are exceptions to this rule, e.g. when your commits in the PR are independent and large. When in doubt, squash!
 
 We follow at least these rules for commit messages:
 
