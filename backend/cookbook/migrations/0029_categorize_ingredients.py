@@ -35,6 +35,7 @@ CATEGORIES = {
         [
             "Hladká mouka",
             "Polohrubá mouka",
+            "Polohrubá mouka celozrnná",
             "Hrubá mouka",
             "Cukr krystal",
             "Cukr krupice",
@@ -43,6 +44,7 @@ CATEGORIES = {
             "Vanilkový cukr",
             "Kukuřičný škrob",
             "Prášek do pečiva",
+            "Prášek do perníku",
             "Jedlá soda",
             "Vanilka",
             "Vanilkový extrakt",
@@ -74,7 +76,14 @@ CATEGORIES = {
     ),
     "spices": (
         "Koření",
-        ["Sůl", "Černá sůl", "Pepř", "Muškátový oříšek", "Lahůdkové droždí"],
+        [
+            "Sůl",
+            "Černá sůl",
+            "Pepř",
+            "Skořice",
+            "Muškátový oříšek",
+            "Lahůdkové droždí",
+        ],
     ),
     "oils_sauces": (
         "Oleje a omáčky",

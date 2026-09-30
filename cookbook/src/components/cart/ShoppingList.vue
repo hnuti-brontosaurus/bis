@@ -56,16 +56,13 @@ const sections = computed(() => {
   )
   const byCategory = new Map()
   for (const row of sorted) {
-    const categoryId = row.ingredient?.category_id ?? null
+    const categoryId = row.ingredient?.category_id
     if (!byCategory.has(categoryId)) byCategory.set(categoryId, [])
     byCategory.get(categoryId).push(row)
   }
   return Array.from(byCategory, ([categoryId, rows]) => ({
-    key: categoryId ?? "uncategorized",
-    name:
-      categoryId == null
-        ? _.value.cart.uncategorized
-        : ingredientCategoriesStore.byId[categoryId]?.name,
+    key: categoryId,
+    name: ingredientCategoriesStore.byId[categoryId]?.name,
     rows,
   }))
 })

@@ -226,7 +226,6 @@ cookbook:
     all_bought: Všechno nakoupeno
     hide_bought: Skrýt nakoupené
     custom_group: Vlastní seznam
-    uncategorized: Bez kategorie
     other_items: Ostatní položky
     other_item_placeholder: Např. toaletní papír
     pieces: ks

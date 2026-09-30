@@ -16,7 +16,9 @@ from cookbook.models.ingredients import Ingredient
 
 
 @pytest.mark.django_db
-def test_create_ingredient_no_groq_key(api_client, chef, settings):
+def test_create_ingredient_no_groq_key(
+    api_client, chef, ingredient_categories, settings
+):
     """Without an API key, enrichment is skipped — only signal normalization."""
     settings.GROQ_API_KEY = ""
     response = api_client.post(
@@ -27,6 +29,7 @@ def test_create_ingredient_no_groq_key(api_client, chef, settings):
     assert response.status_code == 201, response.data
     # pre_save signal collapses whitespace and capitalizes on create.
     assert response.data["name"] == "Cukr krupice"
+    assert response.data["category_id"] == ingredient_categories["other"].id
 
 
 @pytest.mark.django_db
@@ -181,6 +184,6 @@ def test_update_ingredient_category(
         {"category_id": None},
         format="json",
     )
-    assert response.status_code == 200, response.data
+    assert response.status_code == 400, response.data
     ingredient.refresh_from_db()
-    assert ingredient.category is None
+    assert ingredient.category == category

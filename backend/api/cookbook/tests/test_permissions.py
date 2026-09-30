@@ -305,7 +305,7 @@ def test_ingredient_non_chef_cannot_create(non_chef_client):
 
 
 @pytest.mark.django_db
-def test_ingredient_chef_can_delete_unused(api_client, chef):
+def test_ingredient_chef_can_delete_unused(api_client, chef, ingredient_categories):
     from cookbook.models.ingredients import Ingredient
 
     ing = Ingredient.objects.create(name="paprika")

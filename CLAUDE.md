@@ -287,6 +287,12 @@ autodetector wants to delete the table. The model still works at runtime, since
 admin autodiscovery or a viewset import registers it late — `migrate` is the
 only place the omission shows up.
 
+`Ingredient.category` is required and defaults to the `other`
+`IngredientCategory`, looked up by slug when an ingredient is created. Tests run
+with `--no-migrations`, so the row is not there unless a test asks for the
+`ingredient_categories` fixture. Groq replaces the default on create, which is
+why the new-ingredient form has no category field.
+
 ### Cookbook theme
 
 `cookbook/src/composables/theme.js` is the single source of the palette (light

@@ -67,7 +67,6 @@ class IngredientSerializer(serializers.ModelSerializer):
     category_id = PrimaryKeyRelatedField(
         source="category",
         queryset=IngredientCategory.objects.all(),
-        allow_null=True,
         required=False,
     )
 

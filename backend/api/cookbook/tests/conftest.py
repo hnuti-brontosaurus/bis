@@ -89,11 +89,6 @@ def unit(db):
 
 
 @pytest.fixture
-def ingredient(db):
-    return Ingredient.objects.create(name="cukr")
-
-
-@pytest.fixture
 def allergens(db):
     return {
         slug: Allergen.objects.create(slug=slug, name=name, order=i)
@@ -108,9 +103,18 @@ def ingredient_categories(db):
     return {
         slug: IngredientCategory.objects.create(slug=slug, name=name, order=i)
         for i, (slug, name) in enumerate(
-            [("chilled", "Nemléčné a chlazené"), ("baking", "Pečení")]
+            [
+                ("chilled", "Nemléčné a chlazené"),
+                ("baking", "Pečení"),
+                ("other", "Ostatní"),
+            ]
         )
     }
+
+
+@pytest.fixture
+def ingredient(ingredient_categories):
+    return Ingredient.objects.create(name="cukr")
 
 
 @pytest.fixture

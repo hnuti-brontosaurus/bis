@@ -27,9 +27,7 @@ const categoryOptions = storeOptions(ingredientCategoriesStore)
 
 const ingredient_id = route.params.id
 const ingredient = ref(
-  ingredient_id
-    ? null
-    : { name: "", state: "solid", category_id: null, allergen_ids: [] },
+  ingredient_id ? null : { name: "", state: "solid", allergen_ids: [] },
 )
 
 onMounted(async () => {
@@ -57,13 +55,19 @@ const inputs = computed(() => {
       required: true,
       options: stateOptions.value,
     },
-    {
-      type: "select",
-      key: "category",
-      path: "category_id",
-      options: categoryOptions.value,
-      value: propertyRef(ingredient, "category_id"),
-    },
+    // The backend picks the category of a new ingredient itself.
+    ...(ingredient_id
+      ? [
+          {
+            type: "select",
+            key: "category",
+            path: "category_id",
+            required: true,
+            options: categoryOptions.value,
+            value: propertyRef(ingredient, "category_id"),
+          },
+        ]
+      : []),
     { type: "number", key: "g_per_piece" },
     { type: "number", key: "g_per_liter" },
     { type: "number", key: "g_per_serving" },
