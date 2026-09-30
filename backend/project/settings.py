@@ -1,7 +1,6 @@
 from glob import glob
 from os import environ
 from os.path import abspath, dirname, join
-from pathlib import Path
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -93,6 +92,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "bis.middleware.RequestLogMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -276,7 +276,9 @@ DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
         "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n\n"
         "PII (names, emails, phones, birthdays, addresses) is never returned; "
         "people are anonymous users with a birth year and region.\n"
-        "Results are limited to what the authenticated user has permission to view."
+        "Results are limited to what the authenticated user has permission to view.\n\n"
+        "LOGS: the `logs` tool searches the application logs (superusers only). "
+        'Start with group_by: ["message"] to see what is there.'
     ),
     "stateless": False,
 }
@@ -384,35 +386,41 @@ BOOTSTRAP5 = {
 }
 LOGIN_URL = "/logout"
 
-# Logging configuration
-LOG_DIR = join(BASE_DIR, "logs")
-LOG_FILE = join(LOG_DIR, "bis.log")
-
-Path(LOG_DIR).mkdir(parents=True, exist_ok=True)
+# Read back through the MCP `logs` tool, see bis/logs.py
+LOG_DIR = join(BASE_DIR, "logs", "backend")
 
 LOGGING = {
     "version": 1,
+    # runserver configures logging twice; the default would disable, on the
+    # second pass, every logger a module had created in between
+    "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "{asctime} {levelname} {message}",
-            "style": "{",
-        },
+        "console": {"()": "bis.logs.ConsoleFormatter"},
+        "json": {"()": "bis.logs.JsonFormatter"},
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "verbose",
+            "formatter": "console",
         },
         "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOG_FILE,
-            "maxBytes": 10 * 1024 * 1024,  # 10 MB
-            "backupCount": 50,
-            "formatter": "verbose",
+            "()": "bis.logs.HourlyFileHandler",
+            "directory": LOG_DIR,
+            "formatter": "json",
         },
     },
     "root": {
         "handlers": ["console", "file"],
         "level": "INFO",
+    },
+    "loggers": {
+        # drops the console handler of Django's default config, which would
+        # print every record a second time
+        "django": {"level": "INFO"},
+        "django.server": {"level": "CRITICAL"},
+        "fontTools": {"level": "WARNING"},
+        # puts the path in the message; RequestLogMiddleware logs the same
+        # responses and exceptions under a message that can be filtered on
+        "django.request": {"level": "CRITICAL"},
     },
 }

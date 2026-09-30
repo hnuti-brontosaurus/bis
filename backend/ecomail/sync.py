@@ -57,10 +57,8 @@ def _raise_for_status(response: Response, context: str) -> None:
         response.raise_for_status()
     except HTTPError:
         logging.error(
-            "ecomail %s failed: %s %s",
-            context,
-            response.status_code,
-            response.text,
+            f"Failed ecomail {context}",
+            extra={"data": {"status": response.status_code, "response": response.text}},
         )
         raise
 
@@ -94,7 +92,7 @@ def iter_subscribers(
             params={"per_page": per_page, "page": page},
             timeout=60,
         )
-        _raise_for_status(response, f"iter_subscribers list={list_id} page={page}")
+        _raise_for_status(response, "iter_subscribers")
         data = response.json()
         yield from data["data"]
         if data["next_page_url"] is None:
@@ -140,7 +138,10 @@ def bulk_subscribe(
         return
 
     if settings.ENVIRONMENT != "prod":
-        logging.info("[dummy] bulk_subscribe list=%s payloads=%s", list_id, payloads)
+        logging.info(
+            "Skipping ecomail bulk_subscribe, not prod",
+            extra={"data": {"users": len(payloads)}},
+        )
         return
 
     response = session.post(
@@ -152,15 +153,12 @@ def bulk_subscribe(
         },
         timeout=120,
     )
-    _raise_for_status(
-        response,
-        f"bulk_subscribe list={list_id} emails={[p['email'] for p in payloads]}",
-    )
+    _raise_for_status(response, "bulk_subscribe")
 
 
 def remove_from_list(session: Session, list_id: int, email: str) -> None:
     if settings.ENVIRONMENT != "prod":
-        logging.info("[dummy] remove_from_list list=%s email=%s", list_id, email)
+        logging.info("Skipping ecomail remove_from_list, not prod")
         return
 
     response = session.delete(
@@ -168,4 +166,4 @@ def remove_from_list(session: Session, list_id: int, email: str) -> None:
         json={"email": email},
         timeout=30,
     )
-    _raise_for_status(response, f"remove_from_list list={list_id} email={email}")
+    _raise_for_status(response, "remove_from_list")

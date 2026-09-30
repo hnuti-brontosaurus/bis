@@ -2,6 +2,7 @@ import base64
 import binascii
 import io
 import re
+from functools import wraps
 from typing import TypedDict
 
 import pyheif
@@ -27,6 +28,7 @@ class LightPagination(Pagination):
 
 def parse_request_data(serializer_class, data_name="data"):
     def decorator(fn):
+        @wraps(fn)
         def wrapper(request, *args, **kwargs):
             serializer = serializer_class(data=getattr(request, data_name))
             serializer.is_valid(raise_exception=True)

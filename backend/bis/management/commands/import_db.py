@@ -249,7 +249,9 @@ class Command(BaseCommand):
 
     def load_data(self):
         if not exists(self.file_path):
-            logging.warning("%s does not exist", self.file_path)
+            logging.warning(
+                "Import file does not exist", extra={"data": {"path": self.file_path}}
+            )
             return
 
         with open(self.file_path, encoding="utf-8") as file:

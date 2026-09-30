@@ -8,9 +8,11 @@ import os
 import sys
 import threading
 import time
+from contextlib import suppress
 from datetime import datetime
 
 from bis.background import closes_db_connection
+from bis.logs import operation, start_trace
 from django.conf import settings
 
 _scheduler_started = False
@@ -58,12 +60,9 @@ def run_command(name):
     """Run a management command, logging success/failure."""
     from django.core.management import call_command
 
-    logging.info("Running %s command...", name)
-    try:
+    start_trace("cron")
+    with suppress(Exception), operation(f"running {name} command"):
         call_command(name)
-        logging.info("%s command completed successfully", name)
-    except Exception as e:
-        logging.exception("%s command failed: %s", name, e)
 
 
 def scheduler_loop():
@@ -71,10 +70,6 @@ def scheduler_loop():
     import zoneinfo
 
     tz = zoneinfo.ZoneInfo(settings.TIME_ZONE)
-    logging.info(
-        "Scheduler started: nightly at 5:00, daily at 7:00 %s",
-        settings.TIME_ZONE,
-    )
 
     while True:
         try:
@@ -86,7 +81,10 @@ def scheduler_loop():
             if now.minute == 0:
                 current, limit = get_memory_usage()
                 if current:
-                    logging.info("Memory: %s / %s", current, limit)
+                    logging.info(
+                        "Memory usage",
+                        extra={"data": {"used": current, "limit": limit}},
+                    )
 
             if now.hour == 5 and now.minute == 0:
                 run_command("nightly")
@@ -94,8 +92,8 @@ def scheduler_loop():
             if now.hour == 7 and now.minute == 0:
                 run_command("daily")
 
-        except Exception as e:
-            logging.exception("Scheduler error: %s", e)
+        except Exception:
+            logging.exception("Failed scheduler tick")
 
 
 def start_scheduler():
@@ -112,4 +110,4 @@ def start_scheduler():
 
     thread = threading.Thread(target=scheduler_loop, daemon=True, name="bis-scheduler")
     thread.start()
-    logging.info("Background scheduler thread started")
+    logging.info("Started scheduler")

@@ -23,12 +23,12 @@ class Command(BaseCommand):
             "Modrý kámen export",
             parent_id=settings.GOOGLE_SHARED_DRIVE_ID,
         )
-        logging.info(f"Using Drive folder id: {folder_id}")
+        logging.info("Using drive folder", extra={"data": {"folder_id": folder_id}})
 
         events = Event.objects.filter(
             administration_units__abbreviation="Modrý Kámen"
         ).distinct()
-        logging.info(f"Found {events.count()} events")
+        logging.info("Found events", extra={"data": {"count": events.count()}})
 
         uploaded = 0
         for event in events:
@@ -44,13 +44,11 @@ class Command(BaseCommand):
             )
             for drive_name, path in files:
                 if drive_name in existing:
-                    logging.info(f"  Skipping (already exists): {drive_name}")
                     continue
-                logging.info(f"  Uploading: {drive_name}")
                 upload_file(service, folder_id, drive_name, path)
                 uploaded += 1
 
-        logging.info(f"Done. Uploaded: {uploaded}")
+        logging.info("Uploaded files to drive", extra={"data": {"count": uploaded}})
 
     def _collect_files(self, event):
         if hasattr(event, "finance"):

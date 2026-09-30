@@ -129,7 +129,7 @@ def _push_users_async(user_ids):
         try:
             push_users(get_session(), settings.ECOMAIL_LIST_ID, user_ids)
         except Exception:
-            logging.exception("ecomail push for user tag change failed")
+            logging.exception("Failed pushing user tags to ecomail")
 
     threading.Thread(target=_run, daemon=True).start()
 

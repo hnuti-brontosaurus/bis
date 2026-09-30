@@ -5,6 +5,7 @@ from collections import Counter
 from functools import wraps
 from time import time
 
+from bis.logs import operation
 from categories.models import MembershipCategory
 from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
@@ -53,19 +54,11 @@ class _ThreadFlag:
 
 
 def try_to_run(fn, *args, **kwargs):
+    name = " ".join([fn.__name__, *map(str, args)])
     try:
-        fn(*args, **kwargs)
-    except Exception as e:
-        logging.exception(
-            e,
-            extra={
-                "fn": str(fn),
-                "data": {
-                    "args": args,
-                    "kwargs": kwargs,
-                },
-            },
-        )
+        with operation(f"job {name}"):
+            fn(*args, **kwargs)
+    except Exception:
         connection.close()  # Close stale connection to force reconnect on next query
 
 
@@ -99,11 +92,11 @@ def print_progress(name, i, total):
 
     obj = cache.get(key)
     if not obj:
-        logging.info("%s", name)
+        logging.info(name)
         cache.set(key, time())
 
     elif time() - obj >= 1:
-        logging.info("%s, progress %.2f%%", name, 100 * i / total)
+        logging.info(name, extra={"data": {"progress": round(100 * i / total, 2)}})
         cache.set(key, time())
 
 

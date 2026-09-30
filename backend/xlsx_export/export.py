@@ -414,8 +414,8 @@ def send_later(request, result, name):
             "Vygenerovaný export",
             f"tu: {saved_file.get_absolute_url()} máš!",
         )
-    except Exception as e:
-        logging.exception(f"Error sending xlsx export to email: {e}")
+    except Exception:
+        logging.exception("Failed sending xlsx export")
 
 
 @admin.action(description="Exportuj data")

@@ -38,7 +38,6 @@ ENV UV_PROJECT_ENVIRONMENT=/venv
 ENV PATH="/venv/bin:$PATH"
 COPY --from=builder /venv /venv
 
-RUN mkdir -p /app /logs/backend
 WORKDIR /app
 COPY . .
 

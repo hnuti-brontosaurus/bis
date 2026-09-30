@@ -96,7 +96,8 @@ class Command(BaseCommand):
                     )
                 except AdministrationUnit.DoesNotExist:
                     logging.error(
-                        f"Didn't find administration unit for {basic_section_support}"
+                        "Administration unit not found",
+                        extra={"data": {"abbreviation": basic_section_support}},
                     )
                     basic_section_support = None
 

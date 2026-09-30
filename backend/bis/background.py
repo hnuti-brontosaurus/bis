@@ -12,6 +12,7 @@ management command returns. Only an abrupt kill (SIGKILL, OOM) drops it.
 
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from functools import wraps
 
 from django.conf import settings
@@ -48,9 +49,10 @@ def run_in_background(fn, *args, **kwargs):
         try:
             fn(*args, **kwargs)
         except Exception:
-            logger.exception(f"background task {fn.__name__} failed")
+            logger.exception(f"Failed background task {fn.__name__}")
 
-    _executor.submit(run)
+    # a thread starts with an empty context, which would drop the request id
+    _executor.submit(copy_context().run, run)
 
 
 def in_background(fn):

@@ -304,6 +304,38 @@ The game book and cookbook are deliberately left out.
 - `bis/tests/test_mcp_schema.py` denylists PII field names across the schema.
   Add to `ALLOWED` only after deciding the field is not PII.
 
+### Logs
+`bis/logs.py` writes one JSON line per record to `LOG_DIR`
+(`/app/logs/backend/<utc hour>.jsonl`, on the `django-logs` volume) and the MCP
+`logs` tool — superusers and the bot only — is the one way they are read. So a
+record is written to be filtered, not to be read in a terminal:
+
+- The message is a fixed phrase, optionally ending in a value from a small
+  closed set (`Finished GET request on event-detail with 200`). Never an id, a
+  count or an exception text: those go to `extra={"data": {...}}`.
+- `data` names people by id only. The files are PII-free by construction rather
+  than filtered on read, because a filter can recognise an email but not a
+  name. Exception texts come from libraries, so emails and phone numbers are
+  masked as the record is written; a name inside one would still get through.
+- `logging.exception("Failed …")` with a fixed message: the formatter appends
+  the exception class to the message and puts its text in `data.error`.
+- Something that takes time is wrapped in `operation("running nightly
+  command")`, which logs `Started` / `Finished` / `Failed` around that core.
+- `request_id` ties together everything logged in one request or scheduler run
+  and `user_id` is there once the request is authenticated — DRF does that
+  inside the view, so only the closing `request` line is sure to have it. A
+  record about a user who is not signed in (a rejected login) passes
+  `extra={"user_id": …}` itself.
+
+`RequestLogMiddleware` logs one line per request; query values and bodies are
+never logged. `free_space` deletes the oldest hour files once the volume is
+over 90%, each time a new file is opened. nginx writes its error log to the
+same volume; its access log is off, since it was never rotated.
+
+`disable_existing_loggers` has to stay `False`: `runserver` configures logging
+twice, and the default silently disables every logger created in between.
+Tests drop the file handler (`backend/conftest.py`).
+
 ### Fundraising campaigns
 Campaign membership is a `DonorEvent` and the telesales views are keyed by donor
 id, so only a `Donor` can be in a campaign. The `change_fundraising_campaign`

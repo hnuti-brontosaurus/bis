@@ -172,6 +172,8 @@ def upload_file(service, folder_id, name, path):
             if attempt == 4:
                 raise
             logging.warning(
-                f"  Upload failed (attempt {attempt + 1}/5): {e}, retrying..."
+                "Retrying drive upload",
+                exc_info=e,
+                extra={"data": {"attempt": attempt + 1}},
             )
             time.sleep(2**attempt)

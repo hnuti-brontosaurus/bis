@@ -23,7 +23,7 @@ class Command(BaseCommand):
         while True:
             page += 1
 
-            logging.info("Fetching page %d", page)
+            logging.info("Fetching subscribers", extra={"data": {"page": page}})
             result = send([], "GET", "lists/28/subscribers", params=dict(page=page))
             data += result["data"]
             if not result["next_page_url"]:

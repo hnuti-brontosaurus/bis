@@ -72,7 +72,8 @@ def send_email(
 
     if UNRESOLVED_VARIABLE.search(subject):
         logging.error(
-            "Subject of template %s has unknown variables: %s", template_id, subject
+            "Email subject has unknown variables",
+            extra={"data": {"template_id": template_id, "subject": subject}},
         )
 
     data = dict(
@@ -87,11 +88,19 @@ def send_email(
     )
 
     if settings.ENVIRONMENT != "prod" or are_emails_paused():
-        logging.info("Sending of emails disabled, email data: %s", data)
+        # local password resets are read from here; anywhere else the
+        # variables are real people's data
+        logging.info(
+            "Skipping email, sending disabled",
+            extra={"data": data if settings.DEBUG else {"template_id": template_id}},
+        )
         return
 
     if not recipients:
-        logging.warning("No recipients for email", extra=data)
+        logging.warning(
+            "Skipping email, no recipients",
+            extra={"data": {"template_id": template_id}},
+        )
         return
 
     SendEmailSerializer(data=data).is_valid(raise_exception=True)
@@ -129,9 +138,11 @@ def send_email(
 
     assert res["results"]["total_accepted_recipients"] == len(recipients)
     logging.info(
-        "SENT EMAIL subject=%s, from_email=%s, from_name=%s, recipients=%s",
-        subject,
-        from_email,
-        from_name,
-        recipients,
+        "Sent email",
+        extra={
+            "data": {
+                "template_id": template_id,
+                "contact_ids": [contact.id for contact in contacts],
+            }
+        },
     )

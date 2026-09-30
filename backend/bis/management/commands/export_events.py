@@ -81,13 +81,10 @@ class Command(BaseCommand):
                 for drive_name, path in files:
                     if drive_name in existing:
                         continue
-                    logging.info(
-                        f"  Uploading: {year}/{program}/{folder_name}/{section}/{drive_name}"
-                    )
                     upload_file(service, section_id, drive_name, path)
                     uploaded += 1
 
-        logging.info(f"Done. Uploaded: {uploaded}")
+        logging.info("Uploaded files to drive", extra={"data": {"count": uploaded}})
 
     def _subfolder(self, service, parent_id, name):
         if parent_id not in self.subfolders:

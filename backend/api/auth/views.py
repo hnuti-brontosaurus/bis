@@ -1,3 +1,5 @@
+import logging
+
 from api.auth.serializers import (
     LoginRequestSerializer,
     ResetPasswordRequestSerializer,
@@ -29,6 +31,7 @@ from rest_framework.status import (
 
 def login_and_return_token(request, user):
     django_login(request._request, user)
+    logging.info("Logged in", extra={"user_id": str(user.id)})
     return Response({"token": user.auth_token.key})
 
 
@@ -54,6 +57,7 @@ def whoami(request):
 def login(request, data):
     user = User.objects.filter(all_emails__email=data["email"].lower()).first()
     if not user:
+        logging.info("Rejected login, unknown email")
         raise AuthenticationFailed()
 
     LoginCode.check_throttled(user)
@@ -61,6 +65,10 @@ def login(request, data):
     if not user.check_password(data["password"]):
         if data["password"] != f"Token {user.auth_token.key}":
             LoginCode.add_throttled(user)
+            logging.info(
+                "Rejected login, wrong password",
+                extra={"user_id": str(user.id)},
+            )
             raise AuthenticationFailed()
 
     return login_and_return_token(request, user)
@@ -83,6 +91,7 @@ def send_verification_link(request, data):
         raise NotFound()
     login_code = LoginCode.make(user)
     emails.password_reset_link(user, email, login_code)
+    logging.info("Sent verification link", extra={"user_id": str(user.id)})
 
     return Response(status=HTTP_204_NO_CONTENT)
 
