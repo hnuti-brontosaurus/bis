@@ -4,7 +4,7 @@
 {% block content %}
 <h1>{{ title }}</h1>
 
-<p>Akce bude provedena pro {{ queryset.count }} dárce/dárců.</p>
+<p>Akce bude provedena pro {{ queryset.count }} vybraných osob.</p>
 
 <form method="post">
     {% csrf_token %}

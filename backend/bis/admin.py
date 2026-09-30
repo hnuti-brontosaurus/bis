@@ -49,7 +49,12 @@ from bis.models import (
     UserEmail,
 )
 from bis.permissions import Permissions
-from categories.models import MembershipCategory, PronounCategory, QualificationCategory
+from categories.models import (
+    DonorEventCategory,
+    MembershipCategory,
+    PronounCategory,
+    QualificationCategory,
+)
 from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
@@ -65,7 +70,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from donations.models import Donor
+from donations.models import Donor, DonorEvent, FundraisingCampaign
 from login_code.models import guess_birthday_throttle
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -258,6 +263,81 @@ def get_add_members_actions(administration_units):
     ]
 
 
+CAMPAIGN_OPERATIONS = [
+    ("added_to_campaign", "Přidat do kampaně"),
+    ("remove", "Odebrat z kampaně"),
+]
+
+
+@admin.action(description="Změň členství v fundraisingové kampani…")
+def change_fundraising_campaign(model_admin, request, queryset):
+    if "apply" in request.POST:
+        campaign_id = request.POST.get("campaign")
+        operation_slug = request.POST.get("operation")
+
+        try:
+            campaign = FundraisingCampaign.objects.get(pk=campaign_id)
+        except FundraisingCampaign.DoesNotExist:
+            messages.error(request, "Vyberte kampaň.")
+            return
+
+        if operation_slug not in dict(CAMPAIGN_OPERATIONS):
+            messages.error(request, "Vyberte operaci.")
+            return
+
+        donors = queryset
+        if model_admin.model is User:
+            if operation_slug == "added_to_campaign":
+                for user in queryset.filter(donor__isnull=True):
+                    Donor.objects.create(user=user)
+            donors = Donor.objects.filter(user__in=queryset)
+
+        added_type = DonorEventCategory.objects.get(slug="added_to_campaign")
+
+        count = 0
+        for donor in donors:
+            membership_qs = DonorEvent.objects.filter(
+                donor=donor, campaign=campaign, event_type=added_type
+            )
+            if operation_slug == "added_to_campaign":
+                if not membership_qs.exists():
+                    DonorEvent.objects.create(
+                        donor=donor,
+                        event_type=added_type,
+                        campaign=campaign,
+                        created_by=request.user,
+                    )
+                    count += 1
+            else:
+                membership = membership_qs.first()
+                if membership:
+                    other_events = DonorEvent.objects.filter(
+                        donor=donor, campaign=campaign
+                    ).exclude(pk=membership.pk)
+                    if not other_events.exists():
+                        membership.delete()
+                        count += 1
+
+        messages.success(
+            request, f"Provedeno pro {count} dárce/dárců v kampani {campaign}."
+        )
+        return
+
+    return TemplateResponse(
+        request,
+        "donations/campaign_action.html",
+        {
+            "title": "Změnit členství v fundraisingové kampani",
+            "queryset": queryset,
+            "campaigns": FundraisingCampaign.objects.all(),
+            "operations": CAMPAIGN_OPERATIONS,
+            "action_name": "change_fundraising_campaign",
+            "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            "opts": model_admin.model._meta,
+        },
+    )
+
+
 TAG_OPERATIONS = [
     ("add", "Přidat štítek"),
     ("remove", "Odebrat štítek"),
@@ -353,6 +433,13 @@ class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin)
                 change_user_tag,
                 "change_user_tag",
                 change_user_tag.short_description,
+            )
+
+        if Permissions(request.user, Donor, "backend").has_add_permission():
+            actions["change_fundraising_campaign"] = (
+                change_fundraising_campaign,
+                "change_fundraising_campaign",
+                change_fundraising_campaign.short_description,
             )
 
         return actions

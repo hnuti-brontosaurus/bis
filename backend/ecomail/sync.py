@@ -37,6 +37,8 @@ def _push_batch(session: Session, list_id: int, user_ids: Iterable) -> int:
             "events_where_was_organizer",
             "participated_in_events__event",
             "tags",
+            "donor__donations",
+            "donor__pledges",
         )
     )
     bulk_subscribe(session, list_id, users)

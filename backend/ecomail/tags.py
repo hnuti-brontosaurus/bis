@@ -1,3 +1,4 @@
+from datetime import date
 from itertools import chain
 
 from bis.models import User
@@ -99,6 +100,9 @@ CECHY_REGION_KEYWORDS = (
 )
 
 
+GIFTLESS_DONOR_CUTOFF = date(2023, 1, 1)
+
+
 def _macro_region_tag(region_name: str) -> str | None:
     if any(keyword in region_name for keyword in MORAVA_REGION_KEYWORDS):
         return "Morava"
@@ -118,6 +122,21 @@ def _region_tags(user: User) -> list[str]:
     return tags
 
 
+def _donor_tags(user: User) -> list[str]:
+    donor = getattr(user, "donor", None)
+    if donor is None:
+        return []
+    # Profiles older than the cutoff are legacy donors whose gifts predate the
+    # donation records; newer ones without a gift are telefundraising prospects.
+    if (
+        donor.date_joined < GIFTLESS_DONOR_CUTOFF
+        or donor.donations.all()
+        or donor.pledges.all()
+    ):
+        return ["Dárce"]
+    return []
+
+
 def compute_tags(user: User) -> list[str]:
     today = timezone.now().date()
     tags = [role.name for role in user.roles.all()]
@@ -127,7 +146,6 @@ def compute_tags(user: User) -> list[str]:
     tags.extend(_organizer_tags(user, today))
     tags.extend(_qualification_tags(user, today))
     tags.extend(_region_tags(user))
-    if hasattr(user, "donor"):
-        tags.append("Dárce")
+    tags.extend(_donor_tags(user))
     tags.extend(tag.name for tag in user.tags.all())
     return tags

@@ -2,12 +2,18 @@ from datetime import timedelta
 
 import pytest
 from bis.models import User
-from categories.models import DonorEventCategory, RoleCategory
+from categories.models import (
+    DonationSourceCategory,
+    DonorEventCategory,
+    RoleCategory,
+)
+from django.contrib.admin import helpers
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-from donations.models import Donor, DonorEvent, FundraisingCampaign
+from donations.models import Donation, Donor, DonorEvent, FundraisingCampaign
 from donations.telesales import get_finished, get_reminders_due, get_worklist
+from ecomail.tags import GIFTLESS_DONOR_CUTOFF, compute_tags
 
 
 @pytest.fixture
@@ -42,6 +48,13 @@ def fundraiser_role(db):
 def board_member_role(db):
     return RoleCategory.objects.get_or_create(
         slug="board_member", defaults={"name": "Board member"}
+    )[0]
+
+
+@pytest.fixture
+def education_member_role(db):
+    return RoleCategory.objects.get_or_create(
+        slug="education_member", defaults={"name": "Education member"}
     )[0]
 
 
@@ -317,3 +330,80 @@ def test_do_not_solicit_donor_goes_to_finished(categories, campaign):
     assert donor not in list(get_worklist(campaign))
     assert donor not in list(get_reminders_due(campaign))
     assert donor in list(get_finished(campaign))
+
+
+def post_campaign_action(client, url, target_ids, operation, campaign):
+    return client.post(
+        url,
+        {
+            "action": "change_fundraising_campaign",
+            helpers.ACTION_CHECKBOX_NAME: [str(pk) for pk in target_ids],
+            "apply": "1",
+            "operation": operation,
+            "campaign": campaign.pk,
+        },
+    )
+
+
+@pytest.mark.django_db
+def test_user_action_adds_users_to_campaign_as_donors(
+    categories, campaign, fundraiser_role
+):
+    caller = make_fundraiser("fr_action@example.com", fundraiser_role)
+    prospect = make_user("prospect@example.com")
+    donor = make_donor(make_user("existing_donor@example.com"))
+
+    client = Client()
+    client.force_login(caller)
+    url = reverse("admin:bis_user_changelist")
+
+    post_campaign_action(
+        client, url, [prospect.pk, donor.user.pk], "added_to_campaign", campaign
+    )
+
+    assert set(get_worklist(campaign)) == {Donor.objects.get(user=prospect), donor}
+
+    post_campaign_action(client, url, [prospect.pk], "remove", campaign)
+
+    assert list(get_worklist(campaign)) == [donor]
+
+
+@pytest.mark.django_db
+def test_user_action_hidden_without_donor_add_permission(
+    categories, campaign, education_member_role
+):
+    caller = make_user("education@example.com")
+    caller.roles.add(education_member_role)
+    prospect = make_user("prospect2@example.com")
+
+    client = Client()
+    client.force_login(caller)
+
+    post_campaign_action(
+        client,
+        reverse("admin:bis_user_changelist"),
+        [prospect.pk],
+        "added_to_campaign",
+        campaign,
+    )
+
+    assert not Donor.objects.filter(user=prospect).exists()
+
+
+@pytest.mark.django_db
+def test_donor_tag_needs_a_gift_unless_legacy():
+    prospect = make_donor(make_user("tag_prospect@example.com"))
+    legacy = make_donor(make_user("tag_legacy@example.com"))
+    legacy.date_joined = GIFTLESS_DONOR_CUTOFF - timedelta(days=1)
+    legacy.save()
+    giver = make_donor(make_user("tag_giver@example.com"))
+    Donation.objects.create(
+        donor=giver,
+        donated_at=timezone.now().date(),
+        amount=100,
+        donation_source=DonationSourceCategory.objects.create(slug="test", name="Test"),
+    )
+
+    assert "Dárce" not in compute_tags(prospect.user)
+    assert "Dárce" in compute_tags(legacy.user)
+    assert "Dárce" in compute_tags(giver.user)

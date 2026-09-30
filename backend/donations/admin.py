@@ -1,5 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-from bis.admin import change_user_tag
+from bis.admin import change_fundraising_campaign, change_user_tag
 from bis.admin_filters import (
     DonationSumAmountFilter,
     DonationSumRangeFilter,
@@ -22,15 +22,13 @@ from bis.admin_permissions import PermissionMixin
 from bis.emails import donation_confirmation
 from bis.models import User
 from bis.permissions import Permissions
-from categories.models import DonorEventCategory, PronounCategory
+from categories.models import PronounCategory
 from django.contrib import admin, messages
-from django.contrib.admin import helpers
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
 from django.db.models import Exists, OuterRef, Q
 from django.http import FileResponse, HttpResponseRedirect
-from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.html import format_html
 from donations.helpers import upload_bank_records
@@ -181,74 +179,6 @@ def send_donation_confirmation(model_admin, request, queryset):
         except AssertionError as e:
             messages.error(request, str(e))
     messages.info(request, f"Úspěšně posláno {i} potvrzení")
-
-
-CAMPAIGN_OPERATIONS = [
-    ("added_to_campaign", "Přidat do kampaně"),
-    ("remove", "Odebrat z kampaně"),
-]
-
-
-@admin.action(description="Změň členství v fundraisingové kampani…")
-def change_fundraising_campaign(model_admin, request, queryset):
-    if "apply" in request.POST:
-        campaign_id = request.POST.get("campaign")
-        operation_slug = request.POST.get("operation")
-
-        try:
-            campaign = FundraisingCampaign.objects.get(pk=campaign_id)
-        except FundraisingCampaign.DoesNotExist:
-            messages.error(request, "Vyberte kampaň.")
-            return
-
-        if operation_slug not in dict(CAMPAIGN_OPERATIONS):
-            messages.error(request, "Vyberte operaci.")
-            return
-
-        added_type = DonorEventCategory.objects.get(slug="added_to_campaign")
-
-        count = 0
-        for donor in queryset:
-            membership_qs = DonorEvent.objects.filter(
-                donor=donor, campaign=campaign, event_type=added_type
-            )
-            if operation_slug == "added_to_campaign":
-                if not membership_qs.exists():
-                    DonorEvent.objects.create(
-                        donor=donor,
-                        event_type=added_type,
-                        campaign=campaign,
-                        created_by=request.user,
-                    )
-                    count += 1
-            else:
-                membership = membership_qs.first()
-                if membership:
-                    other_events = DonorEvent.objects.filter(
-                        donor=donor, campaign=campaign
-                    ).exclude(pk=membership.pk)
-                    if not other_events.exists():
-                        membership.delete()
-                        count += 1
-
-        messages.success(
-            request, f"Provedeno pro {count} dárce/dárců v kampani {campaign}."
-        )
-        return
-
-    return TemplateResponse(
-        request,
-        "donations/campaign_action.html",
-        {
-            "title": "Změnit členství v fundraisingové kampani",
-            "queryset": queryset,
-            "campaigns": FundraisingCampaign.objects.all(),
-            "operations": CAMPAIGN_OPERATIONS,
-            "action_name": "change_fundraising_campaign",
-            "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
-            "opts": model_admin.model._meta,
-        },
-    )
 
 
 @admin.register(Donor)

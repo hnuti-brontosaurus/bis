@@ -304,6 +304,17 @@ The game book and cookbook are deliberately left out.
 - `bis/tests/test_mcp_schema.py` denylists PII field names across the schema.
   Add to `ALLOWED` only after deciding the field is not PII.
 
+### Fundraising campaigns
+Campaign membership is a `DonorEvent` and the telesales views are keyed by donor
+id, so only a `Donor` can be in a campaign. The `change_fundraising_campaign`
+admin action (in `bis/admin.py`, shared by `UserAdmin` and `DonorAdmin`) creates
+the missing `Donor` profiles when run on users. A donor profile therefore does
+not mean the person ever gave: the Ecomail `Dárce` tag (`ecomail/tags.py`) needs
+a donation or a pledge, except for profiles from before
+`GIFTLESS_DONOR_CUTOFF` — those are legacy donors whose gifts predate the
+donation records. The tag definitions are mirrored for the office in the
+"Tagy pro ecomail.xlsm" file on Drive; keep it in step.
+
 ### Cookbook models
 
 `cookbook` is the only app whose models live in a package. Django imports just
