@@ -50,7 +50,7 @@ services:
       - ./logs:/logs
       - ./cookbook:/app
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3001/cookbook/"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3001/kucharka/"]
       interval: 1s
       retries: 600
     environment:

@@ -5,17 +5,18 @@ import { useEffect } from 'react'
 /*
 This component leaves the react app and goes to the same url
 */
-export const CookbookRedirect = () => {
+export const ServerRedirect = ({
+  notConfigured,
+}: {
+  notConfigured: string
+}) => {
   const showMessage = useShowMessage()
 
-  // inform user when admin access is not set up
+  // the server sent us back here, so nothing but this app serves the url
   useEffect(() => {
     if (globalThis.document.referrer === globalThis.location.href)
-      showMessage({
-        type: 'error',
-        message: 'Kuchařka není pro tuto doménu nastavená',
-      })
-  }, [showMessage])
+      showMessage({ type: 'error', message: notConfigured })
+  }, [showMessage, notConfigured])
 
   // prevent infinite redirect loop
   if (globalThis.document.referrer === globalThis.location.href) {

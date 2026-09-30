@@ -31,7 +31,7 @@ export const AuthenticatedOutlet = () => {
     // next location will be the current, or empty
     const next = ['', '/'].includes(location.pathname)
       ? ''
-      : `?next=${encodeURIComponent(location.pathname)}`
+      : `?next=${encodeURIComponent(location.pathname + location.search)}`
     return <Navigate to={`/login${next}`} replace />
   }
 }

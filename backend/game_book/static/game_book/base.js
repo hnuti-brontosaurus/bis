@@ -28,7 +28,7 @@ function toggle_state(event, el, game_id, state) {
     remove_icon(el, icon)
 
     axios
-        .post(`/game_book/game/${game_id}/toggle/${state}/`, {}, {headers: {'X-CSRFToken': CSRF_TOKEN}})
+        .post(`/sbornik/program/${game_id}/prepnout/${state}/`, {}, {headers: {'X-CSRFToken': CSRF_TOKEN}})
         .then(({data}) => add_icon(el, icon + (data.on ? '-fill' : '')))
         .catch((error) => add_icon(el, "exclamation-lg"))
 }

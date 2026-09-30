@@ -55,13 +55,13 @@ const save = page => page.locator("button", { hasText: "Uložit" }).first().clic
 
 test.describe("cookbook smoke", () => {
   test("renders recipes list and a recipe detail", async ({ page, recipe }) => {
-    await page.goto("/cookbook/recipes/")
+    await page.goto("/kucharka/recepty/")
     await expect(page.getByText("Recepty").first()).toBeVisible()
 
     // The store fetches every page, so this test's own recipe is in the DOM —
     // clicking a neighbour's card would race its teardown.
     await page.locator(".n-card").filter({ hasText: recipe.name }).first().click()
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
     await expect(page.getByText("Autorstvo").first()).toBeVisible()
   })
 
@@ -69,8 +69,8 @@ test.describe("cookbook smoke", () => {
     page,
     recipe,
   }) => {
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/edit/$`))
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/upravit/$`))
 
     const tag = `e2e-${Date.now()}`
     const description = page.locator("textarea").first()
@@ -80,7 +80,7 @@ test.describe("cookbook smoke", () => {
     await description.fill(`${original} ${tag}`)
 
     await save(page)
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
 
     await page.reload()
     await expect(page.getByText(tag).first()).toBeAttached()
@@ -98,7 +98,7 @@ test.describe("cookbook smoke", () => {
     const tipName = `tip-${tag}`
     const tipDesc = `tip-desc-${tag}`
 
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator("textarea").first()).toBeVisible()
 
     const ingredients = await openSection(page, "Ingredience")
@@ -129,7 +129,7 @@ test.describe("cookbook smoke", () => {
 
     await save(page)
     // Successful save navigates to the detail page; failed save stays on edit.
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
 
     await page.reload()
     await expect(page.getByText(stepName).first()).toBeAttached()
@@ -151,7 +151,7 @@ test.describe("cookbook smoke", () => {
     // /api/cookbook/recipe_steps/{id}/ endpoint end-to-end: the recipe text
     // save creates the step with photo=null, then the orchestrator PATCHes
     // the photo to the dedicated step endpoint.
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator("textarea").first()).toBeVisible()
 
     const recipePatch = page.waitForRequest(
@@ -197,7 +197,7 @@ test.describe("cookbook smoke", () => {
 
     expect((await stepPhotoPatch).postDataJSON().photo).toMatch(/^data:image\/png/)
 
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`), {
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
       timeout: 30_000,
     })
   })
@@ -239,7 +239,7 @@ test.describe("cookbook smoke", () => {
       },
     })
 
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator("textarea").first()).toBeVisible()
 
     const section = await openSection(page, "Ingredience")
@@ -268,7 +268,7 @@ test.describe("cookbook smoke", () => {
     ).toHaveValue("2")
 
     await save(page)
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
 
     const saved = await api
       .get(`${API_BASE}/recipes/${recipe.id}/`)
@@ -297,7 +297,7 @@ test.describe("cookbook smoke", () => {
       },
     })
 
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator("textarea").first()).toBeVisible()
 
     const section = await openSection(page, "Ingredience")
@@ -313,7 +313,7 @@ test.describe("cookbook smoke", () => {
     await pickOption(page, section.locator(".n-base-selection").nth(2))
 
     await save(page)
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
     await expect(page.getByText("Korpus").first()).toBeVisible()
     await expect(page.getByText("Krém").first()).toBeVisible()
 
@@ -338,7 +338,7 @@ test.describe("cookbook smoke", () => {
         request.url().includes(`${API_BASE}/recipes/${recipe.id}/`),
     )
 
-    await page.goto(`/cookbook/recipe/${recipe.id}/edit/`)
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator("textarea").first()).toBeVisible()
 
     // The image-card upload renders its remove button inside the file card;
@@ -353,7 +353,7 @@ test.describe("cookbook smoke", () => {
     await save(page)
     expect((await recipePatch).postDataJSON().photo, "cleared photo payload").toBeNull()
 
-    await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`), {
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
       timeout: 30_000,
     })
     // The detail page of a photo-less recipe must render — reading photo.large
@@ -367,7 +367,7 @@ test.describe("cookbook smoke", () => {
   })
 
   test("renders chefs view", async ({ page }) => {
-    await page.goto("/cookbook/chefs/")
+    await page.goto("/kucharka/kucharstvo/")
     await expect(page.getByText("Kuchařstvo").first()).toBeVisible()
     expect(await page.locator(".n-card").count()).toBeGreaterThanOrEqual(1)
   })

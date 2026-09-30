@@ -163,6 +163,20 @@ cookbook/             # Vue 3 SPA (separate from main frontend)
 - Types must be re-exported through `bisTypes.ts` - never import directly from `testApi`
 - Run `yarn generate-api` when API changes
 
+### URL layout
+User-facing paths are Czech: the cookbook SPA lives at `/kucharka/` (vite
+`base`), the game book at `/sbornik/`. Code, url names, the `/api/cookbook/`
+API and the static directories keep their English names.
+
+A path served by Django rather than the React app has to be listed in three
+places: `nginx/dev.conf` (and `test.conf` if tests need it), the ingress in
+`deployments/{devel,production}/ingress.yml` (a separate GitLab repo, gitignored
+here), and a `ServerRedirect` route in `frontend/src/App.tsx`. The last one is
+what makes `/login?next=<path>` work: after sign-in the router navigates
+client-side, and `ServerRedirect` turns that into a full page load. `/o/*` is
+listed so the MCP OAuth flow (`/o/authorize/?…` → `LOGIN_URL` `/logout?next=…`)
+survives the login; `next` carries the query string for that reason.
+
 ### Transactional emails (Ecomail)
 All emails are sent through Ecomail templates referenced by hardcoded
 `template_id` in `backend/bis/emails.py`. The template's **name in Ecomail is

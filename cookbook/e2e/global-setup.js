@@ -22,7 +22,7 @@ export default async function globalSetup(config) {
 
   const browser = await chromium.launch()
   const page = await browser.newPage({ baseURL })
-  await page.goto("/cookbook/recipes/")
+  await page.goto("/kucharka/recepty/")
   await page.waitForLoadState("networkidle")
   await browser.close()
 }

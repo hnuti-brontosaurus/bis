@@ -5,7 +5,7 @@ export const footerLinks: { name: string; url: string }[] = [
   },
   {
     name: 'Sborník her a programů',
-    url: 'https://bis.brontosaurus.cz/game_book/',
+    url: 'https://bis.brontosaurus.cz/sbornik/',
   },
   {
     name: 'Půjčovna materiálu',

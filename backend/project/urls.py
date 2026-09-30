@@ -34,7 +34,7 @@ urlpatterns = [
     path("_nested_admin/", include("nested_admin.urls")),
     path("tinymce/", include("tinymce.urls")),
     path(f"{settings.API_BASE}", include("api.urls")),
-    path("game_book/", include("game_book.urls")),
+    path("sbornik/", include("game_book.urls")),
     # OAuth 2.0 Authorization Server Metadata (RFC 8414, required by MCP spec)
     path(
         ".well-known/oauth-authorization-server",

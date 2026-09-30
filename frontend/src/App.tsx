@@ -18,8 +18,6 @@ import { UpdateEvent } from 'org/pages/UpdateEvent'
 import { UpdateOpportunity } from 'org/pages/UpdateOpportunity'
 import { ViewEvent } from 'org/pages/ViewEvent'
 import { ViewOpportunity } from 'org/pages/ViewOpportunity'
-import { AdminRedirect } from 'pages/AdminRedirect'
-import { CookbookRedirect } from 'pages/CookbookRedirect'
 import { EventRegistration } from 'pages/EventRegistration/EventRegistration'
 import { Home } from 'pages/Home'
 import { Login } from 'pages/Login'
@@ -27,6 +25,7 @@ import { Logout } from 'pages/Logout'
 import { NotFound } from 'pages/NotFound'
 import { ResetPassword } from 'pages/ResetPassword'
 import { SendResetPasswordLink } from 'pages/SendResetPasswordLink'
+import { ServerRedirect } from 'pages/ServerRedirect'
 import { Navigate, Route } from 'react-router-dom'
 import { EditProfile } from 'user/pages/EditProfile'
 import { Home as UserHome } from 'user/pages/Home'
@@ -87,13 +86,31 @@ export const App = () => {
           </Route>
         </Route>
         <Route path="admin" element={<AdminOutlet />}>
-          <Route index element={<AdminRedirect />} />
-          <Route path="/admin/*" element={<AdminRedirect />} />
+          <Route
+            path="*"
+            element={
+              <ServerRedirect notConfigured="Administrátorský přístup pro tuto doménu není nastavený" />
+            }
+          />
         </Route>
-        <Route path="cookbook">
-          <Route index element={<CookbookRedirect />} />
-          <Route path="/cookbook/*" element={<CookbookRedirect />} />
-        </Route>
+        <Route
+          path="kucharka/*"
+          element={
+            <ServerRedirect notConfigured="Kuchařka není pro tuto doménu nastavená" />
+          }
+        />
+        <Route
+          path="sbornik/*"
+          element={
+            <ServerRedirect notConfigured="Sborník není pro tuto doménu nastavený" />
+          }
+        />
+        <Route
+          path="o/*"
+          element={
+            <ServerRedirect notConfigured="Přihlašování aplikací není pro tuto doménu nastavené" />
+          }
+        />
         {/* Routes for organizers */}
         <Route path="org" element={<OrganizerOutlet />}>
           <Route index element={<OrgHome />} />
