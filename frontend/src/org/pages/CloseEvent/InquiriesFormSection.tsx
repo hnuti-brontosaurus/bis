@@ -189,6 +189,22 @@ const Inquiry: FC<{ index: number; onRemove: () => void }> = ({
             fixed={fixed}
           />
         )}
+        {inquiryType === 'scale' && (
+          <table className={styles.scale}>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>&hellip;</td>
+                <td>zcela platí / nejlepší</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>&hellip;</td>
+                <td>zcela neplatí / nejhorší</td>
+              </tr>
+            </tbody>
+          </table>
+        )}
       </div>
     </li>
   )
