@@ -2,12 +2,14 @@
 import { NFlex, NH1, NButton, NCard, NInput, NEmpty, NBadge, NTag } from "naive-ui"
 import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
+import { useElementSize } from "@vueuse/core"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import {
   faEyeSlash,
   faFilter,
   faPlus,
   faSearch,
+  faDumbbell,
 } from "@fortawesome/free-solid-svg-icons"
 import { faClock } from "@fortawesome/free-regular-svg-icons"
 import { icon } from "@/contrib/composables/render.js"
@@ -45,15 +47,27 @@ const router = useRouter()
 
 const onClick = id => router.push({ name: "recipe", params: { id } })
 
-const byline = recipe =>
-  [chefsStore.byId[recipe.chef_id], difficultiesStore.byId[recipe.difficulty_id]]
-    .filter(Boolean)
-    .map(item => item.name)
-    .join(" · ")
-
 const tagsOf = recipe => recipe.tag_ids.map(id => tagsStore.byId[id]).filter(Boolean)
 
 const { filters, filteredRecipes, isActive } = useRecipeFilters()
+
+const CARD_MIN_WIDTH = 250
+const CARD_GAP = 24
+
+const cardColumns = ref(null)
+const { width } = useElementSize(cardColumns)
+
+// Dealing the recipes out one per column keeps the reading order left to right
+// while letting every card keep its own height, which CSS columns cannot do.
+const recipeColumns = computed(() => {
+  const count = Math.max(
+    1,
+    Math.floor((width.value + CARD_GAP) / (CARD_MIN_WIDTH + CARD_GAP)),
+  )
+  const columns = Array.from({ length: count }, () => [])
+  filteredRecipes.value.forEach((recipe, index) => columns[index % count].push(recipe))
+  return columns
+})
 
 const drawerOpen = ref(false)
 
@@ -114,50 +128,65 @@ const activeFilterCount = computed(() => {
       :description="_.recipes.no_results"
     />
 
-    <div class="card-grid">
-      <router-link
-        v-for="recipe in filteredRecipes"
-        :key="recipe.id"
-        :to="{ name: 'recipe', params: { id: recipe.id } }"
-        custom
-      >
-        <n-card
-          :title="recipe.name"
-          hoverable
-          class="recipe-card"
-          @click="onClick(recipe.id)"
+    <div ref="cardColumns" class="card-columns">
+      <div v-for="(column, index) in recipeColumns" :key="index" class="card-column">
+        <router-link
+          v-for="recipe in column"
+          :key="recipe.id"
+          :to="{ name: 'recipe', params: { id: recipe.id } }"
+          custom
         >
-          <template #cover>
-            <div class="card-cover">
-              <img v-if="recipe.photo" :src="recipe.photo.medium" :alt="recipe.name" />
-              <n-tag
-                v-if="requiredTimesStore.byId[recipe.required_time_id]"
-                class="time-tag"
-                size="small"
-                :bordered="false"
-              >
-                <template #icon><font-awesome-icon :icon="faClock" /></template>
-                {{ requiredTimesStore.byId[recipe.required_time_id].name }}
-              </n-tag>
-              <div
-                v-if="!recipe.is_public"
-                class="private-mark"
-                :title="_.recipes.is_private"
-              >
-                <font-awesome-icon :icon="faEyeSlash" />
+          <n-card hoverable class="recipe-card" @click="onClick(recipe.id)">
+            <template #cover>
+              <div class="card-cover">
+                <img
+                  v-if="recipe.photo"
+                  :src="recipe.photo.medium"
+                  :alt="recipe.name"
+                />
+                <n-flex class="cover-tags" :size="6">
+                  <n-tag
+                    v-if="difficultiesStore.byId[recipe.difficulty_id]"
+                    size="small"
+                    :bordered="false"
+                  >
+                    <template #icon><font-awesome-icon :icon="faDumbbell" /></template>
+                    {{ difficultiesStore.byId[recipe.difficulty_id].name }}
+                  </n-tag>
+                  <n-tag
+                    v-if="requiredTimesStore.byId[recipe.required_time_id]"
+                    size="small"
+                    :bordered="false"
+                  >
+                    <template #icon><font-awesome-icon :icon="faClock" /></template>
+                    {{ requiredTimesStore.byId[recipe.required_time_id].name }}
+                  </n-tag>
+                </n-flex>
+                <div
+                  v-if="!recipe.is_public"
+                  class="private-mark"
+                  :title="_.recipes.is_private"
+                >
+                  <font-awesome-icon :icon="faEyeSlash" />
+                </div>
               </div>
-            </div>
-          </template>
-          <span class="muted small">{{ byline(recipe) }}</span>
-          <template v-if="tagsOf(recipe).length" #footer>
-            <n-flex :size="6">
-              <n-tag v-for="tag in tagsOf(recipe)" :key="tag.id" size="small">{{
-                tag.name
-              }}</n-tag>
-            </n-flex>
-          </template>
-        </n-card>
-      </router-link>
+            </template>
+            <template #header>
+              {{ recipe.name }}
+              <div v-if="chefsStore.byId[recipe.chef_id]" class="chef">
+                {{ chefsStore.byId[recipe.chef_id].name }}
+              </div>
+            </template>
+            <template v-if="tagsOf(recipe).length" #footer>
+              <n-flex :size="6">
+                <n-tag v-for="tag in tagsOf(recipe)" :key="tag.id" size="small">{{
+                  tag.name
+                }}</n-tag>
+              </n-flex>
+            </template>
+          </n-card>
+        </router-link>
+      </div>
     </div>
 
     <recipe-filters-drawer v-model:show="drawerOpen" />
@@ -165,15 +194,40 @@ const activeFilterCount = computed(() => {
 </template>
 
 <style scoped>
+.card-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.card-column {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
 .recipe-card {
-  height: 100%;
   cursor: pointer;
 }
 
-.time-tag {
+.chef {
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.85em;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.cover-tags {
   position: absolute;
   bottom: 10px;
   left: 10px;
+}
+
+.cover-tags .n-tag {
   background: var(--surface);
   color: var(--text);
 }
@@ -184,8 +238,9 @@ const activeFilterCount = computed(() => {
   right: 10px;
   padding: 4px 7px;
   border-radius: 3px;
-  background: var(--text);
-  color: var(--background);
+  background: var(--surface);
+  color: var(--muted);
   line-height: 1;
+  opacity: 0.85;
 }
 </style>

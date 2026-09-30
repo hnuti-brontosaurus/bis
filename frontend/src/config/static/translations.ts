@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 76f8d9fca5d732d2
+// source-hash: f1884f0f14d9d5ca
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1233,7 +1233,7 @@ export const cookbook = {
     delete_content: 'Opravdu chceš tento recept smazat?',
     delete_error: 'Nepodařilo se smazat recept',
     is_public: 'Veřejný',
-    is_private: 'Neveřejný',
+    is_private: 'Soukromý',
     chef: 'Autorstvo',
     difficulty: 'Obtížnost',
     required_time: 'Časová náročnost',

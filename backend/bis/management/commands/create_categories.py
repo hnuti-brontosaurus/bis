@@ -876,9 +876,9 @@ class Command(BaseCommand):
             RecipeDifficulty,
             {
                 "trivial": dict(name="triviální"),
-                "simple": dict(name="jednoduchá"),
-                "medium": dict(name="střední"),
-                "hard": dict(name="složitá"),
+                "simple": dict(name="jednoduchý"),
+                "medium": dict(name="pracnější"),
+                "hard": dict(name="náročný"),
             },
         )
 
@@ -886,8 +886,8 @@ class Command(BaseCommand):
             RecipeRequiredTime,
             {
                 "instant": dict(name="instantní"),
-                "fast": dict(name="rychlé"),
-                "normal": dict(name="normální"),
+                "fast": dict(name="rychlý"),
+                "normal": dict(name="delší"),
                 "long": dict(name="maraton"),
             },
         )

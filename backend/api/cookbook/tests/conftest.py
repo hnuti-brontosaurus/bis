@@ -65,7 +65,7 @@ def difficulty(db):
 
 @pytest.fixture
 def required_time(db):
-    return RecipeRequiredTime.objects.create(name="rychlé", slug="fast", order=1)
+    return RecipeRequiredTime.objects.create(name="rychlý", slug="fast", order=1)
 
 
 @pytest.fixture

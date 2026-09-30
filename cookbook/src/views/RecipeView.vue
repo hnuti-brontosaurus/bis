@@ -113,7 +113,7 @@ const onDelete = () => {
     <template v-if="canEdit" #actions>
       <n-switch :value="!!recipe.is_public" @update:value="togglePublic" :round="false">
         <template #checked>{{ _.recipes.is_public }}</template>
-        <template #unchecked>{{ _.recipes.is_public }}</template>
+        <template #unchecked>{{ _.recipes.is_private }}</template>
       </n-switch>
       <n-button
         :render-icon="icon(faPen)"
