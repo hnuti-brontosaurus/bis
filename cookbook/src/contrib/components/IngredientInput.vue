@@ -16,7 +16,6 @@ import { computed, onMounted, ref, watch } from "vue"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import {
   isUnitAllowed,
-  convertAmount,
   pluralizeUnit,
   SPECIAL_UNIT_GRAMS,
 } from "@/data/unitConversion.js"
@@ -80,19 +79,6 @@ watch(selectedIngredient, ingredient => {
   if (fallbackUnit) value.value.unit_id = fallbackUnit.id
 })
 
-const onUnitChange = newUnitId => {
-  const prevUnit = unitsStore.byId[value.value.unit_id]
-  const nextUnit = unitsStore.byId[newUnitId]
-  const ingredient = selectedIngredient.value
-  if (ingredient && prevUnit && nextUnit && value.value.amount != null) {
-    const converted = convertAmount(value.value.amount, prevUnit, nextUnit, ingredient)
-    if (converted != null && Number.isFinite(converted)) {
-      value.value.amount = converted
-    }
-  }
-  value.value.unit_id = newUnitId
-}
-
 const input = ref("")
 const fallback = () => ({ label: `${_.value.ingredients.new}: ${input.value}` })
 
@@ -150,13 +136,12 @@ const createIngredient = () => {
       :parse="parseFloat"
     />
     <n-select
-      :value="value.unit_id"
+      v-model:value="value.unit_id"
       :options="unitOptions"
       filterable
       :clearable="false"
       placeholder=""
       show-on-focus
-      @update:value="onUnitChange"
     />
   </n-input-group>
   <n-collapse-transition :show="showComment">

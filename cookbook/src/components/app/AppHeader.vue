@@ -1,19 +1,11 @@
 <script setup>
-import {
-  NButton,
-  NButtonGroup,
-  NDropdown,
-  NFlex,
-  NGrid,
-  NGridItem,
-  NImage,
-} from "naive-ui"
+import { NButton, NDropdown } from "naive-ui"
 import { useRender } from "@/contrib/composables/render.js"
 import { faUser } from "@fortawesome/free-regular-svg-icons"
-import { faBars, faCartShopping } from "@fortawesome/free-solid-svg-icons"
-import { useRouter } from "vue-router"
-import { theme } from "@/composables/theme.js"
-import { translatedKey } from "@/composables/translations.js"
+import { faBars, faCartShopping, faMoon } from "@fortawesome/free-solid-svg-icons"
+import { useRoute, useRouter } from "vue-router"
+import { settings, useDarkTheme } from "@/composables/settings.js"
+import { _, translatedKey } from "@/composables/translations.js"
 import { useAuthStore } from "@/data/auth.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
 import { useUnitsStore } from "@/data/units.js"
@@ -23,11 +15,26 @@ import { computed } from "vue"
 import { storeToRefs } from "pinia"
 
 const { icon } = useRender()
+const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const { isChef, isAuthenticated } = storeToRefs(authStore)
 
 const translatedMenuKey = translatedKey("menu")
+
+// Font Awesome's solid sun reads as a cog at header size, so the rays are
+// drawn as separate strokes here.
+const faSun = {
+  prefix: "fas",
+  iconName: "sun-rays",
+  icon: [
+    24,
+    24,
+    [],
+    "",
+    "M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM11 1h2v4h-2zM11 19h2v4h-2zM1 11h4v2H1zM19 11h4v2h-4zM4.22 5.64l1.42-1.42 2.83 2.83-1.42 1.42zM18.36 4.22l1.42 1.42-2.83 2.83-1.42-1.42zM4.22 18.36l2.83-2.83 1.42 1.42-2.83 2.83zM19.78 18.36l-1.42 1.42-2.83-2.83 1.42-1.42z",
+  ],
+}
 
 const menuOptions = computed(() => [
   {
@@ -82,6 +89,12 @@ useIngredientsStore().fetchAll()
 useUnitsStore().fetchAll()
 const { unboughtCount } = useCartSummed()
 
+const isActive = item => item.children?.some(child => child.key === route.name)
+
+const toggleDarkTheme = () => {
+  settings.value.darkTheme = !useDarkTheme.value
+}
+
 const select = value => {
   if (value === "logout") {
     authStore.logout()
@@ -94,41 +107,29 @@ const select = value => {
 </script>
 
 <template>
-  <n-flex
-    :wrap="false"
-    align="center"
-    justify="center"
-    style="position: relative; height: 100%; padding: 1rem"
-  >
-    <router-link to="/" style="position: absolute; left: 1rem">
-      <n-button quaternary>
-        <template #icon>
-          <n-image
-            :height="theme.common.heightMedium"
-            preview-disabled
-            src="/cookbook/logo.png"
-            style="justify-content: center; align-items: center"
-          ></n-image>
-        </template>
-      </n-button>
+  <header class="header">
+    <router-link to="/" class="brand display-font">
+      <img src="/cookbook/logo.png" alt="" />
+      {{ _.common.cookbook }}
     </router-link>
 
-    <n-grid cols="0 m:1" responsive="screen" style="width: unset">
-      <n-grid-item span="0 m:1">
-        <n-button-group>
-          <n-dropdown
-            v-for="item in menuOptions"
-            :key="item.key"
-            :options="item.children"
-            @select="select"
-          >
-            <n-button quaternary>{{ item.label }}</n-button>
-          </n-dropdown>
-        </n-button-group>
-      </n-grid-item>
-    </n-grid>
+    <nav class="navigation">
+      <n-dropdown
+        v-for="item in menuOptions"
+        :key="item.key"
+        :options="item.children"
+        @select="select"
+      >
+        <n-button
+          quaternary
+          class="navigation-link"
+          :class="{ active: isActive(item) }"
+          >{{ item.label }}</n-button
+        >
+      </n-dropdown>
+    </nav>
 
-    <n-button-group style="position: absolute; right: 1rem">
+    <div class="tools">
       <n-badge
         :value="unboughtCount"
         :show="unboughtCount > 0"
@@ -144,11 +145,79 @@ const select = value => {
       <n-dropdown :options="userOptions" placement="bottom-end" @select="select">
         <n-button :render-icon="icon(faUser)" quaternary />
       </n-dropdown>
+      <n-button
+        :render-icon="icon(useDarkTheme ? faSun : faMoon)"
+        :title="_.profile.dark_theme"
+        :aria-label="_.profile.dark_theme"
+        :aria-pressed="useDarkTheme"
+        quaternary
+        @click="toggleDarkTheme"
+      />
       <n-dropdown :options="menuOptions" placement="bottom-end" @select="select">
-        <n-button :render-icon="icon(faBars)" quaternary />
+        <n-button class="menu-button" :render-icon="icon(faBars)" quaternary />
       </n-dropdown>
-    </n-button-group>
-  </n-flex>
+    </div>
+  </header>
 </template>
 
-<style scoped></style>
+<style scoped>
+.header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 1120px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 1.3rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand img {
+  height: 40px;
+}
+
+.navigation {
+  display: none;
+  align-self: stretch;
+  gap: 2px;
+}
+
+.navigation-link {
+  height: 100%;
+  border-radius: 0;
+  color: var(--muted);
+}
+
+.navigation-link.active {
+  color: var(--primary-text);
+  box-shadow: inset 0 -2px 0 var(--primary-text);
+}
+
+.tools {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+@media (min-width: 800px) {
+  .navigation {
+    display: flex;
+  }
+
+  .menu-button {
+    display: none;
+  }
+}
+</style>

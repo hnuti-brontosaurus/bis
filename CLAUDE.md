@@ -287,6 +287,56 @@ autodetector wants to delete the table. The model still works at runtime, since
 admin autodiscovery or a viewset import registers it late — `migrate` is the
 only place the omission shows up.
 
+### Cookbook theme
+
+`cookbook/src/composables/theme.js` is the single source of the palette (light
+and dark). It feeds two consumers: the naive-ui `themeOverrides`, and CSS
+variables (`--background`, `--surface`, `--line`, `--primary-text`, `--accent`,
+… plus `--font-display` / `--font-body`) that a `watchEffect` writes onto
+`<html>`. Shared classes in `assets/main.css` (`.panel`, `.columns`,
+`.section-heading`, `.card-grid`, `.save-bar`, `.title-row`) and scoped styles
+use those variables; never hard-code a colour in a component.
+
+- The overrides are built as `entry.self(common)` with the *customised* common,
+  then every `px` is multiplied by `SCALE`. Passing naive's default-derived
+  values instead freezes every component to the stock colours, because a
+  per-component override beats anything naive derives from `common`.
+- A component rendered as a peer (the `InternalSelection` inside `Select`) only
+  takes overrides from `Select.peers.InternalSelection`, not from a top-level
+  `InternalSelection` key.
+- Colours in `common` must be hex or `rgba()`: naive parses them, so
+  `color-mix()` or `var()` throws at render.
+- `position: sticky` needs the page content to sit directly in the outer
+  `n-layout` scroll container. `n-layout-content` adds its own `overflow-x:
+  hidden` box, which silently pins a sticky bar to nothing.
+- New user-facing text has to exist in `backend/translation/*.yaml`; the
+  cookbook eslint rule rejects unknown `_.group.key` lookups.
+- Fonts are self-hosted variable woff2 (Bitter, Source Sans 3; latin +
+  latin-ext) declared in `assets/base.css`.
+- The edit form's e2e selectors depend on the `n-collapse-item` / `h6` section
+  markup of `GenericForm`, and the detail page's on `CollapseList` for tips.
+
+### Cookbook checkable lists
+
+One rule for every list whose rows carry a checkbox (recipe ingredients, recipe
+steps): the checkbox and the expand arrow are too small to aim at, so
+
+- the arrow sits on the left and the checkbox on the right,
+- clicking anywhere on a row expands or collapses its detail,
+- clicking anywhere in the checkbox's cell ticks or unticks the row,
+- a row with nothing to expand ticks instead, so no click is dead,
+- a group row (an ingredient part heading) ticks all of its rows and shows as
+  ticked exactly when all of them are,
+- the header row does the same for the whole list: the row expands everything,
+  its checkbox cell ticks everything.
+
+Clicks that land on the checkbox or arrow itself are left to naive-ui, so they
+are not handled twice. `RecipeIngredients.vue` does this through `row-props`
+and a click handler on the table (naive-ui has no header-row hook);
+`contrib/components/CollapseList.vue` does it for any list given a
+`checked-key`, by keeping the checkbox area out of `trigger-areas`. A new
+checkable list should follow the same rule rather than invent its own.
+
 ### Game book
 
 `backend/game_book/` is server-rendered (django-bootstrap5, Bootstrap 5.3 from

@@ -129,105 +129,131 @@ const toggleExpand = id => {
       "
     />
 
-    <template v-for="section in sections" :key="section.key">
-      <n-text depth="3" :style="{ marginBottom: '-8px' }">{{ section.name }}</n-text>
-      <n-flex
-        v-for="row in section.rows"
-        :key="row.ingredient_id"
-        vertical
-        :size="4"
-        :style="{
-          opacity: row.bought ? 0.55 : 1,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          paddingBottom: '8px',
-        }"
-      >
-        <n-flex align="center" :wrap="false" :size="8">
-          <n-checkbox :checked="row.bought" @update:checked="toggleSummed(row)" />
-          <n-button
-            quaternary
-            size="small"
-            :render-icon="
-              icon(expanded[row.ingredient_id] ? faChevronDown : faChevronRight)
-            "
-            @click="toggleExpand(row.ingredient_id)"
-          />
-          <n-text
-            :style="{
-              flex: 1,
-              textDecoration: row.bought ? 'line-through' : 'none',
-            }"
+    <div class="columns">
+      <section v-if="sections.length" class="panel">
+        <template v-for="section in sections" :key="section.key">
+          <div class="section-heading">{{ section.name }}</div>
+          <n-flex
+            v-for="row in section.rows"
+            :key="row.ingredient_id"
+            vertical
+            :size="4"
+            class="row"
+            :class="{ bought: row.bought }"
           >
-            {{ row.ingredient?.name ?? `#${row.ingredient_id}` }}
-          </n-text>
-          <template v-if="row.convertible.length && row.default_unit">
-            <n-input-number
-              size="small"
-              style="width: 110px"
-              :show-button="false"
-              :value="round2(summedDisplay(row).amount)"
-              disabled
-              :format="value => (value == null ? '' : String(value))"
-            />
-            <n-select
-              size="small"
-              style="width: 90px"
-              :value="summedDisplay(row).unitId"
-              :options="unitOptions(row.ingredient)"
-              @update:value="value => (chosenUnit[row.ingredient_id] = value)"
-            />
-          </template>
-        </n-flex>
-
-        <n-collapse-transition :show="!!expanded[row.ingredient_id]">
-          <n-flex vertical :size="4" :style="{ paddingLeft: '36px', marginTop: '6px' }">
-            <n-flex
-              v-for="source in row.sources"
-              v-show="!hideBought || !source.bought"
-              :key="sourceKey(source)"
-              align="center"
-              :wrap="false"
-              :size="8"
-            >
-              <n-checkbox
-                :checked="source.bought"
-                @update:checked="toggleSource(source)"
-              />
+            <n-flex align="center" :wrap="false" :size="8">
+              <n-checkbox :checked="row.bought" @update:checked="toggleSummed(row)" />
               <n-button
-                text
-                tag="a"
-                :style="{
-                  flex: 1,
-                  justifyContent: 'flex-start',
-                  textDecoration: source.bought ? 'line-through' : 'none',
-                }"
-                @click="emit('jump-to-edit', source.group_id)"
-              >
-                {{ source.recipe_name || _.cart.custom_group }}
-              </n-button>
-              <n-input-number
+                quaternary
                 size="small"
-                style="width: 90px"
-                :show-button="false"
-                :value="round2(sourceDisplay(source, row.ingredient).amount)"
-                disabled
-                :format="value => (value == null ? '' : String(value))"
-              />
-              <n-select
-                size="small"
-                style="width: 90px"
-                :value="sourceDisplay(source, row.ingredient).unitId"
-                :options="unitOptions(row.ingredient)"
-                @update:value="
-                  value => (chosenUnitForSource[sourceKey(source)] = value)
+                :render-icon="
+                  icon(expanded[row.ingredient_id] ? faChevronDown : faChevronRight)
                 "
+                @click="toggleExpand(row.ingredient_id)"
               />
+              <n-text class="name">
+                {{ row.ingredient?.name ?? `#${row.ingredient_id}` }}
+              </n-text>
+              <template v-if="row.convertible.length && row.default_unit">
+                <n-input-number
+                  size="small"
+                  style="width: 110px"
+                  :show-button="false"
+                  :value="round2(summedDisplay(row).amount)"
+                  disabled
+                  :format="value => (value == null ? '' : String(value))"
+                />
+                <n-select
+                  size="small"
+                  style="width: 90px"
+                  :value="summedDisplay(row).unitId"
+                  :options="unitOptions(row.ingredient)"
+                  @update:value="value => (chosenUnit[row.ingredient_id] = value)"
+                />
+              </template>
             </n-flex>
-          </n-flex>
-        </n-collapse-transition>
-      </n-flex>
-    </template>
 
-    <OtherItems :hide-bought="hideBought" />
+            <n-collapse-transition :show="!!expanded[row.ingredient_id]">
+              <n-flex
+                vertical
+                :size="4"
+                :style="{ paddingLeft: '36px', marginTop: '6px' }"
+              >
+                <n-flex
+                  v-for="source in row.sources"
+                  v-show="!hideBought || !source.bought"
+                  :key="sourceKey(source)"
+                  align="center"
+                  :wrap="false"
+                  :size="8"
+                >
+                  <n-checkbox
+                    :checked="source.bought"
+                    @update:checked="toggleSource(source)"
+                  />
+                  <n-button
+                    text
+                    tag="a"
+                    :style="{
+                      flex: 1,
+                      justifyContent: 'flex-start',
+                      textDecoration: source.bought ? 'line-through' : 'none',
+                    }"
+                    @click="emit('jump-to-edit', source.group_id)"
+                  >
+                    {{ source.recipe_name || _.cart.custom_group }}
+                  </n-button>
+                  <n-input-number
+                    size="small"
+                    style="width: 90px"
+                    :show-button="false"
+                    :value="round2(sourceDisplay(source, row.ingredient).amount)"
+                    disabled
+                    :format="value => (value == null ? '' : String(value))"
+                  />
+                  <n-select
+                    size="small"
+                    style="width: 90px"
+                    :value="sourceDisplay(source, row.ingredient).unitId"
+                    :options="unitOptions(row.ingredient)"
+                    @update:value="
+                      value => (chosenUnitForSource[sourceKey(source)] = value)
+                    "
+                  />
+                </n-flex>
+              </n-flex>
+            </n-collapse-transition>
+          </n-flex>
+        </template>
+      </section>
+
+      <section class="panel">
+        <OtherItems :hide-bought="hideBought" />
+      </section>
+    </div>
   </n-flex>
 </template>
+
+<style scoped>
+.row {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.row .name {
+  flex: 1;
+}
+
+.row.bought {
+  opacity: 0.55;
+}
+
+.row.bought .name {
+  text-decoration: line-through;
+}
+</style>

@@ -1,5 +1,6 @@
 <script setup>
-import { NButton, NH1, NFlex, NButtonGroup } from "naive-ui"
+import { NButton, NH1 } from "naive-ui"
+import { _ } from "@/composables/translations.js"
 import { useRender } from "@/contrib/composables/render.js"
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons"
 import { useRoute, useRouter } from "vue-router"
@@ -26,21 +27,45 @@ const onBack = () => {
 </script>
 
 <template>
-  <n-flex vertical>
-    <n-flex justify="space-between" align="start">
-      <n-flex :wrap="false" align="baseline">
-        <n-button :render-icon="icon(faChevronLeft)" quaternary @click="onBack" />
-        <n-h1>{{ title }}</n-h1>
-      </n-flex>
-      <n-button-group style="margin-left: auto">
+  <div class="page">
+    <div class="top-row">
+      <n-button text class="muted" :render-icon="icon(faChevronLeft)" @click="onBack">{{
+        _.common.back
+      }}</n-button>
+      <div class="page-actions">
         <slot name="actions" />
-      </n-button-group>
-    </n-flex>
-    <n-flex>
-      <slot name="extra" />
-    </n-flex>
+      </div>
+    </div>
+    <n-h1 v-if="title" class="title">{{ title }}</n-h1>
+    <slot name="extra" />
     <slot />
-  </n-flex>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.top-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.title {
+  margin: 0;
+}
+</style>

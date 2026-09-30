@@ -1,20 +1,16 @@
 <script setup>
-import {
-  NFlex,
-  NButtonGroup,
-  NPageHeader,
-  NButton,
-  NGrid,
-  NGridItem,
-  NCard,
-  NInput,
-  NEmpty,
-  NBadge,
-} from "naive-ui"
+import { NFlex, NH1, NButton, NCard, NInput, NEmpty, NBadge, NTag } from "naive-ui"
 import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
-import { faEyeSlash, faSearch } from "@fortawesome/free-solid-svg-icons"
+import {
+  faEyeSlash,
+  faFilter,
+  faPlus,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons"
+import { faClock } from "@fortawesome/free-regular-svg-icons"
+import { icon } from "@/contrib/composables/render.js"
 import { useRecipesStore } from "@/data/recipes.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { useIngredientsStore } from "@/data/ingredients.js"
@@ -49,7 +45,13 @@ const router = useRouter()
 
 const onClick = id => router.push({ name: "recipe", params: { id } })
 
-const chefNameFor = chef_id => computed(() => chefsStore.byId[chef_id]?.name ?? "")
+const byline = recipe =>
+  [chefsStore.byId[recipe.chef_id], difficultiesStore.byId[recipe.difficulty_id]]
+    .filter(Boolean)
+    .map(item => item.name)
+    .join(" · ")
+
+const tagsOf = recipe => recipe.tag_ids.map(id => tagsStore.byId[id]).filter(Boolean)
 
 const { filters, filteredRecipes, isActive } = useRecipeFilters()
 
@@ -73,35 +75,37 @@ const activeFilterCount = computed(() => {
 </script>
 
 <template>
-  <n-flex vertical>
-    <n-page-header :title="_.Recipe.plural">
-      <template #extra>
-        <n-flex align="center" justify="end" :size="8">
-          <n-button-group>
-            <n-button @click="router.push({ name: 'create_recipe' })">{{
-              _.recipes.create
-            }}</n-button>
-            <n-badge
-              :value="activeFilterCount"
-              :show="activeFilterCount > 0"
-              :offset="[-6, 4]"
-            >
-              <n-button @click="drawerOpen = true">{{ _.common.filters }}</n-button>
-            </n-badge>
-          </n-button-group>
-          <n-input
-            v-model:value="filters.search"
-            :placeholder="_.recipes.search_placeholder"
-            clearable
-            style="min-width: 200px; flex: 0 1 240px"
-          >
-            <template #prefix>
-              <font-awesome-icon :icon="faSearch" />
-            </template>
-          </n-input>
-        </n-flex>
-      </template>
-    </n-page-header>
+  <n-flex vertical :size="22">
+    <div class="title-row">
+      <n-h1>{{ _.Recipe.plural }}</n-h1>
+      <n-flex align="center" justify="end" :size="10" style="flex: 1">
+        <n-input
+          v-model:value="filters.search"
+          :placeholder="_.recipes.search_placeholder"
+          clearable
+          style="min-width: 200px; flex: 0 1 300px"
+        >
+          <template #prefix>
+            <font-awesome-icon :icon="faSearch" />
+          </template>
+        </n-input>
+        <n-badge
+          :value="activeFilterCount"
+          :show="activeFilterCount > 0"
+          :offset="[-6, 4]"
+        >
+          <n-button :render-icon="icon(faFilter)" @click="drawerOpen = true">{{
+            _.common.filters
+          }}</n-button>
+        </n-badge>
+        <n-button
+          type="primary"
+          :render-icon="icon(faPlus)"
+          @click="router.push({ name: 'create_recipe' })"
+          >{{ _.recipes.create }}</n-button
+        >
+      </n-flex>
+    </div>
 
     <recipe-filters-summary />
 
@@ -110,49 +114,78 @@ const activeFilterCount = computed(() => {
       :description="_.recipes.no_results"
     />
 
-    <n-grid cols="1 s:2 m:3" x-gap="32" y-gap="32" responsive="screen">
-      <n-grid-item v-for="recipe in filteredRecipes" :key="recipe.id">
-        <router-link :to="{ name: 'recipe', params: { id: recipe.id } }" custom>
-          <n-card
-            :title="recipe.name"
-            embedded
-            hoverable
-            style="cursor: pointer"
-            @click="onClick(recipe.id)"
-          >
-            <template #cover>
-              <div style="position: relative">
-                <img
-                  :src="recipe.photo?.medium"
-                  :alt="recipe.name"
-                  style="object-fit: cover; height: 200px; width: 100%"
-                />
-                <div
-                  v-if="!recipe.is_public"
-                  :title="_.recipes.is_private"
-                  style="
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    background: rgba(0, 0, 0, 0.6);
-                    color: white;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    line-height: 1;
-                  "
-                >
-                  <font-awesome-icon :icon="faEyeSlash" />
-                </div>
+    <div class="card-grid">
+      <router-link
+        v-for="recipe in filteredRecipes"
+        :key="recipe.id"
+        :to="{ name: 'recipe', params: { id: recipe.id } }"
+        custom
+      >
+        <n-card
+          :title="recipe.name"
+          hoverable
+          class="recipe-card"
+          @click="onClick(recipe.id)"
+        >
+          <template #cover>
+            <div class="card-cover">
+              <img v-if="recipe.photo" :src="recipe.photo.medium" :alt="recipe.name" />
+              <n-tag
+                v-if="requiredTimesStore.byId[recipe.required_time_id]"
+                class="time-tag"
+                size="small"
+                :bordered="false"
+              >
+                <template #icon><font-awesome-icon :icon="faClock" /></template>
+                {{ requiredTimesStore.byId[recipe.required_time_id].name }}
+              </n-tag>
+              <div
+                v-if="!recipe.is_public"
+                class="private-mark"
+                :title="_.recipes.is_private"
+              >
+                <font-awesome-icon :icon="faEyeSlash" />
               </div>
-            </template>
-            {{ chefNameFor(recipe.chef_id).value }}
-          </n-card>
-        </router-link>
-      </n-grid-item>
-    </n-grid>
+            </div>
+          </template>
+          <span class="muted small">{{ byline(recipe) }}</span>
+          <template v-if="tagsOf(recipe).length" #footer>
+            <n-flex :size="6">
+              <n-tag v-for="tag in tagsOf(recipe)" :key="tag.id" size="small">{{
+                tag.name
+              }}</n-tag>
+            </n-flex>
+          </template>
+        </n-card>
+      </router-link>
+    </div>
 
     <recipe-filters-drawer v-model:show="drawerOpen" />
   </n-flex>
 </template>
 
-<style scoped></style>
+<style scoped>
+.recipe-card {
+  height: 100%;
+  cursor: pointer;
+}
+
+.time-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.private-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 7px;
+  border-radius: 3px;
+  background: var(--text);
+  color: var(--background);
+  line-height: 1;
+}
+</style>

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest"
 import {
   addPart,
   isPartHeading,
+  movePart,
   partHeading,
   withPartHeadings,
   withoutPartHeadings,
@@ -80,5 +81,42 @@ describe("addPart", () => {
     const rows = []
     addPart(rows)
     expect(describeRows(rows)).toEqual(["# "])
+  })
+})
+
+describe("movePart", () => {
+  const rows = () => [
+    partHeading("Korpus"),
+    { id: 1 },
+    { id: 2 },
+    partHeading("Krém"),
+    { id: 3 },
+    partHeading("Poleva"),
+    { id: 4 },
+  ]
+
+  it("moves a part up together with its ingredients", () => {
+    const moved = rows()
+    movePart(moved, 3, "up")
+    expect(describeRows(moved)).toEqual(["# Krém", 3, "# Korpus", 1, 2, "# Poleva", 4])
+  })
+
+  it("moves a part down together with its ingredients", () => {
+    const moved = rows()
+    movePart(moved, 0, "down")
+    expect(describeRows(moved)).toEqual(["# Krém", 3, "# Korpus", 1, 2, "# Poleva", 4])
+  })
+
+  it("moves the first part above the ingredients that have no part", () => {
+    const moved = [{ id: 1 }, partHeading("Krém"), { id: 2 }]
+    movePart(moved, 1, "up")
+    expect(describeRows(moved)).toEqual(["# Krém", 2, 1])
+  })
+
+  it("leaves the first part alone when moved up and the last when moved down", () => {
+    const moved = rows()
+    movePart(moved, 0, "up")
+    movePart(moved, 5, "down")
+    expect(describeRows(moved)).toEqual(describeRows(rows()))
   })
 })

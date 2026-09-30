@@ -85,8 +85,7 @@ const chips = computed(() => {
       v-for="chip in chips"
       :key="chip.key"
       closable
-      :bordered="false"
-      type="info"
+      type="primary"
       @close="chip.onClose"
     >
       {{ chip.label }}

@@ -43,7 +43,7 @@ import {
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
 import { SHOW_COMMENT, SHOW_DETAILS } from "@/contrib/composables/expandFlags.js"
-import { addPart, isPartHeading } from "@/data/ingredientParts.js"
+import { addPart, isPartHeading, movePart } from "@/data/ingredientParts.js"
 
 const props = defineProps({
   inputs: Array,
@@ -256,6 +256,12 @@ const rowLabel = (input, index) => {
   const partStart = rows.findLastIndex((row, i) => i < index && isPartHeading(row))
   return `${index - partStart}. ${_.value.section[input.key]}`
 }
+const moveRow = (input, direction, index, move) => {
+  const rows = input.value.value
+  if (input.key === "ingredients" && isPartHeading(rows[index]))
+    movePart(rows, index, direction)
+  else move(direction, index)
+}
 const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_optional
 </script>
 
@@ -444,12 +450,12 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
                       size="tiny"
                     />
                     <n-button
-                      @click="() => move('up', index)"
+                      @click="moveRow(input, 'up', index, move)"
                       :render-icon="icon(faArrowUp)"
                       size="tiny"
                     />
                     <n-button
-                      @click="() => move('down', index)"
+                      @click="moveRow(input, 'down', index, move)"
                       :render-icon="icon(faArrowDown)"
                       size="tiny"
                     />

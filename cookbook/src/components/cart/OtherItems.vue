@@ -36,7 +36,7 @@ const onAdd = () => {
 
 <template>
   <n-flex vertical :size="8">
-    <n-text depth="3">{{ _.cart.other_items }}</n-text>
+    <div class="section-heading">{{ _.cart.other_items }}</div>
 
     <n-flex
       v-for="item in visibleItems"

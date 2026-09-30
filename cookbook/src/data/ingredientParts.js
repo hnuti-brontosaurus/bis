@@ -25,6 +25,29 @@ export const withoutPartHeadings = rows => {
   return ingredients
 }
 
+const partEnd = (rows, start) => {
+  const next = rows.findIndex((row, index) => index > start && isPartHeading(row))
+  return next === -1 ? rows.length : next
+}
+
+// A part travels with its ingredients, swapping places with the neighbouring
+// part; ingredients above the first heading count as one unnamed part.
+export const movePart = (rows, index, direction) => {
+  const end = partEnd(rows, index)
+  if (direction === "up") {
+    if (index === 0) return
+    const previous = Math.max(
+      rows.findLastIndex((row, i) => i < index && isPartHeading(row)),
+      0,
+    )
+    rows.splice(previous, 0, ...rows.splice(index, end - index))
+  } else {
+    if (end === rows.length) return
+    const moved = rows.splice(index, end - index)
+    rows.splice(partEnd(rows, index), 0, ...moved)
+  }
+}
+
 // The ingredients above the first heading become the first part, so splitting
 // a plain list keeps what the chef already wrote.
 export const addPart = rows => {

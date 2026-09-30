@@ -41,10 +41,9 @@ const columns = computed(() => {
     },
     {
       key: "ingredient.name",
-      colSpan: row => (isPartHeading(row) ? 3 : 1),
+      colSpan: row => (isPartHeading(row) ? 2 : 1),
       render: row => {
-        if (isPartHeading(row))
-          return h(NText, { strong: true, type: "primary" }, () => row.name)
+        if (isPartHeading(row)) return h("span", { class: "section-heading" }, row.name)
         return row.is_optional
           ? h("em", {}, row.ingredient?.name)
           : row.ingredient?.name
@@ -52,13 +51,15 @@ const columns = computed(() => {
     },
     {
       key: "amount",
+      align: "right",
+      className: "amount",
       render: row => {
         const amount = Math.round(row.amount * servings.value * 100) / 100
-        const text = `${amount} ${pluralizeUnit(amount, row.unit)}`
-        return row.is_optional ? h("em", {}, text) : text
+        const unit = h(NText, { depth: 3 }, () => pluralizeUnit(amount, row.unit))
+        return h(row.is_optional ? "em" : "span", {}, [`${amount} `, unit])
       },
     },
-    { type: "selection", disabled: isPartHeading },
+    { type: "selection" },
   ]
 })
 
@@ -72,10 +73,61 @@ const expandAll = () => {
   }
 }
 
+const toggled = (keys, key) =>
+  keys.includes(key) ? keys.filter(other => other !== key) : [...keys, key]
+
+// A part heading ticks or unticks every ingredient below it, and shows as
+// ticked exactly when all of them are.
+const updateReady = keys => {
+  const next = new Set(keys)
+  Object.entries(partIngredients.value).forEach(([heading, ingredients]) => {
+    if (next.has(heading) !== ready.value.includes(heading)) {
+      if (next.has(heading)) ingredients.forEach(key => next.add(key))
+      else ingredients.forEach(key => next.delete(key))
+    }
+    if (ingredients.every(key => next.has(key))) next.add(heading)
+    else next.delete(heading)
+  })
+  ready.value = [...next]
+}
+
+// The checkbox and the expand arrow are small targets, so the whole row opens
+// the comment and the whole checkbox cell ticks the ingredient; a row with
+// nothing to open ticks instead. Clicks that land on the controls themselves
+// are left to the table.
+const rowProps = row => ({
+  style: "cursor: pointer",
+  onClick: event => {
+    if (event.target.closest(".n-checkbox, .n-data-table-expand-trigger")) return
+    if (expandable(row) && !event.target.closest(".n-data-table-td--selection"))
+      expanded.value = toggled(expanded.value, row.key)
+    else updateReady(toggled(ready.value, row.key))
+  },
+})
+
 const data = computed(() => {
   return withPartHeadings(recipe.value.ingredients).map(row =>
     isPartHeading(row) ? { ...row, key: `part-${row.name}` } : { ...row, key: row.id },
   )
+})
+
+// The table has no header-row hook.
+const onHeaderClick = event => {
+  if (!event.target.closest(".n-data-table-thead")) return
+  if (event.target.closest(".n-checkbox, .n-button")) return
+  if (!event.target.closest(".n-data-table-th--selection")) expandAll()
+  else if (ready.value.length === data.value.length) updateReady([])
+  else updateReady(data.value.map(row => row.key))
+}
+
+const partIngredients = computed(() => {
+  const parts = {}
+  let heading
+  data.value.forEach(row => {
+    if (isPartHeading(row)) parts[(heading = row.key)] = []
+    else if (heading) parts[heading].push(row.key)
+  })
+  return parts
 })
 
 const dialog = useDialog()
@@ -103,8 +155,8 @@ const onConfirmAdd = group => {
 </script>
 
 <template>
-  <n-flex align="end" justify="space-between" :style="{ 'margin-bottom': '30px' }">
-    <n-h2 style="margin-bottom: 0">{{ _.recipes.ingredients }}</n-h2>
+  <n-flex align="center" justify="space-between">
+    <n-h2>{{ _.recipes.ingredients }}</n-h2>
     <n-flex align="baseline" :wrap="false">
       <n-text>{{ _.recipes.servings }}:</n-text>
       <n-input-group>
@@ -133,16 +185,25 @@ const onConfirmAdd = group => {
   <n-data-table
     :data="data"
     :columns="columns"
-    v-model:checked-row-keys="ready"
+    :row-props="rowProps"
+    :checked-row-keys="ready"
+    @update:checked-row-keys="updateReady"
     v-model:expanded-row-keys="expanded"
     :bordered="false"
     :bottom-bordered="false"
+    @click="onHeaderClick"
   >
   </n-data-table>
 </template>
 
 <style scoped>
-th {
-  background-color: black !important;
+:deep(.n-data-table-thead) {
+  cursor: pointer;
+}
+
+:deep(.amount) {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 </style>

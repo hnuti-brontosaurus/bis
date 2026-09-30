@@ -1,5 +1,7 @@
 <script setup>
-import { NForm, NButton, NFlex, NSwitch, useDialog } from "naive-ui"
+import { NForm, NButton, NH2, NSwitch, useDialog } from "naive-ui"
+import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { icon } from "@/contrib/composables/render.js"
 import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
@@ -87,14 +89,13 @@ const tagGroups = computed(() => [
   ),
 ])
 
-const inputs = computed(() => {
-  if (!recipe.value) return []
+const basicInputs = computed(() => {
   // Photo / intro / sources are required only when publishing the recipe;
   // non-public recipes can be saved as drafts without them. Backend mirrors
   // this in RecipeSerializer.validate.
   const publishedRequired = !!recipe.value.is_public
   return [
-    { type: "text", key: "name", required: true },
+    { type: "text", key: "name", required: true, span: 2 },
     // Only editors get to pick the chef; for plain chefs the field is
     // hidden and locked to their own chef_id by the onMounted guard.
     isEditor.value && {
@@ -122,68 +123,83 @@ const inputs = computed(() => {
       value: propertyRef(recipe, "required_time_id"),
     },
     { type: "image", key: "photo", required: publishedRequired },
-    ...tagGroups.value.map(group => ({
-      type: "checkboxes",
-      vertical: true,
-      title: group,
-      checkboxes: tagsStore.list
-        .filter(tag => tag.group === group)
-        .map(tag => ({
-          key: tag.id,
-          label: tag.name,
-          value: computed({
-            get: () => tagIds.value.includes(tag.id),
-            set: value => {
-              if (value && !tagIds.value.includes(tag.id))
-                recipe.value.tag_ids.push(tag.id)
-              if (!value)
-                recipe.value.tag_ids = recipe.value.tag_ids.filter(id => id !== tag.id)
-            },
-          }),
-        })),
-    })),
     {
       type: "text",
       key: "intro",
       required: publishedRequired,
-      new_line: true,
+      span: 2,
       extra: { type: "textarea" },
     },
     {
       type: "text",
       key: "sources",
       required: publishedRequired,
+      span: 2,
       extra: { type: "textarea" },
-    },
-    {
-      title: _.value.recipes.ingredients,
-      hide_label: true,
-      type: "section",
-      key: "ingredients",
-      value: ingredientRows,
-      span: 2,
-    },
-    {
-      title: _.value.recipes.steps,
-      hide_label: true,
-      type: "section",
-      key: "steps",
-      span: 2,
-    },
-    {
-      title: _.value.recipes.tips,
-      hide_label: true,
-      type: "section",
-      key: "tips",
-      span: 2,
     },
   ].filter(Boolean)
 })
+
+const tagInputs = computed(() =>
+  tagGroups.value.map(group => ({
+    type: "checkboxes",
+    vertical: true,
+    title: group,
+    checkboxes: tagsStore.list
+      .filter(tag => tag.group === group)
+      .map(tag => ({
+        key: tag.id,
+        label: tag.name,
+        value: computed({
+          get: () => tagIds.value.includes(tag.id),
+          set: value => {
+            if (value && !tagIds.value.includes(tag.id))
+              recipe.value.tag_ids.push(tag.id)
+            if (!value)
+              recipe.value.tag_ids = recipe.value.tag_ids.filter(id => id !== tag.id)
+          },
+        }),
+      })),
+  })),
+)
+
+const sectionInputs = computed(() => [
+  {
+    title: _.value.recipes.ingredients,
+    hide_label: true,
+    type: "section",
+    hide_feedback: true,
+    key: "ingredients",
+    value: ingredientRows,
+    span: 2,
+  },
+  {
+    title: _.value.recipes.steps,
+    hide_label: true,
+    type: "section",
+    hide_feedback: true,
+    key: "steps",
+    span: 2,
+  },
+  {
+    title: _.value.recipes.tips,
+    hide_label: true,
+    type: "section",
+    hide_feedback: true,
+    key: "tips",
+    span: 2,
+  },
+])
 
 // Per-field backend errors keyed by field name. GenericForm renders
 // non_field_errors as an alert and scrolls to the first invalid field
 // whenever this object changes.
 const backendErrors = ref({})
+const fieldErrors = computed(() =>
+  Object.fromEntries(
+    Object.entries(backendErrors.value).filter(([key]) => key !== "non_field_errors"),
+  ),
+)
 
 const onDelete = () => {
   dialog.warning({
@@ -246,31 +262,53 @@ const save = async () => {
 
 <template>
   <AppPage :title="recipe_id ? _.edit_recipe.title_edit : _.edit_recipe.title_new">
-    <template #actions>
-      <n-flex align="center">
-        <n-switch
-          v-if="recipe"
-          :value="!!recipe.is_public"
-          @update:value="v => (recipe.is_public = v)"
-          :round="false"
-          size="large"
-        >
-          <template #checked>{{ _.recipes.is_public }}</template>
-          <template #unchecked>{{ _.recipes.is_private }}</template>
-        </n-switch>
-        <n-button @click="save">{{ _.edit_recipe.save }}</n-button>
-        <n-button v-if="recipe_id" type="error" ghost @click="onDelete">{{
-          _.recipes.delete
-        }}</n-button>
-      </n-flex>
+    <template v-if="recipe" #actions>
+      <n-switch
+        :value="!!recipe.is_public"
+        @update:value="v => (recipe.is_public = v)"
+        :round="false"
+      >
+        <template #checked>{{ _.recipes.is_public }}</template>
+        <template #unchecked>{{ _.recipes.is_private }}</template>
+      </n-switch>
+      <n-button type="primary" :render-icon="icon(faCheck)" @click="save">{{
+        _.edit_recipe.save
+      }}</n-button>
+      <n-button
+        v-if="recipe_id"
+        type="error"
+        ghost
+        :render-icon="icon(faTrash)"
+        @click="onDelete"
+        >{{ _.recipes.delete }}</n-button
+      >
     </template>
-    <n-form v-if="recipe" ref="form" :model="recipe">
-      <GenericForm
-        v-model:data="recipe"
-        :inputs="inputs"
-        :backend-errors="backendErrors"
-        group="Recipe"
-      />
+    <n-form v-if="recipe" ref="form" :model="recipe" class="form">
+      <section class="panel">
+        <GenericForm
+          v-model:data="recipe"
+          :inputs="basicInputs"
+          :backend-errors="backendErrors"
+          group="Recipe"
+        />
+      </section>
+      <section v-if="tagInputs.length" class="panel">
+        <n-h2>{{ _.recipes.tags }}</n-h2>
+        <GenericForm
+          v-model:data="recipe"
+          :inputs="tagInputs"
+          :backend-errors="fieldErrors"
+          group="Recipe"
+        />
+      </section>
+      <section v-for="input in sectionInputs" :key="input.key" class="panel">
+        <GenericForm
+          v-model:data="recipe"
+          :inputs="[input]"
+          :backend-errors="fieldErrors"
+          group="Recipe"
+        />
+      </section>
     </n-form>
     <UploadPhotosDialog
       v-model:show="showUploadDialog"
@@ -280,4 +318,10 @@ const save = async () => {
   </AppPage>
 </template>
 
-<style scoped></style>
+<style scoped>
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+</style>

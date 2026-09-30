@@ -202,7 +202,7 @@ test.describe("cookbook smoke", () => {
     })
   })
 
-  test("changes ingredient unit and recomputes the amount", async ({
+  test("changes ingredient unit and keeps the amount", async ({
     page,
     api,
     recipe,
@@ -259,13 +259,13 @@ test.describe("cookbook smoke", () => {
     await expect(option("kus")).toHaveCount(0)
     await pickOption(page, unitSelect, () => option("gram"))
 
-    // 2 kg → 2000 g.
+    // Changing the unit leaves the typed amount alone.
     await expect(
       page
         .locator(".n-collapse-item", { hasText: "Ingredience" })
         .locator(".n-input-number input")
         .first(),
-    ).toHaveValue("2000")
+    ).toHaveValue("2")
 
     await save(page)
     await expect(page).toHaveURL(new RegExp(`/cookbook/recipe/${recipe.id}/$`))
@@ -276,7 +276,7 @@ test.describe("cookbook smoke", () => {
     const ingredient = saved.ingredients.find(row => row.ingredient_id === cukr.id)
     expect(ingredient, "Cukr row").toBeTruthy()
     expect(ingredient.unit_id).toBe(bySlug.grams.id)
-    expect(ingredient.amount).toBe(2000)
+    expect(ingredient.amount).toBe(2)
   })
 
   test("splits ingredients into named parts", async ({ page, api, recipe }) => {

@@ -3,17 +3,16 @@ import {
   NAlert,
   NFlex,
   NTag,
-  NList,
   NText,
   NButton,
   NSwitch,
-  NListItem,
   NImage,
+  NH1,
   NH2,
-  NGridItem,
-  NGrid,
   useDialog,
 } from "naive-ui"
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { icon } from "@/contrib/composables/render.js"
 import { computed, onMounted, onUnmounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
@@ -83,6 +82,14 @@ const togglePublic = async value => {
   }
 }
 
+const facts = computed(() =>
+  [
+    [_.value.recipes.chef, recipe.value.chef],
+    [_.value.recipes.required_time, recipe.value.required_time],
+    [_.value.recipes.difficulty, recipe.value.difficulty],
+  ].filter(([, item]) => item),
+)
+
 const onDelete = () => {
   dialog.warning({
     title: _.value.recipes.delete_title,
@@ -102,56 +109,47 @@ const onDelete = () => {
 </script>
 
 <template>
-  <AppPage v-if="recipe" vertical :title="recipe.name">
-    <template #actions>
-      <n-flex v-if="canEdit" align="center">
-        <n-switch
-          :value="!!recipe.is_public"
-          @update:value="togglePublic"
-          :round="false"
-        >
-          <template #checked>{{ _.recipes.is_public }}</template>
-          <template #unchecked>{{ _.recipes.is_public }}</template>
-        </n-switch>
-        <n-button
-          @click="$router.push({ name: 'edit_recipe', params: { id: recipe.id } })"
-          >{{ _.recipes.edit }}</n-button
-        >
-        <n-button type="error" ghost @click="onDelete">{{ _.recipes.delete }}</n-button>
-      </n-flex>
+  <AppPage v-if="recipe">
+    <template v-if="canEdit" #actions>
+      <n-switch :value="!!recipe.is_public" @update:value="togglePublic" :round="false">
+        <template #checked>{{ _.recipes.is_public }}</template>
+        <template #unchecked>{{ _.recipes.is_public }}</template>
+      </n-switch>
+      <n-button
+        :render-icon="icon(faPen)"
+        @click="$router.push({ name: 'edit_recipe', params: { id: recipe.id } })"
+        >{{ _.recipes.edit }}</n-button
+      >
+      <n-button type="error" ghost :render-icon="icon(faTrash)" @click="onDelete">{{
+        _.recipes.delete
+      }}</n-button>
     </template>
-
-    <template #extra>
-      <n-flex>
-        <n-image
-          v-if="recipe.photo"
-          :src="recipe.photo.large"
-          :alt="recipe.name"
-          height="300"
-        />
-        <n-list>
-          <n-list-item v-if="recipe.chef">
-            <template #prefix>{{ _.recipes.chef }}:</template>{{ recipe.chef.name }}
-          </n-list-item>
-          <n-list-item v-if="recipe.difficulty">
-            <template #prefix>{{ _.recipes.difficulty }}:</template
-            >{{ recipe.difficulty.name }}
-          </n-list-item>
-          <n-list-item v-if="recipe.required_time">
-            <template #prefix>{{ _.recipes.required_time }}:</template
-            >{{ recipe.required_time.name }}
-          </n-list-item>
-          <n-list-item>
-            <template #prefix>{{ _.recipes.tags }}:</template>
-            <n-flex size="small">
-              <n-tag v-for="tag in recipe.tags" :key="tag.id" round>{{
-                tag.name
-              }}</n-tag>
-            </n-flex>
-          </n-list-item>
-        </n-list>
-      </n-flex>
-    </template>
+    <div class="hero" :class="{ 'with-photo': recipe.photo }">
+      <n-image
+        v-if="recipe.photo"
+        class="hero-photo"
+        :src="recipe.photo.large"
+        :alt="recipe.name"
+        object-fit="cover"
+      />
+      <div class="hero-text">
+        <n-flex v-if="recipe.tags.length" :size="6">
+          <n-tag v-for="tag in recipe.tags" :key="tag.id" size="small">{{
+            tag.name
+          }}</n-tag>
+        </n-flex>
+        <n-h1>{{ recipe.name }}</n-h1>
+        <n-text v-if="recipe.intro" depth="3" class="prose">
+          <LinkifiedText :text="recipe.intro" />
+        </n-text>
+        <div class="facts">
+          <div v-for="[label, item] in facts" :key="label" class="fact">
+            <div class="fact-label">{{ label }}</div>
+            <div class="fact-value">{{ item.name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <n-alert
       v-if="recipe.allergens.length"
@@ -161,15 +159,11 @@ const onDelete = () => {
       "
     />
 
-    <n-text v-if="recipe.intro">
-      <LinkifiedText :text="recipe.intro" />
-    </n-text>
-
-    <n-grid cols="1 m:2" responsive="screen" x-gap="64" y-gap="64">
-      <n-grid-item>
+    <div class="columns">
+      <section class="panel">
         <RecipeIngredients :recipe="recipe"></RecipeIngredients>
-      </n-grid-item>
-      <n-grid-item>
+      </section>
+      <section class="panel">
         <n-flex justify="space-between" align="center" :wrap="false">
           <n-h2>{{ _.recipes.steps }}</n-h2>
           <WithHint
@@ -183,11 +177,15 @@ const onDelete = () => {
             </n-switch>
           </WithHint>
         </n-flex>
-        <CollapseList :data="recipe.steps" checked-key="done">
+        <CollapseList :data="recipe.steps" checked-key="done" class="steps">
           <template #header="{ item, i }">
-            {{ i + 1 }}.
-            <em v-if="item.is_optional">{{ item.name }}</em>
-            <template v-else>{{ item.name }}</template>
+            <span class="step-number display-font" :class="{ done: item.done }">{{
+              i + 1
+            }}</span>
+            <em v-if="item.is_optional" :class="{ muted: item.done }">{{
+              item.name
+            }}</em>
+            <span v-else :class="{ muted: item.done }">{{ item.name }}</span>
           </template>
           <template #default="{ item }">
             <n-flex v-if="item.description || item.photo">
@@ -204,25 +202,117 @@ const onDelete = () => {
             </n-flex>
           </template>
         </CollapseList>
-      </n-grid-item>
-      <n-grid-item v-if="recipe.tips.length">
-        <n-h2>{{ _.recipes.tips }}</n-h2>
-        <CollapseList :data="recipe.tips">
-          <template #default="{ item }">
-            <LinkifiedText :text="item.description" />
-          </template>
-        </CollapseList>
-      </n-grid-item>
-      <n-grid-item>
-        <n-h2>{{ _.recipes.comments }}</n-h2>
-        <CollapseList :data="recipe.comments" />
-      </n-grid-item>
-      <n-grid-item span="2">
-        <n-h2>{{ _.recipes.sources }}</n-h2>
-        <n-text><LinkifiedText :text="recipe.sources" /></n-text>
-      </n-grid-item>
-    </n-grid>
+      </section>
+    </div>
+
+    <section v-if="recipe.tips.length">
+      <n-h2>{{ _.recipes.tips }}</n-h2>
+      <CollapseList :data="recipe.tips" class="tips">
+        <template #default="{ item }">
+          <LinkifiedText :text="item.description" />
+        </template>
+      </CollapseList>
+    </section>
+    <section v-if="recipe.comments.length">
+      <n-h2>{{ _.recipes.comments }}</n-h2>
+      <CollapseList :data="recipe.comments" />
+    </section>
+    <section v-if="recipe.sources">
+      <n-h2>{{ _.recipes.sources }}</n-h2>
+      <n-text class="prose"><LinkifiedText :text="recipe.sources" /></n-text>
+    </section>
   </AppPage>
 </template>
 
-<style scoped></style>
+<style scoped>
+.hero {
+  display: grid;
+  gap: 28px;
+  align-items: center;
+}
+
+.hero-photo {
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.hero-photo :deep(img) {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.hero-text .n-h1 {
+  margin: 0;
+}
+
+.prose {
+  max-width: 66ch;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.fact {
+  padding: 4px 12px;
+  border-left: 2px solid var(--primary);
+}
+
+.fact-label {
+  color: var(--muted);
+  font-size: 0.74em;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.fact-value {
+  font-weight: 600;
+}
+
+.step-number {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 12px;
+  border-radius: 3px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.step-number.done {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.tips :deep(.n-collapse-item) {
+  max-width: 66ch;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border: 0;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 3px 3px 0;
+  background: var(--accent-soft);
+}
+
+.tips :deep(.n-collapse-item__header) {
+  padding: 0;
+}
+
+@media (min-width: 720px) {
+  .hero.with-photo {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  }
+}
+</style>
