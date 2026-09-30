@@ -1,6 +1,6 @@
 import { FC, useState } from 'react'
 import { api } from 'app/services/bis'
-import { Loading, StyledModal } from 'components'
+import { InfoBox, Loading, StyledModal } from 'components'
 import { EventFeedbackRead } from 'app/services/testApi'
 import { FullEvent } from 'app/services/bisTypes'
 import { EventFeedbackTable } from './EventFeedbackTable'
@@ -31,6 +31,10 @@ export const EventFeedback: FC<{ event: FullEvent }> = ({ event }) => {
           <ExportFeedbackButton eventId={event.id} />
         </div>
       </h2>
+      <InfoBox>
+        Odpovědi s číselným hodnocením používají škálu 1 (zcela splňuje /
+        nejlepší) &mdash; 5 (zcela nesplňuje / nejhorší).
+      </InfoBox>
       <EventFeedbackTable
         inquiries={inquiries.results}
         feedbacks={feedbacks.results}
