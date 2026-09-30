@@ -206,7 +206,7 @@ function getAge(userDateString: string, targetDateString?: string): number {
 }
 
 /*
-// https://github.com/lamanchy/bis/blob/master/backend/bis/models.py
+// https://github.com/hnuti-brontosaurus/bis/blob/main/backend/bis/models.py
 @classmethod
 def user_has_required_qualification(cls, user, required_one_of):
     qualifications = user.get_qualifications()
