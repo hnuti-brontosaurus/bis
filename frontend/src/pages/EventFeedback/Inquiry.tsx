@@ -114,7 +114,11 @@ const ScaleInquiry: FC = () => {
       <div className={styles.scale}>
         <div>
           <fieldset className={styles.scaleRange}>
-            <div className={styles.scaleLabel}>zcela nesplňuje</div>
+            <div className={styles.scaleLabel}>
+              zcela splňuje
+              <br />
+              (nejlepší)
+            </div>
             {range(1, 6).map(rating => (
               <label
                 key={rating}
@@ -130,7 +134,11 @@ const ScaleInquiry: FC = () => {
                 {rating}
               </label>
             ))}
-            <div className={styles.scaleLabel}>zcela splňuje</div>
+            <div className={styles.scaleLabel}>
+              zcela nesplňuje
+              <br />
+              (nejhorší)
+            </div>
           </fieldset>
         </div>
         {inquiry.data?.comment && (
