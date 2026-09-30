@@ -366,6 +366,31 @@ test.describe("cookbook smoke", () => {
     expect(saved.photo, "photo after removal").toBeNull()
   })
 
+  test("opens a recipe at its default servings with the note", async ({
+    page,
+    api,
+    recipe,
+  }) => {
+    await api.patch(`${API_BASE}/recipes/${recipe.id}/`, {
+      data: {
+        default_servings: 6,
+        servings_note: "Jeden plech",
+        difficulty_note: "Těsto kyne přes noc",
+      },
+    })
+
+    await page.goto(`/kucharka/recept/${recipe.id}/`)
+    const servings = page.locator(".n-input-number input").first()
+    await expect(servings).toHaveValue("6.0")
+    await expect(page.getByText("Jeden plech")).toBeVisible()
+    await expect(page.getByText("Těsto kyne přes noc")).toBeVisible()
+
+    await servings.fill("9")
+    await servings.blur()
+    await page.reload()
+    await expect(page.locator(".n-input-number input").first()).toHaveValue("6.0")
+  })
+
   test("renders chefs view", async ({ page }) => {
     await page.goto("/kucharka/kucharstvo/")
     await expect(page.getByText("Kuchařstvo").first()).toBeVisible()

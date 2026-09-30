@@ -5,7 +5,6 @@ import IngredientInput from "@/contrib/components/IngredientInput.vue"
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
 import { _ } from "@/composables/translations.js"
-import { servings } from "@/composables/servings.js"
 
 const { icon } = useRender()
 
@@ -14,6 +13,7 @@ const props = defineProps({
   recipe: { type: Object, required: true },
 })
 const emit = defineEmits(["update:show", "confirm"])
+const servings = defineModel("servings", { type: Number, required: true })
 
 const newRowKey = () =>
   globalThis.crypto?.randomUUID?.() ??

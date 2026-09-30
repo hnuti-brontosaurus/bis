@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 3e2bb20942c70feb
+// source-hash: d4f174c6e7cea7bf
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1004,6 +1004,9 @@ export const recipe = {
   difficulty: 'Náročnost',
   intro: 'Úvod',
   sources: 'Zdroje',
+  default_servings: 'Výchozí počet porcí',
+  servings_note: 'Poznámka k porcím',
+  difficulty_note: 'Poznámka k náročnosti a času',
   tags: 'Tagy',
   required_time: 'Časová náročnost',
   steps: 'Postup',
@@ -1271,6 +1274,11 @@ export const cookbook = {
     split_into_parts: 'Rozdělit na části',
     add_part: 'Přidat část',
     part_placeholder: 'Název části, např. krém',
+    difficulty_note_hint:
+      'Upřesnění obtížnosti a časové náročnosti, např. „těsto musí přes noc kynout“. Zobrazí se nad prvním krokem postupu.',
+    default_servings_hint: 'Pro kolik porcí se recept po otevření zobrazí.',
+    servings_note_hint:
+      'Co se porcí myslí, např. „typická porce pro jednoho“ nebo „na jeden plech“. Zobrazí se pod počtem porcí.',
   },
   home: {
     title: 'Veganská Brontosauří kuchařka',

@@ -280,6 +280,37 @@ def test_recipe_create_private_without_photo_intro_sources(
     assert response.data["is_public"] is False
     assert response.data["intro"] == ""
     assert response.data["sources"] == ""
+    assert response.data["default_servings"] == 2
+    assert response.data["servings_note"] == ""
+
+
+@pytest.mark.django_db
+def test_recipe_update_servings(api_client, recipe):
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {
+            "default_servings": 6,
+            "servings_note": "Jeden plech",
+            "difficulty_note": "Těsto kyne přes noc",
+        },
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    recipe.refresh_from_db()
+    assert recipe.default_servings == 6
+    assert recipe.servings_note == "Jeden plech"
+    assert recipe.difficulty_note == "Těsto kyne přes noc"
+
+
+@pytest.mark.django_db
+def test_recipe_rejects_zero_default_servings(api_client, recipe):
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {"default_servings": 0},
+        format="json",
+    )
+    assert response.status_code == 400
+    assert "default_servings" in response.data
 
 
 @pytest.mark.django_db

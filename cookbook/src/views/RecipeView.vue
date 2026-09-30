@@ -177,6 +177,9 @@ const onDelete = () => {
             </n-switch>
           </WithHint>
         </n-flex>
+        <n-text v-if="recipe.difficulty_note" depth="3" class="prose difficulty-note">
+          <LinkifiedText :text="recipe.difficulty_note" />
+        </n-text>
         <CollapseList :data="recipe.steps" checked-key="done" class="steps">
           <template #header="{ item, i }">
             <span class="step-number display-font" :class="{ done: item.done }">{{
@@ -251,6 +254,11 @@ const onDelete = () => {
 
 .hero-text .n-h1 {
   margin: 0;
+}
+
+.difficulty-note {
+  display: block;
+  margin-bottom: 8px;
 }
 
 .prose {

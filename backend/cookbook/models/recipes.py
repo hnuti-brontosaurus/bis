@@ -10,6 +10,7 @@ from cookbook_categories.models import (
     RecipeTag,
     Unit,
 )
+from django.core.validators import MinValueValidator
 from django.db import models as m
 from django.db.models import CASCADE, PROTECT
 from translation.translate import translate_model
@@ -29,6 +30,11 @@ class Recipe(ChangeMixin, BaseModel):
     photo = ThumbnailImageField(upload_to="recipes", blank=True)
     intro = m.TextField(blank=True)
     sources = m.TextField(blank=True)
+    default_servings = m.PositiveSmallIntegerField(
+        default=2, validators=[MinValueValidator(1)]
+    )
+    servings_note = m.TextField(blank=True)
+    difficulty_note = m.TextField(blank=True)
     is_public = m.BooleanField(default=False)
     # Denormalized cache of the allergens contributed by this recipe's
     # ingredients. Kept in sync by signals in cookbook.signals (whenever a

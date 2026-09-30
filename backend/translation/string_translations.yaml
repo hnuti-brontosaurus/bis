@@ -177,6 +177,9 @@ cookbook:
     split_into_parts: Rozdělit na části
     add_part: Přidat část
     part_placeholder: Název části, např. krém
+    difficulty_note_hint: Upřesnění obtížnosti a časové náročnosti, např. „těsto musí přes noc kynout“. Zobrazí se nad prvním krokem postupu.
+    default_servings_hint: Pro kolik porcí se recept po otevření zobrazí.
+    servings_note_hint: Co se porcí myslí, např. „typická porce pro jednoho“ nebo „na jeden plech“. Zobrazí se pod počtem porcí.
 
   home:
     title: Veganská Brontosauří kuchařka

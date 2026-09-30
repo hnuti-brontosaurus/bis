@@ -9,8 +9,7 @@ import {
   NInputGroup,
   useDialog,
 } from "naive-ui"
-import { computed, h, ref } from "vue"
-import { servings } from "@/composables/servings.js"
+import { computed, h, ref, watch } from "vue"
 import {
   faCartPlus,
   faChevronDown,
@@ -21,11 +20,18 @@ import { _ } from "@/composables/translations.js"
 import { pluralizeUnit } from "@/data/unitConversion.js"
 import { useCartStore } from "@/data/cart.js"
 import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
+import LinkifiedText from "@/components/app/LinkifiedText.vue"
 import { isPartHeading, withPartHeadings } from "@/data/ingredientParts.js"
 
 const { icon } = useRender()
 const props = defineProps(["recipe"])
 const recipe = computed(() => props.recipe)
+const servings = ref()
+watch(
+  () => [recipe.value.id, recipe.value.default_servings],
+  () => (servings.value = recipe.value.default_servings),
+  { immediate: true },
+)
 const expandable = row => row.comment
 const columns = computed(() => {
   return [
@@ -33,9 +39,16 @@ const columns = computed(() => {
       type: "expand",
       expandable,
       renderExpand: row => row.comment,
+      // Kept in the layout when there is nothing to expand, because the
+      // button is what gives the header row its height.
       title: h(
         NButton,
-        { size: "tiny", quaternary: true, onClick: expandAll },
+        {
+          size: "tiny",
+          quaternary: true,
+          onClick: expandAll,
+          style: recipe.value.ingredients.some(expandable) ? "" : "visibility: hidden",
+        },
         expanded.value.length ? icon(faChevronDown) : icon(faChevronRight),
       ),
     },
@@ -175,9 +188,13 @@ const onConfirmAdd = group => {
       </n-input-group>
     </n-flex>
   </n-flex>
+  <n-text v-if="recipe.servings_note" depth="3" class="servings-note">
+    <LinkifiedText :text="recipe.servings_note" />
+  </n-text>
 
   <AddToCartDialog
     v-model:show="showAddToCart"
+    v-model:servings="servings"
     :recipe="recipe"
     @confirm="onConfirmAdd"
   />
@@ -197,6 +214,12 @@ const onConfirmAdd = group => {
 </template>
 
 <style scoped>
+.servings-note {
+  display: block;
+  max-width: 66ch;
+  margin-bottom: 8px;
+}
+
 :deep(.n-data-table-thead) {
   cursor: pointer;
 }

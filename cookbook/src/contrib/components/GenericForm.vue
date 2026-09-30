@@ -306,6 +306,7 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
           v-model:value="input.value.value"
           :clearable="!input.required"
           placeholder=""
+          style="width: 100%"
           v-bind="input.extra"
         />
 

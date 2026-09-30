@@ -885,6 +885,9 @@ Recipe:
     difficulty: Náročnost
     intro: Úvod
     sources: Zdroje
+    default_servings: Výchozí počet porcí
+    servings_note: Poznámka k porcím
+    difficulty_note: Poznámka k náročnosti a času
     tags: Tagy
     required_time: Časová náročnost
     steps: Postup
