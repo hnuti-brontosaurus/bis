@@ -38,7 +38,7 @@ function add_form(el) {
     let type = info_el.name.split('-')[0]
     let total = info_el.value
 
-    let els = Array.from(form.querySelectorAll(`form > [name^=${type}-${total-1}-]`))
+    let els = Array.from(form.querySelectorAll(`:scope > [name^=${type}-${total-1}-]`))
     els = [els[0].previousElementSibling, els[0], els[1]]
     let new_els = $(els).clone(true)
 

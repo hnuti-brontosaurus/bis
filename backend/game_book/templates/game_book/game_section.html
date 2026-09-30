@@ -1,0 +1,4 @@
+{% if value %}
+    <h3 class="section-label">{{ name }}</h3>
+    <div class="prose">{% if is_html %}{{ value|safe }}{% else %}{{ value|linebreaks }}{% endif %}</div>
+{% endif %}

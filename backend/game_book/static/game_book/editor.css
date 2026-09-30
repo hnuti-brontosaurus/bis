@@ -1,0 +1,27 @@
+@import url("fonts.css");
+
+body {
+    background: #f8f5ec;
+    color: #29251e;
+    font-family: "Source Sans 3", "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+body.dark {
+    background: #25201a;
+    color: #eee6d7;
+}
+
+h3 {
+    font-family: "Bitter", Georgia, serif;
+    font-size: 1.12rem;
+}
+
+a {
+    color: #186e35;
+}
+
+body.dark a {
+    color: #6fcb8b;
+}

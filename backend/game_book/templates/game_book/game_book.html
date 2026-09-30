@@ -3,178 +3,103 @@
 {% load django_bootstrap5 static game_book_tags %}
 
 {% block content %}
-    <div class="row mb-3">
-        <div class="col d-inline-flex gap-1 align-items-center flex-wrap">
-            Rychlé filtry:
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({tags: '2'})">🤝 Seznamky
-            </div>
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({tags: '7'})">🐁 Drobničky
-            </div>
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({tags: '8'})">🌱 Eko
-            </div>
-            {% if request.user.is_authenticated %}
-                <div class="btn btn-outline-secondary"
-                     onclick="handle_quick_search_button_submit({only_my_games: 'on'})">🐷 Mé
-                </div>
-                <div class="btn btn-outline-secondary"
-                     onclick="handle_quick_search_button_submit({only_my_favourites: 'on'})">⭐ Mnou oblíbené
-                </div>
-            {% endif %}
-            <div class="btn btn-outline-secondary"
-                 onclick="handle_quick_search_button_submit({is_verified: 'on'})">✅ Ověřené
-            </div>
-            <a class="btn btn-secondary ms-auto" data-bs-toggle="offcanvas" href="#filterPanel" role="button">
-                Vlastní filtry</a>
-
-            <form class="offcanvas offcanvas-end" tabindex="-1" id="filterPanel" aria-labelledby="filterPanelLabel"
-                  method="get">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title" id="filterPanelLabel">Vlastní filtry</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    {% bootstrap_form form layout="floating" %}
-                </div>
-                <div class="offcanvas-header justify-content-end gap-1">
-                    <button type="button" class="btn btn-outline-secondary" onclick="location.search = ''">
-                        Reset
-                    </button>
-                    {% bootstrap_button button_type="submit" content="Hledat" %}
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="row">
-        <form class="col" onsubmit="handle_quick_search_form_submit(this, event)" id="search_form">
-            <div class="row">
-                <div class="col-md-6 col-lg-4 d-inline-flex gap-1 align-items-center mb-3">
-                    <input type="text" name="search_input" id="search_input" class="form-control w-sm-25"
-                           placeholder="Hledej v textu"
-                           {% if form.search_input.value %}value="{{ form.search_input.value }}" {% endif %}>
-                    <input type="submit" class="btn btn-primary" value="Hledej">
-                </div>
-                <div class="col-md-6 col-lg-8 d-inline-flex gap-1 align-items-center mb-3">
-                    <button type="button" class="btn btn-outline-secondary ms-auto" onclick="location.search = ''">
-                        reset
-                    </button>
-                    <select name="order" id="order" class="form-select w-auto"
-                            onchange="this.form.submit()">
-                        {% for value, option in form.fields.order.choices %}
-                            <option value="{{ value }}"
-                                    {% if value == form.order.value %}selected{% endif %}>{{ option }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+    <div class="page-head">
+        <h1>Programy</h1>
+        <form class="page-head-tools search-form" onsubmit="handle_quick_search_form_submit(this, event)" id="search_form">
+            <label class="search-field">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search_input" id="search_input" placeholder="Hledej v textu"
+                       {% if form.search_input.value %}value="{{ form.search_input.value }}" {% endif %}>
+            </label>
+            <input type="submit" class="btn btn-primary" value="Hledej">
+            <select name="order" id="order" class="form-select w-auto" aria-label="{{ form.order.label }}"
+                    onchange="this.form.submit()">
+                {% for value, option in form.fields.order.choices %}
+                    <option value="{{ value }}"
+                            {% if value == form.order.value %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
         </form>
     </div>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+
+    <div class="chip-row">
+        <button type="button" class="chip{% if request.GET.tags == "2" %} active{% endif %}"
+                onclick="handle_quick_search_button_submit({tags: '2'})">🤝 Seznamky
+        </button>
+        <button type="button" class="chip{% if request.GET.tags == "7" %} active{% endif %}"
+                onclick="handle_quick_search_button_submit({tags: '7'})">🐁 Drobničky
+        </button>
+        <button type="button" class="chip{% if request.GET.tags == "8" %} active{% endif %}"
+                onclick="handle_quick_search_button_submit({tags: '8'})">🌱 Eko
+        </button>
+        {% if request.user.is_authenticated %}
+            <button type="button" class="chip{% if request.GET.only_my_games %} active{% endif %}"
+                    onclick="handle_quick_search_button_submit({only_my_games: 'on'})">🐷 Mé
+            </button>
+            <button type="button" class="chip{% if request.GET.only_my_favourites %} active{% endif %}"
+                    onclick="handle_quick_search_button_submit({only_my_favourites: 'on'})">⭐ Mnou oblíbené
+            </button>
+        {% endif %}
+        <button type="button" class="chip{% if request.GET.is_verified %} active{% endif %}"
+                onclick="handle_quick_search_button_submit({is_verified: 'on'})">✅ Ověřené
+        </button>
+        <span class="flex-grow-1"></span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.search = ''">
+            <i class="bi bi-x-lg"></i>Reset
+        </button>
+        <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="offcanvas" href="#filterPanel" role="button">
+            <i class="bi bi-funnel"></i>Vlastní filtry</a>
+    </div>
+
+    <form class="offcanvas offcanvas-end" tabindex="-1" id="filterPanel" aria-labelledby="filterPanelLabel"
+          method="get">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title" id="filterPanelLabel">Vlastní filtry</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            {% bootstrap_form form layout="floating" %}
+        </div>
+        <div class="offcanvas-header justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" onclick="location.search = ''">
+                Reset
+            </button>
+            {% bootstrap_button button_type="submit" content="Hledat" %}
+        </div>
+    </form>
+
+    <div class="game-grid">
         {% for game in games %}
-            <div class="col">
-                <div class="card pointer" href="{% url "game" game.pk %}">
-                    <div class="card-body" style="cursor: pointer" onclick="location.href = '{% url "game" game.pk %}'">
-                        <a class="btn btn-outline-secondary ms-1 float-end"
-                           onclick="toggle_state(event, this, {{ game.pk }}, 'favourites')"
-                           style="margin-top: -0.8rem; margin-right: -0.8rem"
-                           role="button"><i
-                                class="bi bi-star{% if request.user in game.favourites.all %}-fill{% endif %}"></i></a>
-                        <a class="btn btn-outline-secondary ms-1 float-end"
-                           onclick="toggle_state(event, this, {{ game.pk }}, 'is_verified')"
-                           style="margin-top: -0.8rem; "
-                           role="button"><i class="bi bi-patch-check{% if game.is_verified %}-fill{% endif %}"></i></a>
-                        <a class="btn btn-outline-secondary ms-1 float-end"
-                           onclick="toggle_state(event, this, {{ game.pk }}, 'thumbs_up')"
-                           style="margin-top: -0.8rem; "
-                           role="button"><i
-                                class="bi bi-hand-thumbs-up{% if request.user in game.thumbs_up.all %}-fill{% endif %}"></i></a>
-                        <a class="btn btn-outline-secondary ms-1 float-end"
-                           onclick="toggle_state(event, this, {{ game.pk }}, 'watchers')"
-                           style="margin-top: -0.8rem; "
-                           role="button"><i
-                                class="bi bi-eye{% if request.user in game.watchers.all %}-fill{% endif %}"></i></a>
-                        <h5 class="card-title">{{ game.name }}</h5>
-                        <p class="card-text">{{ game.short_description }}</p>
-                    </div>
-                    <div class="card-footer">
-                        {% for tag in game.tags.all %}{% category_emoji tag %}{% endfor %}
-                        <div class="vr"></div>
-                        <span>{% category_emoji game.physical_category %}</span>
-                        <span>{% category_emoji game.mental_category %}</span>
-                        <div class="vr"></div>
-                        {% for c in game.location_category.all %}{% category_emoji c %}{% endfor %}
-                        <div class="vr"></div>
-                        {% for c in game.participant_number_category.all %}{% category_emoji c %}{% endfor %}
-                        <div class="vr"></div>
-                        {% for c in game.participant_age_category.all %}{% category_emoji c %}{% endfor %}
-                        <div class="vr"></div>
-                        <span>{% category_emoji game.game_length_category %}</span>
-                        <span>{% category_emoji game.preparation_length_category %}</span>
-                        <span>{% category_emoji game.material_requirement_category %}</span>
-                        <span>{% category_emoji game.organizers_number_category %}</span>
-                    </div>
+            <article class="game-card" onclick="location.href = '{% url "game" game.pk %}'">
+                <div class="game-card-body">
+                    <h3><a href="{% url "game" game.pk %}">{{ game.name }}</a></h3>
+                    <p class="game-card-description">{{ game.short_description }}</p>
+                    {% include "game_book/game_actions.html" %}
                 </div>
-            </div>
+                <div class="game-card-emojis">
+                    <span>{% for tag in game.tags.all %}{% category_emoji tag %}{% endfor %}</span>
+                    <span>
+                        {% category_emoji game.physical_category %}
+                        {% category_emoji game.mental_category %}
+                    </span>
+                    <span>{% for c in game.location_category.all %}{% category_emoji c %}{% endfor %}</span>
+                    <span>{% for c in game.participant_number_category.all %}{% category_emoji c %}{% endfor %}</span>
+                    <span>{% for c in game.participant_age_category.all %}{% category_emoji c %}{% endfor %}</span>
+                    <span>
+                        {% category_emoji game.game_length_category %}
+                        {% category_emoji game.preparation_length_category %}
+                        {% category_emoji game.material_requirement_category %}
+                        {% category_emoji game.organizers_number_category %}
+                    </span>
+                </div>
+            </article>
+        {% empty %}
+            <p class="text-body-secondary">Žádný program tu není. Zkus upravit filtry.</p>
         {% endfor %}
     </div>
 
-{#    <div class="row">#}
-{#    </div>#}
-{#    {% for game in games %}#}
-{#        <div class="row">#}
-{#            <div class="col"><h5>{{ game.name }}</h5></div>#}
-{#            <div class="col">{{ game.short_description }}</div>#}
-{#            <div class="col-3">#}
-{#                <a class="btn btn-outline-secondary ms-1 mt-1 mb-1"#}
-{#                   onclick="toggle_state(event, this, {{ game.pk }}, 'favourites')"#}
-{#                   role="button"><i class="bi bi-star{% if request.user in game.favourites.all %}-fill{% endif %}"></i></a>#}
-{#                <a class="btn btn-outline-secondary ms-1 mt-1 mb-1"#}
-{#                   onclick="toggle_state(event, this, {{ game.pk }}, 'is_verified')"#}
-{#                   role="button"><i class="bi bi-patch-check{% if game.is_verified %}-fill{% endif %}"></i></a>#}
-{#                <a class="btn btn-outline-secondary ms-1 mt-1 mb-1"#}
-{#                   onclick="toggle_state(event, this, {{ game.pk }}, 'thumbs_up')"#}
-{#                   role="button"><i#}
-{#                        class="bi bi-hand-thumbs-up{% if request.user in game.thumbs_up.all %}-fill{% endif %}"></i></a>#}
-{#                <a class="btn btn-outline-secondary ms-1 mt-1 mb-1"#}
-{#                   onclick="toggle_state(event, this, {{ game.pk }}, 'watchers')"#}
-{#                   role="button"><i class="bi bi-eye{% if request.user in game.watchers.all %}-fill{% endif %}"></i></a>#}
-{#            </div>#}
-{#            <div class="col-5">#}
-{#                <div class="row">#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        {% for tag in game.tags.all %}{% category_emoji tag %}{% endfor %}#}
-{#                    </div>#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        <span>{% category_emoji game.physical_category %}</span>#}
-{#                        <span>{% category_emoji game.mental_category %}</span>#}
-{#                    </div>#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        {% for c in game.location_category.all %}{% category_emoji c %}{% endfor %}#}
-{#                    </div>#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        {% for c in game.participant_number_category.all %}{% category_emoji c %}{% endfor %}#}
-{#                    </div>#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        {% for c in game.participant_age_category.all %}{% category_emoji c %}{% endfor %}#}
-{#                    </div>#}
-{#                    <div class="col-2 p-1 border-start border-top">#}
-{#                        <span>{% category_emoji game.game_length_category %}</span>#}
-{#                        <span>{% category_emoji game.preparation_length_category %}</span>#}
-{#                        <span>{% category_emoji game.material_requirement_category %}</span>#}
-{#                        <span>{% category_emoji game.organizers_number_category %}</span>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    {% endfor %}#}
-
-    <div class="row mt-3">
-        <div class="col" id="pagination">
-            {% bootstrap_pagination games url=url size="sm" %}
-        </div>
+    <div id="pagination">
+        {% bootstrap_pagination games url=url size="sm" %}
     </div>
 {% endblock %}
 

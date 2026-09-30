@@ -1,42 +1,53 @@
 {% extends "game_book/base.html" %}
 
-{% load django_bootstrap5 static %}
+{% load django_bootstrap5 static game_book_tags %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            {% if page == "new_game" %}
-                <a class="btn btn-danger float-end" href="{% url "game_book" %}" role="button">Zpět</a>
-                <h1 class="mb-3">Vytvořit nový program</h1>
-            {% else %}
-                <a class="btn btn-danger float-end" href="{% url "game" object.pk %}" role="button">Zpět</a>
-                <h1 class="mb-3">Úprava programu</h1>
-            {% endif %}
+    {% if page == "new_game" %}
+        <a class="back-link" href="{% url "game_book" %}"><i class="bi bi-chevron-left"></i>Všechny programy</a>
+        <h1>Vytvořit nový program</h1>
+    {% else %}
+        <a class="back-link" href="{% url "game" object.pk %}"><i class="bi bi-chevron-left"></i>Zpět na program</a>
+        <h1>Úprava programu</h1>
+    {% endif %}
 
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.media }}
+    <form class="game-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.media }}
+        {% bootstrap_form_errors form type="non_fields" %}
 
-                {% bootstrap_form form layout="floating" %}
+        {% for title, fields in form.sections %}
+            <section class="panel">
+                <h2>{{ title }}</h2>
+                <div class="form-grid">
+                    {% for field in fields %}
+                        {% if field|is_rich_text %}
+                            {% bootstrap_field field set_placeholder=False %}
+                        {% else %}
+                            {% bootstrap_field field layout="floating" %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
 
-                <h3>Fotky a soubory:</h3>
-                <div class="form-text">Lze nahrát jakékoli fotky či soubory, podklady pro tisk, ukázky uvedení, atd.</div>
-                {% bootstrap_formset formset layout="floating" %}
-                <button class="btn btn-secondary" type="button" onclick="add_form(this);">Přiložit další soubor</button>
+        <section class="panel file-forms">
+            <h2>Fotky a soubory</h2>
+            <div class="form-text">Lze nahrát jakékoli fotky či soubory, podklady pro tisk, ukázky uvedení, atd.</div>
+            {% bootstrap_formset formset layout="floating" %}
+            <button class="btn btn-sm btn-outline-secondary" type="button" onclick="add_form(this);">
+                <i class="bi bi-plus-lg"></i>Přiložit další soubor
+            </button>
+        </section>
 
-                {% bootstrap_button button_type="submit" content="Uložit" %}
-                {% bootstrap_button button_type="reset" button_class="btn-secondary" content="Resetovat změny" %}
-                {% if page == "new_game" %}
-                    <a class="btn btn-danger" href="{% url "game_book" %}" role="button">Zpět</a>
-                {% else %}
-                    <a class="btn btn-danger" href="{% url "game" object.pk %}" role="button">Zpět</a>
-                {% endif %}
-            </form>
+        <div class="save-bar">
+            {% bootstrap_button button_type="reset" button_class="btn-outline-secondary" content="Resetovat změny" %}
+            {% bootstrap_button button_type="submit" content="Uložit" %}
         </div>
-    </div>
-
+    </form>
 {% endblock %}
 
 {% block extra_script %}
+    <script>window.EDITOR_CSS_URL = "{% static "game_book/editor.css" %}"</script>
     <script src="{% static "game_book/game_form.js" %}"></script>
 {% endblock %}

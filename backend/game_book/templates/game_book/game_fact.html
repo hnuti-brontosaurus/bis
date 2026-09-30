@@ -1,0 +1,9 @@
+<div class="fact">
+    <div class="fact-name">{{ name }}</div>
+    {% for category in categories %}
+        <div class="fact-value">{{ category }}</div>
+    {% endfor %}
+    {% if note %}
+        <div class="fact-note">{{ note|linebreaksbr }}</div>
+    {% endif %}
+</div>

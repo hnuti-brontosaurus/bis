@@ -287,6 +287,33 @@ autodetector wants to delete the table. The model still works at runtime, since
 admin autodiscovery or a viewset import registers it late — `migrate` is the
 only place the omission shows up.
 
+### Game book
+
+`backend/game_book/` is server-rendered (django-bootstrap5, Bootstrap 5.3 from
+the CDN). `static/game_book.css` defines the palette once as its own tokens
+(`--surface`, `--primary`, …) for light and `[data-bs-theme="dark"]`, then maps
+Bootstrap's `--bs-*` variables onto them — restyle through the tokens, not per
+component. `static/game_book/theme.js` is loaded render-blocking in `<head>` and
+sets `data-bs-theme` (and `data-theme`, which `bis/static/tinymce_dark_mode.js`
+reads for the editor skin) from localStorage `game_book_theme`, else the OS.
+
+- The chips in the forms are the unchanged Django checkbox / radio inputs: the
+  input is visually hidden and its label drawn as a chip (`div[id^="id_"] >
+  .form-check`). The on state of the four toggle buttons is likewise pure CSS,
+  `:has([class*="-fill"])`, because `toggle_state` only swaps the icon class.
+- The TinyMCE content lives in an iframe, so it is themed separately by
+  `static/game_book/editor.css`, injected through `content_style` in
+  `game_form.js`; its colours are hardcoded copies of the tokens.
+- `add_form` clones the last formset row from the direct children of the
+  button's parent, so the formset and its "add" button must share one wrapper
+  (`.file-forms`).
+- `GAME_FORM_SECTIONS` in `forms.py` is the single list of `GameForm` fields and
+  of the panels the edit form groups them into.
+- No test covers the game book and every write view needs a session, so visual
+  checks of the edit form mean rendering the view in a Django shell
+  (`RequestFactory`, `request.user = …`) and serving that HTML to Playwright via
+  `page.route`.
+
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API
 2. API validates via Django models → PostgreSQL + PostGIS (geospatial)

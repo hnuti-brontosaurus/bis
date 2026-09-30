@@ -1,0 +1,14 @@
+<div class="game-actions">
+    <button class="game-action" type="button" title="Sledovat" aria-label="Sledovat"
+            onclick="toggle_state(event, this, {{ game.pk }}, 'watchers')"><i
+            class="bi bi-eye{% if request.user in game.watchers.all %}-fill{% endif %}"></i></button>
+    <button class="game-action" type="button" title="Líbí se mi" aria-label="Líbí se mi"
+            onclick="toggle_state(event, this, {{ game.pk }}, 'thumbs_up')"><i
+            class="bi bi-hand-thumbs-up{% if request.user in game.thumbs_up.all %}-fill{% endif %}"></i></button>
+    <button class="game-action" type="button" title="Ověřený" aria-label="Ověřený"
+            onclick="toggle_state(event, this, {{ game.pk }}, 'is_verified')"><i
+            class="bi bi-patch-check{% if game.is_verified %}-fill{% endif %}"></i></button>
+    <button class="game-action" type="button" title="Oblíbený" aria-label="Oblíbený"
+            onclick="toggle_state(event, this, {{ game.pk }}, 'favourites')"><i
+            class="bi bi-star{% if request.user in game.favourites.all %}-fill{% endif %}"></i></button>
+</div>

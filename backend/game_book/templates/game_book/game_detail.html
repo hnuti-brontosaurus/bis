@@ -3,101 +3,114 @@
 {% load django_bootstrap5 game_book_tags %}
 
 {% block content %}
-    <div class="row">
-        <div class="col">
-            <a class="btn btn-secondary float-end m-1" href="{% url "game_book" %}" role="button">Zpět</a>
-            <a class="btn btn-secondary float-end m-1" href="{% url "edit_game" object.pk %}" role="button">Upravit</a>
-            <a class="btn btn-secondary float-end m-1"
-               onclick="toggle_state(event, this, {{ object.pk }}, 'favourites')"
-               role="button"><i
-                    class="bi bi-star{% if request.user in object.favourites.all %}-fill{% endif %}"></i></a>
-            <a class="btn btn-secondary float-end m-1"
-               onclick="toggle_state(event, this, {{ object.pk }}, 'is_verified')"
-               role="button"><i class="bi bi-patch-check{% if object.is_verified %}-fill{% endif %}"></i></a>
-            <a class="btn btn-secondary float-end m-1" onclick="toggle_state(event, this, {{ object.pk }}, 'thumbs_up')"
-               role="button"><i
-                    class="bi bi-hand-thumbs-up{% if request.user in object.thumbs_up.all %}-fill{% endif %}"></i></a>
-            <a class="btn btn-secondary float-end m-1" onclick="toggle_state(event, this, {{ object.pk }}, 'watchers')"
-               role="button"><i class="bi bi-eye{% if request.user in object.watchers.all %}-fill{% endif %}"></i></a>
-            <h1>{{ object.name }}</h1>
+    <a class="back-link" href="{% url "game_book" %}"><i class="bi bi-chevron-left"></i>Všechny programy</a>
 
-            {% game_detail_field "created_at" %}
-            {% game_detail_field "contributor" %}
-            {% game_detail_field "is_original" %}
-            {% game_detail_field "origin" %}
-            {% game_detail_field "administration_unit" %}
-            {% game_detail_field "thumbs_up" "count" %}
-            {% game_detail_field "favourites" "count" %}
-            {% game_detail_field "watchers" "count" %}
-            {% game_detail_field "stars" "count" %}
-            {% game_detail_field "is_verified" %}
-            {% game_detail_field "tags" "join" %}
-            {% game_detail_field "physical_category" %}
-            {% game_detail_field "mental_category" %}
-            {% game_detail_field "location_category" "join" %}
-            {% game_detail_field "participant_number_category" "join" %}
-            {% game_detail_field "participant_age_category" "join" %}
-            {% game_detail_field "game_length_category" %}
-            {% game_detail_field "preparation_length_category" %}
-            {% game_detail_field "material_requirement_category" %}
-            {% game_detail_field "organizers_number_category" %}
-            {% game_detail_field "goal" %}
-            {% game_detail_field "short_description" %}
-            {% game_detail_field "motivation" %}
-            {% game_detail_field "description" %}
-            {% game_detail_field "material" %}
-            {% game_detail_field "notes" %}
-
-            {% if object.files.count %}
-                <h5>Soubory:</h5>
-                {% for file in object.files.all %}
-                    <a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a>
+    <div class="page-head page-head-top">
+        <div class="game-heading">
+            <div class="tag-row">
+                {% if object.is_verified %}
+                    <span class="tag tag-primary"><i class="bi bi-patch-check"></i>ověřený</span>
+                {% endif %}
+                {% if object.is_original %}
+                    <span class="tag tag-accent">autorský program</span>
+                {% endif %}
+                {% for tag in object.tags.all %}
+                    <span class="tag">{{ tag }}</span>
                 {% endfor %}
-            {% endif %}
-
-            <h5>Přidat komentář:</h5>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {% bootstrap_form form layout="floating" %}
-                {% bootstrap_formset formset layout="floating" %}
-                <button class="btn btn-secondary" type="button" onclick="add_form(this);">Přiložit další soubor ke
-                    komentáři
-                </button>
-                {% bootstrap_button button_type="submit" content="Okomentovat" %}
-            </form>
-            {% if object.comments.count %}
-                <h5>Komentáře:</h5>
-                <div class="row">
-                    <div class="col">Vytvořen:</div>
-                    <div class="col">Autor:</div>
-                    <div class="col">Komentář:</div>
-                    <div class="col">Pouze pro autora:</div>
-                    <div class="col">soubory:</div>
-                </div>
-                {% for comment in object.comments.all %}
-                    <div class="row">
-                        <div class="col">{{ comment.created_at }}</div>
-                        <div class="col">{{ comment.author }}</div>
-                        <div class="col">{{ comment.comment }}</div>
-                        <div class="col">{{ comment.is_hidden }}</div>
-                        <div class="col">
-                            {% for file in comment.files.all %}
-                                <div><a href="{{ file.file.url }}" target="_blank">{{ file.filename }}</a></div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <div style="float: right">
-                <small>
-                    <div>todo lepsi zobrazeni</div>
-                    <div>todo uvedeni na akcich</div>
-                    <div>todo pridat do meho seznamu her</div>
-                    <div>todo skryte komentare</div>
-                </small>
             </div>
+            <h1>{{ object.name }}</h1>
+            <p class="game-meta">
+                <span>{{ object.contributor }}</span>
+                {% if object.administration_unit %}<span>{{ object.administration_unit }}</span>{% endif %}
+                <span>{{ object.created_at|date:"j. n. Y" }}</span>
+                <span title="{% verbose "thumbs_up" %}">👍 {{ object.thumbs_up.count }}</span>
+                <span title="{% verbose "favourites" %}">⭐ {{ object.favourites.count }}</span>
+                <span title="{% verbose "watchers" %}">👁 {{ object.watchers.count }}</span>
+                {% if object.stars %}
+                    <span title="{% verbose "stars" %}">{{ object.get_stars_display }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="page-head-tools">
+            {% include "game_book/game_actions.html" with game=object %}
+            <a class="btn btn-outline-secondary" href="{% url "edit_game" object.pk %}" role="button">
+                <i class="bi bi-pencil"></i>Upravit</a>
         </div>
     </div>
 
+    <div class="facts">
+        {% game_fact "physical_category" %}
+        {% game_fact "mental_category" %}
+        {% game_fact "location_category" %}
+        {% game_fact "participant_number_category" %}
+        {% game_fact "participant_age_category" %}
+        {% game_fact "game_length_category" %}
+        {% game_fact "preparation_length_category" %}
+        {% game_fact "material_requirement_category" %}
+        {% game_fact "organizers_number_category" %}
+    </div>
+
+    <div class="panel-columns">
+        <section class="panel">
+            <h2>Popis</h2>
+            {% game_section "short_description" %}
+            {% game_section "goal" %}
+            {% game_section "motivation" %}
+            {% game_section "description" %}
+            {% game_section "material" %}
+            {% game_section "notes" %}
+            {% game_section "origin" %}
+
+            {% if object.files.count %}
+                <h3 class="section-label">Soubory</h3>
+                <div class="file-row">
+                    {% for file in object.files.all %}
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ file.file.url }}" target="_blank">
+                            <i class="bi bi-file-earmark"></i>{{ file.filename }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h2>Komentáře</h2>
+            {% if object.comments.count %}
+                <div>
+                    {% for comment in object.comments.all %}
+                        <div class="comment">
+                            <span class="comment-avatar">{{ comment.author|make_list|first }}</span>
+                            <div class="comment-body">
+                                <b>{{ comment.author }}</b>
+                                <span class="text-body-secondary small">{{ comment.created_at|date:"j. n. Y" }}</span>
+                                {% if comment.is_hidden %}<span class="tag tag-accent">pouze pro autora</span>{% endif %}
+                                <div>{{ comment.comment|linebreaksbr }}</div>
+                                {% if comment.files.count %}
+                                    <div class="file-row">
+                                        {% for file in comment.files.all %}
+                                            <a class="btn btn-sm btn-outline-secondary" href="{{ file.file.url }}"
+                                               target="_blank"><i class="bi bi-file-earmark"></i>{{ file.filename }}</a>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form class="comment-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form layout="floating" %}
+                <div class="file-forms">
+                    {% bootstrap_formset formset layout="floating" %}
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="add_form(this);">
+                        <i class="bi bi-plus-lg"></i>Přiložit další soubor ke komentáři
+                    </button>
+                </div>
+                <div class="comment-form-actions">
+                    {% bootstrap_button button_type="submit" content="Okomentovat" %}
+                </div>
+            </form>
+        </section>
+    </div>
 {% endblock %}

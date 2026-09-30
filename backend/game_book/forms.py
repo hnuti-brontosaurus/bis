@@ -155,6 +155,48 @@ class FilterForm(Form):
     )
 
 
+GAME_FORM_SECTIONS = {
+    "Základ": [
+        "name",
+        "short_description",
+        "contributor",
+        "administration_unit",
+        "is_original",
+        "origin",
+        "is_hidden",
+        "is_verified",
+    ],
+    "Zařazení": [
+        "tags",
+        "physical_category",
+        "physical_note",
+        "mental_category",
+        "mental_note",
+        "location_category",
+        "location_note",
+        "participant_number_category",
+        "participant_number_note",
+        "participant_age_category",
+        "participant_age_note",
+        "game_length_category",
+        "game_length_note",
+        "preparation_length_category",
+        "preparation_length_note",
+        "material_requirement_category",
+        "material_requirement_note",
+        "organizers_number_category",
+        "organizers_number_note",
+    ],
+    "Popis": [
+        "goal",
+        "motivation",
+        "description",
+        "material",
+        "notes",
+    ],
+}
+
+
 class GameForm(ModelForm):
     def __init__(
         self,
@@ -190,6 +232,12 @@ class GameForm(ModelForm):
                 (self.instance.contributor.id, self.instance.contributor)
             ]
             self.fields["contributor"].disabled = True
+
+    def sections(self):
+        return [
+            (title, [self[name] for name in names if name in self.fields])
+            for title, names in GAME_FORM_SECTIONS.items()
+        ]
 
     tags = CategoryMultipleChoiceField(
         label=_("models.Game.fields.tags"),
@@ -254,40 +302,7 @@ class GameForm(ModelForm):
 
     class Meta:
         model = Game
-        fields = [
-            "name",
-            "contributor",
-            "is_original",
-            "origin",
-            "administration_unit",
-            "is_hidden",
-            "is_verified",
-            "tags",
-            "physical_category",
-            "physical_note",
-            "mental_category",
-            "mental_note",
-            "location_category",
-            "location_note",
-            "participant_number_category",
-            "participant_number_note",
-            "participant_age_category",
-            "participant_age_note",
-            "game_length_category",
-            "game_length_note",
-            "preparation_length_category",
-            "preparation_length_note",
-            "material_requirement_category",
-            "material_requirement_note",
-            "organizers_number_category",
-            "organizers_number_note",
-            "goal",
-            "short_description",
-            "motivation",
-            "description",
-            "material",
-            "notes",
-        ]
+        fields = [name for names in GAME_FORM_SECTIONS.values() for name in names]
         widgets = {
             "is_hidden": forms.CheckboxInput(attrs={"disabled": True}),
             "is_verified": forms.CheckboxInput(attrs={"disabled": True}),
