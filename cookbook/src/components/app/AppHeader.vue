@@ -109,7 +109,7 @@ const select = value => {
 <template>
   <header class="header">
     <router-link to="/" class="brand display-font">
-      <img src="/kucharka/logo.png" alt="" />
+      <img src="/logo.png" alt="" />
       {{ _.common.cookbook }}
     </router-link>
 
