@@ -98,6 +98,7 @@ services:
     image: mcr.microsoft.com/playwright:v1.63.0-noble
     container_name: bis-test-playwright
     restart: "no"
+    init: true
     working_dir: /e2e
     user: "${UID:-1000}:${GID:-1000}"
     entrypoint: ["npx", "playwright"]
@@ -130,6 +131,7 @@ services:
     image: mcr.microsoft.com/playwright:v1.63.0-noble
     container_name: bis-test-playwright-frontend
     restart: "no"
+    init: true
     working_dir: /e2e
     user: "${UID:-1000}:${GID:-1000}"
     entrypoint: ["npx", "playwright"]

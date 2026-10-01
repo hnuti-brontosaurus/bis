@@ -15,6 +15,7 @@ services:
 
   frontend:
     container_name: bis-frontend
+    init: true
     build: ./frontend
     user: "${UID:-1000}:${GID:-1000}"
     restart: always
@@ -40,6 +41,7 @@ services:
 
   cookbook:
     container_name: bis-cookbook
+    init: true
     build: ./cookbook
     user: "${UID:-1000}:${GID:-1000}"
     restart: always
@@ -59,6 +61,7 @@ services:
 
   backend:
     container_name: bis-backend
+    init: true
     build:
       context: ./backend
       args:

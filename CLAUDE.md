@@ -66,6 +66,11 @@ the backend against a port nothing is accepting on yet. The test stack sets
 `restart: "no"`, so one lost race fails the whole job; dev's `restart: always`
 retries and hides it.
 
+The app services and Playwright runners set `init: true`. Their PID 1 would
+otherwise be `sh docker-entrypoint.sh` or `npx`, and the kernel gives PID 1 no
+default signal actions: SIGTERM is ignored, so Ctrl+C on `make dev` waits out
+the 10s stop timeout and then SIGKILLs.
+
 Every compose bind-mount source must exist in the checkout, owned by the host
 user. Docker creates a missing one itself, as **root**, and the containers run
 as `${UID}:${GID}` — so the mount silently becomes unwritable. That is why
