@@ -1,16 +1,14 @@
 import logging
 import re
 import threading
-from collections import Counter
 from functools import wraps
 from time import time
 
 from bis.logs import operation
-from categories.models import MembershipCategory
-from dateutil.relativedelta import relativedelta
 from dateutil.utils import today
 from django.core.cache import cache
 from django.db import connection
+from django.db.models import Count
 from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from unidecode import unidecode
@@ -201,21 +199,23 @@ class AgeStats:
         self.date = date
         self.header = header
 
-        if isinstance(queryset, list):
-            self.total = len(queryset)
-            birthdays = [p.birthday for p in queryset if p.birthday is not None]
-        else:
-            self.total = queryset.count()
-            birthdays = queryset.filter(birthday__isnull=False).values_list(
-                "birthday", flat=True
+        # Counted over the queryset's own rows, so a joined queryset counts each
+        # row, a distinct or grouped one each person once.
+        rows, params = (
+            queryset.order_by().values("pk", "birthday").query.sql_with_params()
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"SELECT EXTRACT(YEAR FROM age(%s, birthday))::int, COUNT(*) "
+                f"FROM ({rows}) AS rows GROUP BY 1",
+                [date, *params],
             )
-        ages = [relativedelta(date, birthday).years for birthday in birthdays]
-        self.without_birthday = self.total - len(ages)
-        self.unborn = len([age for age in ages if age < 0])
-
-        ages = [age for age in ages if age >= 0]
-        self.oldest = max([*ages, 0])
-        self.birthdays_stats = Counter(ages)
+            counts = dict(cursor.fetchall())
+        self.total = sum(counts.values())
+        self.without_birthday = counts.pop(None, 0)
+        self.unborn = sum(count for age, count in counts.items() if age < 0)
+        self.birthdays_stats = {age: count for age, count in counts.items() if age >= 0}
+        self.oldest = max([*self.birthdays_stats, 0])
 
     def age_count(self, low, high):
         return sum(self.birthdays_stats.get(age, 0) for age in range(low, high + 1))
@@ -276,20 +276,23 @@ class MembershipStats:
         return f"Sumarizace členských příspěvků {self.header}"
 
     def get_data(self):
+        rows = (
+            self.queryset.order_by("category_id")
+            .values("year", "category__name", "category__slug")
+            .annotate(count=Count("pk"))
+        )
+        sums = {}
+        for row in rows:
+            price = self.queryset.model.price_for(row["year"], row["category__slug"])
+            amount, count = sums.get(row["category__name"], (0, 0))
+            sums[row["category__name"]] = (
+                amount + price * row["count"],
+                count + row["count"],
+            )
+
+        total = sum(amount for amount, _ in sums.values())
         data = {
-            category.name: [
-                item.price
-                for item in self.queryset.filter(category=category).select_related(
-                    "category"
-                )
-            ]
-            for category in MembershipCategory.objects.all()
-        }
-        total = sum(price for items in data.values() for price in items)
-        data = {
-            key: f"{sum(items)} Kč ({len(items)}x)"
-            for key, items in data.items()
-            if items
+            name: f"{amount} Kč ({count}x)" for name, (amount, count) in sums.items()
         }
         data["Celkem"] = f"{total} Kč"
         return data

@@ -846,7 +846,11 @@ class Membership(m.Model):
     @property
     @admin.display(description="Cena")
     def price(self):
-        if self.year >= 2024:
+        return self.price_for(self.year, self.category.slug)
+
+    @staticmethod
+    def price_for(year, category_slug):
+        if year >= 2024:
             return {
                 "family": 450,
                 "family_member": 50,
@@ -854,9 +858,9 @@ class Membership(m.Model):
                 "student": 200,
                 "adult": 450,
                 "member_elsewhere": 0,
-            }[self.category.slug]
+            }[category_slug]
 
-        if self.year >= 2014:
+        if year >= 2014:
             return {
                 "family": 350,
                 "family_member": 25,
@@ -864,7 +868,7 @@ class Membership(m.Model):
                 "student": 100,
                 "adult": 350,
                 "member_elsewhere": 0,
-            }[self.category.slug]
+            }[category_slug]
 
         return 0
 

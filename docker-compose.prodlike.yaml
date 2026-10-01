@@ -1,0 +1,25 @@
+# Runs the backend the way production does, to measure performance locally:
+# the prod entrypoint (gunicorn, one worker with 8 threads), ENVIRONMENT=dev so
+# the debug toolbar and SQL middleware are off and the cache is redis, and the
+# limits of deployments/base/deployment-{django,postgresql}.yml.
+# BACKEND_CPUS and BACKEND_MEMORY override the backend's limits.
+services:
+  backend:
+    command: ["sh", "docker-entrypoint.sh", "prod"]
+    cpus: ${BACKEND_CPUS:-1}
+    mem_limit: ${BACKEND_MEMORY:-900M}
+    depends_on:
+      redis:
+        condition: service_started
+    environment:
+      ENVIRONMENT: dev
+      SENTRY_DSN: ""
+
+  postgres:
+    command: ["postgres", "-c", "shared_buffers=32MB"]
+    cpus: 0.5
+    mem_limit: 200M
+
+  redis:
+    container_name: bis-redis
+    image: redis:7-alpine

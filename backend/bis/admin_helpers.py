@@ -30,7 +30,6 @@ def get_admin_list_url(klass, text, params=None, title=""):
 
 class YesNoFilter(SimpleListFilter):
     query = None
-    distinct = False
 
     def lookups(self, request, model_admin):
         return (
@@ -39,12 +38,14 @@ class YesNoFilter(SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
+        # A subquery rather than filtering the queryset itself: a query across
+        # a to-many relation would duplicate rows, and rebuilding the queryset
+        # to drop them would lose the model admin's prefetch_related.
+        matching = queryset.model.objects.filter(**self.query).values("pk")
         if self.value() == "yes":
-            queryset = queryset.filter(**self.query)
+            return queryset.filter(pk__in=matching)
         if self.value() == "no":
-            queryset = queryset.exclude(**self.query)
-        if self.distinct:
-            queryset = queryset.model.objects.filter(pk__in=queryset.values_list("pk"))
+            return queryset.exclude(pk__in=matching)
         return queryset
 
 
@@ -129,7 +130,10 @@ class CustomDateRangeFilter(DateRangeFilter):
             self.title = self.custom_title
 
     def queryset(self, request, queryset):
-        if self.annotate_fn:
+        # The annotation groups the whole changelist query by a join, so it is
+        # added only when the filter is set.
+        is_set = self.form.is_valid() and any(self.form.cleaned_data.values())
+        if self.annotate_fn and is_set:
             queryset = queryset.annotate(**{self.custom_field_path: self.annotate_fn})
         return super().queryset(request, queryset)
 

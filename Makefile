@@ -17,7 +17,7 @@ TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
 TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
 TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile playwright --profile playwright-frontend down -t 0 -v --remove-orphans
 
-.PHONY: build dev clean test test_backend test_frontend test_cookbook \
+.PHONY: build dev prodlike clean test test_backend test_frontend test_cookbook \
         check_frontend check_cookbook e2e_frontend e2e_cookbook \
         ui_frontend ui_cookbook build_frontend build_cookbook
 
@@ -30,6 +30,10 @@ build: .env
 dev: clean .env
 	trap '$(CLEANUP)' EXIT
 	docker compose up
+
+prodlike: clean .env
+	trap '$(CLEANUP)' EXIT
+	docker compose -f docker-compose.yaml -f docker-compose.prodlike.yaml up backend nginx
 
 clean: .env
 	$(CLEANUP)

@@ -19,7 +19,18 @@ BIS (Brontosaurus Information System) is a full-stack web application for managi
 make build            # Build all Docker images (run first)
 make dev              # Start all services with live-reload
 make clean            # Stop all containers and remove orphans
+make prodlike         # Backend + nginx as prod runs them: gunicorn, 1 CPU / 900M, postgres 0.5 CPU / 200M
 ```
+
+`make prodlike` is for measuring performance (`docker-compose.prodlike.yaml`);
+`BACKEND_CPUS` / `BACKEND_MEMORY` override the backend's limits, and `docker
+update --cpus` changes postgres' on the fly. It runs `ENVIRONMENT=dev` so the
+debug toolbar and SQL middleware don't skew timings.
+
+Concurrent requests share the backend's CPU limit: three simultaneous
+changelist loads each take about three times as long. gunicorn's 8 threads
+overlap only the time spent waiting on postgres, and a second worker would not
+help either while the limit is 1 CPU, since both would share that one CPU.
 
 ### Testing
 ```bash
