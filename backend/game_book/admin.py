@@ -1,4 +1,5 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
+from bis.admin_helpers import list_filter_extra_title
 from bis.admin_permissions import PermissionMixin
 from django.contrib import admin
 from game_book.models import (
@@ -48,17 +49,19 @@ class GameAdmin(PermissionMixin, NestedModelAdmin):
     list_display = "name", "short_description", "contributor"
     search_fields = "name", "short_description"
     list_filter = (
-        AutocompleteFilterFactory("Contributor", "contributor"),
+        AutocompleteFilterFactory("Autor", "contributor"),
         "is_original",
-        AutocompleteFilterFactory("Administration unit", "administration_unit"),
+        AutocompleteFilterFactory("Organizační jednotka", "administration_unit"),
         "stars",
         "is_verified",
         ("tags", MultiSelectRelatedDropdownFilter),
+        list_filter_extra_title("Účastníci"),
         ("physical_category", MultiSelectRelatedDropdownFilter),
         ("mental_category", MultiSelectRelatedDropdownFilter),
-        ("location_category", MultiSelectRelatedDropdownFilter),
         ("participant_number_category", MultiSelectRelatedDropdownFilter),
         ("participant_age_category", MultiSelectRelatedDropdownFilter),
+        list_filter_extra_title("Uvedení"),
+        ("location_category", MultiSelectRelatedDropdownFilter),
         ("game_length_category", MultiSelectRelatedDropdownFilter),
         ("preparation_length_category", MultiSelectRelatedDropdownFilter),
         ("organizers_number_category", MultiSelectRelatedDropdownFilter),

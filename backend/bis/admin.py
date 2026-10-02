@@ -26,6 +26,7 @@ from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
     MembershipYearFilter,
+    QuerySearchMixin,
     UserExportFilter,
     get_admin_edit_url,
     list_filter_extra_text,
@@ -411,7 +412,12 @@ def export_emails(view, request, queryset):
 
 
 @admin.register(User)
-class UserAdmin(PermissionMixin, NestedModelAdminMixin, NumericFilterModelAdmin):
+class UserAdmin(
+    QuerySearchMixin,
+    PermissionMixin,
+    NestedModelAdminMixin,
+    NumericFilterModelAdmin,
+):
     change_form_template = "bis/user_change_form.html"
     actions = [
         export_to_xlsx,

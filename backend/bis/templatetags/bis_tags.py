@@ -1,7 +1,9 @@
 from datetime import date
 
+from admin_auto_filters.filters import AutocompleteFilter
 from administration_units.models import AdministrationUnit
 from bis.admin_filters import EventStatsDateFilter, UserStatsDateFilter
+from bis.admin_helpers import FilterGroupTitle
 from bis.helpers import AgeStats, MembershipStats
 from bis.models import Membership, User
 from django import template
@@ -105,3 +107,73 @@ def membership_date_hierarchy_tag(parser, token):
         template_name="membership_date_hierarchy.html",
         takes_context=False,
     )
+
+
+def used_parameters(changelist, spec):
+    return {
+        parameter: values
+        for parameter in spec.expected_parameters() or ()
+        if any(values := changelist.filter_params.get(parameter, ()))
+    }
+
+
+@register.simple_tag
+def filter_groups(changelist):
+    groups = [{"title": None, "filters": []}]
+    for spec in changelist.filter_specs:
+        if isinstance(spec, FilterGroupTitle):
+            groups.append(
+                {"title": spec.title, "collapsed": spec.collapsed, "filters": []}
+            )
+        else:
+            groups[-1]["filters"].append(
+                {"spec": spec, "active": bool(used_parameters(changelist, spec))}
+            )
+
+    for group in groups:
+        group["active_count"] = sum(item["active"] for item in group["filters"])
+    return groups
+
+
+RANGE_BOUNDS = {"_from": "od", "__gte": "od", "_to": "do", "__lte": "do"}
+
+
+def describe_filter_value(changelist, spec, parameters):
+    bounds = [
+        f"{word} {values[-1]}"
+        for parameter, values in parameters.items()
+        for suffix, word in RANGE_BOUNDS.items()
+        if parameter.endswith(suffix) and values[-1]
+    ]
+    if bounds:
+        return " ".join(bounds)
+
+    if isinstance(spec, AutocompleteFilter):
+        queryset = spec.get_queryset_for_field(
+            spec.rel_model or changelist.model, spec.field_name
+        )
+        return ", ".join(
+            str(item)
+            for item in queryset.filter(pk__in=parameters[spec.parameter_name])
+        )
+
+    return ", ".join(
+        str(choice["display"])
+        for choice in spec.choices(changelist)
+        if choice.get("selected")
+    )
+
+
+@register.simple_tag
+def active_filters(changelist):
+    return [
+        {
+            "title": spec.title,
+            "value": describe_filter_value(changelist, spec, parameters),
+            "remove_url": changelist.get_query_string(
+                remove=spec.expected_parameters()
+            ),
+        }
+        for spec in changelist.filter_specs
+        if (parameters := used_parameters(changelist, spec))
+    ]

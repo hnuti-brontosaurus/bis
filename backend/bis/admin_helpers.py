@@ -8,9 +8,12 @@ from django import forms
 from django.contrib.admin import ListFilter, SimpleListFilter
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.gis.geos import Point
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from djangoql.admin import DjangoQLSearchMixin
 from rangefilter.filters import DateRangeFilter
 
 
@@ -228,11 +231,15 @@ class TextOnlyFilter(ListFilter):
         return None
 
 
-def list_filter_extra_title(custom_title):
-    class Filter(TextOnlyFilter):
-        template = "admin/title_filter.html"
+class FilterGroupTitle(TextOnlyFilter):
+    collapsed = True
+
+
+def list_filter_extra_title(custom_title, collapsed=True):
+    class Filter(FilterGroupTitle):
         title = custom_title
 
+    Filter.collapsed = collapsed
     return Filter
 
 
@@ -354,3 +361,38 @@ class MembershipYearFilter(ListAwareRangeNumericFilter):
         }
 
         return queryset.filter(id__in=id_map.values())
+
+
+class QuerySearchMixin(DjangoQLSearchMixin):
+    """DjangoQL search, offered only to users who can see everything.
+
+    Its query can traverse any relation and its suggestions list stored values,
+    so it would sidestep the field and row limits the admin keeps for others.
+    The admin builds `media` without the request, so the djangoql scripts are
+    added to the rendered context instead.
+    """
+
+    djangoql_completion_enabled_by_default = False
+
+    @property
+    def media(self):
+        return super(DjangoQLSearchMixin, self).media
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context)
+        if request.user.can_see_all and isinstance(response, TemplateResponse):
+            response.context_data["media"] += DjangoQLSearchMixin.media.fget(self)
+        return response
+
+    def djangoql_search_enabled(self, request):
+        return request.user.can_see_all and super().djangoql_search_enabled(request)
+
+    def introspect(self, request):
+        if not request.user.can_see_all:
+            raise PermissionDenied
+        return super().introspect(request)
+
+    def suggestions(self, request):
+        if not request.user.can_see_all:
+            raise PermissionDenied
+        return super().suggestions(request)

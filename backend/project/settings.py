@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "admin_auto_filters",
     "django_filters",
     "tinymce",
+    "djangoql",
     "opportunities",
     "more_admin_filters",
     "regions",
@@ -359,6 +360,7 @@ if ENVIRONMENT in ("local", "testing"):
 
 TINYMCE_DEFAULT_CONFIG = {
     "menubar": False,
+    "height": 200,
     "plugins": "autolink,lists,link,image,charmap,preview,searchreplace,"
     "fullscreen,paste,code,help,wordcount,media",
     "toolbar": "undo redo | formatselect | bold italic | "

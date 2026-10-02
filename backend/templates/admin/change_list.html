@@ -1,6 +1,39 @@
 {% extends "admin/change_list.html" %}
 {% load i18n admin_urls static admin_list bis_tags %}
 
+{% block search %}
+    {{ block.super }}
+    {% active_filters cl as filters %}
+    {% if filters %}
+        <div class="active-filters">
+            {% for filter in filters %}
+                <span class="active-filter">
+                    {{ filter.title }}{% if filter.value %}: {{ filter.value }}{% endif %}
+                    <a href="{{ filter.remove_url }}" title="Zrušit filtr">&#10006;</a>
+                </span>
+            {% endfor %}
+        </div>
+        <style>
+            .active-filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin: 0 0 10px;
+            }
+            .active-filter {
+                padding: 3px 8px;
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                background: var(--darkened-bg);
+            }
+            .active-filter a {
+                margin-left: 4px;
+                font-size: 0.8em;
+            }
+        </style>
+    {% endif %}
+{% endblock %}
+
 {% block filters %}
     {% if cl.has_filters %}
         <div id="show-changelist-filter"
@@ -19,8 +52,49 @@
                     <a href="{{ cl.clear_all_filters_qs }}">&#10006; {% translate "Clear all filters" %}</a>
                 </h3>{% endif %}
             </div>{% endif %}
-            {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+            {% filter_groups cl as groups %}
+            {% for group in groups %}
+                {% if group.title %}
+                    <details class="filter-group" {% if not group.collapsed or group.active_count %}open{% endif %}>
+                        <summary><h2>{{ group.title }}{% if group.active_count %} · {{ group.active_count }}{% endif %}</h2></summary>
+                        {% for item in group.filters %}
+                            <div class="{% if item.active %}filter-active{% endif %}">{% admin_list_filter cl item.spec %}</div>
+                        {% endfor %}
+                    </details>
+                {% else %}
+                    {% for item in group.filters %}
+                        <div class="{% if item.active %}filter-active{% endif %}">{% admin_list_filter cl item.spec %}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
         </nav>
+        <style>
+            #changelist-filter .filter-group > summary {
+                padding: 0;
+            }
+            #changelist-filter .filter-group > summary::before,
+            #changelist-filter .filter-group[open] > summary::before {
+                content: none;
+            }
+            #changelist-filter .filter-group > summary > h2 {
+                display: block;
+                cursor: pointer;
+            }
+            #changelist-filter .filter-group > summary > h2::before {
+                content: "→ ";
+            }
+            #changelist-filter .filter-group[open] > summary > h2::before {
+                content: "↓ ";
+            }
+            #changelist-filter .filter-active {
+                border-left: 3px solid var(--link-hover-color);
+                background: var(--darkened-bg);
+            }
+            #changelist-filter .filter-active summary,
+            #changelist-filter .filter-active h3 {
+                color: var(--link-hover-color);
+            }
+        </style>
         <script>
             django.jQuery('#show-changelist-filter').click(function () {
                 django.jQuery('#changelist-filter').toggle()

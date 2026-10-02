@@ -4,7 +4,11 @@ from datetime import date
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from bis.admin import export_emails
 from bis.admin_filters import EventStatsDateFilter, HasFeedbackFilter
-from bis.admin_helpers import list_filter_extra_text
+from bis.admin_helpers import (
+    QuerySearchMixin,
+    list_filter_extra_text,
+    list_filter_extra_title,
+)
 from bis.admin_permissions import PermissionMixin
 from bis.helpers import AgeStats, paused_validation
 from bis.models import User
@@ -119,7 +123,7 @@ def export_feedbacks(model_admin, request, queryset):
 
 
 @admin.register(Event)
-class EventAdmin(PermissionMixin, NestedModelAdmin):
+class EventAdmin(QuerySearchMixin, PermissionMixin, NestedModelAdmin):
     change_form_template = "bis/event_change_form.html"
 
     actions = [mark_as_archived, export_to_xlsx, export_feedbacks]
@@ -146,18 +150,21 @@ class EventAdmin(PermissionMixin, NestedModelAdmin):
         ("end", DateRangeFilter),
         ("group", MultiSelectRelatedDropdownFilter),
         ("category", MultiSelectRelatedDropdownFilter),
-        ("tags", MultiSelectRelatedDropdownFilter),
         ("program", MultiSelectRelatedDropdownFilter),
-        "propagation__is_shown_on_web",
         ("intended_for", MultiSelectRelatedDropdownFilter),
+        list_filter_extra_title("Stav akce"),
+        "propagation__is_shown_on_web",
         "is_canceled",
         "is_closed",
         "is_archived",
         HasFeedbackFilter,
+        list_filter_extra_title("Přihlašování a prezence"),
         "registration__is_registration_required",
         "registration__is_event_full",
         "is_attendance_list_required",
         ("record__attendance_list_type", AttendanceListTypeFilter),
+        list_filter_extra_title("Ostatní"),
+        ("tags", MultiSelectRelatedDropdownFilter),
         ("location__region", MultiSelectRelatedDropdownFilter),
         ("main_organizer__birthday", EventStatsDateFilter),
         ("administration_units", MultiSelectRelatedDropdownFilter),
