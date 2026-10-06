@@ -380,7 +380,13 @@ class QuerySearchMixin(DjangoQLSearchMixin):
 
     def changelist_view(self, request, extra_context=None):
         response = super().changelist_view(request, extra_context)
-        if request.user.can_see_all and isinstance(response, TemplateResponse):
+        # Bulk actions that render their own intermediate page (e.g. the
+        # fundraising campaign form) have no `media` in their context.
+        if (
+            request.user.can_see_all
+            and isinstance(response, TemplateResponse)
+            and "media" in response.context_data
+        ):
             response.context_data["media"] += DjangoQLSearchMixin.media.fget(self)
         return response
 
