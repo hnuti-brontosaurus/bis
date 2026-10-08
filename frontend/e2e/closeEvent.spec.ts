@@ -145,7 +145,7 @@ test.describe('Close event - evidence and participants', () => {
     ]
 
     /**
-     * The fixture event's inferred attendance_list_type makes the radio change
+     * The fixture event's count attendance_list_type makes the radio change
      * open the "you're changing the registration method" modal; confirming it
      * fires the type-switch PATCH. Draining that PATCH here keeps it from
      * racing whatever the test does next.

@@ -97,6 +97,7 @@
     "participants": [],
     "number_of_participants": 4,
     "number_of_participants_under_26": 4,
+    "attendance_list_type": "count",
     "note": "",
     "contacts": []
   }

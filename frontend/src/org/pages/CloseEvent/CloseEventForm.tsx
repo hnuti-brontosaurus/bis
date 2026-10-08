@@ -120,32 +120,6 @@ const formData2payload = ({
   return merge(is_closed ? { is_closed: true } : {}, payload)
 }
 
-const initialData2form = (
-  data: Partial<CloseEventFormShape>,
-  event: FullEvent,
-): Partial<CloseEventFormShape> => {
-  let attendanceListType: ParticipantInputType | undefined =
-    event.record?.attendance_list_type || undefined
-
-  if (!attendanceListType) {
-    if (event.group.slug === 'other') {
-      if (event.record?.participants?.length) {
-        attendanceListType = 'full-list'
-      } else if (typeof event.record?.number_of_participants === 'number') {
-        attendanceListType = 'count'
-      }
-    } else {
-      attendanceListType = 'full-list'
-    }
-  }
-
-  if (attendanceListType) {
-    return merge({}, data, {
-      record: { attendance_list_type: attendanceListType },
-    })
-  } else return data as Partial<CloseEventFormShape>
-}
-
 const validationSchema: yup.ObjectSchema<ParticipantsStepFormShape> =
   yup.object({
     record: yup.object({
@@ -197,11 +171,7 @@ export const CloseEventForm = ({
 }) => {
   // load persisted data
   const savedData = usePersistentFormData('closeEvent', id)
-  const initialAndSavedData = merge(
-    {},
-    initialData2form(initialData, event),
-    savedData,
-  )
+  const initialAndSavedData = merge({}, initialData, savedData)
 
   const navigate = useNavigate()
   const [requireSubmitConfirmation, ConfirmationDialog] =

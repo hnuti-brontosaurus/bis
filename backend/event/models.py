@@ -130,6 +130,10 @@ class Event(SearchMixin, m.Model):
         if not is_validation_paused():
             self.clean()
         super().save(force_insert, force_update, using, update_fields)
+        if self.group.slug != "other":
+            EventRecord.objects.filter(event=self, attendance_list_type=None).update(
+                attendance_list_type=EventRecord.AttendanceListType.FULL_LIST
+            )
 
     def is_volunteering(self):
         return self.category.slug == "public__volunteering"
@@ -354,6 +358,13 @@ class EventRecord(m.Model):
 
     def __str__(self):
         return f"Záznam z akce {self.event}"
+
+    def save(self, *args, **kwargs):
+        # Only "other" events let the organizer pick the type; NULL there
+        # means not picked yet. Every other group is always full-list.
+        if self.attendance_list_type is None and self.event.group.slug != "other":
+            self.attendance_list_type = self.AttendanceListType.FULL_LIST
+        super().save(*args, **kwargs)
 
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)

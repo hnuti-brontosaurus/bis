@@ -2,7 +2,9 @@
 simple-list participant may be anyone, and full-list exposes their profile."""
 
 import pytest
+from bis.helpers import paused_validation
 from bis.models import User
+from categories.models import EventGroupCategory
 from event.models import EventRecord
 
 
@@ -118,3 +120,42 @@ def test_patching_other_record_fields_keeps_participants(
 
     assert response.status_code == 200, response.data
     assert event.record.participants.count() == 1
+
+
+@pytest.fixture
+def camp_group(db):
+    return EventGroupCategory.objects.create(name="Tábor", slug="camp")
+
+
+@pytest.mark.django_db
+def test_other_event_record_starts_untyped(event):
+    event.record.delete()
+
+    record = EventRecord.objects.create(event=event)
+
+    assert record.attendance_list_type is None
+
+
+@pytest.mark.django_db
+def test_camp_event_record_starts_full_list(event, camp_group):
+    event.record.delete()
+    event.group = camp_group
+    with paused_validation():
+        event.save()
+
+    record = EventRecord.objects.create(event=event)
+
+    assert record.attendance_list_type == EventRecord.AttendanceListType.FULL_LIST
+
+
+@pytest.mark.django_db
+def test_moving_untyped_event_to_camp_makes_it_full_list(event, camp_group):
+    event.record.attendance_list_type = None
+    event.record.save()
+
+    event.group = camp_group
+    with paused_validation():
+        event.save()
+
+    event.record.refresh_from_db()
+    assert event.record.attendance_list_type == EventRecord.AttendanceListType.FULL_LIST
