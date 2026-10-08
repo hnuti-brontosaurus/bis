@@ -701,10 +701,14 @@ class RecordSerializer(ModelSerializer):
         # simple-list user's full profile can't be exposed by flipping the
         # event to full-list. The frontend handles this on the input-type
         # change handler.
+        # A record that never had a type (created before the type was picked,
+        # or after the backfill) is only getting its type filled in — there
+        # are no simple-list entries to expose, so it is not a mode switch.
         if (
             self.instance is not None
             and "attendance_list_type" in attrs
             and attrs["attendance_list_type"] != self.instance.attendance_list_type
+            and self.instance.attendance_list_type is not None
         ):
             participants = attrs.get("participants")
             keeps_participants = (

@@ -83,6 +83,30 @@ def test_switch_clearing_participants_is_accepted(
 
 
 @pytest.mark.django_db
+def test_filling_type_on_untyped_record_keeps_participants(
+    api_client, event_url, event, participant
+):
+    event.record.attendance_list_type = None
+    event.record.save()
+
+    response = api_client.patch(
+        event_url,
+        {
+            "record": {
+                "attendance_list_type": "full-list",
+                "participants": [str(participant.id)],
+            }
+        },
+        format="json",
+    )
+
+    assert response.status_code == 200, response.data
+    event.record.refresh_from_db()
+    assert event.record.attendance_list_type == EventRecord.AttendanceListType.FULL_LIST
+    assert event.record.participants.count() == 1
+
+
+@pytest.mark.django_db
 def test_patching_other_record_fields_keeps_participants(
     api_client, event_url, event, participant
 ):
