@@ -85,9 +85,9 @@ export const App = () => {
             <Route index element={<ViewEvent readonly />} />
           </Route>
         </Route>
-        <Route path="admin" element={<AdminOutlet />}>
+        <Route element={<AdminOutlet />}>
           <Route
-            path="*"
+            path="admin/*"
             element={
               <ServerRedirect notConfigured="Administrátorský přístup pro tuto doménu není nastavený" />
             }

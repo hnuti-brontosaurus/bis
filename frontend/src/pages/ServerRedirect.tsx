@@ -1,6 +1,7 @@
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import { NotFound } from 'pages/NotFound'
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 /*
 This component leaves the react app and goes to the same url
@@ -11,20 +12,16 @@ export const ServerRedirect = ({
   notConfigured: string
 }) => {
   const showMessage = useShowMessage()
+  // The first location of a document has the key "default". Reaching this
+  // route on it means the server handed the url to this app, so leaving for
+  // the server again would loop.
+  const servedByThisApp = useLocation().key === 'default'
 
-  // the server sent us back here, so nothing but this app serves the url
   useEffect(() => {
-    if (globalThis.document.referrer === globalThis.location.href)
-      showMessage({ type: 'error', message: notConfigured })
-  }, [showMessage, notConfigured])
+    if (servedByThisApp) showMessage({ type: 'error', message: notConfigured })
+    // eslint-disable-next-line no-self-assign
+    else globalThis.location.href = globalThis.location.href
+  }, [servedByThisApp, showMessage, notConfigured])
 
-  // prevent infinite redirect loop
-  if (globalThis.document.referrer === globalThis.location.href) {
-    return <NotFound />
-  }
-
-  // eslint-disable-next-line no-self-assign
-  globalThis.location.href = globalThis.location.href
-
-  return null
+  return servedByThisApp ? <NotFound /> : null
 }
