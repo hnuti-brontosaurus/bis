@@ -129,14 +129,17 @@ export const SelectUnknownUser = forwardRef<
   ) => {
     const [searchQuery, debouncedSearchQuery, setSearchQuery] =
       useDebouncedState(1000, '')
-    const { data: userOptions, isFetching: isOptionsFetching } =
-      useReadUnknownAndFullUsers(
-        debouncedSearchQuery.length >= 2
-          ? {
-              search: debouncedSearchQuery,
-            }
-          : skipToken,
-      )
+    const {
+      data: userOptions,
+      isFetching: isOptionsFetching,
+      isFullUsersFetching,
+    } = useReadUnknownAndFullUsers(
+      debouncedSearchQuery.length >= 2
+        ? {
+            search: debouncedSearchQuery,
+          }
+        : skipToken,
+    )
 
     const readFullUser = useReadFullUser()
 
@@ -166,7 +169,10 @@ export const SelectUnknownUser = forwardRef<
             else onBirthdayError?.('Jiná chyba')
           }
         }}
-        isOptionDisabled={user => Boolean(getDisabled?.(user))}
+        isOptionDisabled={user =>
+          Boolean(getDisabled?.(user)) ||
+          (isFullUsersFetching && !('id' in user))
+        }
         getOptionLabel={
           getLabel ?? (user => user.display_name + ('id' in user ? '' : ' ?'))
         }
@@ -251,14 +257,17 @@ export const SelectUnknownUsers = forwardRef<
     1000,
     '',
   )
-  const { data: userOptions, isFetching: isOptionsFetching } =
-    useReadUnknownAndFullUsers(
-      debouncedSearchQuery.length >= 2
-        ? {
-            search: debouncedSearchQuery,
-          }
-        : skipToken,
-    )
+  const {
+    data: userOptions,
+    isFetching: isOptionsFetching,
+    isFullUsersFetching,
+  } = useReadUnknownAndFullUsers(
+    debouncedSearchQuery.length >= 2
+      ? {
+          search: debouncedSearchQuery,
+        }
+      : skipToken,
+  )
 
   const readFullUser = useReadFullUser()
 
@@ -293,6 +302,9 @@ export const SelectUnknownUsers = forwardRef<
         }
       }}
       getOptionLabel={user => user.display_name + ('id' in user ? '' : ' ?')}
+      isOptionDisabled={user =>
+        isFullUsersFetching && !('id' in (user as User | UserSearch))
+      }
       getOptionValue={user => user._search_id}
       formatOptionLabel={user =>
         formatUnknownUserOptionLabel(user, isOptionsFetching)
