@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: d4f174c6e7cea7bf
+// source-hash: 17b1bad42854909e
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1145,6 +1145,14 @@ export const login = {
   user_does_not_exist: 'Uživatel s tímto emailem neexistuje',
   code_form_header: 'Na e-mail {email} byl zaslán kód pro přihlášení',
   code_invalid: 'Kód není validní (chybný či expirovaný)',
+} as const
+
+export const unknownUser = {
+  wrong_birthday: 'Nesprávné datum narození',
+  locked_out:
+    'Příliš mnoho neúspěšných pokusů. Ověření tohoto uživatele je na 24 hodin zablokováno.',
+  attempts_hint: 'Po 5 neúspěšných pokusech se ověření na 24 hodin zablokuje.',
+  verification_failed: 'Ověření se nezdařilo. Zkus to prosím znovu.',
 } as const
 
 export const event_categories = {

@@ -2,6 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { FetchBaseQueryError, skipToken } from '@reduxjs/toolkit/query'
 import { api } from 'app/services/bis'
 import { User, UserSearch } from 'app/services/bisTypes'
+import * as translations from 'config/static/translations'
 import {
   Actions,
   BirthdayInput,
@@ -12,9 +13,14 @@ import {
 import modalStyles from 'components/StyledModal/StyledModal.module.scss'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { useReadUnknownAndFullUsers } from 'hooks/readUnknownAndFullUsers'
-import { forwardRef, InputHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, InputHTMLAttributes, ReactNode, useState } from 'react'
 import { confirmAlert } from 'react-confirm-alert'
-import { Controller, FormProvider, useForm } from 'react-hook-form'
+import {
+  Controller,
+  FormProvider,
+  useForm,
+  UseFormReturn,
+} from 'react-hook-form'
 import { FaBirthdayCake } from 'react-icons/fa'
 import Select from 'react-select'
 import { Assign } from 'utility-types'
@@ -198,17 +204,27 @@ export const BirthdayForm = ({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (birthday: string) => void
+  onSubmit: (
+    data: { birthday: string },
+    form: UseFormReturn<{ birthday: string }>,
+  ) => Promise<void> | void
   onCancel: () => void
 }) => {
   const methods = useForm<{ birthday: string }>({
     resolver: yupResolver(birthdayValidationSchema),
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { handleSubmit, control } = methods
 
-  const handleFormSubmit = handleSubmit(data => {
-    onSubmit(data.birthday)
+  const handleFormSubmit = handleSubmit(async data => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onSubmit(data, methods)
+    } finally {
+      setIsSubmitting(false)
+    }
   })
 
   return (
@@ -227,9 +243,17 @@ export const BirthdayForm = ({
             render={({ field }) => <BirthdayInput {...field} />}
           />
         </FormInputError>
+        <div className={styles.attemptsHint}>
+          {translations.unknownUser.attempts_hint}
+        </div>
         <Actions>
           <Button type="reset">Zrušit</Button>
-          <Button primary type="submit">
+          <Button
+            primary
+            type="submit"
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
+          >
             Pokračovat
           </Button>
         </Actions>
@@ -301,66 +325,111 @@ export const SelectUnknownUsers = forwardRef<
   )
 })
 
+/**
+ * Error thrown to callers of useReadFullUser when the user cancels the
+ * birthday-verification dialog. Callers treat it as a silent no-op.
+ */
+const canceledError = new Error('Canceled')
+
+const getVerificationErrorMessage = (
+  error: FetchBaseQueryError,
+): string | null => {
+  switch (error.status) {
+    case 404:
+      // wrong birthday: let the user correct it in the dialog
+      return translations.unknownUser.wrong_birthday
+    case 429:
+      // throttled: max 5 failures per (first_name, last_name, requester) per 24h
+      return translations.unknownUser.locked_out
+    default:
+      return null
+  }
+}
+
 export const useReadFullUser = () => {
   const [readUserByBirthday] = api.endpoints.readUserByBirthdate.useLazyQuery()
   return async (user: UserSearch): Promise<User> => {
-    try {
-      const birthday = (await new Promise(resolve => {
-        confirmAlert({
-          customUI: ({ title, message, onClose }) => {
-            return (
-              <div className={modalStyles.modal}>
-                <div className={modalStyles.content}>
-                  <header className={modalStyles.modalTitleBox}>{title}</header>
-                  <div className={modalStyles.modalFormBox}>
-                    <div className={modalStyles.infoBox}>{message}</div>
-                    <BirthdayForm
-                      onSubmit={birthday => {
-                        resolve(birthday)
-                        onClose()
-                      }}
-                      onCancel={() => {
-                        resolve('')
-                        onClose()
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )
-          },
-          title: 'Zadat datum narození',
-          message: user.display_name,
-        })
-      })) as string
-      if (birthday) {
-        const fullUser = await readUserByBirthday({
-          ...user,
-          birthday,
-        }).unwrap()
+    // settled once the dialog flow ends: a full user on success,
+    // canceledError on cancel/escape/dismiss, or an Error with a message to
+    // surface to the caller (fallback; normally errors stay in the dialog)
+    let settle: (value: User | Error) => void = () => undefined
+    const result = new Promise<User>((resolve, reject) => {
+      settle = value =>
+        value instanceof Error ? reject(value) : resolve(value)
+    })
 
-        if (fullUser._search_id === user._search_id) {
-          return fullUser
-        }
-        throw new Error('Nesprávné datum narození')
-      }
-      throw new Error('Canceled')
-    } catch (error) {
-      if (error && typeof error === 'object' && 'status' in error) {
-        switch ((error as FetchBaseQueryError).status) {
-          case 404:
-            throw new Error('Nesprávné datum narození')
-          case 429:
-            if ('data' in error)
-              throw new Error(
-                ((error as FetchBaseQueryError).data as any).detail,
-              )
-            break
-          default:
-            break
-        }
-      }
-      throw error
+    // settle only once, no matter how many close paths fire
+    let finish = (value: User | Error) => {
+      settle(value)
+      finish = () => undefined
     }
+
+    confirmAlert({
+      customUI: ({ title, message, onClose }) => {
+        return (
+          <div className={modalStyles.modal}>
+            <div className={modalStyles.content}>
+              <header className={modalStyles.modalTitleBox}>{title}</header>
+              <div className={modalStyles.modalFormBox}>
+                <div className={modalStyles.infoBox}>{message}</div>
+                <BirthdayForm
+                  onSubmit={async ({ birthday }, form) => {
+                    try {
+                      const fullUser = await readUserByBirthday({
+                        ...user,
+                        birthday,
+                      }).unwrap()
+
+                      if (fullUser._search_id === user._search_id) {
+                        finish(fullUser)
+                        onClose()
+                      } else {
+                        // verified user doesn't match the picked one
+                        form.setError('birthday', {
+                          type: 'manual',
+                          message: translations.unknownUser.wrong_birthday,
+                        })
+                      }
+                    } catch (error) {
+                      if (
+                        error &&
+                        typeof error === 'object' &&
+                        'status' in error
+                      ) {
+                        const verificationError = getVerificationErrorMessage(
+                          error as FetchBaseQueryError,
+                        )
+                        if (verificationError) {
+                          form.setError('birthday', {
+                            type: 'manual',
+                            message: verificationError,
+                          })
+                          return
+                        }
+                      }
+                      form.setError('birthday', {
+                        type: 'manual',
+                        message: translations.unknownUser.verification_failed,
+                      })
+                    }
+                  }}
+                  onCancel={() => {
+                    finish(canceledError)
+                    onClose()
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )
+      },
+      // the dialog can also be closed via Escape / click outside; treat
+      // those like cancel (this also settles the promise on unmount)
+      willUnmount: () => finish(canceledError),
+      title: 'Zadat datum narození',
+      message: user.display_name,
+    })
+
+    return result
   }
 }
