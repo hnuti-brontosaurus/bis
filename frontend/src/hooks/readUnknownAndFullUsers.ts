@@ -40,5 +40,6 @@ export const useReadUnknownAndFullUsers = (
     data: combinedUsers,
     isLoading: allUsersStatus.isLoading || fullUsersStatus.isLoading,
     isFetching: allUsersStatus.isFetching || fullUsersStatus.isFetching,
+    isFullUsersFetching: fullUsersStatus.isFetching,
   }
 }
