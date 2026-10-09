@@ -312,7 +312,11 @@ The game book and cookbook are deliberately left out.
 - `aggregate` group/sum paths may only walk fields the schema exposes
   (`EXPOSED_FIELDS`), so grouping cannot print a hidden value. `birth_year` is
   an alias for `birthday__year`.
-- `export=true` emails a full-PII XLSX. It only works for models that are in
+- `export=true` emails a full-PII XLSX to the signed-in user. The bot must
+  instead name `export_to`, which has to belong to a `can_see_all` person
+  other than the bot, so whoever drives the bot cannot route PII to an
+  arbitrary inbox. Nobody else may pass `export_to`.
+- Exports only work for models that are in
   `EXPORT_SERIALIZERS` in `xlsx_export/export.py`. Emailed exports go through
   `SavedFile.store`, which puts each file in a random directory: `/media` is
   served without authentication, so the directory name is the only thing

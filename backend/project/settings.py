@@ -274,7 +274,9 @@ DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
         "FILTERING: `filters` is a JSON dict of Django ORM lookups on the root model, e.g.\n"
         '{start__year: 2024, category__slug: "public__volunteering"}. '
         "`ordering` takes Django order_by fields. At most 1000 rows per request; page with offset.\n\n"
-        "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n\n"
+        "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n"
+        "The bot account has no inbox to read: it must pass export_to, the email of a person "
+        "who can see all data.\n\n"
         "PII (names, emails, phones, birthdays, addresses) is never returned; "
         "people are anonymous users with a birth year and region.\n"
         "Results are limited to what the authenticated user has permission to view.\n\n"

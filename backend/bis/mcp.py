@@ -3,7 +3,8 @@ MCP (Model Context Protocol) tools for BIS.
 
 Single GraphQL-based tool for BIS data analysis.
 The LLM writes GraphQL queries to select exactly the fields it needs.
-Export mode sends full XLSX (with PII) to the authenticated user's email.
+Export mode sends full XLSX (with PII) to the authenticated user's email; the
+bot has to name a recipient who can see all data instead.
 A second tool reads the application logs, see bis/logs.py.
 """
 
@@ -12,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from bis import logs as log_files
 from bis.background import closes_db_connection
+from bis.models import User
 from django.conf import settings
 from django.utils.text import get_valid_filename
 from mcp_server import MCPToolset
@@ -50,6 +52,7 @@ class BISTools(MCPToolset):
         variables: dict | None = None,
         export: bool = False,
         export_name: str | None = None,
+        export_to: str | None = None,
     ) -> dict | str:
         """Execute a GraphQL query against BIS data.
 
@@ -68,6 +71,9 @@ class BISTools(MCPToolset):
             export: If true, exports matching data as XLSX to your email.
             export_name: File name (without .xlsx) and email subject of the
                 export; defaults to the dataset name.
+            export_to: Recipient of the export, required for the bot account
+                and only allowed for it. Must be the email of a person who can
+                see all data (office, auditors, executives, fundraisers).
 
         Returns:
             Query result dict, or confirmation message when export=True.
@@ -77,7 +83,7 @@ class BISTools(MCPToolset):
             extra={"data": {"query": query, "variables": variables, "export": export}},
         )
         try:
-            return self._execute_query(query, variables, export, export_name)
+            return self._execute_query(query, variables, export, export_name, export_to)
         except Exception as e:
             logger.exception("Failed MCP query")
             return f"Error: {type(e).__name__}: {e}"
@@ -160,7 +166,26 @@ class BISTools(MCPToolset):
             logger.exception("Failed MCP logs search")
             return f"Error: {type(e).__name__}: {e}"
 
-    def _execute_query(self, query, variables, export, export_name):
+    def _export_recipient(self, export_to):
+        user = self.request.user
+        if not user.is_bot:
+            if export_to:
+                return None, "Error: export_to is only for the bot account."
+            if not user.email:
+                return None, "Error: No email address on your account."
+            return user.email, None
+
+        if not export_to:
+            return None, "Error: the bot has to name the recipient in export_to."
+        recipient = User.get(email=export_to)
+        if not recipient or recipient.is_bot or not recipient.can_see_all:
+            return (
+                None,
+                "Error: export_to must belong to a person who can see all data.",
+            )
+        return export_to.lower(), None
+
+    def _execute_query(self, query, variables, export, export_name, export_to):
         from bis.mcp_schema import schema
 
         context = {
@@ -189,9 +214,9 @@ class BISTools(MCPToolset):
             return "GraphQL errors:\n" + "\n".join(f"- {m}" for m in messages)
 
         if export:
-            user_email = self.request.user.email
-            if not user_email:
-                return "Error: No email address on your account."
+            user_email, error = self._export_recipient(export_to)
+            if error:
+                return error
 
             if not context["_export_qs"]:
                 return "No data matched for export."

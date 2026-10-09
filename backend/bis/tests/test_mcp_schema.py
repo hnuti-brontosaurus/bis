@@ -3,6 +3,7 @@ import datetime
 import pytest
 from bis.models import User
 from bis.tests.test_mcp_visibility import make_event, make_user
+from categories.models import RoleCategory
 from django.test import RequestFactory
 from event.models import EventRecord
 
@@ -176,6 +177,21 @@ def tools(db):
     return BISTools(request=request)
 
 
+def make_office_worker(email):
+    user = make_user(email)
+    user.roles.add(
+        RoleCategory.objects.get_or_create(
+            slug="office_worker", defaults={"name": "office_worker"}
+        )[0]
+    )
+    return user
+
+
+@pytest.fixture
+def office_worker(db):
+    return make_office_worker("office@example.com")
+
+
 @pytest.fixture
 def submitted(monkeypatch):
     from bis import mcp
@@ -187,13 +203,14 @@ def submitted(monkeypatch):
     return calls
 
 
-def test_export_ignores_limit_and_uses_export_name(tools, submitted):
+def test_export_ignores_limit_and_uses_export_name(tools, submitted, office_worker):
     make_event("Akce")
 
     message = tools.query(
         "{ events(limit: 5000) { id } feedbacks { id } }",
         export=True,
         export_name="Akce 2026",
+        export_to=office_worker.email,
     )
 
     assert message.startswith("Exporting Akce_2026_events, Akce_2026_feedbacks.")
@@ -203,17 +220,76 @@ def test_export_ignores_limit_and_uses_export_name(tools, submitted):
     ]
 
 
-def test_export_name_defaults_to_dataset(tools, submitted):
-    tools.query("{ events { id } }", export=True)
+def test_export_name_defaults_to_dataset(tools, submitted, office_worker):
+    tools.query("{ events { id } }", export=True, export_to=office_worker.email)
 
     assert [name for _, _, name in submitted] == ["events"]
 
 
-def test_too_long_export_name_is_rejected_before_exporting(tools, submitted):
-    message = tools.query("{ events { id } }", export=True, export_name="x" * 59)
+def test_too_long_export_name_is_rejected_before_exporting(
+    tools, submitted, office_worker
+):
+    message = tools.query(
+        "{ events { id } }",
+        export=True,
+        export_name="x" * 59,
+        export_to=office_worker.email,
+    )
 
     assert message.startswith("Error: export_name is too long")
     assert submitted == []
+
+
+def test_bot_export_goes_to_export_to(tools, submitted, office_worker):
+    message = tools.query(
+        "{ events { id } }", export=True, export_to="Office@Example.com"
+    )
+
+    assert message.endswith("You will receive an email at office@example.com.")
+    assert [email for _, email, _ in submitted] == ["office@example.com"]
+
+
+@pytest.mark.parametrize(
+    "export_to", [None, "brontosaurus.bot@gmail.com", "member@example.com", "x@y.cz"]
+)
+def test_bot_export_needs_a_recipient_who_sees_all(tools, submitted, export_to):
+    make_user("member@example.com")
+
+    message = tools.query("{ events { id } }", export=True, export_to=export_to)
+
+    assert message.startswith("Error:")
+    assert submitted == []
+
+
+def test_bot_cannot_export_to_itself_even_with_a_role(tools, submitted):
+    tools.request.user.roles.add(
+        RoleCategory.objects.create(slug="office_worker", name="office_worker")
+    )
+
+    message = tools.query(
+        "{ events { id } }", export=True, export_to="brontosaurus.bot@gmail.com"
+    )
+
+    assert message.startswith("Error:")
+    assert submitted == []
+
+
+def test_person_export_goes_to_own_email_and_rejects_export_to(
+    db, submitted, office_worker
+):
+    from bis.mcp import BISTools
+
+    request = RequestFactory().get("/mcp")
+    request.user = office_worker
+    tools = BISTools(request=request)
+
+    tools.query("{ events { id } }", export=True)
+    rejected = tools.query(
+        "{ events { id } }", export=True, export_to="other@example.com"
+    )
+
+    assert [email for _, email, _ in submitted] == ["office@example.com"]
+    assert rejected == "Error: export_to is only for the bot account."
 
 
 def test_export_is_saved_and_emailed_under_its_name(
