@@ -51,6 +51,12 @@ login:
   code_form_header: Na e-mail {email} byl zaslán kód pro přihlášení
   code_invalid: Kód není validní (chybný či expirovaný)
 
+unknownUser:
+  wrong_birthday: Nesprávné datum narození
+  locked_out: Příliš mnoho neúspěšných pokusů. Ověření tohoto uživatele je na 24 hodin zablokováno.
+  attempts_hint: Po 5 neúspěšných pokusech se ověření na 24 hodin zablokuje.
+  verification_failed: Ověření se nezdařilo. Zkus to prosím znovu.
+
 event_categories:
   internal: Interní
   internal__general_meeting: Valná hromada
