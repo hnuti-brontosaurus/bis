@@ -383,6 +383,25 @@ with `--no-migrations`, so the row is not there unless a test asks for the
 `ingredient_categories` fixture. Groq replaces the default on create, which is
 why the new-ingredient form has no category field.
 
+### Cookbook rich text
+
+Every free-text cookbook field is an `HTMLField`, edited in the SPA by
+`contrib/components/HtmlEditor.vue` (GenericForm `type: "html"`) and shown by
+`components/app/HtmlText.vue` through `v-html`. That is safe only because the
+API sanitizes on write: `SanitizesHTML` in `api/cookbook/serializers.py` maps
+`HTMLField` to an nh3-cleaned field that keeps just what the editor's toolbar
+can produce and drops empty paragraphs and repeated `<br>`s. A new HTML field
+on a serializer without the mixin would be stored unsanitized. The editor's
+Tiptap extensions and the nh3 allowlist have to change together.
+
+The cookbook uses Tiptap rather than the TinyMCE the admin and game book use:
+it is headless, so the toolbar is naive-ui buttons that follow the cookbook
+theme, dark mode included. TinyMCE needs one skin per theme and cannot switch
+skins on a live editor, and `@tinymce/tinymce-vue`'s `v-model` resets the
+cursor while a format caret is open.
+
+Single-line inputs take a `max_length` equal to the model's `max_length`.
+
 ### Cookbook theme
 
 `cookbook/src/composables/theme.js` is the single source of the palette (light

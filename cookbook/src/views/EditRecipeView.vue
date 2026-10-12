@@ -95,7 +95,7 @@ const basicInputs = computed(() => {
   // this in RecipeSerializer.validate.
   const publishedRequired = !!recipe.value.is_public
   return [
-    { type: "text", key: "name", required: true, span: 2 },
+    { type: "text", key: "name", required: true, max_length: 31, span: 2 },
     // Only editors get to pick the chef; for plain chefs the field is
     // hidden and locked to their own chef_id by the onMounted guard.
     isEditor.value && {
@@ -125,11 +125,10 @@ const basicInputs = computed(() => {
       value: propertyRef(recipe, "required_time_id"),
     },
     {
-      type: "text",
+      type: "html",
       key: "difficulty_note",
       hint: _.value.edit_recipe.difficulty_note_hint,
       span: 2,
-      extra: { type: "textarea", autosize: { minRows: 1 } },
     },
     {
       type: "number",
@@ -140,24 +139,21 @@ const basicInputs = computed(() => {
       extra: { min: 1, precision: 0 },
     },
     {
-      type: "text",
+      type: "html",
       key: "servings_note",
       hint: _.value.edit_recipe.servings_note_hint,
-      extra: { type: "textarea", autosize: { minRows: 1 } },
     },
     {
-      type: "text",
+      type: "html",
       key: "intro",
       required: publishedRequired,
       span: 2,
-      extra: { type: "textarea" },
     },
     {
-      type: "text",
+      type: "html",
       key: "sources",
       required: publishedRequired,
       span: 2,
-      extra: { type: "textarea" },
     },
   ].filter(Boolean)
 })

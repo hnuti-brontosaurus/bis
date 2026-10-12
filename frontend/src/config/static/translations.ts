@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: d4f174c6e7cea7bf
+// source-hash: a45625761e8fc379
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1283,6 +1283,14 @@ export const cookbook = {
   home: {
     title: 'Veganská Brontosauří kuchařka',
     subtitle: '*nejen pro Brontosaury',
+  },
+  editor: {
+    bold: 'Tučně',
+    italic: 'Kurzíva',
+    bullet_list: 'Odrážky',
+    ordered_list: 'Číslovaný seznam',
+    link: 'Odkaz',
+    insert: 'Vložit',
   },
   section: { tips: 'tip', steps: 'krok', ingredients: 'přísada', part: 'část' },
   ingredients: {

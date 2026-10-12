@@ -72,3 +72,6 @@ export const scrollToFirstFormError = async () => {
   const item = blank?.closest(".n-form-item")
   ;(item ?? blank)?.scrollIntoView({ behavior: "smooth", block: "center" })
 }
+
+export const htmlToText = html =>
+  new DOMParser().parseFromString(html || "", "text/html").body.textContent

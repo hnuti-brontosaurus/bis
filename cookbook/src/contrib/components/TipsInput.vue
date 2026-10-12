@@ -6,13 +6,8 @@ const value = defineModel("value")
 defineProps(["index"])
 
 const inputs = computed(() => [
-  { type: "text", key: "name", required: true },
-  {
-    type: "text",
-    key: "description",
-    extra: { type: "textarea", rows: 2 },
-    required: true,
-  },
+  { type: "text", key: "name", required: true, max_length: 31 },
+  { type: "html", key: "description", required: true },
 ])
 </script>
 

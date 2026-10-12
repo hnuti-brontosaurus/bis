@@ -1,5 +1,7 @@
 import { API_BASE, expect, readFixture, test } from "./support/test.js"
 
+const EDITOR = ".html-editor .ProseMirror"
+
 /** Playwright has no `closest()`; the reverse xpath axis picks the nearest match. */
 const closestCollapseItem = locator =>
   locator.locator(
@@ -73,11 +75,9 @@ test.describe("cookbook smoke", () => {
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/upravit/$`))
 
     const tag = `e2e-${Date.now()}`
-    const description = page.locator("textarea").first()
+    const description = page.locator(EDITOR).first()
     await expect(description).toBeVisible()
-
-    const original = ((await description.inputValue()) ?? "").replace(/\s+$/, "")
-    await description.fill(`${original} ${tag}`)
+    await description.fill(tag)
 
     await save(page)
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
@@ -99,7 +99,7 @@ test.describe("cookbook smoke", () => {
     const tipDesc = `tip-desc-${tag}`
 
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
-    await expect(page.locator("textarea").first()).toBeVisible()
+    await expect(page.locator(EDITOR).first()).toBeVisible()
 
     const ingredients = await openSection(page, "Ingredience")
     await ingredients.locator(".n-dynamic-input button").first().click()
@@ -120,12 +120,12 @@ test.describe("cookbook smoke", () => {
     const steps = await openSection(page, "Postup")
     await steps.locator(".n-dynamic-input button").first().click()
     await steps.locator('input[type="text"]').first().fill(stepName)
-    await steps.locator("textarea").first().fill(`step-desc-${tag}`)
+    await steps.locator(EDITOR).first().fill(`step-desc-${tag}`)
 
     const tips = await openSection(page, "Tipy a triky")
     await tips.locator(".n-dynamic-input button").first().click()
     await tips.locator('input[type="text"]').first().fill(tipName)
-    await tips.locator("textarea").first().fill(tipDesc)
+    await tips.locator(EDITOR).first().fill(tipDesc)
 
     await save(page)
     // Successful save navigates to the detail page; failed save stays on edit.
@@ -152,7 +152,7 @@ test.describe("cookbook smoke", () => {
     // save creates the step with photo=null, then the orchestrator PATCHes
     // the photo to the dedicated step endpoint.
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
-    await expect(page.locator("textarea").first()).toBeVisible()
+    await expect(page.locator(EDITOR).first()).toBeVisible()
 
     const recipePatch = page.waitForRequest(
       request =>
@@ -240,7 +240,7 @@ test.describe("cookbook smoke", () => {
     })
 
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
-    await expect(page.locator("textarea").first()).toBeVisible()
+    await expect(page.locator(EDITOR).first()).toBeVisible()
 
     const section = await openSection(page, "Ingredience")
     // First selection is the ingredient (Cukr); second is the unit.
@@ -298,7 +298,7 @@ test.describe("cookbook smoke", () => {
     })
 
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
-    await expect(page.locator("textarea").first()).toBeVisible()
+    await expect(page.locator(EDITOR).first()).toBeVisible()
 
     const section = await openSection(page, "Ingredience")
     await section.getByRole("button", { name: "Rozdělit na části" }).click()
@@ -339,7 +339,7 @@ test.describe("cookbook smoke", () => {
     )
 
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
-    await expect(page.locator("textarea").first()).toBeVisible()
+    await expect(page.locator(EDITOR).first()).toBeVisible()
 
     // The image-card upload renders its remove button inside the file card;
     // it only shows on hover, hence the forced click.

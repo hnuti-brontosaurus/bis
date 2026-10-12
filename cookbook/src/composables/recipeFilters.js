@@ -7,6 +7,7 @@ import { useRecipeTagsStore } from "@/data/recipeTags.js"
 import { useAllergensStore } from "@/data/allergens.js"
 import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
 import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
+import { htmlToText } from "@/contrib/composables/helpers.js"
 
 export const SORT_OPTIONS = ["newest", "oldest", "name_asc", "name_desc"]
 
@@ -77,19 +78,21 @@ export const useRecipeFilters = () => {
       .map(ri => ingredientsStore.byId[ri.ingredient_id]?.name ?? "")
       .join(" ")
     const tier2 =
-      `${recipe.intro || ""} ${recipe.sources || ""} ${ingredientNames}`.toLowerCase()
+      `${htmlToText(recipe.intro)} ${htmlToText(recipe.sources)} ${ingredientNames}`.toLowerCase()
     if (matchesAll(tokens, tier2)) return 2
 
     const stepText = (recipe.steps ?? [])
-      .map(s => `${s.name || ""} ${s.description || ""}`)
+      .map(s => `${s.name || ""} ${htmlToText(s.description)}`)
       .join(" ")
     const tipText = (recipe.tips ?? [])
-      .map(t => `${t.name || ""} ${t.description || ""}`)
+      .map(t => `${t.name || ""} ${htmlToText(t.description)}`)
       .join(" ")
     const ingredientComments = (recipe.ingredients ?? [])
-      .map(ri => ri.comment || "")
+      .map(ri => htmlToText(ri.comment))
       .join(" ")
-    const commentText = (recipe.comments ?? []).map(c => c.comment || "").join(" ")
+    const commentText = (recipe.comments ?? [])
+      .map(c => htmlToText(c.comment))
+      .join(" ")
     const tier3 =
       `${ingredientComments} ${stepText} ${tipText} ${commentText}`.toLowerCase()
     if (matchesAll(tokens, tier3)) return 3

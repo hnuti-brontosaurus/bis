@@ -13,6 +13,7 @@ from cookbook_categories.models import (
 from django.core.validators import MinValueValidator
 from django.db import models as m
 from django.db.models import CASCADE, PROTECT
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
@@ -28,13 +29,13 @@ class Recipe(ChangeMixin, BaseModel):
     )
     tags = m.ManyToManyField(RecipeTag, related_name="recipes", blank=True)
     photo = ThumbnailImageField(upload_to="recipes", blank=True)
-    intro = m.TextField(blank=True)
-    sources = m.TextField(blank=True)
+    intro = HTMLField(blank=True)
+    sources = HTMLField(blank=True)
     default_servings = m.PositiveSmallIntegerField(
         default=2, validators=[MinValueValidator(1)]
     )
-    servings_note = m.TextField(blank=True)
-    difficulty_note = m.TextField(blank=True)
+    servings_note = HTMLField(blank=True)
+    difficulty_note = HTMLField(blank=True)
     is_public = m.BooleanField(default=False)
     # Denormalized cache of the allergens contributed by this recipe's
     # ingredients. Kept in sync by signals in cookbook.signals (whenever a
@@ -62,7 +63,7 @@ class RecipeIngredient(BaseModel):
     unit = m.ForeignKey(Unit, related_name="recipe_ingredients", on_delete=PROTECT)
     amount = m.FloatField()
     is_optional = m.BooleanField(default=False)
-    comment = m.TextField(blank=True)
+    comment = HTMLField(blank=True)
 
     def __str__(self):
         return f"{self.ingredient.name} ({self.amount} {self.unit})"
@@ -76,7 +77,7 @@ class RecipeStep(BaseModel):
     recipe = m.ForeignKey(Recipe, related_name="steps", on_delete=CASCADE)
     name = m.CharField(max_length=63)
     order = m.PositiveSmallIntegerField()
-    description = m.TextField(blank=True)
+    description = HTMLField(blank=True)
     photo = ThumbnailImageField(upload_to="recipe_steps", blank=True)
     is_optional = m.BooleanField(default=False)
 
@@ -88,7 +89,7 @@ class RecipeStep(BaseModel):
 class RecipeTip(BaseModel):
     recipe = m.ForeignKey(Recipe, related_name="tips", on_delete=CASCADE)
     name = m.CharField(max_length=31)
-    description = m.TextField()
+    description = HTMLField()
 
 
 @translate_model
@@ -96,4 +97,4 @@ class RecipeComment(BaseModel):
     recipe = m.ForeignKey(Recipe, related_name="comments", on_delete=CASCADE)
     user = m.ForeignKey(User, related_name="recipe_comments", on_delete=CASCADE)
     created_at = m.DateTimeField(auto_now_add=True)
-    comment = m.TextField()
+    comment = HTMLField()

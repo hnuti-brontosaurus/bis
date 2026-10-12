@@ -14,10 +14,16 @@ Field-shape rules:
   menu_recipes, menu_recipe_ingredients) keep nested writes AND nested
   reads — they only exist as part of the parent and are rewritten via
   drf-writable-nested.
+
+- Model HTMLFields are written by chefs in the cookbook's rich-text editor
+  and rendered as HTML, so they pass through `SanitizesHTML`, which keeps
+  only what the editor can produce.
 """
 
+import re
 from itertools import groupby
 
+import nh3
 from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
@@ -41,6 +47,34 @@ from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.fields import CharField
 from rest_framework.relations import PrimaryKeyRelatedField
+from tinymce.models import HTMLField
+
+BLANK = r"(?:\s|&nbsp;|\xa0|<br>)*"
+
+
+class SanitizedHTMLField(CharField):
+    def to_internal_value(self, data):
+        html = nh3.clean(
+            super().to_internal_value(data),
+            tags={"p", "br", "strong", "em", "ul", "ol", "li", "a"},
+            attributes={"a": {"href"}},
+            set_tag_attribute_values={"a": {"target": "_blank"}},
+        )
+        html = re.sub(rf"(<p>|<li>){BLANK}", r"\1", html)
+        html = re.sub(rf"{BLANK}(</p>|</li>)", r"\1", html)
+        html = re.sub(r"<(p|li)></\1>", "", html)
+        html = re.sub(r"<(ul|ol)></\1>", "", html)
+        html = re.sub(rf"<br>{BLANK}<br>", "<br>", html).strip()
+        if not html and not self.allow_blank:
+            self.fail("blank")
+        return html
+
+
+class SanitizesHTML:
+    serializer_field_mapping = {
+        **serializers.ModelSerializer.serializer_field_mapping,
+        HTMLField: SanitizedHTMLField,
+    }
 
 
 class ChefSerializer(serializers.ModelSerializer):
@@ -57,7 +91,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ("items", "other_items")
 
 
-class IngredientSerializer(serializers.ModelSerializer):
+class IngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
     allergen_ids = PrimaryKeyRelatedField(
         source="allergens",
         queryset=Allergen.objects.all(),
@@ -81,10 +115,11 @@ class IngredientSerializer(serializers.ModelSerializer):
             "g_per_serving",
             "category_id",
             "allergen_ids",
+            "reasoning",
         )
 
 
-class RecipeIngredientSerializer(serializers.ModelSerializer):
+class RecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
     ingredient_id = PrimaryKeyRelatedField(
         source="ingredient", queryset=Ingredient.objects.all()
     )
@@ -104,7 +139,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         )
 
 
-class RecipeStepSerializer(serializers.ModelSerializer):
+class RecipeStepSerializer(SanitizesHTML, serializers.ModelSerializer):
     class Meta:
         model = RecipeStep
         fields = ("id", "name", "order", "description", "photo", "is_optional")
@@ -126,20 +161,20 @@ class RecipeStepPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ("id",)
 
 
-class RecipeTipSerializer(serializers.ModelSerializer):
+class RecipeTipSerializer(SanitizesHTML, serializers.ModelSerializer):
     class Meta:
         model = RecipeTip
         fields = ("id", "name", "description")
 
 
-class RecipeCommentSerializer(serializers.ModelSerializer):
+class RecipeCommentSerializer(SanitizesHTML, serializers.ModelSerializer):
     class Meta:
         model = RecipeComment
         fields = ("id", "user_id", "created_at", "comment")
         read_only_fields = ("created_at",)
 
 
-class RecipeSerializer(WritableNestedModelSerializer):
+class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
     chef_id = PrimaryKeyRelatedField(source="chef", queryset=Chef.objects.all())
     difficulty_id = PrimaryKeyRelatedField(
         source="difficulty", queryset=RecipeDifficulty.objects.all()
@@ -223,7 +258,7 @@ class RecipeReferenceSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "photo")
 
 
-class MenuRecipeIngredientSerializer(serializers.ModelSerializer):
+class MenuRecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
     ingredient_id = PrimaryKeyRelatedField(
         source="ingredient", queryset=Ingredient.objects.all()
     )
@@ -241,7 +276,7 @@ class MenuRecipeIngredientSerializer(serializers.ModelSerializer):
         )
 
 
-class MenuRecipeSerializer(WritableNestedModelSerializer):
+class MenuRecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
     original_id = PrimaryKeyRelatedField(
         source="original",
         queryset=Recipe.objects.all(),
@@ -262,7 +297,7 @@ class MenuRecipeSerializer(WritableNestedModelSerializer):
         )
 
 
-class MenuSerializer(WritableNestedModelSerializer):
+class MenuSerializer(SanitizesHTML, WritableNestedModelSerializer):
     menu_recipes = MenuRecipeSerializer(many=True, required=False)
 
     class Meta:

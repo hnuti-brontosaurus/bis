@@ -30,9 +30,8 @@ const loading = ref(false)
 
 const commentInputs = [
   {
-    type: "text",
+    type: "html",
     key: "comment",
-    extra: { type: "textarea", autosize: { minRows: 1 } },
     hide_label: true,
     span: 1.5,
   },

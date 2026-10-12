@@ -11,6 +11,7 @@ should surface to the API caller, not vanish into a log line.
 """
 
 import json
+from html import escape
 
 import groq
 from cookbook.models.ingredients import Ingredient
@@ -165,7 +166,7 @@ def enrich_ingredient(instance: Ingredient) -> bool:
     if g_per_serving := data.get("g_per_serving"):
         instance.g_per_serving = int(g_per_serving)
     if reasoning := data.get("reasoning"):
-        instance.reasoning = reasoning
+        instance.reasoning = f"<p>{escape(reasoning)}</p>"
     instance.category = IngredientCategory.objects.get(slug=data["category"])
 
     # Allergens are M2M and require an existing PK; the caller (post-create)

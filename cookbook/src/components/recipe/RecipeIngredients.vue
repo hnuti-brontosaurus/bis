@@ -20,7 +20,7 @@ import { _ } from "@/composables/translations.js"
 import { pluralizeUnit } from "@/data/unitConversion.js"
 import { useCartStore } from "@/data/cart.js"
 import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
-import LinkifiedText from "@/components/app/LinkifiedText.vue"
+import HtmlText from "@/components/app/HtmlText.vue"
 import { isPartHeading, withPartHeadings } from "@/data/ingredientParts.js"
 
 const { icon } = useRender()
@@ -38,7 +38,7 @@ const columns = computed(() => {
     {
       type: "expand",
       expandable,
-      renderExpand: row => row.comment,
+      renderExpand: row => h(HtmlText, { html: row.comment }),
       // Kept in the layout when there is nothing to expand, because the
       // button is what gives the header row its height.
       title: h(
@@ -188,8 +188,8 @@ const onConfirmAdd = group => {
       </n-input-group>
     </n-flex>
   </n-flex>
-  <n-text v-if="recipe.servings_note" depth="3" class="servings-note">
-    <LinkifiedText :text="recipe.servings_note" />
+  <n-text v-if="recipe.servings_note" tag="div" depth="3" class="servings-note">
+    <HtmlText :html="recipe.servings_note" />
   </n-text>
 
   <AddToCartDialog

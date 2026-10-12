@@ -107,6 +107,31 @@ input:-webkit-autofill:focus {
   text-transform: uppercase;
 }
 
+.html-text p,
+.html-text ul,
+.html-text ol {
+  margin: 0 0 0.5em;
+}
+
+.html-text ul,
+.html-text ol {
+  padding-left: 1.4em;
+}
+
+.html-text li > p,
+.html-text > :last-child {
+  margin-bottom: 0;
+}
+
+/* base.css resets every element to normal weight. */
+.html-text strong {
+  font-weight: 700;
+}
+
+.html-text a {
+  color: var(--primary-text);
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));

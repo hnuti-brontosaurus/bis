@@ -30,7 +30,7 @@ import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
-import LinkifiedText from "@/components/app/LinkifiedText.vue"
+import HtmlText from "@/components/app/HtmlText.vue"
 import WithHint from "@/contrib/components/WithHint.vue"
 import { _ } from "@/composables/translations.js"
 
@@ -139,8 +139,8 @@ const onDelete = () => {
           }}</n-tag>
         </n-flex>
         <n-h1>{{ recipe.name }}</n-h1>
-        <n-text v-if="recipe.intro" depth="3" class="prose">
-          <LinkifiedText :text="recipe.intro" />
+        <n-text v-if="recipe.intro" tag="div" depth="3" class="prose">
+          <HtmlText :html="recipe.intro" />
         </n-text>
         <div class="facts">
           <div v-for="[label, item] in facts" :key="label" class="fact">
@@ -177,8 +177,13 @@ const onDelete = () => {
             </n-switch>
           </WithHint>
         </n-flex>
-        <n-text v-if="recipe.difficulty_note" depth="3" class="prose difficulty-note">
-          <LinkifiedText :text="recipe.difficulty_note" />
+        <n-text
+          v-if="recipe.difficulty_note"
+          tag="div"
+          depth="3"
+          class="prose difficulty-note"
+        >
+          <HtmlText :html="recipe.difficulty_note" />
         </n-text>
         <CollapseList :data="recipe.steps" checked-key="done" class="steps">
           <template #header="{ item, i }">
@@ -192,8 +197,8 @@ const onDelete = () => {
           </template>
           <template #default="{ item }">
             <n-flex v-if="item.description || item.photo">
-              <n-text v-if="item.description"
-                ><LinkifiedText :text="item.description"
+              <n-text v-if="item.description" tag="div"
+                ><HtmlText :html="item.description"
               /></n-text>
               <n-image
                 v-if="item.photo"
@@ -212,7 +217,7 @@ const onDelete = () => {
       <n-h2>{{ _.recipes.tips }}</n-h2>
       <CollapseList :data="recipe.tips" class="tips">
         <template #default="{ item }">
-          <LinkifiedText :text="item.description" />
+          <HtmlText :html="item.description" />
         </template>
       </CollapseList>
     </section>
@@ -222,7 +227,7 @@ const onDelete = () => {
     </section>
     <section v-if="recipe.sources">
       <n-h2>{{ _.recipes.sources }}</n-h2>
-      <n-text class="prose"><LinkifiedText :text="recipe.sources" /></n-text>
+      <n-text tag="div" class="prose"><HtmlText :html="recipe.sources" /></n-text>
     </section>
   </AppPage>
 </template>

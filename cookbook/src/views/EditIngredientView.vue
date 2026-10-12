@@ -48,7 +48,7 @@ const stateOptions = computed(() => [
 const inputs = computed(() => {
   if (!ingredient.value) return []
   return [
-    { type: "text", key: "name", required: true },
+    { type: "text", key: "name", required: true, max_length: 31 },
     {
       type: "select",
       key: "state",
@@ -71,6 +71,7 @@ const inputs = computed(() => {
     { type: "number", key: "g_per_piece" },
     { type: "number", key: "g_per_liter" },
     { type: "number", key: "g_per_serving" },
+    { type: "html", key: "reasoning", span: 2 },
     {
       type: "checkboxes",
       key: "allergen_ids",

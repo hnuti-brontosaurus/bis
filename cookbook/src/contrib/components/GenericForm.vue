@@ -42,6 +42,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
+import HtmlEditor from "@/contrib/components/HtmlEditor.vue"
 import { SHOW_COMMENT, SHOW_DETAILS } from "@/contrib/composables/expandFlags.js"
 import { addPart, isPartHeading, movePart } from "@/data/ingredientParts.js"
 
@@ -297,9 +298,13 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
           v-if="input.type === 'text'"
           v-model:value="input.value.value"
           :clearable="!input.required"
+          :maxlength="input.max_length"
+          :show-count="!!input.max_length"
           placeholder=""
           v-bind="input.extra"
         />
+
+        <HtmlEditor v-if="input.type === 'html'" v-model:value="input.value.value" />
 
         <n-input-number
           v-if="input.type === 'number'"
@@ -390,6 +395,7 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
                     v-model:value="value.name"
                     :placeholder="_.edit_recipe.part_placeholder"
                     :maxlength="63"
+                    show-count
                     class="part-heading"
                   />
                   <IngredientInput

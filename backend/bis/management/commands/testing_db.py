@@ -353,8 +353,8 @@ class Command(BaseCommand):
                 photo=SimpleUploadedFile(
                     "seed.png", buf.getvalue(), content_type="image/png"
                 ),
-                intro="intro",
-                sources=".",
+                intro="<p>intro</p>",
+                sources="<p>.</p>",
             )
 
     def create_testing_db(self):

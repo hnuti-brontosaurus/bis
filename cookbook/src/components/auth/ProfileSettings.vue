@@ -28,7 +28,7 @@ const darkThemeChecked = computed({
   },
 })
 const inputs = computed(() => [
-  { type: "text", key: "name", required: true },
+  { type: "text", key: "name", required: true, max_length: 31 },
   { type: "text", key: "email", required: true },
   {
     type: "image",

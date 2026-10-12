@@ -1,6 +1,7 @@
 from cookbook.models.base import BaseModel, ChangeMixin
 from cookbook_categories.models import Allergen, IngredientCategory
 from django.db import models as m
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
@@ -25,5 +26,5 @@ class Ingredient(ChangeMixin, BaseModel):
         on_delete=m.PROTECT,
         default=other_category_id,
     )
-    reasoning = m.TextField(blank=True)
+    reasoning = HTMLField(blank=True)
     allergens = m.ManyToManyField(Allergen, related_name="ingredients", blank=True)

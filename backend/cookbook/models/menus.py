@@ -5,13 +5,14 @@ from cookbook.models.recipes import Recipe
 from cookbook_categories.models import Unit
 from django.db import models as m
 from django.db.models import PROTECT
+from tinymce.models import HTMLField
 from translation.translate import translate_model
 
 
 @translate_model
 class Menu(ChangeMixin, BaseModel):
     name = m.CharField(max_length=31)
-    description = m.TextField(blank=True)
+    description = HTMLField(blank=True)
     user = m.ForeignKey(User, related_name="menus", on_delete=PROTECT)
     is_shared = m.BooleanField(default=False)
     is_starred = m.BooleanField(default=False)
@@ -24,7 +25,7 @@ class MenuRecipe(BaseModel):
     original = m.ForeignKey(
         Recipe, related_name="menu_recipes", on_delete=PROTECT, blank=True, null=True
     )
-    note = m.TextField(blank=True)
+    note = HTMLField(blank=True)
     served_at = m.DateTimeField(blank=True, null=True)
 
 
@@ -39,4 +40,4 @@ class MenuRecipeIngredient(BaseModel):
     unit = m.ForeignKey(Unit, related_name="menu_recipe_ingredients", on_delete=PROTECT)
     amount = m.FloatField()
     is_used = m.BooleanField()
-    comment = m.TextField(blank=True)
+    comment = HTMLField(blank=True)

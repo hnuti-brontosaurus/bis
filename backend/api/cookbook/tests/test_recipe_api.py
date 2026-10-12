@@ -81,6 +81,56 @@ def test_recipe_patch_simple_field(api_client, recipe):
 
 
 @pytest.mark.django_db
+def test_recipe_html_fields_are_sanitized(api_client, recipe):
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {
+            "intro": '<p onclick="x()">A <strong>b</strong><script>c()</script></p>'
+            '<a href="https://a.cz" style="color: red">d</a>',
+            "steps": [
+                {"order": 0, "name": "First", "description": "<h1>e</h1><em>f</em>"}
+            ],
+        },
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    recipe.refresh_from_db()
+    assert recipe.intro == (
+        "<p>A <strong>b</strong></p>"
+        '<a href="https://a.cz" target="_blank" rel="noopener noreferrer">d</a>'
+    )
+    assert recipe.steps.get().description == "e<em>f</em>"
+
+
+@pytest.mark.django_db
+def test_recipe_html_fields_drop_empty_lines(api_client, recipe):
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {
+            "intro": "<p>&nbsp;</p><p><br>a<br><br>\n<br>b<br></p><p> </p>"
+            "<ul><li><br></li></ul><p>c</p>",
+            "servings_note": "<p><br></p>",
+        },
+        format="json",
+    )
+    assert response.status_code == 200, response.data
+    recipe.refresh_from_db()
+    assert recipe.intro == "<p>a<br>b</p><p>c</p>"
+    assert recipe.servings_note == ""
+
+
+@pytest.mark.django_db
+def test_recipe_tip_description_cannot_be_only_empty_lines(api_client, recipe):
+    response = api_client.patch(
+        f"/api/cookbook/recipes/{recipe.id}/",
+        {"tips": [{"name": "Tip", "description": "<p>&nbsp;</p>"}]},
+        format="json",
+    )
+    assert response.status_code == 400
+    assert "description" in response.data["tips"][0]
+
+
+@pytest.mark.django_db
 def test_recipe_patch_tags_with_ids(api_client, recipe, tag):
     """Tags is a M2M; should accept a list of ids on write."""
     other = tag.__class__.objects.create(

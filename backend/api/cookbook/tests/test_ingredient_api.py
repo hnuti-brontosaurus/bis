@@ -70,7 +70,7 @@ def test_create_ingredient_runs_groq_enrichment(
     instance = Ingredient.objects.get(id=response.data["id"])
     assert instance.state == "liquid"
     assert instance.g_per_liter == 1030
-    assert instance.reasoning == "Mléko je tekutina."
+    assert instance.reasoning == "<p>Mléko je tekutina.</p>"
     assert instance.category == ingredient_categories["chilled"]
     # Response shape mirrors the serializer fields.
     assert response.data["state"] == "liquid"
