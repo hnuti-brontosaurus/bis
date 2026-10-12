@@ -157,6 +157,23 @@ def test_recipe_list_editor_sees_all(
 
 
 @pytest.mark.django_db
+def test_recipe_hidden_author_invisible_even_to_editor(
+    monkeypatch, editor_client, recipe, other_recipe_public
+):
+    monkeypatch.setattr(
+        "api.cookbook.permissions.HIDDEN_AUTHORS",
+        {"editor@example.com": ["other@example.com"]},
+    )
+    response = editor_client.get("/api/cookbook/recipes/")
+    ids = {r["id"] for r in response.data["results"]}
+    assert recipe.id in ids
+    assert other_recipe_public.id not in ids
+
+    response = editor_client.get(f"/api/cookbook/recipes/{other_recipe_public.id}/")
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
 def test_recipe_retrieve_private_other_returns_404_for_chef(
     api_client, chef, other_recipe_private
 ):

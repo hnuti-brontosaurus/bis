@@ -5,6 +5,8 @@ Visibility (reads / list filtering):
   * Chef: editors see all; everyone else sees only chefs with at least one
     `is_public` recipe, plus the viewer's own chef row.
   * Recipe: editors see all; chefs see is_public + own; others see is_public.
+    On top of that, a viewer in `HIDDEN_AUTHORS` never sees the listed
+    authors' recipes, editor or not.
   * Menu:   editors see all; chefs see is_shared + own; others see is_shared.
 
 Writes:
@@ -44,6 +46,16 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 PHOTO_MODELS = (RecipePhoto, RecipeIngredientPhoto, RecipeStepPhoto)
 
+HIDDEN_AUTHORS = {
+    "kiki.suldovska@gmail.com": ["marketa.tumova28@gmail.com"],
+}
+
+
+def hidden_author_emails(user):
+    if not user.is_authenticated or not user.email:
+        return []
+    return HIDDEN_AUTHORS.get(user.email.lower(), [])
+
 
 class CookbookAccessPermission(BasePermission):
     @staticmethod
@@ -69,6 +81,11 @@ class CookbookAccessPermission(BasePermission):
             Unit,
         ):
             return queryset
+
+        if model is Recipe:
+            queryset = queryset.exclude(
+                chef__user__email__in=hidden_author_emails(user)
+            )
 
         if user.is_authenticated and user.is_editor:
             return queryset
@@ -99,6 +116,8 @@ class CookbookAccessPermission(BasePermission):
         user = request.user
 
         if model is Recipe:
+            if obj.chef.user.email in hidden_author_emails(user):
+                return False
             if obj.is_public:
                 return True
             if user.is_authenticated and user.is_editor:
