@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: a45625761e8fc379
+// source-hash: fc87ccd0f6eeaba7
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -988,9 +988,9 @@ export const unit = {
 export const ingredient = {
   _name: 'Přísada',
   _name_plural: 'Přísada',
-  g_per_liter: 'gramy na litr',
-  g_per_piece: 'gramy na kus',
-  g_per_serving: 'gramy na typickou porci',
+  g_per_liter: 'Gramy na litr',
+  g_per_piece: 'Gramy na kus',
+  g_per_serving: 'Gramy na typickou porci',
   state: 'Konzistence',
   reasoning: 'Popis',
   allergens: 'Typicky obsahuje alergeny',

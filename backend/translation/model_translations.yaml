@@ -869,9 +869,9 @@ Ingredient:
   name: Přísada
   name_plural: Přísady
   fields:
-    g_per_liter: gramy na litr
-    g_per_piece: gramy na kus
-    g_per_serving: gramy na typickou porci
+    g_per_liter: Gramy na litr
+    g_per_piece: Gramy na kus
+    g_per_serving: Gramy na typickou porci
     state: Konzistence
     reasoning: Popis
     allergens: Typicky obsahuje alergeny
