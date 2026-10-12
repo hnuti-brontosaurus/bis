@@ -7,6 +7,7 @@ import {
   NButton,
   NSwitch,
   NImage,
+  NImageGroup,
   NH1,
   NH2,
   useDialog,
@@ -28,7 +29,7 @@ import { useAllergensStore } from "@/data/allergens.js"
 import { useAuthStore } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
-import RecipePhoto from "@/components/recipe/RecipePhoto.vue"
+import RecipePhotos from "@/components/recipe/RecipePhotos.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 import HtmlText from "@/components/app/HtmlText.vue"
@@ -83,6 +84,19 @@ const togglePublic = async value => {
   }
 }
 
+// Step photos follow the recipe's own, so the whole cooking can be browsed
+// in one preview. Ids are per table, hence the prefixed keys.
+const gallery = computed(() => [
+  ...recipe.value.photos.map(({ id, photo }) => ({
+    key: `recipe-${id}`,
+    photo,
+    alt: recipe.value.name,
+  })),
+  ...recipe.value.steps.flatMap(step =>
+    step.photos.map(({ id, photo }) => ({ key: `step-${id}`, photo, alt: step.name })),
+  ),
+])
+
 const facts = computed(() =>
   [
     [_.value.recipes.chef, recipe.value.chef],
@@ -125,14 +139,28 @@ const onDelete = () => {
         _.recipes.delete
       }}</n-button>
     </template>
-    <div class="hero" :class="{ 'with-photo': recipe.photo }">
-      <n-image
-        v-if="recipe.photo"
-        class="hero-photo"
-        :src="recipe.photo.large"
-        :alt="recipe.name"
-        object-fit="cover"
-      />
+    <div class="hero" :class="{ 'with-photo': gallery.length }">
+      <div v-if="gallery.length" class="hero-gallery">
+        <n-image-group>
+          <n-image
+            class="hero-photo"
+            :src="gallery[0].photo.large"
+            :alt="gallery[0].alt"
+            object-fit="cover"
+          />
+          <div v-if="gallery.length > 1" class="hero-thumbnails">
+            <n-image
+              v-for="{ key, photo, alt } in gallery.slice(1)"
+              :key="key"
+              class="hero-thumbnail"
+              :src="photo.small"
+              :preview-src="photo.large"
+              :alt="alt"
+              object-fit="cover"
+            />
+          </div>
+        </n-image-group>
+      </div>
       <div class="hero-text">
         <n-flex v-if="recipe.tags.length" :size="6">
           <n-tag v-for="tag in recipe.tags" :key="tag.id" size="small">{{
@@ -197,11 +225,15 @@ const onDelete = () => {
             <span v-else :class="{ muted: item.done }">{{ item.name }}</span>
           </template>
           <template #default="{ item }">
-            <n-flex v-if="item.description || item.photo" vertical>
+            <n-flex v-if="item.description || item.photos.length" vertical>
               <n-text v-if="item.description" tag="div"
                 ><HtmlText :html="item.description"
               /></n-text>
-              <RecipePhoto v-if="item.photo" :photo="item.photo" :alt="item.name" />
+              <RecipePhotos
+                v-if="item.photos.length"
+                :photos="item.photos"
+                :alt="item.name"
+              />
             </n-flex>
           </template>
         </CollapseList>
@@ -234,13 +266,37 @@ const onDelete = () => {
   align-items: center;
 }
 
-.hero-photo {
-  aspect-ratio: 4 / 3;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+.hero-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 
-.hero-photo :deep(img) {
+.hero-photo {
+  aspect-ratio: 4 / 3;
+}
+
+.hero-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.hero-thumbnail {
+  aspect-ratio: 1;
+}
+
+.hero-photo,
+.hero-thumbnail {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: zoom-in;
+}
+
+.hero-photo :deep(img),
+.hero-thumbnail :deep(img) {
   width: 100%;
   height: 100%;
 }

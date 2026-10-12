@@ -4,14 +4,20 @@ from api.cookbook.serializers import (
     ChefSerializer,
     IngredientSerializer,
     MenuSerializer,
-    RecipeIngredientPhotoSerializer,
+    RecipeIngredientPhotoUploadSerializer,
+    RecipePhotoUploadSerializer,
     RecipeSerializer,
-    RecipeStepPhotoSerializer,
+    RecipeStepPhotoUploadSerializer,
 )
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipes import Recipe, RecipeIngredient, RecipeStep
+from cookbook.models.recipes import (
+    Recipe,
+    RecipeIngredientPhoto,
+    RecipePhoto,
+    RecipeStepPhoto,
+)
 from cookbook.services.ingredient_enrichment import enrich_ingredient
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import ModelViewSet
@@ -35,8 +41,9 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
         .prefetch_related(
             "tags",
             "allergens",
-            "ingredients",
-            "steps",
+            "photos",
+            "ingredients__photos",
+            "steps__photos",
             "tips",
             "comments",
             "comments__user",
@@ -45,30 +52,29 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     )
 
 
-class RecipePhotoViewSet(
-    CookbookViewSetMixin,
-    ChangeViewSetMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
+class PhotoUploadViewSet(
+    CookbookViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
-    """PATCH-only endpoint for uploading a single recipe row's photo.
+    """POST-only: adds one photo to a gallery, see the photo notes in
+    `api/cookbook/serializers.py`. Photos are deleted and reordered by the
+    recipe save."""
 
-    The frontend uses this to stream photos one-by-one (with progress
-    + retry) instead of bundling them into the recipe PATCH.
-    """
-
-    lookup_field = "id"
-    http_method_names = ["patch", "options", "head"]
+    http_method_names = ["post", "options", "head"]
 
 
-class RecipeStepViewSet(RecipePhotoViewSet):
-    serializer_class = RecipeStepPhotoSerializer
-    queryset = RecipeStep.objects.select_related("recipe").all()
+class RecipePhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipePhotoUploadSerializer
+    queryset = RecipePhoto.objects.all()
 
 
-class RecipeIngredientViewSet(RecipePhotoViewSet):
-    serializer_class = RecipeIngredientPhotoSerializer
-    queryset = RecipeIngredient.objects.select_related("recipe").all()
+class RecipeIngredientPhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipeIngredientPhotoUploadSerializer
+    queryset = RecipeIngredientPhoto.objects.all()
+
+
+class RecipeStepPhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipeStepPhotoUploadSerializer
+    queryset = RecipeStepPhoto.objects.all()
 
 
 class MenuViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):

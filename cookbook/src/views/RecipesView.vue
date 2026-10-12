@@ -140,8 +140,8 @@ const activeFilterCount = computed(() => {
             <template #cover>
               <div class="card-cover">
                 <img
-                  v-if="recipe.photo"
-                  :src="recipe.photo.medium"
+                  v-if="recipe.photos.length"
+                  :src="recipe.photos[0].photo.medium"
                   :alt="recipe.name"
                 />
                 <n-flex class="cover-tags" :size="6">

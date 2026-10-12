@@ -28,7 +28,6 @@ class Recipe(ChangeMixin, BaseModel):
         RecipeRequiredTime, related_name="recipes", on_delete=PROTECT
     )
     tags = m.ManyToManyField(RecipeTag, related_name="recipes", blank=True)
-    photo = ThumbnailImageField(upload_to="recipes", blank=True)
     intro = HTMLField(blank=True)
     sources = HTMLField(blank=True)
     default_servings = m.PositiveSmallIntegerField(
@@ -64,7 +63,6 @@ class RecipeIngredient(BaseModel):
     amount = m.FloatField()
     is_optional = m.BooleanField(default=False)
     comment = HTMLField(blank=True)
-    photo = ThumbnailImageField(upload_to="recipe_ingredients", blank=True)
 
     def __str__(self):
         return f"{self.ingredient.name} ({self.amount} {self.unit})"
@@ -79,11 +77,36 @@ class RecipeStep(BaseModel):
     name = m.CharField(max_length=63)
     order = m.PositiveSmallIntegerField()
     description = HTMLField(blank=True)
-    photo = ThumbnailImageField(upload_to="recipe_steps", blank=True)
     is_optional = m.BooleanField(default=False)
 
     class Meta:
         ordering = ("order",)
+
+
+class Photo(BaseModel):
+    order = m.PositiveSmallIntegerField()
+
+    class Meta:
+        abstract = True
+        ordering = ("order",)
+
+
+@translate_model
+class RecipePhoto(Photo):
+    parent = m.ForeignKey(Recipe, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipes")
+
+
+@translate_model
+class RecipeIngredientPhoto(Photo):
+    parent = m.ForeignKey(RecipeIngredient, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipe_ingredients")
+
+
+@translate_model
+class RecipeStepPhoto(Photo):
+    parent = m.ForeignKey(RecipeStep, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipe_steps")
 
 
 @translate_model

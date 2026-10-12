@@ -7,7 +7,10 @@ from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
     RecipeIngredient,
+    RecipeIngredientPhoto,
+    RecipePhoto,
     RecipeStep,
+    RecipeStepPhoto,
     RecipeTip,
 )
 from django.contrib import admin
@@ -43,13 +46,27 @@ class MenuAdmin(PermissionMixin, NestedModelAdmin):
     autocomplete_fields = ["user"]
 
 
+class RecipePhotoAdmin(PermissionMixin, NestedTabularInline):
+    model = RecipePhoto
+
+
+class RecipeIngredientPhotoAdmin(PermissionMixin, NestedTabularInline):
+    model = RecipeIngredientPhoto
+
+
+class RecipeStepPhotoAdmin(PermissionMixin, NestedTabularInline):
+    model = RecipeStepPhoto
+
+
 class RecipeIngredientAdmin(PermissionMixin, NestedTabularInline):
     model = RecipeIngredient
     autocomplete_fields = ["ingredient", "unit"]
+    inlines = [RecipeIngredientPhotoAdmin]
 
 
 class RecipeStepAdmin(PermissionMixin, NestedTabularInline):
     model = RecipeStep
+    inlines = [RecipeStepPhotoAdmin]
 
 
 class RecipeTipAdmin(PermissionMixin, NestedTabularInline):
@@ -65,6 +82,7 @@ class RecipeCommentAdmin(PermissionMixin, NestedTabularInline):
 class RecipeAdmin(PermissionMixin, NestedModelAdmin):
     readonly_fields = ChangeMixin.fields
     inlines = [
+        RecipePhotoAdmin,
         RecipeIngredientAdmin,
         RecipeStepAdmin,
         RecipeTipAdmin,

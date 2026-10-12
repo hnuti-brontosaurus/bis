@@ -10,10 +10,17 @@ Field-shape rules:
   No nested object is rendered for these — the frontend resolves names
   out of sibling stores keyed by id.
 
-- Owned children of Recipe / Menu (ingredients, steps, tips,
+- Owned children of Recipe / Menu (ingredients, steps, tips, photos,
   menu_recipes, menu_recipe_ingredients) keep nested writes AND nested
   reads — they only exist as part of the parent and are rewritten via
   drf-writable-nested.
+
+- Photo galleries are written in two ways: the recipe save keeps, reorders
+  and deletes the existing photos through the nested `photos` lists, and
+  each new photo is then POSTed on its own to a `*_photos` endpoint. One
+  recipe save carrying every new photo as base64 is megabytes per photo and
+  dies on the nginx timeout on slow networks; one request per photo can
+  report progress and be retried alone.
 
 - Model HTMLFields are written by chefs in the cookbook's rich-text editor
   and rendered as HTML, so they pass through `SanitizesHTML`, which keeps
@@ -32,7 +39,10 @@ from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
     RecipeIngredient,
+    RecipeIngredientPhoto,
+    RecipePhoto,
     RecipeStep,
+    RecipeStepPhoto,
     RecipeTip,
 )
 from cookbook_categories.models import (
@@ -119,11 +129,53 @@ class IngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
         )
 
 
-class RecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
+class RecipePhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipePhoto
+        fields = ("id", "order", "photo")
+
+
+class RecipeIngredientPhotoSerializer(RecipePhotoSerializer):
+    class Meta(RecipePhotoSerializer.Meta):
+        model = RecipeIngredientPhoto
+
+
+class RecipeStepPhotoSerializer(RecipePhotoSerializer):
+    class Meta(RecipePhotoSerializer.Meta):
+        model = RecipeStepPhoto
+
+
+class RecipePhotoUploadSerializer(RecipePhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(source="parent", queryset=Recipe.objects.all())
+
+    class Meta(RecipePhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeIngredientPhotoUploadSerializer(RecipeIngredientPhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(
+        source="parent", queryset=RecipeIngredient.objects.all()
+    )
+
+    class Meta(RecipeIngredientPhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeStepPhotoUploadSerializer(RecipeStepPhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(
+        source="parent", queryset=RecipeStep.objects.all()
+    )
+
+    class Meta(RecipeStepPhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeIngredientSerializer(SanitizesHTML, WritableNestedModelSerializer):
     ingredient_id = PrimaryKeyRelatedField(
         source="ingredient", queryset=Ingredient.objects.all()
     )
     unit_id = PrimaryKeyRelatedField(source="unit", queryset=Unit.objects.all())
+    photos = RecipeIngredientPhotoSerializer(many=True, required=False)
 
     class Meta:
         model = RecipeIngredient
@@ -136,40 +188,16 @@ class RecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
             "amount",
             "is_optional",
             "comment",
-            "photo",
+            "photos",
         )
 
 
-class RecipeIngredientPhotoSerializer(serializers.ModelSerializer):
-    """PATCH-only serializer used by the per-ingredient photo upload endpoint,
-    for the same reason as RecipeStepPhotoSerializer."""
-
-    class Meta:
-        model = RecipeIngredient
-        fields = ("id", "photo")
-        read_only_fields = ("id",)
-
-
-class RecipeStepSerializer(SanitizesHTML, serializers.ModelSerializer):
-    class Meta:
-        model = RecipeStep
-        fields = ("id", "name", "order", "description", "photo", "is_optional")
-
-
-class RecipeStepPhotoSerializer(serializers.ModelSerializer):
-    """PATCH-only serializer used by the per-step photo upload endpoint.
-
-    Lets the cookbook frontend upload step photos one-by-one (with progress
-    + retry) instead of bundling them into a single recipe PATCH that times
-    out on slow networks. PATCHing the recipe with a partial `steps` array
-    isn't safe — the parent serializer is WritableNested and would delete
-    steps not present in the array.
-    """
+class RecipeStepSerializer(SanitizesHTML, WritableNestedModelSerializer):
+    photos = RecipeStepPhotoSerializer(many=True, required=False)
 
     class Meta:
         model = RecipeStep
-        fields = ("id", "photo")
-        read_only_fields = ("id",)
+        fields = ("id", "name", "order", "description", "photos", "is_optional")
 
 
 class RecipeTipSerializer(SanitizesHTML, serializers.ModelSerializer):
@@ -203,6 +231,7 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
     ingredients = RecipeIngredientSerializer(many=True, required=False)
     steps = RecipeStepSerializer(many=True, required=False)
     tips = RecipeTipSerializer(many=True, required=False)
+    photos = RecipePhotoSerializer(many=True, required=False)
     comments = RecipeCommentSerializer(many=True, required=False, read_only=True)
     # Cached on the Recipe via signals (cookbook.signals); chefs edit
     # allergens on the Ingredient, never per-recipe.
@@ -217,7 +246,7 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
             "difficulty_id",
             "required_time_id",
             "tag_ids",
-            "photo",
+            "photos",
             "intro",
             "sources",
             "default_servings",
@@ -245,28 +274,26 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
         return ingredients
 
     def validate(self, attrs):
-        # photo/intro/sources are required only when the recipe is public.
+        # photos/intro/sources are required only when the recipe is public.
         # Need the *effective* post-write value, which on PATCH means
         # falling back to the current instance for fields not in `attrs`.
         def effective(field):
             if field in attrs:
                 return attrs[field]
-            return getattr(self.instance, field, None)
+            if self.instance is None:
+                return None
+            if field == "photos":
+                return self.instance.photos.exists()
+            return getattr(self.instance, field)
 
         if effective("is_public"):
             errors = {}
-            for field in ("photo", "intro", "sources"):
+            for field in ("photos", "intro", "sources"):
                 if not effective(field):
                     errors[field] = "Veřejný recept musí mít vyplněné toto pole."
             if errors:
                 raise serializers.ValidationError(errors)
         return super().validate(attrs)
-
-
-class RecipeReferenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ("id", "name", "photo")
 
 
 class MenuRecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):

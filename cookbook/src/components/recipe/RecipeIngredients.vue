@@ -21,7 +21,7 @@ import { pluralizeUnit } from "@/data/unitConversion.js"
 import { useCartStore } from "@/data/cart.js"
 import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
 import HtmlText from "@/components/app/HtmlText.vue"
-import RecipePhoto from "@/components/recipe/RecipePhoto.vue"
+import RecipePhotos from "@/components/recipe/RecipePhotos.vue"
 import { isPartHeading, withPartHeadings } from "@/data/ingredientParts.js"
 
 const { icon } = useRender()
@@ -33,7 +33,7 @@ watch(
   () => (servings.value = recipe.value.default_servings),
   { immediate: true },
 )
-const expandable = row => row.comment || row.photo
+const expandable = row => row.comment || row.photos?.length
 const columns = computed(() => {
   return [
     {
@@ -42,7 +42,8 @@ const columns = computed(() => {
       renderExpand: row =>
         h(NFlex, { vertical: true }, () => [
           row.comment && h(HtmlText, { html: row.comment }),
-          row.photo && h(RecipePhoto, { photo: row.photo, alt: row.ingredient?.name }),
+          row.photos.length &&
+            h(RecipePhotos, { photos: row.photos, alt: row.ingredient?.name }),
         ]),
       // Kept in the layout when there is nothing to expand, because the
       // button is what gives the header row its height.

@@ -86,13 +86,12 @@ def anon_client():
 
 
 @pytest.fixture
-def other_recipe_public(other_chef, difficulty, required_time, image_file):
+def other_recipe_public(other_chef, difficulty, required_time):
     return Recipe.objects.create(
         name="Other public",
         chef=other_chef,
         difficulty=difficulty,
         required_time=required_time,
-        photo=image_file,
         intro="x",
         sources="x",
         is_public=True,
@@ -100,13 +99,12 @@ def other_recipe_public(other_chef, difficulty, required_time, image_file):
 
 
 @pytest.fixture
-def other_recipe_private(other_chef, difficulty, required_time, image_file):
+def other_recipe_private(other_chef, difficulty, required_time):
     return Recipe.objects.create(
         name="Other private",
         chef=other_chef,
         difficulty=difficulty,
         required_time=required_time,
-        photo=image_file,
         intro="x",
         sources="x",
         is_public=False,
@@ -441,75 +439,71 @@ def _b64_png():
 
 
 photo_endpoints = pytest.mark.parametrize(
-    "endpoint, related_name",
-    [("recipe_steps", "steps"), ("recipe_ingredients", "ingredients")],
+    "endpoint, parent_of",
+    [
+        ("recipe_photos", lambda recipe: recipe),
+        ("recipe_ingredient_photos", lambda recipe: recipe.ingredients.first()),
+        ("recipe_step_photos", lambda recipe: recipe.steps.first()),
+    ],
 )
 
 
-def _row_url(recipe, endpoint, related_name):
-    row = getattr(recipe, related_name).first()
-    return row, f"/api/cookbook/{endpoint}/{row.id}/"
-
-
-@pytest.mark.django_db
-@photo_endpoints
-def test_row_photo_owner_can_upload(api_client, recipe, endpoint, related_name):
-    row, url = _row_url(recipe, endpoint, related_name)
-    response = api_client.patch(url, {"photo": _b64_png()}, format="json")
-    assert response.status_code == 200, response.data
-    row.refresh_from_db()
-    assert row.photo
-
-
-@pytest.mark.django_db
-@photo_endpoints
-def test_row_photo_other_chef_forbidden(other_client, recipe, endpoint, related_name):
-    _, url = _row_url(recipe, endpoint, related_name)
-    response = other_client.patch(url, {"photo": _b64_png()}, format="json")
-    # 404 is acceptable: the queryset filter hides recipes the user can't
-    # see, so the row lookup fails before permission_denied fires.
-    assert response.status_code in (403, 404)
-
-
-@pytest.mark.django_db
-@photo_endpoints
-def test_row_photo_editor_can_upload(editor_client, recipe, endpoint, related_name):
-    _, url = _row_url(recipe, endpoint, related_name)
-    response = editor_client.patch(url, {"photo": _b64_png()}, format="json")
-    assert response.status_code == 200, response.data
-
-
-@pytest.mark.django_db
-@photo_endpoints
-def test_row_photo_anon_cannot_upload(anon_client, recipe, endpoint, related_name):
-    _, url = _row_url(recipe, endpoint, related_name)
-    response = anon_client.patch(url, {"photo": _b64_png()}, format="json")
-    assert response.status_code in (401, 403, 404)
-
-
-@pytest.mark.django_db
-@photo_endpoints
-def test_row_photo_endpoint_rejects_other_fields(
-    api_client, recipe, endpoint, related_name
-):
-    """The endpoint is photo-only — other fields are read-only and ignored."""
-    row, url = _row_url(recipe, endpoint, related_name)
-    original_order = row.order
-    response = api_client.patch(
-        url, {"order": original_order + 5, "photo": _b64_png()}, format="json"
+def _upload(client, recipe, endpoint, parent_of):
+    return client.post(
+        f"/api/cookbook/{endpoint}/",
+        {"parent_id": parent_of(recipe).id, "order": 3, "photo": _b64_png()},
+        format="json",
     )
-    assert response.status_code == 200
-    row.refresh_from_db()
-    assert row.order == original_order
 
 
 @pytest.mark.django_db
 @photo_endpoints
-def test_row_photo_endpoint_blocks_create_and_delete(
-    api_client, recipe, endpoint, related_name
-):
-    _, url = _row_url(recipe, endpoint, related_name)
-    assert api_client.post(
-        f"/api/cookbook/{endpoint}/", {}, format="json"
-    ).status_code in (404, 405)
-    assert api_client.delete(url).status_code == 405
+def test_photo_owner_can_upload(api_client, recipe, endpoint, parent_of):
+    response = _upload(api_client, recipe, endpoint, parent_of)
+    assert response.status_code == 201, response.data
+    photo = parent_of(recipe).photos.get(id=response.data["id"])
+    assert photo.order == 3
+    assert photo.photo
+
+
+@pytest.mark.django_db
+@photo_endpoints
+def test_photo_other_chef_forbidden(other_client, recipe, endpoint, parent_of):
+    response = _upload(other_client, recipe, endpoint, parent_of)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+@photo_endpoints
+def test_photo_editor_can_upload(editor_client, recipe, endpoint, parent_of):
+    response = _upload(editor_client, recipe, endpoint, parent_of)
+    assert response.status_code == 201, response.data
+
+
+@pytest.mark.django_db
+@photo_endpoints
+def test_photo_anon_cannot_upload(anon_client, recipe, endpoint, parent_of):
+    response = _upload(anon_client, recipe, endpoint, parent_of)
+    assert response.status_code in (401, 403)
+
+
+@pytest.mark.django_db
+@photo_endpoints
+def test_photo_upload_rejects_unknown_parent(api_client, endpoint, parent_of):
+    for parent_id in (999999, "abc", None):
+        response = api_client.post(
+            f"/api/cookbook/{endpoint}/",
+            {"parent_id": parent_id, "order": 0, "photo": _b64_png()},
+            format="json",
+        )
+        assert response.status_code == 403
+
+
+@pytest.mark.django_db
+@photo_endpoints
+def test_photo_endpoint_only_creates(api_client, recipe, endpoint, parent_of):
+    photo_id = _upload(api_client, recipe, endpoint, parent_of).data["id"]
+    url = f"/api/cookbook/{endpoint}/{photo_id}/"
+    assert api_client.get(url).status_code in (404, 405)
+    assert api_client.patch(url, {}, format="json").status_code in (404, 405)
+    assert api_client.delete(url).status_code in (404, 405)

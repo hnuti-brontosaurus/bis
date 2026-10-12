@@ -17,8 +17,7 @@ const nameInput = [
 ]
 const detailInputs = [
   { type: "html", key: "description", span: 1 },
-  { type: "checkbox", key: "is_optional", span: 0.5, hide_label: true },
-  { type: "image", key: "photo", span: 0.5 },
+  { type: "images", key: "photos", span: 1 },
 ]
 </script>
 

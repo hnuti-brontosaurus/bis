@@ -7,7 +7,12 @@ nest fully on both sides.
 Round-trip becomes trivial: GET -> data; PATCH(data) -> 200.
 """
 
+import base64
+
 import pytest
+from cookbook.models.recipes import RecipePhoto, RecipeStepPhoto
+
+from .conftest import _png_bytes
 
 
 @pytest.mark.django_db
@@ -272,13 +277,15 @@ def test_recipe_get_then_patch_roundtrip(api_client, recipe):
         f"/api/cookbook/recipes/{recipe.id}/", body, format="json"
     )
     assert response.status_code == 200, response.data
-    recipe.refresh_from_db()
-    assert recipe.photo
+    assert recipe.photos.get().photo
+
+
+def _png_data_uri():
+    return f"data:image/png;filename=x.png;base64,{base64.b64encode(_png_bytes()).decode()}"
 
 
 @pytest.mark.django_db
-def test_recipe_create_with_null_photo(api_client, chef, difficulty, required_time):
-    """A draft saved before its photo upload sends photo=null."""
+def test_recipe_create_with_nested_photos(api_client, chef, difficulty, required_time):
     response = api_client.post(
         "/api/cookbook/recipes/",
         {
@@ -286,35 +293,56 @@ def test_recipe_create_with_null_photo(api_client, chef, difficulty, required_ti
             "chef_id": chef.id,
             "difficulty_id": difficulty.id,
             "required_time_id": required_time.id,
-            "is_public": False,
-            "photo": None,
-            "steps": [{"order": 0, "name": "Step", "photo": None}],
+            "photos": [{"order": 0, "photo": _png_data_uri()}],
+            "steps": [
+                {
+                    "order": 0,
+                    "name": "Step",
+                    "photos": [
+                        {"order": 0, "photo": _png_data_uri()},
+                        {"order": 1, "photo": _png_data_uri()},
+                    ],
+                }
+            ],
         },
         format="json",
     )
     assert response.status_code == 201, response.data
-    assert response.data["photo"] is None
+    assert len(response.data["photos"]) == 1
+    assert [p["order"] for p in response.data["steps"][0]["photos"]] == [0, 1]
+    assert response.data["steps"][0]["photos"][0]["photo"]["small"]
 
 
 @pytest.mark.django_db
-def test_recipe_patch_null_photo_clears_it(api_client, recipe):
-    """Null is how the frontend renders "no photo" — writing it back clears."""
-    assert recipe.photo
+def test_recipe_patch_reorders_and_deletes_photos(api_client, recipe, image_file):
+    """The recipe save keeps the photos it lists, in the listed order, and
+    deletes the rest — at every level of nesting."""
+    first = recipe.photos.get()
+    second = RecipePhoto.objects.create(parent=recipe, order=1, photo=image_file)
+    step = recipe.steps.get()
+    step_photo = RecipeStepPhoto.objects.create(parent=step, order=0, photo=image_file)
+
+    body = api_client.get(f"/api/cookbook/recipes/{recipe.id}/").data
+    body["photos"] = [{**body["photos"][1], "order": 0}]
+    body["steps"][0]["photos"] = []
     response = api_client.patch(
-        f"/api/cookbook/recipes/{recipe.id}/",
-        {"photo": None},
-        format="json",
+        f"/api/cookbook/recipes/{recipe.id}/", body, format="json"
     )
+
     assert response.status_code == 200, response.data
-    recipe.refresh_from_db()
-    assert not recipe.photo
+    assert [p["id"] for p in response.data["photos"]] == [second.id]
+    assert not RecipePhoto.objects.filter(id=first.id).exists()
+    assert not RecipeStepPhoto.objects.filter(id=step_photo.id).exists()
+    second.refresh_from_db()
+    assert second.order == 0
+    assert second.photo
 
 
 @pytest.mark.django_db
 def test_recipe_create_private_without_photo_intro_sources(
     api_client, chef, difficulty, required_time
 ):
-    """Non-public recipes can be saved as drafts without photo/intro/sources."""
+    """Non-public recipes can be saved as drafts without photos/intro/sources."""
     response = api_client.post(
         "/api/cookbook/recipes/",
         {
@@ -367,7 +395,7 @@ def test_recipe_rejects_zero_default_servings(api_client, recipe):
 def test_recipe_create_public_requires_photo_intro_sources(
     api_client, chef, difficulty, required_time
 ):
-    """A public recipe without photo/intro/sources is rejected with field errors."""
+    """A public recipe without photos/intro/sources is rejected with field errors."""
     response = api_client.post(
         "/api/cookbook/recipes/",
         {
@@ -380,7 +408,7 @@ def test_recipe_create_public_requires_photo_intro_sources(
         format="json",
     )
     assert response.status_code == 400, response.data
-    assert set(response.data.keys()) >= {"photo", "intro", "sources"}
+    assert set(response.data.keys()) >= {"photos", "intro", "sources"}
 
 
 @pytest.mark.django_db
@@ -402,7 +430,7 @@ def test_recipe_toggle_to_public_without_required_fields_fails(
         format="json",
     )
     assert response.status_code == 400, response.data
-    assert set(response.data.keys()) >= {"photo", "intro", "sources"}
+    assert set(response.data.keys()) >= {"photos", "intro", "sources"}
     draft.refresh_from_db()
     assert draft.is_public is False
 
@@ -536,3 +564,48 @@ def test_chef_get_returns_user_id_string(api_client, chef):
     assert response.status_code == 200, response.data
     assert response.data["id"] == chef.id
     assert response.data["user_id"] == str(chef.user_id)
+
+
+@pytest.mark.django_db
+def test_every_photo_upload_gets_thumbnails(
+    api_client, chef, difficulty, required_time, settings, tmp_path
+):
+    """Both ways in — nested in the recipe save and the per-photo endpoints —
+    must leave every thumbnail size on disk, or the pages show broken images."""
+    import os
+
+    from common.thumbnails import get_thumbnail_path
+
+    settings.MEDIA_ROOT = str(tmp_path)
+    created = api_client.post(
+        "/api/cookbook/recipes/",
+        {
+            "name": "Thumbnails",
+            "chef_id": chef.id,
+            "difficulty_id": difficulty.id,
+            "required_time_id": required_time.id,
+            "photos": [{"order": 0, "photo": _png_data_uri()}],
+            "steps": [{"order": 0, "name": "Step"}],
+        },
+        format="json",
+    ).data
+    uploads = [
+        ("recipe_photos", created["id"]),
+        ("recipe_step_photos", created["steps"][0]["id"]),
+    ]
+    for endpoint, parent_id in uploads:
+        response = api_client.post(
+            f"/api/cookbook/{endpoint}/",
+            {"parent_id": parent_id, "order": 1, "photo": _png_data_uri()},
+            format="json",
+        )
+        assert response.status_code == 201, response.data
+
+    names = [photo.photo.name for photo in RecipePhoto.objects.all()] + [
+        photo.photo.name for photo in RecipeStepPhoto.objects.all()
+    ]
+    assert len(names) == 3
+    for name in names:
+        for size_name in settings.THUMBNAIL_SIZES:
+            path = os.path.join(tmp_path, get_thumbnail_path(name, size_name))
+            assert os.path.exists(path), path

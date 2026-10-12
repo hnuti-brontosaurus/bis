@@ -14,8 +14,9 @@ from api.cookbook.views.cookbook import (
     ChefViewSet,
     IngredientViewSet,
     MenuViewSet,
-    RecipeIngredientViewSet,
-    RecipeStepViewSet,
+    RecipeIngredientPhotoViewSet,
+    RecipePhotoViewSet,
+    RecipeStepPhotoViewSet,
     RecipeViewSet,
 )
 from django.urls import include, path
@@ -24,8 +25,13 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 
 router.register("recipes", RecipeViewSet, "recipes")
-router.register("recipe_steps", RecipeStepViewSet, "recipe_steps")
-router.register("recipe_ingredients", RecipeIngredientViewSet, "recipe_ingredients")
+router.register("recipe_photos", RecipePhotoViewSet, "recipe_photos")
+router.register(
+    "recipe_ingredient_photos",
+    RecipeIngredientPhotoViewSet,
+    "recipe_ingredient_photos",
+)
+router.register("recipe_step_photos", RecipeStepPhotoViewSet, "recipe_step_photos")
 router.register("menus", MenuViewSet, "menus")
 router.register("chefs", ChefViewSet, "chefs")
 router.register("units", UnitViewSet, "units")

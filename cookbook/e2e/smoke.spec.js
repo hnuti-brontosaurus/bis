@@ -143,14 +143,14 @@ test.describe("cookbook smoke", () => {
     await expect(page.getByText(tipDesc).first()).toBeAttached()
   })
 
-  test("adds a step with a photo and uploads it via the staged save flow", async ({
+  test("adds step photos and uploads them via the staged save flow", async ({
     page,
     recipe,
   }) => {
     // Exercises useRecipeSave + UploadPhotosDialog + the
-    // /api/cookbook/recipe_steps/{id}/ endpoint end-to-end: the recipe text
-    // save creates the step with photo=null, then the orchestrator PATCHes
-    // the photo to the dedicated step endpoint.
+    // /api/cookbook/recipe_step_photos/ endpoint end-to-end: the recipe text
+    // save creates the step with an empty gallery, then the orchestrator
+    // POSTs each photo to the dedicated endpoint.
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator(EDITOR).first()).toBeVisible()
 
@@ -159,11 +159,11 @@ test.describe("cookbook smoke", () => {
         request.method() === "PATCH" &&
         request.url().includes(`${API_BASE}/recipes/${recipe.id}/`),
     )
-    const stepPhotoPatch = page.waitForRequest(
-      request =>
-        request.method() === "PATCH" &&
-        /\/api\/cookbook\/recipe_steps\/\d+\//.test(request.url()),
-    )
+    const stepPhotoPosts = []
+    page.on("request", request => {
+      if (request.method() === "POST" && request.url().includes("/recipe_step_photos/"))
+        stepPhotoPosts.push(request.postDataJSON())
+    })
 
     const tag = `e2e-${Date.now()}`
     const stepName = `step-${tag}`
@@ -172,19 +172,14 @@ test.describe("cookbook smoke", () => {
     await steps.locator(".n-dynamic-input button").first().click()
     await steps.locator('input[type="text"]').first().fill(stepName)
 
-    // The recipe already has its main photo, so target the file input inside
-    // the step row — it is empty, so adding a file there does not collide
-    // with NUpload's :max="1" on the recipe-level input.
-    await steps.locator('input[type="file"]').setInputFiles({
-      name: "red-pixel.png",
-      mimeType: "image/png",
-      buffer: readFixture("upload/red-pixel.png"),
-    })
-
-    // The NForm change-trigger validator runs FileReader to populate
-    // `step.photo.base64data`; isNewUpload checks for that key, so without it
-    // the orchestrator collects zero uploads.
-    await page.waitForTimeout(500)
+    const pixel = readFixture("upload/red-pixel.png")
+    await steps.locator('input[type="file"]').setInputFiles([
+      { name: "first.png", mimeType: "image/png", buffer: pixel },
+      { name: "second.png", mimeType: "image/png", buffer: pixel },
+    ])
+    await expect(steps.locator(".n-upload-file")).toHaveCount(2)
+    // Collapsing the row unmounts its form; the photos must still upload.
+    await steps.locator(".n-button-group .n-button").nth(4).click()
 
     await save(page)
     await expect(page.getByText("Ukládám recept").first()).toBeAttached()
@@ -193,13 +188,54 @@ test.describe("cookbook smoke", () => {
       s => s.name === stepName,
     )
     expect(step, `step "${stepName}" in payload`).toBeTruthy()
-    expect(step.photo, "step.photo stripped before upload").toBeNull()
-
-    expect((await stepPhotoPatch).postDataJSON().photo).toMatch(/^data:image\/png/)
+    expect(step.photos, "new photos left out of the recipe save").toEqual([])
 
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
       timeout: 30_000,
     })
+    expect(stepPhotoPosts.map(body => body.order)).toEqual([0, 1])
+    expect(stepPhotoPosts[0].photo).toMatch(/^data:image\/png;filename=first.png;/)
+    // The recipe's own photo is the cover; both step photos follow it.
+    await expect(page.locator(".hero-thumbnail")).toHaveCount(2)
+  })
+
+  test("adds a second recipe photo and shows it in the gallery", async ({
+    page,
+    api,
+    recipe,
+  }) => {
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
+    await expect(page.locator(EDITOR).first()).toBeVisible()
+
+    const recipePhotoPost = page.waitForRequest(
+      request =>
+        request.method() === "POST" && request.url().includes("/recipe_photos/"),
+    )
+    await page
+      .locator('input[type="file"]')
+      .first()
+      .setInputFiles({
+        name: "second.png",
+        mimeType: "image/png",
+        buffer: readFixture("upload/red-pixel.png"),
+      })
+
+    await save(page)
+    const posted = (await recipePhotoPost).postDataJSON()
+    expect(posted.parent_id).toBe(recipe.id)
+    expect(posted.order).toBe(1)
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
+      timeout: 30_000,
+    })
+
+    await page.locator(".hero-thumbnail img").click()
+    await expect(page.locator(".n-image-preview")).toBeVisible()
+
+    const saved = await api
+      .get(`${API_BASE}/recipes/${recipe.id}/`)
+      .then(response => response.json())
+    expect(saved.photos.map(photo => photo.id)[0]).toBe(recipe.photos[0].id)
+    expect(saved.photos).toHaveLength(2)
   })
 
   test("uploads an ingredient photo and previews it on the recipe page", async ({
@@ -227,10 +263,10 @@ test.describe("cookbook smoke", () => {
     await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
     await expect(page.locator(EDITOR).first()).toBeVisible()
 
-    const ingredientPhotoPatch = page.waitForRequest(
+    const ingredientPhotoPost = page.waitForRequest(
       request =>
-        request.method() === "PATCH" &&
-        /\/api\/cookbook\/recipe_ingredients\/\d+\//.test(request.url()),
+        request.method() === "POST" &&
+        request.url().includes("/recipe_ingredient_photos/"),
     )
 
     const section = await openSection(page, "Ingredience")
@@ -241,12 +277,9 @@ test.describe("cookbook smoke", () => {
       mimeType: "image/png",
       buffer: readFixture("upload/red-pixel.png"),
     })
-    await page.waitForTimeout(500)
 
     await save(page)
-    expect((await ingredientPhotoPatch).postDataJSON().photo).toMatch(
-      /^data:image\/png/,
-    )
+    expect((await ingredientPhotoPost).postDataJSON().photo).toMatch(/^data:image\/png/)
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
       timeout: 30_000,
     })
@@ -382,9 +415,7 @@ test.describe("cookbook smoke", () => {
     api,
     recipe,
   }) => {
-    // The write side has to accept `photo: null` — that is how both "never had
-    // a photo" and "user removed it" reach the backend.
-    expect(recipe.photo, "seeded photo").not.toBeNull()
+    expect(recipe.photos, "seeded photo").toHaveLength(1)
 
     const recipePatch = page.waitForRequest(
       request =>
@@ -405,19 +436,19 @@ test.describe("cookbook smoke", () => {
       .click({ force: true })
 
     await save(page)
-    expect((await recipePatch).postDataJSON().photo, "cleared photo payload").toBeNull()
+    expect((await recipePatch).postDataJSON().photos, "cleared gallery").toEqual([])
 
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
       timeout: 30_000,
     })
-    // The detail page of a photo-less recipe must render — reading photo.large
-    // unguarded used to throw here.
+    // The detail page of a photo-less recipe must render — reading the first
+    // photo unguarded would throw here.
     await expect(page.getByText("Autorstvo").first()).toBeVisible()
 
     const saved = await api
       .get(`${API_BASE}/recipes/${recipe.id}/`)
       .then(response => response.json())
-    expect(saved.photo, "photo after removal").toBeNull()
+    expect(saved.photos, "photos after removal").toEqual([])
   })
 
   test("opens a recipe at its default servings with the note", async ({
@@ -448,6 +479,6 @@ test.describe("cookbook smoke", () => {
   test("renders chefs view", async ({ page }) => {
     await page.goto("/kucharka/kucharstvo/")
     await expect(page.getByText("Kuchařstvo").first()).toBeVisible()
-    expect(await page.locator(".n-card").count()).toBeGreaterThanOrEqual(1)
+    await expect(page.locator(".n-card").first()).toBeVisible()
   })
 })

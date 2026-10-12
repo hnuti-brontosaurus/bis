@@ -4,7 +4,13 @@ import pytest
 from bis.models import User
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
-from cookbook.models.recipes import Recipe, RecipeIngredient, RecipeStep, RecipeTip
+from cookbook.models.recipes import (
+    Recipe,
+    RecipeIngredient,
+    RecipePhoto,
+    RecipeStep,
+    RecipeTip,
+)
 from cookbook_categories.models import (
     Allergen,
     IngredientCategory,
@@ -124,10 +130,10 @@ def recipe(chef, difficulty, required_time, tag, unit, ingredient, image_file):
         chef=chef,
         difficulty=difficulty,
         required_time=required_time,
-        photo=image_file,
         intro="An intro",
         sources="Some sources",
     )
+    RecipePhoto.objects.create(parent=r, order=0, photo=image_file)
     r.tags.add(tag)
     RecipeIngredient.objects.create(
         recipe=r, order=0, ingredient=ingredient, unit=unit, amount=1.0

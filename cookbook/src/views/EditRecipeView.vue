@@ -50,6 +50,7 @@ const recipe = ref(
     ? null
     : {
         tag_ids: [],
+        photos: [],
         ingredients: [],
         steps: [],
         tips: [],
@@ -90,7 +91,7 @@ const tagGroups = computed(() => [
 ])
 
 const basicInputs = computed(() => {
-  // Photo / intro / sources are required only when publishing the recipe;
+  // Photos / intro / sources are required only when publishing the recipe;
   // non-public recipes can be saved as drafts without them. Backend mirrors
   // this in RecipeSerializer.validate.
   const publishedRequired = !!recipe.value.is_public
@@ -106,7 +107,7 @@ const basicInputs = computed(() => {
       options: storeOptions(chefsStore).value,
       value: propertyRef(recipe, "chef_id"),
     },
-    { type: "image", key: "photo", required: publishedRequired },
+    { type: "images", key: "photos", required: publishedRequired },
     {
       type: "select",
       key: "difficulty",
@@ -161,7 +162,11 @@ const basicInputs = computed(() => {
 const tagInputs = computed(() =>
   tagGroups.value.map(group => ({
     type: "checkboxes",
-    vertical: true,
+    span: 2,
+    hide_feedback: true,
+    title_beside: true,
+    item: { style: { marginBottom: "22px" } },
+    extra: { size: [16, 6] },
     title: group,
     checkboxes: tagsStore.list
       .filter(tag => tag.group === group)

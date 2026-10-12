@@ -1,19 +1,31 @@
 <script setup>
-import { NImage } from "naive-ui"
+import { NImage, NImageGroup } from "naive-ui"
 
-defineProps({ photo: { type: Object, required: true }, alt: String })
+defineProps({ photos: { type: Array, required: true }, alt: String })
 </script>
 
 <template>
-  <n-image
-    class="recipe-photo"
-    :src="photo.medium"
-    :preview-src="photo.large"
-    :alt="alt"
-  />
+  <div class="recipe-photos" :class="{ single: photos.length === 1 }">
+    <n-image-group>
+      <n-image
+        v-for="{ id, photo } in photos"
+        :key="id"
+        class="recipe-photo"
+        :src="photo.medium"
+        :preview-src="photo.large"
+        :alt="alt"
+      />
+    </n-image-group>
+  </div>
 </template>
 
 <style scoped>
+.recipe-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .recipe-photo {
   display: flex;
   width: fit-content;
@@ -26,7 +38,11 @@ defineProps({ photo: { type: Object, required: true }, alt: String })
 .recipe-photo :deep(img) {
   display: block;
   max-width: 100%;
-  max-height: 280px;
+  max-height: 160px;
   object-fit: contain;
+}
+
+.single .recipe-photo :deep(img) {
+  max-height: 280px;
 }
 </style>

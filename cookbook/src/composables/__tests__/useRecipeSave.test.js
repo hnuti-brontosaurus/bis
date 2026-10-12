@@ -8,35 +8,37 @@ const recipesStore = {
 
 vi.mock("@/data/recipes.js", () => ({
   useRecipesStore: () => recipesStore,
-  uploadRecipePhoto: vi.fn(),
 }))
 
-vi.mock("@/data/recipeRowPhotos.js", () => ({
-  uploadStepPhoto: vi.fn(),
+vi.mock("@/data/recipePhotos.js", () => ({
+  uploadRecipePhoto: vi.fn(),
   uploadIngredientPhoto: vi.fn(),
+  uploadStepPhoto: vi.fn(),
 }))
 
 import { useRecipeSave } from "../useRecipeSave.js"
-import { uploadRecipePhoto } from "@/data/recipes.js"
-import { uploadIngredientPhoto, uploadStepPhoto } from "@/data/recipeRowPhotos.js"
+import {
+  uploadIngredientPhoto,
+  uploadRecipePhoto,
+  uploadStepPhoto,
+} from "@/data/recipePhotos.js"
 
-const wrapper = (base = "data:image/png;filename=x.png;base64,xxx", file = {}) => ({
-  base64data: base,
-  file,
-  type: "image/png",
-  name: "x.png",
+const picked = (name = "x.png") => ({
+  photo: { id: name, name, file: new File(["x"], name, { type: "image/png" }) },
 })
+const saved = id => ({ id, order: 0, photo: { small: `/${id}.png` } })
+const dataUri = name => `data:image/png;filename=${name};base64,eA==`
 
 const buildRecipe = ({
   id,
   isPublic = false,
-  photo = null,
+  photos = [],
   steps = [],
   ingredients = [],
-} = {}) => ({
+}) => ({
   ...(id != null ? { id } : {}),
   is_public: isPublic,
-  photo,
+  photos,
   steps,
   ingredients,
   tips: [],
@@ -47,8 +49,8 @@ beforeEach(() => {
   recipesStore.save.mockReset()
   recipesStore.fetchOne.mockReset()
   uploadRecipePhoto.mockReset()
-  uploadStepPhoto.mockReset()
   uploadIngredientPhoto.mockReset()
+  uploadStepPhoto.mockReset()
 })
 
 describe("useRecipeSave", () => {
@@ -56,55 +58,49 @@ describe("useRecipeSave", () => {
     recipesStore.save.mockResolvedValue({ id: 7, steps: [] })
     const { state, run } = useRecipeSave()
 
-    const saved = await run(buildRecipe({ id: 7 }))
+    const result = await run(buildRecipe({ id: 7, photos: [saved(1)] }))
 
     expect(state.uploads).toEqual([])
     expect(state.phase).toBe("done")
-    expect(saved.id).toBe(7)
+    expect(result.id).toBe(7)
     expect(recipesStore.save).toHaveBeenCalledTimes(1)
+    expect(recipesStore.save.mock.calls[0][0].photos).toEqual([{ id: 1, order: 0 }])
     expect(uploadRecipePhoto).not.toHaveBeenCalled()
-    expect(uploadStepPhoto).not.toHaveBeenCalled()
   })
 
-  it("strips new uploads from the initial save and uploads them after", async () => {
+  it("saves the kept photos in gallery order and uploads the new ones after", async () => {
     recipesStore.save.mockResolvedValue({
       id: 9,
       is_public: false,
-      steps: [{ id: 100, name: "boil", order: 0 }],
+      steps: [{ id: 100 }],
     })
     recipesStore.fetchOne.mockResolvedValue({ id: 9 })
-    uploadRecipePhoto.mockResolvedValue({})
-    uploadStepPhoto.mockResolvedValue({})
+    uploadRecipePhoto.mockResolvedValue(saved(2))
+    uploadStepPhoto.mockResolvedValue(saved(3))
 
     const recipe = buildRecipe({
       id: 9,
-      isPublic: false,
-      photo: wrapper("data:image/png;filename=r.png;base64,RR"),
-      steps: [
-        {
-          id: 100,
-          name: "boil",
-          order: 0,
-          photo: wrapper("data:image/png;filename=s.png;base64,SS"),
-        },
-      ],
+      photos: [picked("r.png"), saved(1)],
+      steps: [{ name: "boil", photos: [picked("s.png")] }],
     })
 
     const { state, run } = useRecipeSave()
     await run(recipe)
 
     const sent = recipesStore.save.mock.calls[0][0]
-    expect(sent.photo).toBe(null)
-    expect(sent.steps[0].photo).toBe(null)
+    expect(sent.photos).toEqual([{ id: 1, order: 1 }])
+    expect(sent.steps[0].photos).toEqual([])
 
     expect(uploadRecipePhoto).toHaveBeenCalledWith(
       9,
-      "data:image/png;filename=r.png;base64,RR",
+      0,
+      dataUri("r.png"),
       expect.any(Function),
     )
     expect(uploadStepPhoto).toHaveBeenCalledWith(
       100,
-      "data:image/png;filename=s.png;base64,SS",
+      0,
+      dataUri("s.png"),
       expect.any(Function),
     )
     expect(state.phase).toBe("done")
@@ -116,70 +112,47 @@ describe("useRecipeSave", () => {
       ingredients: [{ id: 40 }, { id: 41 }],
     })
     recipesStore.fetchOne.mockResolvedValue({ id: 4 })
-    uploadIngredientPhoto.mockResolvedValue({})
+    uploadIngredientPhoto.mockResolvedValue(saved(5))
 
     const recipe = buildRecipe({
-      ingredients: [
-        { photo: null },
-        { photo: wrapper("data:image/png;filename=i.png;base64,II") },
-      ],
+      ingredients: [{}, { photos: [picked("a.png"), picked("b.png")] }],
     })
 
     const { run, state } = useRecipeSave()
     await run(recipe)
 
-    expect(recipesStore.save.mock.calls[0][0].ingredients[1].photo).toBe(null)
-    expect(uploadIngredientPhoto).toHaveBeenCalledWith(
-      41,
-      "data:image/png;filename=i.png;base64,II",
-      expect.any(Function),
-    )
+    expect(recipesStore.save.mock.calls[0][0].ingredients[1].photos).toEqual([])
+    expect(uploadIngredientPhoto.mock.calls.map(call => call.slice(0, 3))).toEqual([
+      [41, 0, dataUri("a.png")],
+      [41, 1, dataUri("b.png")],
+    ])
     expect(uploadStepPhoto).not.toHaveBeenCalled()
     expect(recipe.ingredients.map(row => row.id)).toEqual([40, 41])
     expect(state.phase).toBe("done")
   })
 
-  it("preserves existing server photos for steps that aren't being re-uploaded", async () => {
-    recipesStore.byId = {
-      5: {
-        id: 5,
-        steps: [
-          { id: 50, photo: { medium: "/old.png" } },
-          { id: 51, photo: null },
-        ],
-      },
-    }
-    recipesStore.save.mockResolvedValue({
-      id: 5,
-      steps: [{ id: 50 }, { id: 51 }],
-    })
-    recipesStore.fetchOne.mockResolvedValue({ id: 5 })
-    uploadStepPhoto.mockResolvedValue({})
+  it("turns an uploaded photo into a saved one, so saving again keeps it", async () => {
+    recipesStore.save.mockResolvedValue({ id: 6 })
+    recipesStore.fetchOne.mockResolvedValue({ id: 6 })
+    uploadRecipePhoto.mockResolvedValue({ id: 60, order: 0, photo: { small: "/60" } })
 
-    const recipe = buildRecipe({
-      id: 5,
-      steps: [
-        { id: 50, photo: wrapper() },
-        { id: 51, photo: { medium: "/keep.png" } },
-      ],
-    })
-
+    const recipe = buildRecipe({ id: 6, photos: [picked()] })
     const { run } = useRecipeSave()
     await run(recipe)
+    await run(recipe)
 
-    const sent = recipesStore.save.mock.calls[0][0]
-    expect(sent.steps[0].photo).toEqual({ medium: "/old.png" })
-    expect(sent.steps[1].photo).toEqual({ medium: "/keep.png" })
+    expect(uploadRecipePhoto).toHaveBeenCalledTimes(1)
+    expect(recipesStore.save.mock.calls[1][0].photos).toEqual([{ id: 60, order: 0 }])
   })
 
-  it("forces is_public=false when uploading the main photo on a public recipe", async () => {
+  it("forces is_public=false when uploading a recipe photo on a public recipe", async () => {
     recipesStore.save.mockResolvedValueOnce({ id: 1, is_public: false, steps: [] })
     recipesStore.save.mockResolvedValueOnce({ id: 1, is_public: true, steps: [] })
     recipesStore.fetchOne.mockResolvedValue({ id: 1 })
-    uploadRecipePhoto.mockResolvedValue({})
+    uploadRecipePhoto.mockResolvedValue(saved(10))
 
     const { run, state } = useRecipeSave()
-    await run(buildRecipe({ id: 1, isPublic: true, photo: wrapper() }))
+    await run(buildRecipe({ id: 1, isPublic: true, photos: [picked()] }))
 
     expect(recipesStore.save).toHaveBeenCalledTimes(2)
     expect(recipesStore.save.mock.calls[0][0].is_public).toBe(false)
@@ -193,7 +166,7 @@ describe("useRecipeSave", () => {
     uploadRecipePhoto.mockRejectedValue(new Error("network down"))
 
     const { run, state } = useRecipeSave()
-    await run(buildRecipe({ id: 2, isPublic: true, photo: wrapper() }))
+    await run(buildRecipe({ id: 2, isPublic: true, photos: [picked()] }))
 
     expect(recipesStore.save).toHaveBeenCalledTimes(1)
     expect(state.phase).toBe("partial")
@@ -208,15 +181,15 @@ describe("useRecipeSave", () => {
     })
     recipesStore.fetchOne.mockResolvedValue({ id: 3 })
     uploadStepPhoto
-      .mockResolvedValueOnce({}) // first step ok
+      .mockResolvedValueOnce(saved(1)) // first step ok
       .mockRejectedValueOnce(new Error("flaky")) // second step fails
-      .mockResolvedValueOnce({}) // retry succeeds
+      .mockResolvedValueOnce(saved(2)) // retry succeeds
 
     const recipe = buildRecipe({
       id: 3,
       steps: [
-        { id: 30, photo: wrapper("data:image/png;filename=a;base64,A") },
-        { id: 31, photo: wrapper("data:image/png;filename=b;base64,B") },
+        { id: 30, photos: [picked("a.png")] },
+        { id: 31, photos: [picked("b.png")] },
       ],
     })
 
@@ -229,6 +202,7 @@ describe("useRecipeSave", () => {
     await retryFailed()
 
     expect(uploadStepPhoto).toHaveBeenCalledTimes(3)
+    expect(uploadStepPhoto.mock.calls[2][0]).toBe(31)
     expect(state.phase).toBe("done")
     expect(state.uploads.map(u => u.status)).toEqual(["done", "done"])
   })
@@ -238,7 +212,7 @@ describe("useRecipeSave", () => {
     recipesStore.save.mockRejectedValue(err)
     const { run } = useRecipeSave()
 
-    await expect(run(buildRecipe({ photo: wrapper() }))).rejects.toBe(err)
+    await expect(run(buildRecipe({ photos: [picked()] }))).rejects.toBe(err)
     expect(uploadRecipePhoto).not.toHaveBeenCalled()
   })
 })

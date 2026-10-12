@@ -54,14 +54,13 @@ const failedCount = computed(
 
 const ingredientsStore = useIngredientsStore()
 
-const itemLabel = upload => {
-  if (upload.kind === "recipe") return "Hlavní fotka receptu"
-  const rowName =
-    upload.kind === "ingredient"
-      ? ingredientsStore.byId[upload.row.ingredient_id]?.name
-      : upload.row.name || `Krok ${upload.index + 1}`
-  return `${rowName} — fotka`
+const galleryName = upload => {
+  if (upload.kind === "recipe") return "Recept"
+  if (upload.kind === "ingredient")
+    return ingredientsStore.byId[upload.parent.ingredient_id]?.name
+  return upload.parent.name || `Krok ${upload.index + 1}`
 }
+const itemLabel = upload => `${galleryName(upload)} — fotka ${upload.entry.order + 1}`
 
 const errorMessage = upload => {
   const status = upload.error?.response?.status

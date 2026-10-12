@@ -1,31 +1,62 @@
 import { reactive } from "vue"
-import { uploadRecipePhoto, useRecipesStore } from "@/data/recipes.js"
-import { uploadIngredientPhoto, uploadStepPhoto } from "@/data/recipeRowPhotos.js"
+import { useRecipesStore } from "@/data/recipes.js"
+import {
+  uploadIngredientPhoto,
+  uploadRecipePhoto,
+  uploadStepPhoto,
+} from "@/data/recipePhotos.js"
 
-const isNewUpload = photo => photo && typeof photo === "object" && "base64data" in photo
+// A gallery entry is `{ id, order, photo }` once saved, or `{ photo }` with
+// the n-upload file info as `photo` until it is uploaded.
+const isNewUpload = entry => entry.photo?.file instanceof File
 
-const ROWS = [
-  { kind: "ingredient", key: "ingredients", upload: uploadIngredientPhoto },
-  { kind: "step", key: "steps", upload: uploadStepPhoto },
+const GALLERIES = [
+  { kind: "recipe", upload: uploadRecipePhoto, parents: recipe => [recipe] },
+  {
+    kind: "ingredient",
+    upload: uploadIngredientPhoto,
+    parents: recipe => recipe.ingredients ?? [],
+  },
+  { kind: "step", upload: uploadStepPhoto, parents: recipe => recipe.steps ?? [] },
 ]
-const uploaders = {
-  recipe: uploadRecipePhoto,
-  ...Object.fromEntries(ROWS.map(({ kind, upload }) => [kind, upload])),
-}
+const uploaders = Object.fromEntries(
+  GALLERIES.map(({ kind, upload }) => [kind, upload]),
+)
+
+const eachGallery = (recipe, callback) =>
+  GALLERIES.forEach(gallery =>
+    gallery
+      .parents(recipe)
+      .forEach((parent, index) => callback(parent, gallery, index)),
+  )
+
+// Read here rather than when the file is picked: a collapsed step or
+// ingredient row unmounts its form, so nothing there is sure to run.
+const toDataUri = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const [, base64] = reader.result.split(",")
+      resolve(`data:${file.type};filename=${file.name};base64,${base64}`)
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
 
 /**
- * Multi-step recipe save: first PATCH/POST the recipe text without new
- * photos, then upload each photo individually with progress reporting.
+ * Multi-step recipe save: first PATCH/POST the recipe text with only the
+ * already saved photos, then upload each new photo on its own with
+ * progress reporting.
  *
  * Why split: a single recipe save with N base64 photos in one JSON body
  * is megabytes per photo and dies on the 30s nginx timeout under slow
- * networks. Per-photo PATCHes are bounded so even if one is slow, the
+ * networks. Per-photo POSTs are bounded so even if one is slow, the
  * others (and the recipe itself) still land. Failed photos can be
  * retried without re-saving anything else.
  *
- * Public recipes need recipe.photo to validate. If we're uploading the
- * main photo, we save private and PATCH `is_public=true` after the photo
- * lands. The user's intent is preserved and no dummy file is needed.
+ * Public recipes need a photo to validate. If we're uploading recipe
+ * photos, we save private and PATCH `is_public=true` after they land.
+ * The user's intent is preserved and no dummy file is needed.
  */
 export function useRecipeSave() {
   const state = reactive({
@@ -37,56 +68,31 @@ export function useRecipeSave() {
 
   const recipesStore = useRecipesStore()
 
-  let workingRecipe = null
   let originalIsPublic = false
   let savedRecipe = null
 
   const collectUploads = recipe => {
     const items = []
-    if (isNewUpload(recipe.photo)) {
-      items.push({
-        kind: "recipe",
-        index: -1,
-        name: recipe.photo.name,
-        base64: recipe.photo.base64data,
-        status: "pending",
-        progress: 0,
-      })
-    }
-    ROWS.forEach(({ kind, key }) =>
-      (recipe[key] ?? []).forEach((row, index) => {
-        if (isNewUpload(row.photo)) {
-          items.push({
-            kind,
-            key,
-            index,
-            row,
-            name: row.photo.name,
-            base64: row.photo.base64data,
-            status: "pending",
-            progress: 0,
-          })
+    eachGallery(recipe, (parent, { kind }, index) =>
+      (parent.photos ?? []).forEach((entry, order) => {
+        entry.order = order
+        if (isNewUpload(entry)) {
+          items.push({ kind, index, parent, entry, status: "pending", progress: 0 })
         }
       }),
     )
     return items
   }
 
-  // Replace each new-upload wrapper with whatever the server currently
-  // has (the original photo for an existing row, or null for a brand-new
-  // one). The Base64FieldMixin treats dicts as SkipField, so existing
-  // photos pass through unchanged on the initial save.
-  const stripUploads = (recipe, originalRecipe) => {
+  // The recipe serializer deletes the saved photos missing from a gallery
+  // and leaves the file of a listed one alone, so this keeps, reorders and
+  // deletes the saved photos without sending any image data.
+  const withoutUploads = recipe => {
     const out = JSON.parse(JSON.stringify(recipe))
-    if (isNewUpload(out.photo)) {
-      out.photo = originalRecipe?.photo ?? null
-    }
-    ROWS.forEach(({ key }) => {
-      out[key] = (out[key] ?? []).map(row => {
-        if (!isNewUpload(row.photo)) return row
-        const orig = originalRecipe?.[key]?.find(r => r.id === row.id)
-        return { ...row, photo: orig?.photo ?? null }
-      })
+    eachGallery(recipe, (parent, gallery, index) => {
+      gallery.parents(out)[index].photos = (parent.photos ?? [])
+        .filter(entry => !isNewUpload(entry))
+        .map(({ id, order }) => ({ id, order }))
     })
     return out
   }
@@ -107,7 +113,15 @@ export function useRecipeSave() {
       state.overallProgress = computeOverallProgress()
     }
     try {
-      await uploaders[upload.kind](upload.targetId, upload.base64, onProgress)
+      const base64 = await toDataUri(upload.entry.photo.file)
+      const saved = await uploaders[upload.kind](
+        upload.parent.id,
+        upload.entry.order,
+        base64,
+        onProgress,
+      )
+      // Saving the form again must keep this photo, not upload it twice.
+      Object.assign(upload.entry, saved)
       upload.status = "done"
       upload.progress = 100
     } catch (e) {
@@ -140,39 +154,30 @@ export function useRecipeSave() {
   }
 
   const run = async recipe => {
-    workingRecipe = recipe
     originalIsPublic = !!recipe.is_public
-    const originalRecipe = recipe.id ? recipesStore.byId[recipe.id] : null
 
     state.uploads = collectUploads(recipe)
     state.overallProgress = 0
     state.recipeId = null
 
     state.phase = "saving-text"
-    const stripped = stripUploads(recipe, originalRecipe)
+    const stripped = withoutUploads(recipe)
     if (state.uploads.some(u => u.kind === "recipe") && stripped.is_public) {
-      // Validator requires recipe.photo when public; we'll flip it back
+      // Validator requires a recipe photo when public; we'll flip it back
       // on after the photo upload.
       stripped.is_public = false
     }
     savedRecipe = await recipesStore.save(stripped)
     state.recipeId = savedRecipe.id
 
-    // Sync server-assigned IDs back so a retry hits the right rows even
-    // if savedRecipe gets overwritten by a later fetchOne (which only
-    // populates the cache, not the upload targets).
-    workingRecipe.id = savedRecipe.id
-    ROWS.forEach(({ key }) =>
-      (savedRecipe[key] ?? []).forEach((r, i) => {
-        if (workingRecipe[key]?.[i]) workingRecipe[key][i].id = r.id
-      }),
-    )
-    for (const upload of state.uploads) {
-      upload.targetId =
-        upload.kind === "recipe"
-          ? savedRecipe.id
-          : savedRecipe[upload.key]?.[upload.index]?.id
-    }
+    // The uploads target the working recipe's rows, so give them the
+    // server-assigned ids; a retry or a second save then hits the same rows.
+    GALLERIES.forEach(({ parents }) => {
+      const workingRows = parents(recipe)
+      parents(savedRecipe).forEach((row, i) => {
+        if (workingRows[i]) workingRows[i].id = row.id
+      })
+    })
 
     if (!state.uploads.length) {
       state.phase = "done"

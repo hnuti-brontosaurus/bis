@@ -20,7 +20,7 @@ from categories.models import (
 )
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
-from cookbook.models.recipes import Recipe
+from cookbook.models.recipes import Recipe, RecipePhoto
 from cookbook_categories.models import RecipeDifficulty, RecipeRequiredTime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -336,25 +336,30 @@ class Command(BaseCommand):
             Ingredient.objects.update_or_create(name=name, defaults=defaults)
         # One canonical owned recipe so the e2e specs can edit a real row
         # without reaching into the ORM. The edit form renders the photo, so
-        # the file must actually exist on disk — `chef.recipes` is filtered to
-        # rows whose photo file is present, and one is created if none qualify.
+        # the file must actually exist on disk — one is created unless some
+        # recipe of the chef has a photo whose file is present.
         if not any(
-            r.photo and r.photo.storage.exists(r.photo.name) for r in chef.recipes.all()
+            photo.photo.storage.exists(photo.photo.name)
+            for photo in RecipePhoto.objects.filter(parent__chef=chef)
         ):
             difficulty = RecipeDifficulty.objects.get(slug="simple")
             required_time = RecipeRequiredTime.objects.get(slug="fast")
             buf = BytesIO()
             Image.new("RGB", (8, 8), "red").save(buf, format="PNG")
-            Recipe.objects.create(
+            recipe = Recipe.objects.create(
                 name="E2E seed",
                 chef=chef,
                 difficulty=difficulty,
                 required_time=required_time,
+                intro="<p>intro</p>",
+                sources="<p>.</p>",
+            )
+            RecipePhoto.objects.create(
+                parent=recipe,
+                order=0,
                 photo=SimpleUploadedFile(
                     "seed.png", buf.getvalue(), content_type="image/png"
                 ),
-                intro="<p>intro</p>",
-                sources="<p>.</p>",
             )
 
     def create_testing_db(self):

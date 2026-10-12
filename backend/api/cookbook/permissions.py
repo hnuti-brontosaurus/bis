@@ -13,6 +13,7 @@ Writes:
     of ingredients still referenced by a recipe.
   * Recipe: chef creates / edits / deletes own; editor edits / deletes any.
   * Menu: chef creates / edits / deletes own; editor edits / deletes any.
+  * Recipe / ingredient / step photo: created by whoever may edit the recipe.
 
 The viewset wires this in via `CookbookViewSetMixin`, which both sets
 `permission_classes` and applies `filter_visible` in `get_queryset`.
@@ -21,7 +22,12 @@ The viewset wires this in via `CookbookViewSetMixin`, which both sets
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipes import Recipe, RecipeIngredient, RecipeStep
+from cookbook.models.recipes import (
+    Recipe,
+    RecipeIngredientPhoto,
+    RecipePhoto,
+    RecipeStepPhoto,
+)
 from cookbook_categories.models import (
     Allergen,
     IngredientCategory,
@@ -32,6 +38,8 @@ from cookbook_categories.models import (
 )
 from django.db.models import Q
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+PHOTO_MODELS = (RecipePhoto, RecipeIngredientPhoto, RecipeStepPhoto)
 
 
 class CookbookAccessPermission(BasePermission):
@@ -74,14 +82,6 @@ class CookbookAccessPermission(BasePermission):
             if user.is_authenticated and user.is_chef:
                 return queryset.filter(Q(is_public=True) | Q(chef_id=user.chef.id))
             return queryset.filter(is_public=True)
-
-        if model in (RecipeStep, RecipeIngredient):
-            # Visibility delegates to the parent recipe.
-            if user.is_authenticated and user.is_chef:
-                return queryset.filter(
-                    Q(recipe__is_public=True) | Q(recipe__chef_id=user.chef.id)
-                )
-            return queryset.filter(recipe__is_public=True)
 
         if model is Menu:
             if user.is_authenticated and user.is_chef:
@@ -140,18 +140,23 @@ class CookbookAccessPermission(BasePermission):
             return True
 
         if user.is_editor:
-            return model in (Recipe, RecipeStep, RecipeIngredient, Menu)
+            return model in (Recipe, Menu, *PHOTO_MODELS)
 
         if model is Recipe:
             return self._matches(request, obj, "chef_id", user.chef.id)
 
-        if model in (RecipeStep, RecipeIngredient):
-            # Per-row photo PATCH delegates write permission to the parent
-            # recipe. Creation/deletion of rows still happens via the
-            # nested recipe serializer, so obj is always present here.
-            if obj is None:
+        if model in PHOTO_MODELS:
+            # The photo endpoints only create, so the parent comes from the
+            # request. Deleting a photo goes through the recipe save.
+            parent_id = str(request.data.get("parent_id"))
+            if not parent_id.isdigit():
                 return False
-            return obj.recipe.chef_id == user.chef.id
+            parent_model = model.parent.field.related_model
+            parent = parent_model.objects.filter(id=parent_id).first()
+            if parent is None:
+                return False
+            recipe = parent if model is RecipePhoto else parent.recipe
+            return recipe.chef_id == user.chef.id
 
         if model is Menu:
             return self._matches(request, obj, "user_id", user.id)

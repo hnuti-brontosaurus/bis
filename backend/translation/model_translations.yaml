@@ -893,6 +893,7 @@ Recipe:
     steps: Postup
     tips: Tipy
     allergens: Typicky obsahuje alergeny
+    photos: Fotky
 
 RecipeIngredient:
   name: Přísada receptu
@@ -903,12 +904,29 @@ RecipeIngredient:
     part: Část receptu
     recipe: Recept
     unit: Jednotka
+    photos: Fotky
 RecipeStep:
   name: Krok receptu
   name_plural: Kroky receptu
   fields:
     recipe: Recept
     is_optional: Nepovinné?
+    photos: Fotky
+RecipePhoto:
+  name: Fotka receptu
+  name_plural: Fotky receptu
+  fields:
+    parent: Recept
+RecipeIngredientPhoto:
+  name: Fotka přísady receptu
+  name_plural: Fotky přísady receptu
+  fields:
+    parent: Přísada receptu
+RecipeStepPhoto:
+  name: Fotka kroku receptu
+  name_plural: Fotky kroku receptu
+  fields:
+    parent: Krok receptu
 RecipeTip:
   name: Tip k receptu
   name_plural: Tipy k receptu

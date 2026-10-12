@@ -1,5 +1,5 @@
 import { computed, unref } from "vue"
-import { client, crudApi } from "./client.js"
+import { crudApi } from "./client.js"
 import { defineByIdStore } from "./factory.js"
 import { useChefsStore } from "./chefs.js"
 import { useIngredientsStore } from "./ingredients.js"
@@ -11,35 +11,7 @@ import { useAllergensStore } from "./allergens.js"
 
 export const recipesApi = crudApi("/recipes")
 
-/**
- * Upload a single recipe.photo via PATCH. The backend's Base64ImageField
- * decodes the data-URI string. axios fires onUploadProgress on the bytes
- * sent over the wire (works for any body type), so the caller gets real
- * progress for the photo's worth of payload.
- */
-export const uploadRecipePhoto = (recipeId, base64data, onUploadProgress) =>
-  client
-    .patch(`/recipes/${recipeId}/`, { photo: base64data }, { onUploadProgress })
-    .then(r => r.data)
-
-/**
- * Recipes are persisted by default for instant load. Image upload blobs
- * (`base64data` / `file`) are stripped before write — they appear only
- * mid-upload and are megabytes each. The `{small, medium, large, original}`
- * URLs returned by the backend are kept (they're just strings).
- */
-const UPLOAD_BLOB_KEYS = ["base64data", "file"]
-const stripUploadBlobs = recipe => {
-  if (!recipe?.photo || typeof recipe.photo !== "object") return recipe
-  const photo = Object.fromEntries(
-    Object.entries(recipe.photo).filter(([k]) => !UPLOAD_BLOB_KEYS.includes(k)),
-  )
-  return { ...recipe, photo }
-}
-
-export const useRecipesStore = defineByIdStore("recipes", recipesApi, {
-  serialize: stripUploadBlobs,
-})
+export const useRecipesStore = defineByIdStore("recipes", recipesApi)
 
 /**
  * Resolve a recipe's `_id` references to objects from sibling stores.

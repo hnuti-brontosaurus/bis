@@ -383,6 +383,18 @@ with `--no-migrations`, so the row is not there unless a test asks for the
 `ingredient_categories` fixture. Groq replaces the default on create, which is
 why the new-ingredient form has no category field.
 
+### Cookbook photo galleries
+
+A recipe, each recipe ingredient and each step has a `photos` gallery
+(`RecipePhoto` / `RecipeIngredientPhoto` / `RecipeStepPhoto`, ordered by
+`order`; the first recipe photo is the cover). The recipe save
+(`useRecipeSave.js`) sends only `{id, order}` of the photos already saved, so
+drf-writable-nested reorders them and deletes the missing ones, and then each
+new photo is POSTed on its own to `recipe_photos` / `recipe_ingredient_photos`
+/ `recipe_step_photos` with its `parent_id`. The file is read into base64 at
+upload time, not in a form rule: a collapsed step or ingredient row unmounts
+its form.
+
 ### Cookbook rich text
 
 Every free-text cookbook field is an `HTMLField`, edited in the SPA by

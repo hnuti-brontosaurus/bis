@@ -3,35 +3,18 @@ import { computed, ref } from "vue"
 
 // Bumping this key invalidates the persisted cache for every cookbook store
 // (handy for shape changes after a deploy).
-export const PERSISTED_VERSION = "3"
+export const PERSISTED_VERSION = "4"
 
 /**
  * Build a Pinia store keyed by entity id.
  *
  * @param id      store id (e.g. "chefs")
  * @param api     module exposing { list, get?, save? }
- * @param options { persist?: boolean, serialize?: (item) => item }
+ * @param options { persist?: boolean }
  */
-export const defineByIdStore = (id, api, { persist = true, serialize } = {}) => {
+export const defineByIdStore = (id, api, { persist = true } = {}) => {
   const persistConfig = persist
-    ? {
-        persist: {
-          key: `cookbook:${id}:v${PERSISTED_VERSION}`,
-          ...(serialize
-            ? {
-                serializer: {
-                  serialize: state =>
-                    JSON.stringify({
-                      byId: Object.fromEntries(
-                        Object.entries(state.byId).map(([k, v]) => [k, serialize(v)]),
-                      ),
-                    }),
-                  deserialize: JSON.parse,
-                },
-              }
-            : {}),
-        },
-      }
+    ? { persist: { key: `cookbook:${id}:v${PERSISTED_VERSION}` } }
     : undefined
 
   return defineStore(

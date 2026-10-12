@@ -90,7 +90,9 @@ export const test = base.extend({
         difficulty_id: difficulties.results[0].id,
         required_time_id: requiredTimes.results[0].id,
         is_public: false,
-        photo: `data:image/png;filename=red-pixel.png;base64,${photo}`,
+        photos: [
+          { order: 0, photo: `data:image/png;filename=red-pixel.png;base64,${photo}` },
+        ],
       },
     })
     const created = await response.json()

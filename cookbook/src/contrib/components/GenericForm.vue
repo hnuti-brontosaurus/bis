@@ -39,6 +39,7 @@ import {
   faPlus,
   faComment,
   faLayerGroup,
+  faCircleQuestion,
 } from "@fortawesome/free-solid-svg-icons"
 import StepsInput from "@/contrib/components/StepsInput.vue"
 import TipsInput from "@/contrib/components/TipsInput.vue"
@@ -117,7 +118,10 @@ const getRule = input => {
     }
     if (typeof input.required === "string") config.type = input.required
     if (input.type === "number") config.type = "number"
-    if ((input.type === "select" && input.extra?.multiple) || input.type === "tags") {
+    if (
+      (input.type === "select" && input.extra?.multiple) ||
+      ["tags", "images"].includes(input.type)
+    ) {
       config.type = "object"
       config.validator = (rule, value) => !!value.length
     }
@@ -219,37 +223,59 @@ const shownInputs = computed(() =>
         value: computedValue(checkbox),
       })),
     }))
-    .map(input =>
-      input.type !== "image"
-        ? input
-        : {
-            ...input,
-            file_list: computed({
-              get: () =>
-                input.value.value
-                  ? [
-                      {
-                        ...input.value.value,
-                        id: "1",
-                        url: input.value.value.small,
-                        status: "finished",
-                      },
-                    ]
-                  : [],
-              // null, not undefined: JSON.stringify drops undefined keys, so a
-              // removed photo would never reach the backend as "clear this".
-              set: value => (input.value.value = value[0] ?? null),
-            }),
-          },
-    ),
+    .map(input => {
+      if (input.type === "image") return { ...input, file_list: imageFileList(input) }
+      if (input.type === "images")
+        return { ...input, file_list: galleryFileList(input) }
+      return input
+    }),
 )
+
+const imageFileList = input =>
+  computed({
+    get: () =>
+      input.value.value
+        ? [
+            {
+              ...input.value.value,
+              id: "1",
+              url: input.value.value.small,
+              status: "finished",
+            },
+          ]
+        : [],
+    // null, not undefined: JSON.stringify drops undefined keys, so a
+    // removed photo would never reach the backend as "clear this".
+    set: value => (input.value.value = value[0] ?? null),
+  })
+
+// A gallery is a list of `{ id, order, photo }` rows. A picked file is kept
+// as `{ photo: <file info> }` until useRecipeSave uploads it.
+const savedFileId = entry => `saved-${entry.id}`
+const galleryFileList = input =>
+  computed({
+    get: () =>
+      (input.value.value ?? []).map(entry =>
+        entry.id
+          ? { id: savedFileId(entry), url: entry.photo.small, status: "finished" }
+          : entry.photo,
+      ),
+    set: files => {
+      const saved = Object.fromEntries(
+        (input.value.value ?? [])
+          .filter(entry => entry.id)
+          .map(entry => [savedFileId(entry), entry]),
+      )
+      input.value.value = files.map(file => saved[file.id] ?? { photo: file })
+    },
+  })
 
 const prefix = computed(() => (props.path_prefix ? `${props.path_prefix}.` : ""))
 const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
 
 const toggleFlag = (row, flag) => (row[flag] = !row[flag])
 const isShown = (row, flag) => !!row?.[flag]
-const ingredientHasContent = row => !!row?.comment || !!row?.photo || !!row?.is_optional
+const ingredientHasContent = row => !!row?.comment || !!row?.photos?.length
 const rowLabel = (input, index) => {
   const rows = input.value.value
   if (input.key === "ingredients" && isPartHeading(rows[index]))
@@ -263,7 +289,9 @@ const moveRow = (input, direction, index, move) => {
     movePart(rows, index, direction)
   else move(direction, index)
 }
-const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_optional
+const stepHasContent = row => !!row?.description || !!row?.photos?.length
+const optionalLabel = input =>
+  _.value[input.key === "steps" ? "RecipeStep" : "RecipeIngredient"].is_optional
 </script>
 
 <template>
@@ -289,9 +317,10 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
         <WithHint :hint="toValue(input.hint)">{{ input.label }}</WithHint>
       </template>
       <n-input-group
-        style="justify-content: end; align-items: end; flex-direction: column"
+        class="input-column"
+        :class="{ 'title-beside': input.title_beside }"
       >
-        <n-h6 v-if="input.title && input.type !== 'section'" style="width: 100%">
+        <n-h6 v-if="input.title && input.type !== 'section'" class="input-title">
           {{ input.title }}
         </n-h6>
         <n-input
@@ -361,6 +390,17 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
           v-model:file-list="input.file_list.value"
           v-bind="input.extra"
           :max="1"
+          :show-preview-button="false"
+          >{{ _.edit_recipe.add }}
+        </n-upload>
+
+        <n-upload
+          v-if="input.type === 'images'"
+          list-type="image-card"
+          v-model:file-list="input.file_list.value"
+          v-bind="input.extra"
+          accept="image/*"
+          multiple
           :show-preview-button="false"
           >{{ _.edit_recipe.add }}
         </n-upload>
@@ -494,6 +534,20 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
                       "
                       size="tiny"
                     />
+                    <n-button
+                      v-if="
+                        input.key === 'steps' ||
+                        (input.key === 'ingredients' &&
+                          !isPartHeading(input.value.value[index]))
+                      "
+                      @click="toggleFlag(input.value.value[index], 'is_optional')"
+                      :render-icon="icon(faCircleQuestion)"
+                      :type="
+                        input.value.value[index].is_optional ? 'primary' : 'default'
+                      "
+                      :title="optionalLabel(input)"
+                      size="tiny"
+                    />
                   </n-button-group>
                 </n-flex>
               </template>
@@ -527,6 +581,7 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
           v-if="input.type === 'checkboxes'"
           :vertical="input.vertical"
           style="width: 100%"
+          v-bind="input.extra"
         >
           <component
             v-for="item in input.checkboxes"
@@ -554,5 +609,31 @@ const stepHasContent = row => !!row?.description || !!row?.photo || !!row?.is_op
 <style scoped>
 .part-heading :deep(input) {
   font-weight: 600;
+}
+
+.input-column {
+  flex-direction: column;
+  align-items: end;
+  justify-content: end;
+}
+
+.input-title {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+@media (min-width: 640px) {
+  .title-beside {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: start;
+  }
+
+  .title-beside .input-title {
+    flex: none;
+    width: 9rem;
+    margin: 0;
+    padding-left: 12px;
+  }
 }
 </style>
