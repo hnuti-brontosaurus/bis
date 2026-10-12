@@ -1,5 +1,15 @@
 <script setup>
-import { NForm, NButton, NH2, NSwitch, useDialog } from "naive-ui"
+import {
+  NForm,
+  NButton,
+  NCheckbox,
+  NFlex,
+  NH2,
+  NInputNumber,
+  NSwitch,
+  NText,
+  useDialog,
+} from "naive-ui"
 import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { icon } from "@/contrib/composables/render.js"
 import { computed, onMounted, ref, watch } from "vue"
@@ -74,11 +84,38 @@ onMounted(async () => {
     }
     // Local working copy — deep-cloned so edits don't mutate cache directly.
     recipe.value = JSON.parse(JSON.stringify(fresh))
-    ingredientRows.value = withPartHeadings(recipe.value.ingredients)
+    ingredientRows.value = withPartHeadings(
+      recipe.value.ingredients.map(ingredient => ({
+        ...ingredient,
+        amount: ingredient.amount * recipe.value.default_servings,
+      })),
+    )
   }
 })
 
+// The API stores amounts per serving; the editor shows them for `servings`
+// and divides back on save. Rescaling them when `servings` changes is opt-in,
+// so a recipe written for 4 can also be saved as one for 2.
 const ingredientRows = ref([])
+const servings = ref(null)
+const recalculateAmounts = ref(false)
+
+watch(
+  () => recipe.value?.default_servings,
+  defaultServings => {
+    if (servings.value == null) servings.value = defaultServings
+  },
+  { immediate: true },
+)
+
+const changeServings = value => {
+  if (value == null) return
+  if (recalculateAmounts.value)
+    ingredientRows.value.forEach(row => {
+      if (row.amount != null) row.amount = (row.amount * value) / servings.value
+    })
+  servings.value = value
+}
 
 const tagIds = computed(() => recipe.value?.tag_ids ?? [])
 const tagGroups = computed(() => [
@@ -194,6 +231,7 @@ const sectionInputs = computed(() => [
     hide_feedback: true,
     key: "ingredients",
     value: ingredientRows,
+    convert_on_unit_change: recalculateAmounts,
     span: 2,
   },
   {
@@ -262,7 +300,9 @@ const save = async () => {
     await form.value.validate()
     // `order` mirrors the list position the user sees; assign it here so
     // reordering in the dynamic-input UI is what gets persisted.
-    recipe.value.ingredients = withoutPartHeadings(ingredientRows.value)
+    recipe.value.ingredients = withoutPartHeadings(ingredientRows.value).map(
+      ingredient => ({ ...ingredient, amount: ingredient.amount / servings.value }),
+    )
     recipe.value.steps.forEach((row, i) => (row.order = i))
 
     showUploadDialog.value = true
@@ -330,7 +370,24 @@ const save = async () => {
           :inputs="[input]"
           :backend-errors="fieldErrors"
           group="Recipe"
-        />
+        >
+          <template v-if="input.key === 'ingredients'" #section-start>
+            <n-flex align="center" class="servings">
+              <n-text>{{ _.recipes.servings }}:</n-text>
+              <n-input-number
+                :value="servings"
+                @update:value="changeServings"
+                :min="1"
+                :precision="0"
+                size="small"
+                style="width: 110px"
+              />
+              <n-checkbox v-model:checked="recalculateAmounts">{{
+                _.edit_recipe.recalculate_amounts
+              }}</n-checkbox>
+            </n-flex>
+          </template>
+        </GenericForm>
       </section>
     </n-form>
     <UploadPhotosDialog
@@ -346,5 +403,9 @@ const save = async () => {
   display: flex;
   flex-direction: column;
   gap: 22px;
+}
+
+.servings {
+  margin-bottom: 16px;
 }
 </style>

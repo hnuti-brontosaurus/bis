@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 8acd55b0430f3015
+// source-hash: acd9b468252e0f8f
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1313,6 +1313,7 @@ export const cookbook = {
     default_servings_hint: 'Pro kolik porcí se recept po otevření zobrazí.',
     servings_note_hint:
       'Co se porcí myslí, např. „typická porce pro jednoho“ nebo „na jeden plech“. Zobrazí se pod počtem porcí.',
+    recalculate_amounts: 'Přepočítávat množství při změně porcí nebo jednotky',
   },
   home: {
     title: 'Veganská Brontosauří kuchařka',

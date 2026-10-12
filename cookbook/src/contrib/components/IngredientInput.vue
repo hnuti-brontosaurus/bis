@@ -15,6 +15,7 @@ import { _ } from "@/composables/translations.js"
 import { computed, onMounted, ref, watch } from "vue"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import {
+  convertAmount,
   isUnitAllowed,
   pluralizeUnit,
   SPECIAL_UNIT_GRAMS,
@@ -24,7 +25,11 @@ const ingredientsStore = useIngredientsStore()
 const unitsStore = useUnitsStore()
 
 const value = defineModel("value")
-const props = defineProps({ index: Number, showComment: Boolean })
+const props = defineProps({
+  index: Number,
+  showComment: Boolean,
+  convertOnUnitChange: Boolean,
+})
 const dialog = useDialog()
 const loading = ref(false)
 
@@ -77,6 +82,22 @@ watch(selectedIngredient, ingredient => {
   const fallbackUnit = unitsStore.list.find(u => u.slug === slug)
   if (fallbackUnit) value.value.unit_id = fallbackUnit.id
 })
+
+// Handled on the select's update rather than by watching unit_id: rows are
+// rendered by index, so after a reorder this component's unit_id changes to
+// another row's without the user picking anything.
+const changeUnit = unitId => {
+  if (props.convertOnUnitChange) {
+    const converted = convertAmount(
+      value.value.amount,
+      unitsStore.byId[value.value.unit_id],
+      unitsStore.byId[unitId],
+      selectedIngredient.value,
+    )
+    if (converted != null) value.value.amount = converted
+  }
+  value.value.unit_id = unitId
+}
 
 const input = ref("")
 const fallback = () => ({ label: `${_.value.ingredients.new}: ${input.value}` })
@@ -135,7 +156,8 @@ const createIngredient = () => {
       :parse="parseFloat"
     />
     <n-select
-      v-model:value="value.unit_id"
+      :value="value.unit_id"
+      @update:value="changeUnit"
       :options="unitOptions"
       filterable
       :clearable="false"

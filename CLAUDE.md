@@ -395,6 +395,14 @@ new photo is POSTed on its own to `recipe_photos` / `recipe_ingredient_photos`
 upload time, not in a form rule: a collapsed step or ingredient row unmounts
 its form.
 
+### Cookbook servings
+
+`RecipeIngredient.amount` is stored per one serving; every view multiplies it
+by the servings shown. The recipe editor shows amounts for its own servings
+input (initially `default_servings`) and divides by it on save, so the stored
+values never depend on `default_servings`. With "recalculate" off, changing
+the servings or an ingredient's unit leaves the typed numbers alone.
+
 ### Cookbook rich text
 
 Every free-text cookbook field is an `HTMLField`, edited in the SPA by

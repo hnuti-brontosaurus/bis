@@ -53,6 +53,10 @@ const pickOption = (page, selection, choose = options => options.first()) =>
     await choose(options).click({ timeout: 2_000 })
   }).toPass({ timeout: 30_000 })
 
+/** The first ingredient's amount; the section's first number input is servings. */
+const amountInput = section =>
+  section.locator(".n-dynamic-input .n-input-number input").first()
+
 const save = page => page.locator("button", { hasText: "Uložit" }).first().click()
 
 test.describe("cookbook smoke", () => {
@@ -112,7 +116,7 @@ test.describe("cookbook smoke", () => {
       await page.locator("h6", { hasText: "Ingredience" }).first().click()
     }
 
-    const amount = ingredientsItem.locator(".n-input-number input").first()
+    const amount = amountInput(ingredientsItem)
     await amount.fill("2")
     // Unit select (second n-select in the row).
     await pickOption(page, ingredientsItem.locator(".n-base-selection").nth(1))
@@ -346,13 +350,9 @@ test.describe("cookbook smoke", () => {
     await expect(option("kus")).toHaveCount(0)
     await pickOption(page, unitSelect, () => option("gram"))
 
-    // Changing the unit leaves the typed amount alone.
-    await expect(
-      page
-        .locator(".n-collapse-item", { hasText: "Ingredience" })
-        .locator(".n-input-number input")
-        .first(),
-    ).toHaveValue("2")
+    // The editor shows amounts for the recipe's 2 default servings, and with
+    // recalculation off, changing the unit leaves the amount alone.
+    await expect(amountInput(section)).toHaveValue("4")
 
     await save(page)
     await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
@@ -364,6 +364,73 @@ test.describe("cookbook smoke", () => {
     expect(ingredient, "Cukr row").toBeTruthy()
     expect(ingredient.unit_id).toBe(bySlug.grams.id)
     expect(ingredient.amount).toBe(2)
+  })
+
+  test("recalculates ingredient amounts only when asked to", async ({
+    page,
+    api,
+    recipe,
+  }) => {
+    const { results: ingredients } = await api
+      .get(`${API_BASE}/ingredients/?search=Cukr`)
+      .then(response => response.json())
+    const cukr = ingredients.find(ingredient => ingredient.name === "Cukr")
+    const unitsBody = await api
+      .get(`${API_BASE}/units/`)
+      .then(response => response.json())
+    const bySlug = Object.fromEntries(
+      (unitsBody.results || unitsBody).map(unit => [unit.slug, unit]),
+    )
+
+    await api.patch(`${API_BASE}/recipes/${recipe.id}/`, {
+      data: {
+        default_servings: 2,
+        ingredients: [
+          {
+            order: 0,
+            ingredient_id: cukr.id,
+            unit_id: bySlug.kilograms.id,
+            amount: 1,
+            is_optional: false,
+          },
+        ],
+      },
+    })
+
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
+    await expect(page.locator(EDITOR).first()).toBeVisible()
+
+    const section = await openSection(page, "Ingredience")
+    const servings = section.locator(".n-input-number input").first()
+    const amount = amountInput(section)
+    await expect(servings).toHaveValue("2")
+    await expect(amount).toHaveValue("2")
+
+    // Unchecked: the amount is taken as written for the new servings count.
+    await servings.fill("4")
+    await servings.blur()
+    await expect(amount).toHaveValue("2")
+
+    await section.getByText("Přepočítávat množství").click()
+    await servings.fill("1")
+    await servings.blur()
+    await expect(amount).toHaveValue("0.5")
+
+    const option = stem =>
+      visibleOptions(page).filter({ hasText: new RegExp(`^\\s*${stem}`) })
+    await pickOption(page, section.locator(".n-base-selection").nth(1), () =>
+      option("gram"),
+    )
+    await expect(amount).toHaveValue("500")
+
+    await save(page)
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
+
+    const saved = await api
+      .get(`${API_BASE}/recipes/${recipe.id}/`)
+      .then(response => response.json())
+    expect(saved.ingredients[0].unit_id).toBe(bySlug.grams.id)
+    expect(saved.ingredients[0].amount).toBe(500)
   })
 
   test("splits ingredients into named parts", async ({ page, api, recipe }) => {

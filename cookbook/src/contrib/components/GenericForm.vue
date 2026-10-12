@@ -419,6 +419,7 @@ const optionalLabel = input =>
                 input.title
               }}</n-h6>
             </template>
+            <slot name="section-start" />
             <n-dynamic-input
               v-model:value="input.value.value"
               show-sort-button
@@ -442,6 +443,7 @@ const optionalLabel = input =>
                     :index="index"
                     :value="value"
                     :show-comment="isShown(value, SHOW_COMMENT)"
+                    :convert-on-unit-change="toValue(input.convert_on_unit_change)"
                     v-else-if="input.key === 'ingredients'"
                   />
                   <StepsInput
