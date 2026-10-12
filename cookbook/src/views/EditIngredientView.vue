@@ -75,6 +75,7 @@ const inputs = computed(() => {
     {
       type: "checkboxes",
       key: "allergen_ids",
+      hide_label: true,
       title: _.value.Ingredient.allergens,
       checkboxes: allergensStore.list.map(allergen => ({
         key: allergen.id,
