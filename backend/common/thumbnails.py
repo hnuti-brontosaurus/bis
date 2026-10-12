@@ -39,8 +39,8 @@ class ThumbnailImageFieldFile(ImageFieldFile):
         except (OSError, ValueError):
             return
 
-        self.field.remove_thumbnails(self.instance)
-        self.field.create_thumbnails(self.instance)
+        self.field.do_remove_thumbnails(self)
+        self.field.make_thumbnails(self)
 
 
 class ThumbnailImageField(ImageField):
@@ -60,14 +60,23 @@ class ThumbnailImageField(ImageField):
 
         super().contribute_to_class(cls, name, **kwargs)
         if not cls._meta.abstract:
-            signals.post_save.connect(self.create_thumbnails, sender=cls)
+            signals.post_save.connect(self.update_thumbnails, sender=cls)
             signals.post_delete.connect(self.remove_thumbnails, sender=cls)
 
-    def create_thumbnails(self, instance, **kwargs):
+    def update_thumbnails(self, instance, **kwargs):
         old_file = getattr(instance, f"old_{self.attname}")
-        self.do_remove_thumbnails(old_file)
+        file = getattr(instance, self.attname)
+        # Every save of the row lands here, and re-rendering an unchanged
+        # photo would also fail whenever its original is missing on disk.
+        if (old_file.name if old_file else "") == file.name:
+            return
 
-        if file := getattr(instance, self.attname):
+        self.do_remove_thumbnails(old_file)
+        self.make_thumbnails(file)
+        setattr(instance, f"old_{self.attname}", file)
+
+    def make_thumbnails(self, file):
+        if file:
             thumbnail_dir_path = join(settings.MEDIA_ROOT, "thumbnails", self.upload_to)
             makedirs(thumbnail_dir_path, exist_ok=True)
 
