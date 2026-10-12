@@ -1,33 +1,44 @@
 <script setup>
 import { EditorContent, useEditor } from "@tiptap/vue-3"
+import Image from "@tiptap/extension-image"
 import StarterKit from "@tiptap/starter-kit"
 import { NButton, NInput, NInputGroup, NPopover } from "naive-ui"
 import {
   faBold,
+  faImage,
   faItalic,
   faLink,
   faListOl,
   faListUl,
+  faMinus,
+  faQuoteLeft,
 } from "@fortawesome/free-solid-svg-icons"
 import { ref, watch } from "vue"
+import { toDataUri } from "@/contrib/composables/helpers.js"
 import { icon } from "@/contrib/composables/render.js"
+import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { _ } from "@/composables/translations.js"
 
 const value = defineModel("value")
-const props = defineProps({ headings: { type: Boolean, default: false } })
+const props = defineProps({
+  // Headings, quotes and horizontal rules.
+  rich: { type: Boolean, default: false },
+  // Turns on images: takes a data URI, resolves to the uploaded image's URL.
+  uploadImage: { type: Function, default: null },
+})
 
 // The backend's sanitizer (api/cookbook/serializers.py) keeps exactly the
 // markup these extensions produce, so the two have to change together.
-// Headings are kept only by `ArticleHTMLField`.
+// What `rich` and `uploadImage` add is kept only by `ArticleHTMLField`.
 const editor = useEditor({
   content: value.value ?? "",
   extensions: [
     StarterKit.configure({
-      blockquote: false,
+      blockquote: props.rich && {},
       code: false,
       codeBlock: false,
-      heading: props.headings && { levels: [2, 3] },
-      horizontalRule: false,
+      heading: props.rich && { levels: [2, 3] },
+      horizontalRule: props.rich && {},
       strike: false,
       underline: false,
       link: {
@@ -36,6 +47,7 @@ const editor = useEditor({
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
       },
     }),
+    ...(props.uploadImage ? [Image] : []),
   ],
   onUpdate: ({ editor }) => (value.value = editor.isEmpty ? "" : editor.getHTML()),
 })
@@ -54,8 +66,24 @@ const headingFormats = [2, 3].map(level => ({
   toggle: chain => chain.toggleHeading({ level }),
 }))
 
+const richFormats = [
+  ...headingFormats,
+  {
+    name: "blockquote",
+    hint: "quote",
+    icon: faQuoteLeft,
+    toggle: chain => chain.toggleBlockquote(),
+  },
+  {
+    name: "horizontalRule",
+    hint: "horizontal_rule",
+    icon: faMinus,
+    toggle: chain => chain.setHorizontalRule(),
+  },
+]
+
 const formats = [
-  ...(props.headings ? headingFormats : []),
+  ...(props.rich ? richFormats : []),
   { name: "bold", hint: "bold", icon: faBold, toggle: chain => chain.toggleBold() },
   {
     name: "italic",
@@ -76,6 +104,22 @@ const formats = [
     toggle: chain => chain.toggleOrderedList(),
   },
 ]
+
+const imageInput = ref()
+const uploadingImage = ref(false)
+const insertImage = async event => {
+  const [file] = event.target.files
+  event.target.value = ""
+  uploadingImage.value = true
+  try {
+    const src = await props.uploadImage(await toDataUri(file))
+    editor.value.chain().focus().setImage({ src }).run()
+  } catch (e) {
+    handleAxiosError(_.value.editor.image_error)(e)
+  } finally {
+    uploadingImage.value = false
+  }
+}
 
 const linkUrl = ref("")
 const showLinkInput = ref(false)
@@ -138,6 +182,24 @@ const insertLink = () => {
           </n-button>
         </n-input-group>
       </n-popover>
+      <template v-if="uploadImage">
+        <n-button
+          size="tiny"
+          quaternary
+          :loading="uploadingImage"
+          :title="_.editor.image"
+          :aria-label="_.editor.image"
+          :render-icon="icon(faImage)"
+          @click="imageInput.click()"
+        />
+        <input
+          ref="imageInput"
+          type="file"
+          accept="image/*"
+          hidden
+          @change="insertImage"
+        />
+      </template>
     </div>
     <EditorContent :editor="editor" class="content html-text" />
   </div>
@@ -162,6 +224,10 @@ const insertLink = () => {
   padding: 2px 4px;
   border-bottom: 1px solid var(--line);
   background: var(--surface-muted);
+}
+
+.content :deep(.ProseMirror-selectednode) {
+  outline: 2px solid var(--primary);
 }
 
 .content :deep(.ProseMirror) {

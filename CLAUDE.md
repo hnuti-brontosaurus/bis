@@ -421,10 +421,18 @@ are `Article`s, one per `Article.Slug`; the slug is also the route name and the
 menu key, and the title comes from the `menu` translations. `ArticleViewSet`
 creates a row on first lookup instead of seeding it, so articles survive
 `testing_db dev`'s flush. Editors edit them in place on the page. Their
-`content` is the only HTML field that allows headings (`h2`, `h3`, via
-`ArticleHTMLField` and `HtmlEditor`'s `headings` prop). The `<h1>` is the page
-title. A new article needs a slug, a migration, a path in `router.js` and a
-menu entry.
+`content` is the only HTML field that allows headings (`h2`, `h3` — the `<h1>`
+is the page title), quotes, horizontal rules and images: `ArticleHTMLField`
+on the backend, `HtmlEditor`'s `rich` and `uploadImage` props on the frontend.
+A new article needs a slug, a migration, a path in `router.js` and a menu
+entry.
+
+An inserted image is POSTed to `article_images` right away and the editor
+puts its `src` (the `large` thumbnail, a relative `/media/` path) into the
+content. The content is the source of truth: the article save drops any
+`<img>` that is not one of the article's `ArticleImage`s and deletes every
+`ArticleImage` the content no longer references, so an image removed from the
+text, or uploaded and then cancelled, is gone on the next save.
 
 ### Cookbook theme
 

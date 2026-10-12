@@ -134,11 +134,34 @@ input:-webkit-autofill:focus {
   font-size: 1.15em;
 }
 
-.html-text > :first-child {
+.html-text blockquote {
+  margin: 0 0 0.5em;
+  padding: 0.1em 0 0.1em 1em;
+  border-left: 3px solid var(--primary);
+  color: var(--muted);
+}
+
+.html-text hr {
+  margin: 1.2em 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.html-text img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 0 0.5em;
+  border-radius: 4px;
+}
+
+.html-text > :first-child,
+.html-text > .ProseMirror > :first-child {
   margin-top: 0;
 }
 
 .html-text li > p,
+.html-text blockquote > :last-child,
 .html-text > :last-child {
   margin-bottom: 0;
 }

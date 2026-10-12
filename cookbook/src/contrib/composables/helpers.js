@@ -75,3 +75,14 @@ export const scrollToFirstFormError = async () => {
 
 export const htmlToText = html =>
   new DOMParser().parseFromString(html || "", "text/html").body.textContent
+
+export const toDataUri = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const [, base64] = reader.result.split(",")
+      resolve(`data:${file.type};filename=${file.name};base64,${base64}`)
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })

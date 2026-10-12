@@ -15,12 +15,13 @@ Writes:
   * Menu: chef creates / edits / deletes own; editor edits / deletes any.
   * Recipe / ingredient / step photo: created by whoever may edit the recipe.
   * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
+  * Article image: editors upload; the article save deletes it.
 
 The viewset wires this in via `CookbookViewSetMixin`, which both sets
 `permission_classes` and applies `filter_visible` in `get_queryset`.
 """
 
-from cookbook.models.articles import Article
+from cookbook.models.articles import Article, ArticleImage
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
@@ -143,7 +144,7 @@ class CookbookAccessPermission(BasePermission):
             return True
 
         if user.is_editor:
-            return model in (Article, Recipe, Menu, *PHOTO_MODELS)
+            return model in (Article, ArticleImage, Recipe, Menu, *PHOTO_MODELS)
 
         if model is Recipe:
             return self._matches(request, obj, "chef_id", user.chef.id)

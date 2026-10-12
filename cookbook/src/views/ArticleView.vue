@@ -10,7 +10,7 @@ import { useRender } from "@/contrib/composables/render.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { _ } from "@/composables/translations.js"
 import { useAuthStore } from "@/data/auth.js"
-import { getArticle, saveArticle } from "@/data/articles.js"
+import { getArticle, saveArticle, uploadArticleImage } from "@/data/articles.js"
 
 const props = defineProps({ slug: { type: String, required: true } })
 
@@ -54,7 +54,12 @@ const save = async () => {
       }}</n-button>
     </template>
     <div v-if="article" class="article">
-      <HtmlEditor v-if="draft !== null" v-model:value="draft" headings />
+      <HtmlEditor
+        v-if="draft !== null"
+        v-model:value="draft"
+        rich
+        :upload-image="image => uploadArticleImage(slug, image)"
+      />
       <HtmlText v-else-if="article.content" :html="article.content" />
       <p v-else class="muted">{{ _.article.empty }}</p>
     </div>

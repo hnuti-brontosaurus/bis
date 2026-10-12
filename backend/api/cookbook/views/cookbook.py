@@ -1,6 +1,7 @@
 from api.cookbook.filters import MenuFilter, RecipeFilter
 from api.cookbook.permissions import CookbookViewSetMixin
 from api.cookbook.serializers import (
+    ArticleImageSerializer,
     ArticleSerializer,
     ChefSerializer,
     IngredientSerializer,
@@ -10,7 +11,7 @@ from api.cookbook.serializers import (
     RecipeSerializer,
     RecipeStepPhotoUploadSerializer,
 )
-from cookbook.models.articles import Article
+from cookbook.models.articles import Article, ArticleImage
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
@@ -140,3 +141,11 @@ class ArticleViewSet(
         article, _ = Article.objects.get_or_create(slug=slug)
         self.check_object_permissions(self.request, article)
         return article
+
+
+class ArticleImageViewSet(
+    CookbookViewSetMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
+    http_method_names = ["post", "options", "head"]
+    serializer_class = ArticleImageSerializer
+    queryset = ArticleImage.objects.all()

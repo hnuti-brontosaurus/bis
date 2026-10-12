@@ -194,6 +194,10 @@ cookbook:
     insert: Vložit
     heading_2: Nadpis
     heading_3: Podnadpis
+    quote: Citace
+    horizontal_rule: Oddělovač
+    image: Obrázek
+    image_error: Obrázek se nepodařilo nahrát
 
   article:
     edit: Upravit

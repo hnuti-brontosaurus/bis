@@ -1,5 +1,8 @@
+from common.thumbnails import ThumbnailImageField, get_thumbnail_path
 from cookbook.models.base import BaseModel, ChangeMixin
+from django.conf import settings
 from django.db import models as m
+from django.db.models import CASCADE
 from tinymce.models import HTMLField
 from translation.translate import translate_model
 
@@ -24,3 +27,13 @@ class Article(ChangeMixin, BaseModel):
 
     def __str__(self):
         return self.slug
+
+
+@translate_model
+class ArticleImage(BaseModel):
+    article = m.ForeignKey(Article, related_name="images", on_delete=CASCADE)
+    image = ThumbnailImageField(upload_to="articles")
+
+    @property
+    def src(self):
+        return settings.MEDIA_URL + get_thumbnail_path(self.image.name, "large")

@@ -1,4 +1,5 @@
 import { reactive } from "vue"
+import { toDataUri } from "@/contrib/composables/helpers.js"
 import { useRecipesStore } from "@/data/recipes.js"
 import {
   uploadIngredientPhoto,
@@ -29,19 +30,6 @@ const eachGallery = (recipe, callback) =>
       .parents(recipe)
       .forEach((parent, index) => callback(parent, gallery, index)),
   )
-
-// Read here rather than when the file is picked: a collapsed step or
-// ingredient row unmounts its form, so nothing there is sure to run.
-const toDataUri = file =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const [, base64] = reader.result.split(",")
-      resolve(`data:${file.type};filename=${file.name};base64,${base64}`)
-    }
-    reader.onerror = () => reject(reader.error)
-    reader.readAsDataURL(file)
-  })
 
 /**
  * Multi-step recipe save: first PATCH/POST the recipe text with only the
@@ -113,6 +101,8 @@ export function useRecipeSave() {
       state.overallProgress = computeOverallProgress()
     }
     try {
+      // Read here rather than when the file is picked: a collapsed step or
+      // ingredient row unmounts its form, so nothing there is sure to run.
       const base64 = await toDataUri(upload.entry.photo.file)
       const saved = await uploaders[upload.kind](
         upload.parent.id,

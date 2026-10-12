@@ -943,6 +943,13 @@ Article:
   fields:
     content: Obsah
 
+ArticleImage:
+  name: Obrázek článku
+  name_plural: Obrázky článku
+  fields:
+    article: Článek
+    image: Obrázek
+
 Menu:
   name: Jídelníček
   name_plural: Jídelníčky

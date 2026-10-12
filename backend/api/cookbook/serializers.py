@@ -31,7 +31,7 @@ import re
 from itertools import groupby
 
 import nh3
-from cookbook.models.articles import Article
+from cookbook.models.articles import Article, ArticleImage
 from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
@@ -57,20 +57,22 @@ from cookbook_categories.models import (
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.fields import CharField
-from rest_framework.relations import PrimaryKeyRelatedField
+from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
 from tinymce.models import HTMLField
 
 BLANK = r"(?:\s|&nbsp;|\xa0|<br>)*"
+IMAGE = re.compile(r'<img src="([^"]*)">')
 
 
 class SanitizedHTMLField(CharField):
     tags = {"p", "br", "strong", "em", "ul", "ol", "li", "a"}
+    attributes = {"a": {"href"}}
 
     def to_internal_value(self, data):
         html = nh3.clean(
             super().to_internal_value(data),
             tags=self.tags,
-            attributes={"a": {"href"}},
+            attributes=self.attributes,
             set_tag_attribute_values={"a": {"target": "_blank"}},
         )
         html = re.sub(rf"(<(?:p|li|h2|h3)>){BLANK}", r"\1", html)
@@ -84,7 +86,8 @@ class SanitizedHTMLField(CharField):
 
 
 class ArticleHTMLField(SanitizedHTMLField):
-    tags = SanitizedHTMLField.tags | {"h2", "h3"}
+    tags = SanitizedHTMLField.tags | {"h2", "h3", "blockquote", "hr", "img"}
+    attributes = {**SanitizedHTMLField.attributes, "img": {"src"}}
 
 
 class SanitizesHTML:
@@ -109,6 +112,36 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = ("slug", "content")
         read_only_fields = ("slug",)
+
+    def update(self, instance, validated_data):
+        """An image is uploaded on its own the moment it is inserted, see
+        `ArticleImageSerializer`. The content is what decides which of them
+        the article keeps: the rest are deleted, and an <img> that is not one
+        of the article's images is dropped."""
+        images = {image.src: image for image in instance.images.all()}
+        kept = set()
+
+        def keep(match):
+            image = images.get(match[1])
+            if image is None:
+                return ""
+            kept.add(image.id)
+            return match[0]
+
+        validated_data["content"] = IMAGE.sub(keep, validated_data["content"])
+        instance = super().update(instance, validated_data)
+        instance.images.exclude(id__in=kept).delete()
+        return instance
+
+
+class ArticleImageSerializer(serializers.ModelSerializer):
+    article = SlugRelatedField(slug_field="slug", queryset=Article.objects.all())
+    src = CharField(read_only=True)
+
+    class Meta:
+        model = ArticleImage
+        fields = ("id", "article", "image", "src")
+        extra_kwargs = {"image": {"write_only": True}}
 
 
 class CartSerializer(serializers.ModelSerializer):
