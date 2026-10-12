@@ -124,6 +124,7 @@ const select = value => {
           quaternary
           class="navigation-link"
           :class="{ active: isActive(item) }"
+          @click="item.children && select(item.children[0].key)"
           >{{ item.label }}</n-button
         >
       </n-dropdown>
