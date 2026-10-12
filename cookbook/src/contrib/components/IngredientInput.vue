@@ -33,9 +33,10 @@ const commentInputs = [
     type: "html",
     key: "comment",
     hide_label: true,
-    span: 1.5,
+    span: 1,
   },
   { type: "checkbox", key: "is_optional", span: 0.5, hide_label: true },
+  { type: "image", key: "photo", span: 0.5 },
 ]
 
 const ingredientOptions = storeOptions(ingredientsStore)

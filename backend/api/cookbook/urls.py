@@ -14,6 +14,7 @@ from api.cookbook.views.cookbook import (
     ChefViewSet,
     IngredientViewSet,
     MenuViewSet,
+    RecipeIngredientViewSet,
     RecipeStepViewSet,
     RecipeViewSet,
 )
@@ -24,6 +25,7 @@ router = routers.DefaultRouter()
 
 router.register("recipes", RecipeViewSet, "recipes")
 router.register("recipe_steps", RecipeStepViewSet, "recipe_steps")
+router.register("recipe_ingredients", RecipeIngredientViewSet, "recipe_ingredients")
 router.register("menus", MenuViewSet, "menus")
 router.register("chefs", ChefViewSet, "chefs")
 router.register("units", UnitViewSet, "units")

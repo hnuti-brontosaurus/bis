@@ -4,13 +4,14 @@ from api.cookbook.serializers import (
     ChefSerializer,
     IngredientSerializer,
     MenuSerializer,
+    RecipeIngredientPhotoSerializer,
     RecipeSerializer,
     RecipeStepPhotoSerializer,
 )
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
-from cookbook.models.recipes import Recipe, RecipeStep
+from cookbook.models.recipes import Recipe, RecipeIngredient, RecipeStep
 from cookbook.services.ingredient_enrichment import enrich_ingredient
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import ModelViewSet
@@ -44,22 +45,30 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
     )
 
 
-class RecipeStepViewSet(
+class RecipePhotoViewSet(
     CookbookViewSetMixin,
     ChangeViewSetMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """PATCH-only endpoint for uploading a single step's photo.
+    """PATCH-only endpoint for uploading a single recipe row's photo.
 
-    The frontend uses this to stream step photos one-by-one (with progress
+    The frontend uses this to stream photos one-by-one (with progress
     + retry) instead of bundling them into the recipe PATCH.
     """
 
     lookup_field = "id"
+    http_method_names = ["patch", "options", "head"]
+
+
+class RecipeStepViewSet(RecipePhotoViewSet):
     serializer_class = RecipeStepPhotoSerializer
     queryset = RecipeStep.objects.select_related("recipe").all()
-    http_method_names = ["patch", "options", "head"]
+
+
+class RecipeIngredientViewSet(RecipePhotoViewSet):
+    serializer_class = RecipeIngredientPhotoSerializer
+    queryset = RecipeIngredient.objects.select_related("recipe").all()
 
 
 class MenuViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):

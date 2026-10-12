@@ -1,8 +1,17 @@
 import { reactive } from "vue"
 import { uploadRecipePhoto, useRecipesStore } from "@/data/recipes.js"
-import { uploadStepPhoto } from "@/data/recipeSteps.js"
+import { uploadIngredientPhoto, uploadStepPhoto } from "@/data/recipeRowPhotos.js"
 
 const isNewUpload = photo => photo && typeof photo === "object" && "base64data" in photo
+
+const ROWS = [
+  { kind: "ingredient", key: "ingredients", upload: uploadIngredientPhoto },
+  { kind: "step", key: "steps", upload: uploadStepPhoto },
+]
+const uploaders = {
+  recipe: uploadRecipePhoto,
+  ...Object.fromEntries(ROWS.map(({ kind, upload }) => [kind, upload])),
+}
 
 /**
  * Multi-step recipe save: first PATCH/POST the recipe text without new
@@ -44,19 +53,22 @@ export function useRecipeSave() {
         progress: 0,
       })
     }
-    ;(recipe.steps ?? []).forEach((step, idx) => {
-      if (isNewUpload(step.photo)) {
-        items.push({
-          kind: "step",
-          index: idx,
-          stepName: step.name,
-          name: step.photo.name,
-          base64: step.photo.base64data,
-          status: "pending",
-          progress: 0,
-        })
-      }
-    })
+    ROWS.forEach(({ kind, key }) =>
+      (recipe[key] ?? []).forEach((row, index) => {
+        if (isNewUpload(row.photo)) {
+          items.push({
+            kind,
+            key,
+            index,
+            row,
+            name: row.photo.name,
+            base64: row.photo.base64data,
+            status: "pending",
+            progress: 0,
+          })
+        }
+      }),
+    )
     return items
   }
 
@@ -69,10 +81,12 @@ export function useRecipeSave() {
     if (isNewUpload(out.photo)) {
       out.photo = originalRecipe?.photo ?? null
     }
-    out.steps = (out.steps ?? []).map(step => {
-      if (!isNewUpload(step.photo)) return step
-      const orig = originalRecipe?.steps?.find(s => s.id === step.id)
-      return { ...step, photo: orig?.photo ?? null }
+    ROWS.forEach(({ key }) => {
+      out[key] = (out[key] ?? []).map(row => {
+        if (!isNewUpload(row.photo)) return row
+        const orig = originalRecipe?.[key]?.find(r => r.id === row.id)
+        return { ...row, photo: orig?.photo ?? null }
+      })
     })
     return out
   }
@@ -93,11 +107,7 @@ export function useRecipeSave() {
       state.overallProgress = computeOverallProgress()
     }
     try {
-      if (upload.kind === "recipe") {
-        await uploadRecipePhoto(upload.targetId, upload.base64, onProgress)
-      } else {
-        await uploadStepPhoto(upload.targetId, upload.base64, onProgress)
-      }
+      await uploaders[upload.kind](upload.targetId, upload.base64, onProgress)
       upload.status = "done"
       upload.progress = 100
     } catch (e) {
@@ -152,14 +162,16 @@ export function useRecipeSave() {
     // if savedRecipe gets overwritten by a later fetchOne (which only
     // populates the cache, not the upload targets).
     workingRecipe.id = savedRecipe.id
-    ;(savedRecipe.steps ?? []).forEach((s, i) => {
-      if (workingRecipe.steps?.[i]) workingRecipe.steps[i].id = s.id
-    })
+    ROWS.forEach(({ key }) =>
+      (savedRecipe[key] ?? []).forEach((r, i) => {
+        if (workingRecipe[key]?.[i]) workingRecipe[key][i].id = r.id
+      }),
+    )
     for (const upload of state.uploads) {
       upload.targetId =
         upload.kind === "recipe"
           ? savedRecipe.id
-          : savedRecipe.steps?.[upload.index]?.id
+          : savedRecipe[upload.key]?.[upload.index]?.id
     }
 
     if (!state.uploads.length) {

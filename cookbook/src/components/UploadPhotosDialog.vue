@@ -19,6 +19,7 @@ import {
   faClock,
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { useIngredientsStore } from "@/data/ingredients.js"
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -51,10 +52,15 @@ const failedCount = computed(
   () => props.state.uploads.filter(u => u.status === "failed").length,
 )
 
+const ingredientsStore = useIngredientsStore()
+
 const itemLabel = upload => {
   if (upload.kind === "recipe") return "Hlavní fotka receptu"
-  const stepName = upload.stepName || `Krok ${upload.index + 1}`
-  return `${stepName} — fotka`
+  const rowName =
+    upload.kind === "ingredient"
+      ? ingredientsStore.byId[upload.row.ingredient_id]?.name
+      : upload.row.name || `Krok ${upload.index + 1}`
+  return `${rowName} — fotka`
 }
 
 const errorMessage = upload => {

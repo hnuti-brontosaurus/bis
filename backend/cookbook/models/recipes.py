@@ -64,6 +64,7 @@ class RecipeIngredient(BaseModel):
     amount = m.FloatField()
     is_optional = m.BooleanField(default=False)
     comment = HTMLField(blank=True)
+    photo = ThumbnailImageField(upload_to="recipe_ingredients", blank=True)
 
     def __str__(self):
         return f"{self.ingredient.name} ({self.amount} {self.unit})"

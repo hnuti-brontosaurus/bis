@@ -28,6 +28,7 @@ import { useAllergensStore } from "@/data/allergens.js"
 import { useAuthStore } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
+import RecipePhoto from "@/components/recipe/RecipePhoto.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 import HtmlText from "@/components/app/HtmlText.vue"
@@ -196,17 +197,11 @@ const onDelete = () => {
             <span v-else :class="{ muted: item.done }">{{ item.name }}</span>
           </template>
           <template #default="{ item }">
-            <n-flex v-if="item.description || item.photo">
+            <n-flex v-if="item.description || item.photo" vertical>
               <n-text v-if="item.description" tag="div"
                 ><HtmlText :html="item.description"
               /></n-text>
-              <n-image
-                v-if="item.photo"
-                :preview-src="item.photo.large"
-                :src="item.photo.medium"
-                style="width: 100%"
-                width="100%"
-              ></n-image>
+              <RecipePhoto v-if="item.photo" :photo="item.photo" :alt="item.name" />
             </n-flex>
           </template>
         </CollapseList>

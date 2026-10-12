@@ -11,13 +11,14 @@ vi.mock("@/data/recipes.js", () => ({
   uploadRecipePhoto: vi.fn(),
 }))
 
-vi.mock("@/data/recipeSteps.js", () => ({
+vi.mock("@/data/recipeRowPhotos.js", () => ({
   uploadStepPhoto: vi.fn(),
+  uploadIngredientPhoto: vi.fn(),
 }))
 
 import { useRecipeSave } from "../useRecipeSave.js"
 import { uploadRecipePhoto } from "@/data/recipes.js"
-import { uploadStepPhoto } from "@/data/recipeSteps.js"
+import { uploadIngredientPhoto, uploadStepPhoto } from "@/data/recipeRowPhotos.js"
 
 const wrapper = (base = "data:image/png;filename=x.png;base64,xxx", file = {}) => ({
   base64data: base,
@@ -26,12 +27,18 @@ const wrapper = (base = "data:image/png;filename=x.png;base64,xxx", file = {}) =
   name: "x.png",
 })
 
-const buildRecipe = ({ id, isPublic = false, photo = null, steps = [] } = {}) => ({
+const buildRecipe = ({
+  id,
+  isPublic = false,
+  photo = null,
+  steps = [],
+  ingredients = [],
+} = {}) => ({
   ...(id != null ? { id } : {}),
   is_public: isPublic,
   photo,
   steps,
-  ingredients: [],
+  ingredients,
   tips: [],
 })
 
@@ -41,6 +48,7 @@ beforeEach(() => {
   recipesStore.fetchOne.mockReset()
   uploadRecipePhoto.mockReset()
   uploadStepPhoto.mockReset()
+  uploadIngredientPhoto.mockReset()
 })
 
 describe("useRecipeSave", () => {
@@ -99,6 +107,35 @@ describe("useRecipeSave", () => {
       "data:image/png;filename=s.png;base64,SS",
       expect.any(Function),
     )
+    expect(state.phase).toBe("done")
+  })
+
+  it("uploads ingredient photos to the ingredient rows", async () => {
+    recipesStore.save.mockResolvedValue({
+      id: 4,
+      ingredients: [{ id: 40 }, { id: 41 }],
+    })
+    recipesStore.fetchOne.mockResolvedValue({ id: 4 })
+    uploadIngredientPhoto.mockResolvedValue({})
+
+    const recipe = buildRecipe({
+      ingredients: [
+        { photo: null },
+        { photo: wrapper("data:image/png;filename=i.png;base64,II") },
+      ],
+    })
+
+    const { run, state } = useRecipeSave()
+    await run(recipe)
+
+    expect(recipesStore.save.mock.calls[0][0].ingredients[1].photo).toBe(null)
+    expect(uploadIngredientPhoto).toHaveBeenCalledWith(
+      41,
+      "data:image/png;filename=i.png;base64,II",
+      expect.any(Function),
+    )
+    expect(uploadStepPhoto).not.toHaveBeenCalled()
+    expect(recipe.ingredients.map(row => row.id)).toEqual([40, 41])
     expect(state.phase).toBe("done")
   })
 

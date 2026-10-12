@@ -136,7 +136,18 @@ class RecipeIngredientSerializer(SanitizesHTML, serializers.ModelSerializer):
             "amount",
             "is_optional",
             "comment",
+            "photo",
         )
+
+
+class RecipeIngredientPhotoSerializer(serializers.ModelSerializer):
+    """PATCH-only serializer used by the per-ingredient photo upload endpoint,
+    for the same reason as RecipeStepPhotoSerializer."""
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ("id", "photo")
+        read_only_fields = ("id",)
 
 
 class RecipeStepSerializer(SanitizesHTML, serializers.ModelSerializer):

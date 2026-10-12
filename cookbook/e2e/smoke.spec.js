@@ -202,6 +202,60 @@ test.describe("cookbook smoke", () => {
     })
   })
 
+  test("uploads an ingredient photo and previews it on the recipe page", async ({
+    page,
+    api,
+    recipe,
+  }) => {
+    const { results: ingredients } = await api
+      .get(`${API_BASE}/ingredients/?search=Cukr`)
+      .then(response => response.json())
+    const cukr = ingredients.find(ingredient => ingredient.name === "Cukr")
+    const unitsBody = await api
+      .get(`${API_BASE}/units/`)
+      .then(response => response.json())
+    const grams = (unitsBody.results || unitsBody).find(unit => unit.slug === "grams")
+
+    await api.patch(`${API_BASE}/recipes/${recipe.id}/`, {
+      data: {
+        ingredients: [
+          { order: 0, ingredient_id: cukr.id, unit_id: grams.id, amount: 100 },
+        ],
+      },
+    })
+
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
+    await expect(page.locator(EDITOR).first()).toBeVisible()
+
+    const ingredientPhotoPatch = page.waitForRequest(
+      request =>
+        request.method() === "PATCH" &&
+        /\/api\/cookbook\/recipe_ingredients\/\d+\//.test(request.url()),
+    )
+
+    const section = await openSection(page, "Ingredience")
+    // The comment button opens the row's details, photo included.
+    await section.locator(".n-button-group .n-button").nth(4).click()
+    await section.locator('input[type="file"]').setInputFiles({
+      name: "red-pixel.png",
+      mimeType: "image/png",
+      buffer: readFixture("upload/red-pixel.png"),
+    })
+    await page.waitForTimeout(500)
+
+    await save(page)
+    expect((await ingredientPhotoPatch).postDataJSON().photo).toMatch(
+      /^data:image\/png/,
+    )
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`), {
+      timeout: 30_000,
+    })
+
+    await page.locator(".n-data-table-tr", { hasText: "Cukr" }).click()
+    await page.locator(".recipe-photo img").click()
+    await expect(page.locator(".n-image-preview")).toBeVisible()
+  })
+
   test("changes ingredient unit and keeps the amount", async ({
     page,
     api,

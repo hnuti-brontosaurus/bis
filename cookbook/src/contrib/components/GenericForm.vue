@@ -249,7 +249,7 @@ const getStyle = input => (input.new_line ? { gridColumnStart: 1 } : {})
 
 const toggleFlag = (row, flag) => (row[flag] = !row[flag])
 const isShown = (row, flag) => !!row?.[flag]
-const ingredientHasContent = row => !!row?.comment || !!row?.is_optional
+const ingredientHasContent = row => !!row?.comment || !!row?.photo || !!row?.is_optional
 const rowLabel = (input, index) => {
   const rows = input.value.value
   if (input.key === "ingredients" && isPartHeading(rows[index]))
