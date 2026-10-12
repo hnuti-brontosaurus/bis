@@ -876,8 +876,7 @@ div[id^="id_"] > .form-check > .form-check-input:disabled + .form-check-label {
     border-radius: var(--radius);
 }
 
-.tox .tox-editor-header, .tox .tox-toolbar, .tox .tox-toolbar__primary, .tox .tox-toolbar-overlord,
-.tox .tox-statusbar {
+.tox .tox-editor-header, .tox .tox-toolbar, .tox .tox-toolbar__primary, .tox .tox-toolbar-overlord {
     background-color: var(--surface-muted) !important;
     background-image: none !important;
 }
@@ -886,15 +885,8 @@ div[id^="id_"] > .form-check > .form-check-input:disabled + .form-check-label {
     background-color: var(--surface);
 }
 
-.tox .tox-statusbar {
-    border-top-color: var(--line) !important;
-}
-
-.tox .tox-tbtn, .tox .tox-statusbar, .tox .tox-statusbar a {
-    color: var(--text) !important;
-}
-
 .tox .tox-tbtn {
+    color: var(--text) !important;
     background: transparent !important;
 }
 

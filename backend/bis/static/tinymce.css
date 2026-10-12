@@ -1,0 +1,13 @@
+/* The skin is loaded after this file, so these need to be more specific than its `.tox .tox-tbtn`. */
+.tox.tox-tinymce .tox-tbtn {
+    height: 22px;
+    margin: 2px 1px 2px 0;
+}
+
+.tox.tox-tinymce .tox-tbtn svg {
+    transform: scale(0.85);
+}
+
+.tox.tox-tinymce .tox-toolbar__group {
+    padding: 0 3px;
+}

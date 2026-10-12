@@ -362,6 +362,7 @@ if ENVIRONMENT in ("local", "testing"):
 
 TINYMCE_DEFAULT_CONFIG = {
     "menubar": False,
+    "statusbar": False,
     "height": 200,
     "plugins": "autolink,lists,link,image,charmap,preview,searchreplace,"
     "fullscreen,paste,code,help,wordcount,media",
@@ -374,6 +375,7 @@ TINYMCE_DEFAULT_CONFIG = {
 
 TINYMCE_EXTRA_MEDIA = {
     "js": ["tinymce_dark_mode.js"],
+    "css": {"all": ["tinymce.css"]},
 }
 
 THUMBNAIL_SIZES = {
