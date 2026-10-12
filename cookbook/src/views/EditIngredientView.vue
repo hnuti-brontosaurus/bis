@@ -62,7 +62,7 @@ const inputs = computed(() => {
             type: "select",
             key: "category",
             path: "category_id",
-            required: true,
+            required: "number",
             options: categoryOptions.value,
             value: propertyRef(ingredient, "category_id"),
           },
