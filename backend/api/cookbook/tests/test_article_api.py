@@ -84,11 +84,14 @@ def test_article_keeps_only_images_in_its_content(editor_client):
 
     response = editor_client.patch(
         URL,
-        {"content": f'<img src="{kept}"><img src="https://elsewhere.com/x.png">'},
+        {
+            "content": f'<img src="{kept}" class="size-medium bogus">'
+            '<img src="https://elsewhere.com/x.png">'
+        },
         format="json",
     )
     assert response.status_code == 200, response.data
-    assert response.data["content"] == f'<img src="{kept}">'
+    assert response.data["content"] == f'<img src="{kept}" class="size-medium">'
     assert [image.src for image in ArticleImage.objects.all()] == [kept]
 
 

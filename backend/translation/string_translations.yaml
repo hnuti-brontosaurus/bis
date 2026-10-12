@@ -94,7 +94,7 @@ cookbook:
 
   menu:
     vegan: Proč vegan?
-    manifest: Manifest? :D
+    manifest: Manifest
     how_to: Jak začít
     risks: Zdravotní rizika
     where_to_go: Kam dál?
@@ -198,6 +198,10 @@ cookbook:
     horizontal_rule: Oddělovač
     image: Obrázek
     image_error: Obrázek se nepodařilo nahrát
+    image_small_left: Malý vlevo
+    image_small_right: Malý vpravo
+    image_medium: Střední
+    image_full: Celá šířka
 
   article:
     edit: Upravit

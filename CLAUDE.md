@@ -432,7 +432,10 @@ puts its `src` (the `large` thumbnail, a relative `/media/` path) into the
 content. The content is the source of truth: the article save drops any
 `<img>` that is not one of the article's `ArticleImage`s and deletes every
 `ArticleImage` the content no longer references, so an image removed from the
-text, or uploaded and then cancelled, is gone on the next save.
+text, or uploaded and then cancelled, is gone on the next save. Its size is a
+`size-*` class picked in the editor's bubble menu (small left — the default —
+small right, medium, full); the sanitizer allows only those classes, and below
+600px every size is full width.
 
 ### Cookbook theme
 

@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 07466ca6f98cabe4
+// source-hash: 8acd55b0430f3015
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1225,7 +1225,7 @@ export const cookbook = {
   },
   menu: {
     vegan: 'Proč vegan?',
-    manifest: 'Manifest? :D',
+    manifest: 'Manifest',
     how_to: 'Jak začít',
     risks: 'Zdravotní rizika',
     where_to_go: 'Kam dál?',
@@ -1331,6 +1331,10 @@ export const cookbook = {
     horizontal_rule: 'Oddělovač',
     image: 'Obrázek',
     image_error: 'Obrázek se nepodařilo nahrát',
+    image_small_left: 'Malý vlevo',
+    image_small_right: 'Malý vpravo',
+    image_medium: 'Střední',
+    image_full: 'Celá šířka',
   },
   article: { edit: 'Upravit', empty: 'Na tomhle článku se ještě pracuje.' },
   section: { tips: 'tip', steps: 'krok', ingredients: 'přísada', part: 'část' },

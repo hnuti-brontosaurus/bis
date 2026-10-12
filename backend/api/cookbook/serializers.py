@@ -61,18 +61,20 @@ from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
 from tinymce.models import HTMLField
 
 BLANK = r"(?:\s|&nbsp;|\xa0|<br>)*"
-IMAGE = re.compile(r'<img src="([^"]*)">')
+IMAGE = re.compile(r'<img[^>]*\bsrc="([^"]*)"[^>]*>')
 
 
 class SanitizedHTMLField(CharField):
     tags = {"p", "br", "strong", "em", "ul", "ol", "li", "a"}
     attributes = {"a": {"href"}}
+    classes = {}
 
     def to_internal_value(self, data):
         html = nh3.clean(
             super().to_internal_value(data),
             tags=self.tags,
             attributes=self.attributes,
+            allowed_classes=self.classes,
             set_tag_attribute_values={"a": {"target": "_blank"}},
         )
         html = re.sub(rf"(<(?:p|li|h2|h3)>){BLANK}", r"\1", html)
@@ -88,6 +90,9 @@ class SanitizedHTMLField(CharField):
 class ArticleHTMLField(SanitizedHTMLField):
     tags = SanitizedHTMLField.tags | {"h2", "h3", "blockquote", "hr", "img"}
     attributes = {**SanitizedHTMLField.attributes, "img": {"src"}}
+    classes = {
+        "img": {"size-small-left", "size-small-right", "size-medium", "size-full"}
+    }
 
 
 class SanitizesHTML:

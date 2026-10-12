@@ -43,7 +43,7 @@ const save = async () => {
 </script>
 
 <template>
-  <AppPage :title="_.menu[slug]">
+  <AppPage :title="_.menu[slug]" class="article-page">
     <template v-if="isEditor && article" #actions>
       <template v-if="draft !== null">
         <n-button type="primary" @click="save">{{ _.common.save }}</n-button>
@@ -53,7 +53,7 @@ const save = async () => {
         _.article.edit
       }}</n-button>
     </template>
-    <div v-if="article" class="article">
+    <template v-if="article">
       <HtmlEditor
         v-if="draft !== null"
         v-model:value="draft"
@@ -62,12 +62,14 @@ const save = async () => {
       />
       <HtmlText v-else-if="article.content" :html="article.content" />
       <p v-else class="muted">{{ _.article.empty }}</p>
-    </div>
+    </template>
   </AppPage>
 </template>
 
 <style scoped>
-.article {
+.article-page {
+  width: 100%;
   max-width: 760px;
+  margin: 0 auto;
 }
 </style>

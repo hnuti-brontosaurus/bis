@@ -120,6 +120,7 @@ input:-webkit-autofill:focus {
 
 .html-text h2,
 .html-text h3 {
+  clear: both;
   margin: 1.2em 0 0.4em;
   font-family: var(--font-display);
   font-weight: 700;
@@ -142,9 +143,14 @@ input:-webkit-autofill:focus {
 }
 
 .html-text hr {
+  clear: both;
   margin: 1.2em 0;
   border: 0;
   border-top: 1px solid var(--line);
+}
+
+.html-text {
+  display: flow-root;
 }
 
 .html-text img {
@@ -153,6 +159,28 @@ input:-webkit-autofill:focus {
   height: auto;
   margin: 0 0 0.5em;
   border-radius: 4px;
+}
+
+@media (min-width: 600px) {
+  .html-text img.size-small-left,
+  .html-text img.size-small-right {
+    max-width: 33%;
+  }
+
+  .html-text img.size-small-left {
+    float: left;
+    margin-right: 1em;
+  }
+
+  .html-text img.size-small-right {
+    float: right;
+    margin-left: 1em;
+  }
+
+  .html-text img.size-medium {
+    max-width: 50%;
+    margin-inline: auto;
+  }
 }
 
 .html-text > :first-child,

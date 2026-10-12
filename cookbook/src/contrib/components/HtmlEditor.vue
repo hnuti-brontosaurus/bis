@@ -1,5 +1,6 @@
 <script setup>
 import { EditorContent, useEditor } from "@tiptap/vue-3"
+import { BubbleMenu } from "@tiptap/vue-3/menus"
 import Image from "@tiptap/extension-image"
 import StarterKit from "@tiptap/starter-kit"
 import { NButton, NInput, NInputGroup, NPopover } from "naive-ui"
@@ -30,6 +31,29 @@ const props = defineProps({
 // The backend's sanitizer (api/cookbook/serializers.py) keeps exactly the
 // markup these extensions produce, so the two have to change together.
 // What `rich` and `uploadImage` add is kept only by `ArticleHTMLField`.
+// Stored as a class, so the page lays the image out the same way at any
+// screen width.
+const imageSizes = [
+  { size: "small-left", hint: "image_small_left" },
+  { size: "small-right", hint: "image_small_right" },
+  { size: "medium", hint: "image_medium" },
+  { size: "full", hint: "image_full" },
+]
+const SizedImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent(),
+      size: {
+        default: "small-left",
+        parseHTML: element =>
+          imageSizes.find(({ size }) => element.classList.contains(`size-${size}`))
+            ?.size,
+        renderHTML: ({ size }) => ({ class: `size-${size}` }),
+      },
+    }
+  },
+})
+
 const editor = useEditor({
   content: value.value ?? "",
   extensions: [
@@ -47,7 +71,7 @@ const editor = useEditor({
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" },
       },
     }),
-    ...(props.uploadImage ? [Image] : []),
+    ...(props.uploadImage ? [SizedImage] : []),
   ],
   onUpdate: ({ editor }) => (value.value = editor.isEmpty ? "" : editor.getHTML()),
 })
@@ -201,6 +225,32 @@ const insertLink = () => {
         />
       </template>
     </div>
+    <BubbleMenu
+      v-if="uploadImage"
+      :editor="editor"
+      plugin-key="imageSize"
+      :should-show="({ editor }) => editor.isActive('image')"
+    >
+      <div class="image-menu">
+        <n-button
+          v-for="option in imageSizes"
+          :key="option.hint"
+          size="tiny"
+          quaternary
+          :type="
+            editor.isActive('image', { size: option.size }) ? 'primary' : 'default'
+          "
+          @click="
+            editor
+              .chain()
+              .focus()
+              .updateAttributes('image', { size: option.size })
+              .run()
+          "
+          >{{ _.editor[option.hint] }}</n-button
+        >
+      </div>
+    </BubbleMenu>
     <EditorContent :editor="editor" class="content html-text" />
   </div>
 </template>
@@ -224,6 +274,16 @@ const insertLink = () => {
   padding: 2px 4px;
   border-bottom: 1px solid var(--line);
   background: var(--surface-muted);
+}
+
+.image-menu {
+  display: flex;
+  gap: 2px;
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .content :deep(.ProseMirror-selectednode) {
