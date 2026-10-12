@@ -37,14 +37,17 @@ class Recipe(ChangeMixin, BaseModel):
     difficulty_note = HTMLField(blank=True)
     is_public = m.BooleanField(default=False)
     # Denormalized cache of the allergens contributed by this recipe's
-    # ingredients. Kept in sync by signals in cookbook.signals (whenever a
-    # RecipeIngredient is added/removed, or an Ingredient's allergen set
-    # changes). Read by the API; not editable per-recipe.
+    # non-optional ingredients. Kept in sync by signals in cookbook.signals
+    # (whenever a RecipeIngredient is saved/removed, or an Ingredient's
+    # allergen set changes). Read by the API; not editable per-recipe.
     allergens = m.ManyToManyField(Allergen, related_name="recipes", blank=True)
 
     def refresh_allergens(self):
         ids = (
-            Allergen.objects.filter(ingredients__recipe_ingredients__recipe=self)
+            Allergen.objects.filter(
+                ingredients__recipe_ingredients__recipe=self,
+                ingredients__recipe_ingredients__is_optional=False,
+            )
             .values_list("id", flat=True)
             .distinct()
         )

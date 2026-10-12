@@ -921,10 +921,9 @@ class Command(BaseCommand):
                 ("one_pot", "v jednom hrnci"),
             ],
             "Postižení": [
-                ("gluten_free", "bez lepku"),
+                ("gluten_free_variant", "bezlepková varianta"),
                 ("low_legumes", "málo luštěnin"),
                 ("dia", "dia"),
-                ("no_soya", "bez sóji"),
             ],
             "Dle složení": [
                 ("with_meat", "s masem*"),

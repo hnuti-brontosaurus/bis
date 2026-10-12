@@ -121,8 +121,8 @@ def test_create_ingredient_groq_attaches_allergens(
 def test_recipe_allergen_ids_unions_ingredient_allergens(
     api_client, recipe, ingredient, unit, allergens
 ):
-    """Recipe.allergen_ids is a deduped union across the recipe's ingredients,
-    cached via signals on the Recipe.allergens M2M."""
+    """Recipe.allergen_ids is a deduped union across the recipe's non-optional
+    ingredients, cached via signals on the Recipe.allergens M2M."""
     from cookbook_categories.models import Allergen
 
     gluten = Allergen.objects.get(slug="gluten")
@@ -132,6 +132,8 @@ def test_recipe_allergen_ids_unions_ingredient_allergens(
     walnuts = ingredient.__class__.objects.create(name="vlašské ořechy")
     walnuts.allergens.add(nuts)
     ingredient.allergens.add(gluten)  # second source of gluten — must dedupe
+    soy_sauce = ingredient.__class__.objects.create(name="sójová omáčka")
+    soy_sauce.allergens.add(Allergen.objects.get(slug="soya"))
 
     response = api_client.patch(
         f"/api/cookbook/recipes/{recipe.id}/",
@@ -154,6 +156,13 @@ def test_recipe_allergen_ids_unions_ingredient_allergens(
                     "ingredient_id": walnuts.id,
                     "unit_id": unit.id,
                     "amount": 0.5,
+                },
+                {
+                    "order": 3,
+                    "ingredient_id": soy_sauce.id,
+                    "unit_id": unit.id,
+                    "amount": 0.1,
+                    "is_optional": True,
                 },
             ]
         },
