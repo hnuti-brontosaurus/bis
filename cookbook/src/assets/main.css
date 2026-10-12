@@ -118,6 +118,26 @@ input:-webkit-autofill:focus {
   padding-left: 1.4em;
 }
 
+.html-text h2,
+.html-text h3 {
+  margin: 1.2em 0 0.4em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.html-text h2 {
+  font-size: 1.45em;
+}
+
+.html-text h3 {
+  font-size: 1.15em;
+}
+
+.html-text > :first-child {
+  margin-top: 0;
+}
+
 .html-text li > p,
 .html-text > :last-child {
   margin-bottom: 0;

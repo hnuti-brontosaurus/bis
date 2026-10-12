@@ -89,7 +89,8 @@ useIngredientsStore().fetchAll()
 useUnitsStore().fetchAll()
 const { unboughtCount } = useCartSummed()
 
-const isActive = item => item.children?.some(child => child.key === route.name)
+const isActive = item =>
+  item.key === route.name || item.children?.some(child => child.key === route.name)
 
 const toggleDarkTheme = () => {
   settings.value.darkTheme = !useDarkTheme.value
@@ -124,7 +125,7 @@ const select = value => {
           quaternary
           class="navigation-link"
           :class="{ active: isActive(item) }"
-          @click="item.children && select(item.children[0].key)"
+          @click="select(item.children ? item.children[0].key : item.key)"
           >{{ item.label }}</n-button
         >
       </n-dropdown>

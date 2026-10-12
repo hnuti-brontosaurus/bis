@@ -414,6 +414,18 @@ cursor while a format caret is open.
 
 Single-line inputs take a `max_length` equal to the model's `max_length`.
 
+### Cookbook articles
+
+The cookbook menu entries under "Proč vegan?", "Tipy a triky" and "Přidej se"
+are `Article`s, one per `Article.Slug`; the slug is also the route name and the
+menu key, and the title comes from the `menu` translations. `ArticleViewSet`
+creates a row on first lookup instead of seeding it, so articles survive
+`testing_db dev`'s flush. Editors edit them in place on the page. Their
+`content` is the only HTML field that allows headings (`h2`, `h3`, via
+`ArticleHTMLField` and `HtmlEditor`'s `headings` prop). The `<h1>` is the page
+title. A new article needs a slug, a migration, a path in `router.js` and a
+menu entry.
+
 ### Cookbook theme
 
 `cookbook/src/composables/theme.js` is the single source of the palette (light

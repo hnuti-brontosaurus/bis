@@ -1,7 +1,7 @@
 """Cookbook access rules — visibility and write permissions in one place.
 
 Visibility (reads / list filtering):
-  * Ingredient: visible to everyone.
+  * Ingredient, Article: visible to everyone.
   * Chef: editors see all; everyone else sees only chefs with at least one
     `is_public` recipe, plus the viewer's own chef row.
   * Recipe: editors see all; chefs see is_public + own; others see is_public.
@@ -14,11 +14,13 @@ Writes:
   * Recipe: chef creates / edits / deletes own; editor edits / deletes any.
   * Menu: chef creates / edits / deletes own; editor edits / deletes any.
   * Recipe / ingredient / step photo: created by whoever may edit the recipe.
+  * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
 
 The viewset wires this in via `CookbookViewSetMixin`, which both sets
 `permission_classes` and applies `filter_visible` in `get_queryset`.
 """
 
+from cookbook.models.articles import Article
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
@@ -56,6 +58,7 @@ class CookbookAccessPermission(BasePermission):
         user = request.user
 
         if model in (
+            Article,
             Ingredient,
             Allergen,
             IngredientCategory,
@@ -117,7 +120,7 @@ class CookbookAccessPermission(BasePermission):
                 return True
             return obj.recipes.filter(is_public=True).exists()
 
-        # Ingredient and category models are world-readable.
+        # Article, Ingredient and category models are world-readable.
         return True
 
     def _can_write(self, request, view, obj):
@@ -140,7 +143,7 @@ class CookbookAccessPermission(BasePermission):
             return True
 
         if user.is_editor:
-            return model in (Recipe, Menu, *PHOTO_MODELS)
+            return model in (Article, Recipe, Menu, *PHOTO_MODELS)
 
         if model is Recipe:
             return self._matches(request, obj, "chef_id", user.chef.id)

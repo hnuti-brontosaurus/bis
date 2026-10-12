@@ -1,6 +1,19 @@
 import { createRouter, createWebHistory } from "vue-router"
 import { useAuthStore } from "@/data/auth.js"
 
+// Article slugs (backend `Article.Slug`, also the menu keys) and their paths.
+const articlePaths = {
+  manifest: "manifest",
+  how_to: "jak-zacit",
+  risks: "zdravotni-rizika",
+  where_to_go: "kam-dal",
+  faq: "caste-dotazy",
+  bronto: "vareni-na-akci",
+  dumpster_diving: "dumpster-diving",
+  zero_waste: "zero-waste",
+  join_us: "pridej-se",
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
@@ -81,6 +94,13 @@ const router = createRouter({
       meta: { requiresAuth: true, back: { name: "ingredients" } },
       component: () => import("@/views/EditIngredientView.vue"),
     },
+    ...Object.entries(articlePaths).map(([slug, path]) => ({
+      path: `/${path}/`,
+      name: slug,
+      props: { slug },
+      meta: { back: { name: "home" } },
+      component: () => import("@/views/ArticleView.vue"),
+    })),
   ],
 })
 

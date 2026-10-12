@@ -14,9 +14,11 @@ import { icon } from "@/contrib/composables/render.js"
 import { _ } from "@/composables/translations.js"
 
 const value = defineModel("value")
+const props = defineProps({ headings: { type: Boolean, default: false } })
 
 // The backend's sanitizer (api/cookbook/serializers.py) keeps exactly the
 // markup these extensions produce, so the two have to change together.
+// Headings are kept only by `ArticleHTMLField`.
 const editor = useEditor({
   content: value.value ?? "",
   extensions: [
@@ -24,7 +26,7 @@ const editor = useEditor({
       blockquote: false,
       code: false,
       codeBlock: false,
-      heading: false,
+      heading: props.headings && { levels: [2, 3] },
       horizontalRule: false,
       strike: false,
       underline: false,
@@ -44,7 +46,16 @@ watch(value, html => {
   if (html !== current) editor.value.commands.setContent(html ?? "")
 })
 
+const headingFormats = [2, 3].map(level => ({
+  name: "heading",
+  attributes: { level },
+  hint: `heading_${level}`,
+  label: `H${level}`,
+  toggle: chain => chain.toggleHeading({ level }),
+}))
+
 const formats = [
+  ...(props.headings ? headingFormats : []),
   { name: "bold", hint: "bold", icon: faBold, toggle: chain => chain.toggleBold() },
   {
     name: "italic",
@@ -87,15 +98,16 @@ const insertLink = () => {
     <div class="toolbar">
       <n-button
         v-for="format in formats"
-        :key="format.name"
+        :key="format.hint"
         size="tiny"
         quaternary
-        :type="editor.isActive(format.name) ? 'primary' : 'default'"
+        :type="editor.isActive(format.name, format.attributes) ? 'primary' : 'default'"
         :title="_.editor[format.hint]"
         :aria-label="_.editor[format.hint]"
-        :render-icon="icon(format.icon)"
+        :render-icon="format.icon && icon(format.icon)"
         @click="format.toggle(editor.chain().focus()).run()"
-      />
+        >{{ format.label }}</n-button
+      >
       <n-popover
         v-model:show="showLinkInput"
         trigger="manual"

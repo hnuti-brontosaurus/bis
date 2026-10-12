@@ -937,6 +937,12 @@ RecipeComment:
   name_plural: Komentáře receptu
   fields:
     recipe: Recept
+Article:
+  name: Článek
+  name_plural: Články
+  fields:
+    content: Obsah
+
 Menu:
   name: Jídelníček
   name_plural: Jídelníčky

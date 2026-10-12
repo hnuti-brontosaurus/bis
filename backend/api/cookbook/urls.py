@@ -11,6 +11,7 @@ from api.cookbook.views.categories import (
     UnitViewSet,
 )
 from api.cookbook.views.cookbook import (
+    ArticleViewSet,
     ChefViewSet,
     IngredientViewSet,
     MenuViewSet,
@@ -33,6 +34,7 @@ router.register(
 )
 router.register("recipe_step_photos", RecipeStepPhotoViewSet, "recipe_step_photos")
 router.register("menus", MenuViewSet, "menus")
+router.register("articles", ArticleViewSet, "articles")
 router.register("chefs", ChefViewSet, "chefs")
 router.register("units", UnitViewSet, "units")
 router.register("ingredients", IngredientViewSet, "ingredients")

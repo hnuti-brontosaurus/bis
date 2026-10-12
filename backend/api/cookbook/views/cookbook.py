@@ -1,6 +1,7 @@
 from api.cookbook.filters import MenuFilter, RecipeFilter
 from api.cookbook.permissions import CookbookViewSetMixin
 from api.cookbook.serializers import (
+    ArticleSerializer,
     ChefSerializer,
     IngredientSerializer,
     MenuSerializer,
@@ -9,6 +10,7 @@ from api.cookbook.serializers import (
     RecipeSerializer,
     RecipeStepPhotoUploadSerializer,
 )
+from cookbook.models.articles import Article
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
@@ -19,6 +21,7 @@ from cookbook.models.recipes import (
     RecipeStepPhoto,
 )
 from cookbook.services.ingredient_enrichment import enrich_ingredient
+from django.http import Http404
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import ModelViewSet
 
@@ -113,3 +116,27 @@ class IngredientViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
         instance = serializer.instance
         if enrich_ingredient(instance):
             instance.save()
+
+
+class ArticleViewSet(
+    CookbookViewSetMixin,
+    ChangeViewSetMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """The set of articles is fixed by `Article.Slug`, so a row is created
+    the first time its slug is looked up instead of being seeded — a seed
+    would not survive `testing_db dev`, which flushes the database."""
+
+    lookup_field = "slug"
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+
+    def get_object(self):
+        slug = self.kwargs["slug"]
+        if slug not in Article.Slug.values:
+            raise Http404
+        article, _ = Article.objects.get_or_create(slug=slug)
+        self.check_object_permissions(self.request, article)
+        return article

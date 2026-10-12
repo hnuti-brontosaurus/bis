@@ -31,6 +31,7 @@ import re
 from itertools import groupby
 
 import nh3
+from cookbook.models.articles import Article
 from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
 from cookbook.models.ingredients import Ingredient
@@ -63,21 +64,27 @@ BLANK = r"(?:\s|&nbsp;|\xa0|<br>)*"
 
 
 class SanitizedHTMLField(CharField):
+    tags = {"p", "br", "strong", "em", "ul", "ol", "li", "a"}
+
     def to_internal_value(self, data):
         html = nh3.clean(
             super().to_internal_value(data),
-            tags={"p", "br", "strong", "em", "ul", "ol", "li", "a"},
+            tags=self.tags,
             attributes={"a": {"href"}},
             set_tag_attribute_values={"a": {"target": "_blank"}},
         )
-        html = re.sub(rf"(<p>|<li>){BLANK}", r"\1", html)
-        html = re.sub(rf"{BLANK}(</p>|</li>)", r"\1", html)
-        html = re.sub(r"<(p|li)></\1>", "", html)
+        html = re.sub(rf"(<(?:p|li|h2|h3)>){BLANK}", r"\1", html)
+        html = re.sub(rf"{BLANK}(</(?:p|li|h2|h3)>)", r"\1", html)
+        html = re.sub(r"<(p|li|h2|h3)></\1>", "", html)
         html = re.sub(r"<(ul|ol)></\1>", "", html)
         html = re.sub(rf"<br>{BLANK}<br>", "<br>", html).strip()
         if not html and not self.allow_blank:
             self.fail("blank")
         return html
+
+
+class ArticleHTMLField(SanitizedHTMLField):
+    tags = SanitizedHTMLField.tags | {"h2", "h3"}
 
 
 class SanitizesHTML:
@@ -93,6 +100,15 @@ class ChefSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chef
         fields = ("id", "user_id", "name", "email", "photo", "is_editor")
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    content = ArticleHTMLField(allow_blank=True)
+
+    class Meta:
+        model = Article
+        fields = ("slug", "content")
+        read_only_fields = ("slug",)
 
 
 class CartSerializer(serializers.ModelSerializer):
