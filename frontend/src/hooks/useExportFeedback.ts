@@ -9,6 +9,4 @@ const getUri = ({ eventId }: Props) =>
     import.meta.env.VITE_API_BASE_URL ?? '/api/'
   }frontend/events/${eventId}/get_feedbacks/`
 
-const getName = ({ eventId }: Props) => `zpetna_vazba_${eventId}.xlsx`
-
-export const useExportFeedback = () => useExport(getUri, getName)
+export const useExportFeedback = () => useExport(getUri)

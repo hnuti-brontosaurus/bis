@@ -14,15 +14,9 @@ const getUri = ({ eventId, format }: Props) =>
   }frontend/events/${eventId}/get_participants_list/?formatting=${format}`
 
 /**
- * Generate name of the exported file
- */
-const getName = ({ eventId, format }: Props) =>
-  `ucastnicka_listina_${eventId}.${format}`
-
-/**
  * Export participants list from api
  * We don't use rtk-query because we don't want to cache the whole file
  */
 export const useExportParticipantsList = () => {
-  return useExport(getUri, getName)
+  return useExport(getUri)
 }

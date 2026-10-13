@@ -6,7 +6,7 @@ from copy import copy
 from datetime import date
 from itertools import zip_longest
 from pathlib import Path
-from shutil import copy2, make_archive
+from shutil import copy2
 from tempfile import TemporaryDirectory
 from threading import Lock
 from time import sleep
@@ -404,6 +404,13 @@ class XLSXWriter:
 executor = ThreadPoolExecutor(max_workers=1)
 
 
+def download(file, name):
+    # FileResponse keeps only what follows the last slash, and event names have them
+    return FileResponse(
+        open(file.name, "rb"), as_attachment=True, filename=name.replace("/", "-")
+    )
+
+
 @closes_db_connection
 def send_later(request, result, name):
     try:
@@ -421,13 +428,13 @@ def send_later(request, result, name):
 @admin.action(description="Exportuj data")
 def export_to_xlsx(model_admin, request, queryset):
     result = executor.submit(closes_db_connection(do_export_to_xlsx), queryset)
+    name = get_valid_filename(queryset.model._meta.verbose_name_plural)
     for __ in range(20):
         sleep(1)
         if result.done():
             file = result.result()
-            return FileResponse(open(file.name, "rb"))
+            return download(file, f"{name}.xlsx")
 
-    name = get_valid_filename(queryset.model._meta.verbose_name_plural)
     executor.submit(send_later, request, result, name)
     messages.warning(
         request,
@@ -435,9 +442,9 @@ def export_to_xlsx(model_admin, request, queryset):
     )
 
 
-def export_to_xlsx_response(queryset):
+def export_to_xlsx_response(queryset, name):
     file = do_export_to_xlsx(queryset)
-    return FileResponse(open(file.name, "rb"))
+    return download(file, f"{name}.xlsx")
 
 
 EXPORT_SERIALIZERS = {
@@ -532,6 +539,7 @@ def get_attendance_list_rows(ws):
 
 
 def get_attendance_list(event: Event, formatting, use_participants=False):
+    name = f"{'Účastnická' if use_participants else 'Prezenční'} listina {event.name}"
     if formatting == "xlsx":
         if use_participants:
             queryset = (
@@ -542,7 +550,7 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
                 state__in=["pending", "approved"], event_registration__event=event
             ).order_by("state", "created_at")
 
-        return export_to_xlsx_response(queryset)
+        return export_to_xlsx_response(queryset, name)
 
     assert formatting == "pdf"
     data = {
@@ -573,7 +581,7 @@ def get_attendance_list(event: Event, formatting, use_participants=False):
     HTML(string=html_content, base_url=str(template_path.parent)).write_pdf(
         tmp_pdf.name
     )
-    return FileResponse(open(tmp_pdf.name, "rb"), as_attachment=True)
+    return download(tmp_pdf, f"{name}.pdf")
 
 
 def export_files(event: Event):
@@ -581,7 +589,6 @@ def export_files(event: Event):
         path.mkdir()
         return path
 
-    file_name = f"Soubory {event.name}"
     with TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         if hasattr(event, "finance"):
@@ -618,9 +625,7 @@ def export_files(event: Event):
             for photo in event.record.photos.all():
                 copy2(photo.photo.path, photos_path)
 
-        file = NamedTemporaryFile(
-            mode="w", suffix=".zip", newline="", encoding="utf8", prefix=file_name + " "
-        )
+        file = NamedTemporaryFile(suffix=".zip")
 
         with ZipFile(file.name, "w", ZIP_DEFLATED) as zip_file:
             for root, dirs, files in os.walk(tmp_dir):
@@ -630,10 +635,7 @@ def export_files(event: Event):
                         os.path.relpath(os.path.join(root, _file), tmp_dir),
                     )
 
-        os.chdir(tmp_dir)
-        make_archive(file.name, "zip")
-
-    return FileResponse(open(file.name, "rb"))
+    return download(file, f"Soubory {event.name}.zip")
 
 
 def get_donation_confirmation(donor):

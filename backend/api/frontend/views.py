@@ -524,7 +524,7 @@ def get_feedbacks(request, event_id):
         return HttpResponseForbidden()
 
     feedbacks = EventFeedback.objects.filter(event=event)
-    return export.export_to_xlsx_response(feedbacks)
+    return export.export_to_xlsx_response(feedbacks, f"Zpětná vazba {event.name}")
 
 
 @extend_schema(
@@ -567,7 +567,7 @@ def export_users(request):
     queryset = filter_queryset_with_multiple_or_queries(User.objects.all(), queries)
     perms = Permissions(request.user, User, "backend")
     queryset = perms.filter_queryset(queryset)
-    return export.export_to_xlsx_response(queryset)
+    return export.export_to_xlsx_response(queryset, "Uživatelé")
 
 
 @extend_schema(
