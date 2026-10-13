@@ -4,7 +4,6 @@ import {
   FormSectionGroup,
   FormSubsection,
   Help,
-  ImagesUpload,
   InfoBox,
 } from 'components'
 import { ExternalButtonLink } from 'components/Button/Button'
@@ -14,6 +13,7 @@ import { HiExternalLink } from 'react-icons/hi'
 import { required } from 'utils/validationMessages'
 import { ExportFilesButton } from '../../components'
 import { EvidenceStepFormShape } from './CloseEventForm'
+import { AttendanceListPages, EventPhotos, FinanceReceipts } from './EventFiles'
 import styles from './EvidenceStep.module.scss'
 import { OptOutCheckbox } from './OptOutCheckbox'
 
@@ -81,13 +81,13 @@ export const EvidenceStep = ({
             }
           >
             <FormSubsection header="Fotky z akce" help={formTexts.photos.help}>
-              <ImagesUpload name="photos" image="photo" thumbnail="thumbnail" />
+              <EventPhotos eventId={eventId} />
             </FormSubsection>
             <FormSubsection
               header="Sken prezenční listiny"
               help="Povinné pro akce pobírající dotaci. Doporučené pro všechny ostatní."
             >
-              <ImagesUpload name="pages" image="page" />
+              <AttendanceListPages eventId={eventId} />
             </FormSubsection>
           </FormSection>
           <FormSection header="Finance">
@@ -95,7 +95,7 @@ export const EvidenceStep = ({
               header="Sken dokladů"
               help="Povinné pro vybrané akce. Pokud jste mezi vybranými akcemi, bude vás ústředí HB informovat."
             >
-              <ImagesUpload name="receipts" image="receipt" />
+              <FinanceReceipts eventId={eventId} />
             </FormSubsection>
             <FormSubsection
               header="Číslo účtu k proplacení dokladů"
