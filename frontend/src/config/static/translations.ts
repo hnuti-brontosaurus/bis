@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: c29141130e6e33a9
+// source-hash: 4b8cded50053cecd
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -68,6 +68,8 @@ export const user = {
   subscription_status: 'Stav odběru newsletteru',
   last_after_event_email: 'Poslední e-mail po akci',
   is_contact_information_verified: 'Ověřil své kontaktní údaje?',
+  is_bot: 'Bot (MCP)',
+  sees_personal_data_over_mcp: 'Vidí přes MCP osobní údaje',
 } as const
 
 export const userClosePerson = {
@@ -222,14 +224,6 @@ export const qualificationNote = {
   _name: 'Poznámka ke kvalifikacím uživatele',
   _name_plural: 'Poznámka ke kvalifikacím uživatele',
   education_members_note: 'Poznámka',
-} as const
-
-export const mCPAccess = {
-  _name: 'Přístup k MCP',
-  _name_plural: 'Přístup k MCP',
-  email: 'E-mail účtu',
-  is_bot: 'Bot',
-  sees_personal_data: 'Vidí osobní údaje',
 } as const
 
 export const event = {

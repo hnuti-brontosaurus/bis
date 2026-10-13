@@ -57,6 +57,8 @@ User:
     subscription_status: Stav odběru newsletteru
     last_after_event_email: Poslední e-mail po akci
     is_contact_information_verified: Ověřil své kontaktní údaje?
+    is_bot: Bot (MCP)
+    sees_personal_data_over_mcp: Vidí přes MCP osobní údaje
 
 
 UserClosePerson:
@@ -200,14 +202,6 @@ QualificationNote:
   name_plural: Poznámky ke kvalifikacím uživatele
   fields:
     education_members_note: Poznámka
-
-MCPAccess:
-  name: Přístup k MCP
-  name_plural: Přístupy k MCP
-  fields:
-    email: E-mail účtu
-    is_bot: Bot
-    sees_personal_data: Vidí osobní údaje
 
 Event:
   name: Akce

@@ -1,7 +1,7 @@
 """GraphQL schema for BIS MCP tools.
 
 Health data is never exposed. Personal data (names, emails, phones, birthdays,
-addresses, notes) is exposed only to accounts whose MCPAccess allows it, set
+addresses, notes) is exposed only to accounts with sees_personal_data_over_mcp, set
 for an LLM provider with a data processing agreement; every other account,
 staff included, sees people as anonymous UserType rows (id, birth year,
 region, memberships, ...). Documents

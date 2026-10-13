@@ -302,16 +302,15 @@ assigning `other.field` — see `User.merge_with`.
 `/mcp` exposes one GraphQL `query` tool (`bis/mcp.py`, schema in
 `bis/mcp_schema.py`) for staff and bot accounts. The game book and cookbook
 are deliberately left out. What an account may see depends on the data
-processing agreement behind its LLM, so it is set per email by an `MCPAccess`
-row (admin, superusers only): `is_bot` (no roles, sees every row, no inbox)
-and `sees_personal_data`. Migration `bis/0063` adds the Brontobot (ollama, no
-DPA, only `is_bot`) and the chatbot (business ChatGPT with a DPA,
-both).
+processing agreement behind its LLM, so it is set per user by two flags in
+the user admin's "Interní data" (superusers only): `is_bot` (no roles, sees
+every row, no inbox) and `sees_personal_data_over_mcp`. The Brontobot (ollama,
+no DPA) has only `is_bot`, the chatbot (business ChatGPT with a DPA) both.
 
 - **Health data** is never exposed: `health_issues` / `behaviour_issues` are not
   in the schema, and answers to health questions are null for everyone.
 - **Personal data** (names, emails, phones, birthdays, addresses, contacts,
-  free-text notes) is only for accounts with `sees_personal_data`. Everyone
+  free-text notes) is only for accounts with `sees_personal_data_over_mcp`. Everyone
   else, staff included, sees people as anonymous `UserType` rows (id, birth
   year, region).
 - Those fields are in the schema for everyone, tagged by `personal()`; the

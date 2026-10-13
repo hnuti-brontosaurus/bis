@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from bis.models import Location, MCPAccess, User
+from bis.models import Location, User
 from categories.models import (
     EventCategory,
     EventGroupCategory,
@@ -12,20 +12,18 @@ from django.test import RequestFactory
 from event.models import Event
 
 
-def make_user(email):
+def make_user(email, **fields):
     return User.objects.create(
         email=email,
         first_name="Test",
         last_name="User",
         _str="Test User",
+        **fields,
     )
 
 
 def make_bot(email, sees_personal_data=False):
-    MCPAccess.objects.create(
-        email=email, is_bot=True, sees_personal_data=sees_personal_data
-    )
-    return make_user(email)
+    return make_user(email, is_bot=True, sees_personal_data_over_mcp=sees_personal_data)
 
 
 def make_event(name):
@@ -60,18 +58,6 @@ def make_info(user):
     request = RequestFactory().get("/mcp")
     request.user = user
     return type("Info", (), {"context": {"request": request}})()
-
-
-@pytest.mark.django_db
-def test_is_bot_follows_mcp_access_case_insensitively():
-    MCPAccess.objects.create(email="Bot@Example.com", is_bot=True)
-
-    assert make_user("bot@example.com").is_bot
-
-
-@pytest.mark.django_db
-def test_is_bot_false_for_regular_user():
-    assert not make_user("member@example.com").is_bot
 
 
 @pytest.mark.django_db

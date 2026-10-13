@@ -13,7 +13,6 @@ from bis.models import (
     LocationContactPerson,
     LocationPatron,
     LocationPhoto,
-    MCPAccess,
     Membership,
     Qualification,
     QualificationNote,
@@ -83,7 +82,7 @@ class Permissions:
         return self.model._meta.app_label in ["cookbook", "cookbook_categories"]
 
     def is_superuser_only(self):
-        return self.is_game_book() or self.is_cookbook() or self.model is MCPAccess
+        return self.is_game_book() or self.is_cookbook()
 
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():
