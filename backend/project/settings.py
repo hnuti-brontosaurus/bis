@@ -275,10 +275,13 @@ DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
         '{start__year: 2024, category__slug: "public__volunteering"}. '
         "`ordering` takes Django order_by fields. At most 1000 rows per request; page with offset.\n\n"
         "EXPORT: Set export=true to export matching data as XLSX (with full PII) to your email.\n"
-        "The bot account has no inbox to read: it must pass export_to, the email of a person "
-        "who can see all data.\n\n"
-        "PII (names, emails, phones, birthdays, addresses) is never returned; "
-        "people are anonymous users with a birth year and region.\n"
+        "The bot accounts have no inbox to read: they must pass export_to, the email of a "
+        "person who can see all data.\n\n"
+        "Health data is never returned. Personal data (names, emails, phones, birthdays, "
+        "addresses, notes) is returned only to accounts allowed to see it; querying, filtering "
+        "or ordering by it fails for everyone else, who see people as anonymous users with a birth year "
+        "and region. Answers to questionnaire and feedback questions that ask for health or "
+        "personal data the account cannot see are null.\n"
         "Results are limited to what the authenticated user has permission to view.\n\n"
         "LOGS: the `logs` tool searches the application logs (superusers only). "
         'Start with group_by: ["message"] to see what is there.'

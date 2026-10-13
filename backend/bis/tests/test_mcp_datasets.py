@@ -3,7 +3,7 @@ import datetime
 import pytest
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership
-from bis.tests.test_mcp_visibility import make_event, make_user
+from bis.tests.test_mcp_visibility import make_bot, make_event, make_user
 from categories.models import (
     AdministrationUnitCategory,
     DonationSourceCategory,
@@ -94,7 +94,8 @@ def one_of_each(db):
 
 @pytest.fixture
 def run(schema):
-    bot = make_user("brontosaurus.bot@gmail.com")
+    # only an account that sees personal data may select every field
+    bot = make_bot("brontosaurus.chatbot@lomic.cz", sees_personal_data=True)
 
     def _run(query, export=False):
         request = RequestFactory().get("/mcp")

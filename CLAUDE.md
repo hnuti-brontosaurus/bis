@@ -300,29 +300,51 @@ assigning `other.field` — see `User.merge_with`.
 
 ### MCP server
 `/mcp` exposes one GraphQL `query` tool (`bis/mcp.py`, schema in
-`bis/mcp_schema.py`) for staff and the Brontobot account. The one rule is **no
-PII**: names, emails (organisation ones included), phones, birthdays and
-addresses (only the region is kept) never appear in results. People are
-anonymous `UserType` rows (id, birth year, region). Filter-based oracles (`filters: {user__email__startswith: …}`) are accepted.
-The game book and cookbook are deliberately left out.
+`bis/mcp_schema.py`) for staff and bot accounts. The game book and cookbook
+are deliberately left out. What an account may see depends on the data
+processing agreement behind its LLM, so it is set per email by an `MCPAccess`
+row (admin, superusers only): `is_bot` (no roles, sees every row, no inbox)
+and `sees_personal_data`. Migration `bis/0063` adds the Brontobot (ollama, no
+DPA, only `is_bot`) and the chatbot (business ChatGPT with a DPA,
+both).
 
+- **Health data** is never exposed: `health_issues` / `behaviour_issues` are not
+  in the schema, and answers to health questions are null for everyone.
+- **Personal data** (names, emails, phones, birthdays, addresses, contacts,
+  free-text notes) is only for accounts with `sees_personal_data`. Everyone
+  else, staff included, sees people as anonymous `UserType` rows (id, birth
+  year, region).
+- Those fields are in the schema for everyone, tagged by `personal()`; the
+  `HidePersonalData` extension adds a validation rule that rejects them for
+  any other account, so the query fails instead of returning nulls.
+- Filters, ordering and aggregate paths may only walk fields the account can
+  see (`_check_lookup`, `_aggregate_expression`): a filter on a hidden value is
+  an oracle for it. `birth_year` is an alias for `birthday__year`.
 - Person models (`User`, `EventApplication`, `Donor`, the address types) list
   their fields explicitly, so a new model field stays hidden until reviewed.
   Other models use `exclude=`.
-- `aggregate` group/sum paths may only walk fields the schema exposes
-  (`EXPOSED_FIELDS`), so grouping cannot print a hidden value. `birth_year` is
-  an alias for `birthday__year`.
-- `export=true` emails a full-PII XLSX to the signed-in user. The bot must
+- Questionnaire `Question`s and feedback `Inquiry`s carry a `sensitivity`
+  (none / personal / health) that Groq assigns (`common/sensitivity.py`) right
+  after a question is saved with new text, unless an identical question is
+  already classified; `nightly` retries the rest via `classify_questions`.
+  Distinct questions go in batches of 50, keyed by id: gpt-oss-120b allows
+  8K tokens per minute and 200K per day, which one call per question would
+  exhaust with the system prompt alone. The existing questions were classified
+  once into data migrations (`questionnaire/0014`, `feedback/0022`). An
+  unclassified question hides its answers from everyone. Answers and replies
+  are masked per row by `_answer_visible`, aggregated through the same
+  condition, and never filterable.
+- `export=true` emails a full-PII XLSX to the signed-in user. A bot must
   instead name `export_to`, which has to belong to a `can_see_all` person
-  other than the bot, so whoever drives the bot cannot route PII to an
+  other than a bot, so whoever drives the bot cannot route PII to an
   arbitrary inbox. Nobody else may pass `export_to`.
 - Exports only work for models that are in
   `EXPORT_SERIALIZERS` in `xlsx_export/export.py`. Emailed exports go through
   `SavedFile.store`, which puts each file in a random directory: `/media` is
   served without authentication, so the directory name is the only thing
   keeping the file private. `nightly` deletes them after 14 days.
-- `bis/tests/test_mcp_schema.py` denylists PII field names across the schema.
-  Add to `ALLOWED` only after deciding the field is not PII.
+- `bis/tests/test_mcp_schema.py` requires every PII-named field to be tagged
+  `personal()`. Add to `ALLOWED` only after deciding the field is not PII.
 
 ### Logs
 `bis/logs.py` writes one JSON line per record to `LOG_DIR`

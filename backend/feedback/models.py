@@ -1,4 +1,5 @@
 from bis.models import User
+from common.sensitivity import Sensitivity
 from django.contrib.gis.db import models as m
 from django.db.models import CASCADE, PROTECT
 from event.models import Event
@@ -59,6 +60,9 @@ class Inquiry(m.Model):
     order = m.PositiveIntegerField(default=0)
     feedback_form = m.ForeignKey(
         FeedbackForm, on_delete=CASCADE, related_name="inquiries"
+    )
+    sensitivity = m.CharField(
+        max_length=15, choices=Sensitivity.choices, null=True, blank=True
     )
 
     class Meta:

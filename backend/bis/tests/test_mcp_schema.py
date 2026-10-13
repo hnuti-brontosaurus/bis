@@ -2,10 +2,15 @@ import datetime
 
 import pytest
 from bis.models import User
-from bis.tests.test_mcp_visibility import make_event, make_user
+from bis.tests.test_mcp_visibility import make_bot, make_event, make_user
 from categories.models import RoleCategory
+from common.sensitivity import Sensitivity
 from django.test import RequestFactory
-from event.models import EventRecord
+from event.models import EventRecord, EventRegistration
+from questionnaire.models import Answer, EventApplication, Question, Questionnaire
+
+BOT = "brontosaurus.bot@gmail.com"
+CHATBOT = "brontosaurus.chatbot@lomic.cz"
 
 PII_FIELDS = {
     "firstName",
@@ -20,8 +25,6 @@ PII_FIELDS = {
     "address",
     "zipCode",
     "city",
-    "healthIssues",
-    "behaviourIssues",
     "contactName",
     "contactPhone",
     "contactEmail",
@@ -29,9 +32,17 @@ PII_FIELDS = {
     "info",
     "ico",
     "bankAccountNumber",
+    "officeWorkersNote",
+    "educationMembersNote",
+    "applicantNote",
+    "organizersNote",
+    "fundraisersNote",
 }
 
-# The `address` objects carry only the region; street/city/zipCode stay denied.
+HEALTH_FIELDS = {"healthIssues", "behaviourIssues"}
+
+# The `address` objects only lead to the region and the personal street,
+# city and zipCode.
 ALLOWED = {
     ("UserType", "address"),
     ("EventApplicationType", "address"),
@@ -39,9 +50,6 @@ ALLOWED = {
     ("AdministrationSubUnitType", "address"),
     ("AdministrationUnitType", "bankAccountNumber"),
     ("OfferedHelpType", "info"),
-    ("UserType", "healthIssues"),
-    ("UserType", "behaviourIssues"),
-    ("EventApplicationType", "healthIssues"),
 }
 
 
@@ -56,10 +64,16 @@ def schema(db):
 
 
 @pytest.fixture
-def run(schema):
-    def _run(query, export=False):
+def bots(db):
+    make_bot(BOT)
+    make_bot(CHATBOT, sees_personal_data=True)
+
+
+@pytest.fixture
+def run(schema, bots):
+    def _run(query, export=False, email=BOT):
         request = RequestFactory().get("/mcp")
-        request.user = make_user("brontosaurus.bot@gmail.com")
+        request.user = User.objects.filter(email=email).first() or make_user(email)
         result = schema.execute_sync(
             query,
             context_value={"request": request, "_export": export, "_export_qs": {}},
@@ -69,12 +83,26 @@ def run(schema):
     return _run
 
 
-def test_schema_exposes_no_pii(schema):
+def test_schema_marks_every_pii_field_personal(schema):
+    from bis.mcp_schema import PERSONAL
+
+    leaks = [
+        (type_.name, field_name)
+        for type_ in schema._schema.type_map.values()
+        for field_name, field in getattr(type_, "fields", {}).items()
+        if field_name in PII_FIELDS
+        and (type_.name, field_name) not in ALLOWED
+        and not field.extensions["strawberry-definition"].metadata.get(PERSONAL)
+    ]
+    assert leaks == []
+
+
+def test_schema_exposes_no_health_data(schema):
     leaks = [
         (type_.name, field_name)
         for type_ in schema._schema.type_map.values()
         for field_name in getattr(type_, "fields", {})
-        if field_name in PII_FIELDS and (type_.name, field_name) not in ALLOWED
+        if field_name in HEALTH_FIELDS
     ]
     assert leaks == []
 
@@ -128,13 +156,13 @@ def test_aggregate_groups_users_by_birth_year(run):
             birthday=datetime.date(1999, month, 1)
         )
 
-    result = run(
-        "{ aggregate(dataset: USERS, filters: {birthday__isnull: false},"
-        ' groupBy: ["birth_year"]) }'
-    )
+    result = run('{ aggregate(dataset: USERS, groupBy: ["birth_year"]) }')
 
     assert result.errors is None
-    assert result.data["aggregate"] == [{"birth_year": 1999, "count": 2}]
+    assert result.data["aggregate"] == [
+        {"birth_year": 1999, "count": 2},
+        {"birth_year": None, "count": 2},
+    ]
 
 
 @pytest.mark.parametrize(
@@ -156,6 +184,116 @@ def test_aggregate_rejects_hidden_paths(run, path):
     assert "Invalid path" in result.errors[0].message
 
 
+@pytest.mark.parametrize("email", [BOT, "office@example.com"])
+def test_personal_fields_need_mcp_access_to_them(run, email):
+    make_office_worker("office@example.com")
+
+    result = run("{ users { id email address { city } } }", email=email)
+
+    assert [error.message for error in result.errors] == [
+        "UserType.email is personal data, not available to this account.",
+        "UserAddressType.city is personal data, not available to this account.",
+    ]
+
+
+def test_chatbot_reads_filters_and_orders_by_personal_fields(run):
+    make_user("someone@example.com")
+
+    result = run(
+        '{ users(filters: {email__startswith: "someone"}, ordering: ["-last_name"])'
+        " { email firstName } }",
+        email=CHATBOT,
+    )
+
+    assert result.errors is None
+    assert result.data["users"] == [
+        {"email": "someone@example.com", "firstName": "Test"}
+    ]
+
+
+@pytest.mark.parametrize(
+    "email, arguments",
+    [
+        (BOT, 'filters: {email__startswith: "a"}'),
+        (BOT, 'filters: {applications__first_name: "Test"}'),
+        (BOT, 'ordering: ["-last_name"]'),
+        (CHATBOT, "filters: {health_issues__isnull: true}"),
+        (CHATBOT, 'filters: {applications__answers__answer: "x"}'),
+    ],
+)
+def test_filters_and_ordering_walk_only_visible_fields(run, email, arguments):
+    result = run(f"{{ users({arguments}) {{ id }} }}", email=email)
+
+    assert "is not exposed" in result.errors[0].message
+
+
+def test_filters_accept_lookups_after_a_relation(run):
+    make_event("Akce")
+
+    result = run(
+        "{ events(filters: {location__isnull: false, start__year__gte: 2026}) { name } }"
+    )
+
+    assert result.errors is None
+    assert result.data["events"] == [{"name": "Akce"}]
+
+
+@pytest.fixture
+def answers(db):
+    registration = EventRegistration.objects.create(event=make_event("Akce"))
+    questionnaire = Questionnaire.objects.create(event_registration=registration)
+    application = EventApplication.objects.create(
+        event_registration=registration,
+        state="pending",
+        first_name="Test",
+        last_name="User",
+    )
+    sensitivities = [
+        Sensitivity.NONE,
+        Sensitivity.PERSONAL,
+        Sensitivity.HEALTH,
+        None,
+    ]
+    for order, sensitivity in enumerate(sensitivities):
+        question = Question.objects.create(
+            questionnaire=questionnaire, question=f"Otázka {order}", order=order
+        )
+        Question.objects.filter(id=question.id).update(sensitivity=sensitivity)
+        Answer.objects.create(
+            question=question, application=application, answer=f"Odpověď {order}"
+        )
+
+
+@pytest.mark.parametrize(
+    "email, visible",
+    [
+        (BOT, ["Odpověď 0", None, None, None]),
+        (CHATBOT, ["Odpověď 0", "Odpověď 1", None, None]),
+    ],
+)
+def test_answers_show_only_visible_sensitivities(run, answers, email, visible):
+    result = run("{ eventApplications { answers { answer data } } }", email=email)
+
+    assert result.errors is None
+    [application] = result.data["eventApplications"]
+    assert [answer["answer"] for answer in application["answers"]] == visible
+
+
+def test_aggregate_nulls_hidden_answers(run, answers):
+    result = run(
+        "{ aggregate(dataset: EVENT_APPLICATIONS,"
+        ' groupBy: ["answers__question__order", "answers__answer"]) }'
+    )
+
+    assert result.errors is None
+    assert [row["answers__answer"] for row in result.data["aggregate"]] == [
+        "Odpověď 0",
+        None,
+        None,
+        None,
+    ]
+
+
 def test_limit_is_capped(run):
     result = run("{ events(limit: 1001) { id } }")
 
@@ -173,7 +311,7 @@ def tools(db):
     from bis.mcp import BISTools
 
     request = RequestFactory().get("/mcp")
-    request.user = make_user("brontosaurus.bot@gmail.com")
+    request.user = make_bot(BOT)
     return BISTools(request=request)
 
 
@@ -289,7 +427,7 @@ def test_person_export_goes_to_own_email_and_rejects_export_to(
     )
 
     assert [email for _, email, _ in submitted] == ["office@example.com"]
-    assert rejected == "Error: export_to is only for the bot account."
+    assert rejected == "Error: export_to is only for the bot accounts."
 
 
 def test_export_is_saved_and_emailed_under_its_name(

@@ -13,6 +13,7 @@ from bis.models import (
     LocationContactPerson,
     LocationPatron,
     LocationPhoto,
+    MCPAccess,
     Membership,
     Qualification,
     QualificationNote,
@@ -81,6 +82,9 @@ class Permissions:
     def is_cookbook(self):
         return self.model._meta.app_label in ["cookbook", "cookbook_categories"]
 
+    def is_superuser_only(self):
+        return self.is_game_book() or self.is_cookbook() or self.model is MCPAccess
+
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():
             return queryset
@@ -102,7 +106,7 @@ class Permissions:
         # this is used only for disabling whole admin model
         if self.source == "frontend":
             return True
-        if self.is_game_book() or self.is_cookbook():
+        if self.is_superuser_only():
             return self.user.is_superuser
 
         if self.model in [
@@ -142,7 +146,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book() or self.is_cookbook():
+        if self.is_superuser_only():
             return False
 
         if self.user.is_office_worker:
@@ -232,7 +236,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book() or self.is_cookbook():
+        if self.is_superuser_only():
             return False
 
         if self.user.is_office_worker:
@@ -312,7 +316,7 @@ class Permissions:
             return False
         if self.user.is_superuser:
             return True
-        if self.is_game_book() or self.is_cookbook():
+        if self.is_superuser_only():
             return False
 
         if self.user.is_office_worker:

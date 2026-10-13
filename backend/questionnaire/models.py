@@ -1,6 +1,7 @@
 from bis.models import User
 from categories.models import PronounCategory
 from common.abstract_models import BaseAddress, BaseContact
+from common.sensitivity import Sensitivity
 from django.contrib.gis.db import models as m
 from django.db.models import CASCADE, PROTECT
 from event.models import Event, EventRegistration
@@ -107,6 +108,9 @@ class Question(m.Model):
     order = m.PositiveIntegerField(default=0)
     questionnaire = m.ForeignKey(
         Questionnaire, on_delete=CASCADE, related_name="questions"
+    )
+    sensitivity = m.CharField(
+        max_length=15, choices=Sensitivity.choices, null=True, blank=True
     )
 
     class Meta:

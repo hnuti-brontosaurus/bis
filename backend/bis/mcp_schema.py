@@ -1,8 +1,14 @@
 """GraphQL schema for BIS MCP tools.
 
-Everything is exposed except PII: names, emails, phones, birthdays, addresses
-and documents or photos that carry them. People are still reachable
-as anonymous UserType rows (id, birth year, region, memberships, ...).
+Health data is never exposed. Personal data (names, emails, phones, birthdays,
+addresses, notes) is exposed only to accounts whose MCPAccess allows it, set
+for an LLM provider with a data processing agreement; every other account,
+staff included, sees people as anonymous UserType rows (id, birth year,
+region, memberships, ...). Documents
+and photos that carry personal data are left out for everyone.
+
+Filters, ordering and aggregate paths may only touch fields the account can
+see, since matching on a value reveals it as surely as returning it.
 """
 
 from __future__ import annotations
@@ -54,9 +60,21 @@ from categories.models import (
     RoleCategory,
     TeamRoleCategory,
 )
+from common.sensitivity import Sensitivity
 from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist, FieldError
-from django.db.models import Avg, Count, DateField, F, JSONField, Max, Min, Sum
+from django.db.models import (
+    Avg,
+    Case,
+    Count,
+    DateField,
+    F,
+    JSONField,
+    Max,
+    Min,
+    Sum,
+    When,
+)
 from donations.models import Donation, Donor, DonorEvent, FundraisingCampaign, Pledge
 from event.models import (
     Event,
@@ -68,8 +86,10 @@ from event.models import (
     VIPEventPropagation,
 )
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
+from graphql import GraphQLError, ValidationRule
 from opportunities.models import OfferedHelp, Opportunity
 from other.models import UserTag
+from phonenumber_field.modelfields import PhoneNumberField
 from questionnaire.models import (
     Answer,
     EventApplication,
@@ -78,6 +98,8 @@ from questionnaire.models import (
     Questionnaire,
 )
 from regions.models import Region
+from strawberry import auto
+from strawberry.extensions import SchemaExtension
 from strawberry.scalars import JSON
 from strawberry_django.fields.types import field_type_map
 from strawberry_django.optimizer import DjangoOptimizerExtension
@@ -86,6 +108,45 @@ from tinymce.models import HTMLField
 MAX_ROWS = 1000
 
 field_type_map[HTMLField] = str
+field_type_map[PhoneNumberField] = str
+
+PERSONAL = "personal"
+
+
+def visible_sensitivities(user):
+    if user.sees_personal_data_over_mcp:
+        return [Sensitivity.NONE, Sensitivity.PERSONAL]
+    return [Sensitivity.NONE]
+
+
+def personal():
+    return strawberry_django.field(
+        metadata={PERSONAL: True},
+        description="Personal data, not available to every account.",
+    )
+
+
+class _PersonalDataRule(ValidationRule):
+    def enter_field(self, node, *args):
+        field = self.context.get_field_def()
+        definition = field and field.extensions.get("strawberry-definition")
+        if definition and definition.metadata.get(PERSONAL):
+            name = f"{self.context.get_parent_type().name}.{node.name.value}"
+            self.report_error(
+                GraphQLError(
+                    f"{name} is personal data, not available to this account.",
+                    node,
+                )
+            )
+
+
+class HidePersonalData(SchemaExtension):
+    def on_operation(self):
+        if not self.execution_context.context[
+            "request"
+        ].user.sees_personal_data_over_mcp:
+            self.execution_context.validation_rules += (_PersonalDataRule,)
+        yield
 
 
 def _media_url(file):
@@ -130,7 +191,7 @@ class RegionType:
 
 
 # Person models list their fields explicitly, so a field added to the model
-# later stays hidden until someone decides it is not PII.
+# later stays hidden until someone decides whether it is personal data.
 
 
 @strawberry_django.type(
@@ -141,12 +202,18 @@ class RegionType:
         "date_joined",
         "subscription_status",
         "is_contact_information_verified",
-        "office_workers_note",
-        "health_issues",
-        "behaviour_issues",
     ],
 )
 class UserType:
+    office_workers_note: auto = personal()
+    first_name: auto = personal()
+    last_name: auto = personal()
+    nickname: auto = personal()
+    birth_name: auto = personal()
+    vokativ: auto = personal()
+    phone: auto = personal()
+    email: auto = personal()
+    birthday: auto = personal()
     health_insurance_company: HealthInsuranceCompanyType | None
     pronoun: PronounCategoryType | None
     roles: list[RoleCategoryType]
@@ -170,6 +237,9 @@ class UserType:
 @strawberry_django.type(UserAddress, fields=["region"])
 class UserAddressType:
     region: RegionType | None
+    street: auto = personal()
+    city: auto = personal()
+    zip_code: auto = personal()
 
 
 @strawberry_django.type(UserTag, exclude=["users"])
@@ -191,8 +261,9 @@ class QualificationType:
     approved_by: UserType | None
 
 
-@strawberry_django.type(QualificationNote, fields="__all__")
+@strawberry_django.type(QualificationNote, exclude=["education_members_note"])
 class QualificationNoteType:
+    education_members_note: auto = personal()
     user: UserType
     created_by: UserType
 
@@ -252,6 +323,8 @@ class AdministrationSubUnitAddressType:
     exclude=["gps_location", "phone", "email", "_history"],
 )
 class AdministrationSubUnitType:
+    phone: auto = personal()
+    email: auto = personal()
     main_leader: UserType
     sub_leaders: list[UserType]
     address: AdministrationSubUnitAddressType | None
@@ -271,6 +344,8 @@ class AdministrationSubUnitType:
     ],
 )
 class AdministrationUnitType:
+    phone: auto = personal()
+    email: auto = personal()
     category: AdministrationUnitCategoryType
     chairman: UserType | None
     vice_chairman: UserType | None
@@ -294,18 +369,38 @@ class FeedbackFormType:
     inquiries: list[InquiryType]
 
 
-@strawberry_django.type(Inquiry, fields="__all__")
+@strawberry_django.type(Inquiry, exclude=["sensitivity"])
 class InquiryType:
     replies: list[ReplyType]
 
 
-@strawberry_django.type(Reply, fields="__all__")
+@strawberry_django.type(Reply, fields=["id", "feedback"])
 class ReplyType:
     inquiry: InquiryType
+
+    @strawberry_django.field(
+        only=["reply", "inquiry__sensitivity"], select_related=["inquiry"]
+    )
+    def reply(self, info: strawberry.Info) -> str | None:
+        return self.reply if _answer_visible(info, self.inquiry) else None
+
+    @strawberry_django.field(
+        only=["value", "inquiry__sensitivity"], select_related=["inquiry"]
+    )
+    def value(self, info: strawberry.Info) -> JSON | None:
+        return self.value if _answer_visible(info, self.inquiry) else None
+
+    @strawberry_django.field(
+        only=["data", "inquiry__sensitivity"], select_related=["inquiry"]
+    )
+    def data(self, info: strawberry.Info) -> JSON | None:
+        return self.data if _answer_visible(info, self.inquiry) else None
 
 
 @strawberry_django.type(EventFeedback, exclude=["name", "email"])
 class EventFeedbackType:
+    name: auto = personal()
+    email: auto = personal()
     event: EventType
     user: UserType | None
     replies: list[ReplyType]
@@ -313,6 +408,7 @@ class EventFeedbackType:
 
 @strawberry_django.type(EventFinance, exclude=["bank_account_number", "budget"])
 class EventFinanceType:
+    bank_account_number: auto = personal()
     grant_category: GrantCategoryType | None
 
 
@@ -334,6 +430,10 @@ class EventPropagationImageType:
     ],
 )
 class EventPropagationType:
+    organizers: auto = personal()
+    contact_name: auto = personal()
+    contact_phone: auto = personal()
+    contact_email: auto = personal()
     diets: list[DietCategoryType]
     images: list[EventPropagationImageType]
 
@@ -343,12 +443,31 @@ class VIPEventPropagationType:
     pass
 
 
-@strawberry_django.type(Answer, fields="__all__")
+def _answer_visible(info, question):
+    """Answers are shown only once their question is classified, see
+    common/sensitivity.py."""
+    user = info.context["request"].user
+    return question.sensitivity in visible_sensitivities(user)
+
+
+@strawberry_django.type(Answer, fields=["id", "application"])
 class AnswerType:
     question: QuestionType
 
+    @strawberry_django.field(
+        only=["answer", "question__sensitivity"], select_related=["question"]
+    )
+    def answer(self, info: strawberry.Info) -> str | None:
+        return self.answer if _answer_visible(info, self.question) else None
 
-@strawberry_django.type(Question, fields="__all__")
+    @strawberry_django.field(
+        only=["data", "question__sensitivity"], select_related=["question"]
+    )
+    def data(self, info: strawberry.Info) -> JSON | None:
+        return self.data if _answer_visible(info, self.question) else None
+
+
+@strawberry_django.type(Question, exclude=["sensitivity"])
 class QuestionType:
     answers: list[AnswerType]
 
@@ -361,6 +480,9 @@ class QuestionnaireType:
 @strawberry_django.type(EventApplicationAddress, fields=["region"])
 class EventApplicationAddressType:
     region: RegionType | None
+    street: auto = personal()
+    city: auto = personal()
+    zip_code: auto = personal()
 
 
 @strawberry_django.type(
@@ -370,12 +492,17 @@ class EventApplicationAddressType:
         "state",
         "is_child_application",
         "created_at",
-        "applicant_note",
         "paid_for",
-        "health_issues",
     ],
 )
 class EventApplicationType:
+    applicant_note: auto = personal()
+    first_name: auto = personal()
+    last_name: auto = personal()
+    nickname: auto = personal()
+    phone: auto = personal()
+    email: auto = personal()
+    birthday: auto = personal()
     event_registration: EventRegistrationType
     user: UserType | None
     pronoun: PronounCategoryType | None
@@ -410,8 +537,11 @@ class EventRecordType:
         return self.get_young_participants_count()
 
 
-@strawberry_django.type(Event, exclude=["_import_id", "_search_field"])
+@strawberry_django.type(
+    Event, exclude=["organizers_note", "_import_id", "_search_field"]
+)
 class EventType:
+    organizers_note: auto = personal()
     location: LocationType | None
     category: EventCategoryType
     group: EventGroupCategoryType
@@ -442,6 +572,9 @@ class EventType:
     ],
 )
 class OpportunityType:
+    contact_name: auto = personal()
+    contact_phone: auto = personal()
+    contact_email: auto = personal()
     category: OpportunityCategoryType
     priority: OpportunityPriorityType
     location: LocationType
@@ -460,13 +593,15 @@ class PledgeType:
 
 @strawberry_django.type(Donation, exclude=["info", "_variable_symbol", "_import_id"])
 class DonationType:
+    info: auto = personal()
     donor: DonorType | None
     pledge: PledgeType | None
     donation_source: DonationSourceCategoryType
 
 
-@strawberry_django.type(DonorEvent, fields="__all__")
+@strawberry_django.type(DonorEvent, exclude=["fundraisers_note"])
 class DonorEventType:
+    fundraisers_note: auto = personal()
     donor: DonorType
     event_type: DonorEventCategoryType
     campaign: FundraisingCampaignType | None
@@ -479,13 +614,13 @@ class DonorEventType:
         "id",
         "subscribed_to_newsletter",
         "is_public",
-        "fundraisers_note",
         "do_not_call",
         "do_not_solicit",
         "date_joined",
     ],
 )
 class DonorType:
+    fundraisers_note: auto = personal()
     user: UserType
     regional_center_support: AdministrationUnitType | None
     basic_section_support: AdministrationUnitType | None
@@ -514,10 +649,17 @@ Dataset = strawberry.enum(
 )
 
 # Computed fields usable in aggregate paths; each maps to a coarse ORM
-# expression so the underlying PII column itself is never grouped on.
+# expression so the underlying personal column itself is never grouped on.
 AGGREGATE_ALIASES = {
     User: {"birth_year": "birthday__year"},
     EventApplication: {"birth_year": "birthday__year"},
+}
+
+# Answer fields shown per row by their question's sensitivity: aggregates see
+# them through the same condition as _answer_visible, filters not at all.
+MASKED_ANSWERS = {
+    Answer: ("question", {"answer", "data"}),
+    Reply: ("inquiry", {"reply", "value", "data"}),
 }
 
 DATE_TRANSFORMS = {"year", "iso_year", "quarter", "month", "week", "week_day", "day"}
@@ -533,9 +675,31 @@ def _permitted(info, model):
     return Permissions(user, model, "backend").filter_queryset(queryset)
 
 
-def _apply_filters(queryset, filters):
+def _visible(model, name, user):
+    fields = EXPOSED_FIELDS.get(model, {})
+    return name in fields and (not fields[name] or user.sees_personal_data_over_mcp)
+
+
+def _check_lookup(model, lookup, user):
+    """Allow a filter or ordering only along fields the account can see."""
+    field = None
+    for part in lookup.split("__"):
+        if _visible(model, part, user):
+            field = model._meta.get_field(part)
+            if not field.is_relation:
+                return
+            model = field.related_model
+        elif field and field.get_lookup(part):
+            return
+        else:
+            raise ValueError(f"Invalid lookup {lookup}: {part} is not exposed")
+
+
+def _apply_filters(info, queryset, filters):
     if not filters:
         return queryset
+    for lookup in filters:
+        _check_lookup(queryset.model, lookup, info.context["request"].user)
     try:
         return queryset.filter(**filters)
     except (FieldError, TypeError, ValueError) as e:
@@ -544,8 +708,10 @@ def _apply_filters(queryset, filters):
 
 def _list(info, dataset, filters, ordering, limit, offset):
     model = DATASETS[dataset]
-    queryset = _apply_filters(_permitted(info, model), filters)
+    queryset = _apply_filters(info, _permitted(info, model), filters)
     if ordering:
+        for lookup in ordering:
+            _check_lookup(model, lookup.removeprefix("-"), info.context["request"].user)
         queryset = queryset.order_by(*ordering)
     if info.context.get("_export"):
         from xlsx_export.export import EXPORT_SERIALIZERS
@@ -565,17 +731,19 @@ def _exposed_fields():
         definition = getattr(type_, "__strawberry_django_definition__", None)
         if definition is None:
             continue
+        # value: whether the field is personal data
         exposed[definition.model] = {
-            field.django_name
+            field.django_name: bool(field.metadata.get(PERSONAL))
             for field in type_.__strawberry_definition__.fields
             if field.base_resolver is None
         }
     return exposed
 
 
-def _orm_path(model, path):
-    """Translate a `__`-separated aggregate path into an ORM lookup, allowing
-    only fields the schema exposes, so grouping cannot reveal hidden values."""
+def _aggregate_expression(model, path, user):
+    """Translate a `__`-separated aggregate path into an ORM expression,
+    allowing only fields the account can see, so grouping cannot reveal hidden
+    values."""
     parts = path.split("__")
     for index, part in enumerate(parts):
         rest = parts[index + 1 :]
@@ -583,8 +751,18 @@ def _orm_path(model, path):
         if alias:
             if rest:
                 raise ValueError(f"Invalid path {path}: nothing may follow {part}")
-            return "__".join([*parts[:index], alias])
-        if part not in EXPOSED_FIELDS.get(model, set()):
+            return F("__".join([*parts[:index], alias]))
+        question, masked = MASKED_ANSWERS.get(model, (None, set()))
+        if part in masked:
+            if rest and not isinstance(model._meta.get_field(part), JSONField):
+                raise ValueError(
+                    f"Invalid path {path}: unsupported lookup after {part}"
+                )
+            sensitivity = "__".join([*parts[:index], question, "sensitivity", "in"])
+            return Case(
+                When(**{sensitivity: visible_sensitivities(user)}, then=F(path))
+            )
+        if not _visible(model, part, user):
             raise ValueError(f"Invalid path {path}: {part} is not exposed")
         try:
             field = model._meta.get_field(part)
@@ -594,12 +772,12 @@ def _orm_path(model, path):
             model = field.related_model
             continue
         if not rest or isinstance(field, JSONField):
-            return path
+            return F(path)
         if isinstance(field, DateField) and len(rest) == 1:
             if rest[0] in DATE_TRANSFORMS:
-                return path
+                return F(path)
         raise ValueError(f"Invalid path {path}: unsupported lookup after {part}")
-    return path
+    return F(path)
 
 
 def _jsonable(value):
@@ -744,15 +922,19 @@ class Query:
         group_by: ["start__year", "category__slug"],
         sum_of: ["record__total_hours_worked"].
         Date fields accept __year/__quarter/__month/... Users and applications
-        also have `birth_year`. Returns one row per group, `count` counting
-        distinct rows of the dataset. Joins over lists repeat values, so sums
-        across a to-many path count a row once per related item.
+        also have `birth_year`. Answers and replies to a question whose
+        sensitivity this account cannot see are aggregated as null. Returns
+        one row per group, `count` counting distinct rows of the dataset. Joins
+        over lists repeat values, so sums across a to-many path count a row
+        once per related item.
         """
         model = DATASETS[dataset.value]
-        queryset = _apply_filters(_permitted(info, model), filters)
+        user = info.context["request"].user
+        queryset = _apply_filters(info, _permitted(info, model), filters)
         group_by = group_by or []
         groups = {
-            f"group{i}": _orm_path(model, path) for i, path in enumerate(group_by)
+            f"group{i}": _aggregate_expression(model, path, user)
+            for i, path in enumerate(group_by)
         }
         functions = {
             "sum": (Sum, sum_of),
@@ -764,12 +946,14 @@ class Query:
         requested = {}
         for name, (function, paths) in functions.items():
             for i, path in enumerate(paths or []):
-                aggregates[f"{name}{i}"] = function(_orm_path(model, path))
+                aggregates[f"{name}{i}"] = function(
+                    _aggregate_expression(model, path, user)
+                )
                 requested[f"{name}{i}"] = (name, path)
 
         if groups:
             rows = list(
-                queryset.values(**{key: F(lookup) for key, lookup in groups.items()})
+                queryset.values(**groups)
                 .annotate(**aggregates)
                 .order_by(*groups)[: MAX_ROWS + 1]
             )
@@ -794,5 +978,5 @@ EXPOSED_FIELDS = _exposed_fields()
 
 schema = strawberry.Schema(
     query=Query,
-    extensions=[DjangoOptimizerExtension],
+    extensions=[DjangoOptimizerExtension, HidePersonalData],
 )

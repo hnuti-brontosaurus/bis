@@ -46,8 +46,10 @@ def test_non_staff_user_denied(request_with_user, mcp_permission):
 
 
 @pytest.mark.django_db
-def test_brontobot_allowed_without_staff(request_with_user, mcp_permission):
-    request = request_with_user(make_user("brontosaurus.bot@gmail.com"))
+def test_bot_allowed_without_staff(request_with_user, mcp_permission):
+    from bis.tests.test_mcp_visibility import make_bot
+
+    request = request_with_user(make_bot("brontosaurus.bot@gmail.com"))
     assert mcp_permission.has_permission(request, None)
 
 

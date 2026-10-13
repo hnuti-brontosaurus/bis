@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from bis.models import Location, User
+from bis.models import Location, MCPAccess, User
 from categories.models import (
     EventCategory,
     EventGroupCategory,
@@ -19,6 +19,13 @@ def make_user(email):
         last_name="User",
         _str="Test User",
     )
+
+
+def make_bot(email, sees_personal_data=False):
+    MCPAccess.objects.create(
+        email=email, is_bot=True, sees_personal_data=sees_personal_data
+    )
+    return make_user(email)
 
 
 def make_event(name):
@@ -56,8 +63,10 @@ def make_info(user):
 
 
 @pytest.mark.django_db
-def test_is_bot_true_for_brontobot_email():
-    assert make_user("brontosaurus.bot@gmail.com").is_bot
+def test_is_bot_follows_mcp_access_case_insensitively():
+    MCPAccess.objects.create(email="Bot@Example.com", is_bot=True)
+
+    assert make_user("bot@example.com").is_bot
 
 
 @pytest.mark.django_db
@@ -69,7 +78,7 @@ def test_is_bot_false_for_regular_user():
 def test_bot_user_sees_all_events(permitted_events):
     make_event("Some other event")
 
-    bot = make_user("brontosaurus.bot@gmail.com")
+    bot = make_bot("brontosaurus.bot@gmail.com")
 
     assert set(permitted_events(make_info(bot))) == set(Event.objects.all())
 

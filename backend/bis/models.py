@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
 from bis.admin_helpers import get_admin_edit_url
-from bis.constants import BRONTOBOT_EMAIL
 from bis.email_validation import validate_email
 from bis.helpers import (
     SearchMixin,
@@ -365,8 +364,16 @@ class User(SearchMixin, AbstractBaseUser):
         return "fundraiser" in self._role_slugs
 
     @cached_property
+    def mcp_access(self):
+        return self.email and MCPAccess.objects.filter(email__iexact=self.email).first()
+
+    @cached_property
     def is_bot(self):
-        return self.email == BRONTOBOT_EMAIL
+        return bool(self.mcp_access and self.mcp_access.is_bot)
+
+    @cached_property
+    def sees_personal_data_over_mcp(self):
+        return bool(self.mcp_access and self.mcp_access.sees_personal_data)
 
     @cached_property
     def is_member_only(self):
@@ -1145,3 +1152,28 @@ class QualificationNote(m.Model):
 
     def __str__(self):
         return f"Poznámka ze {self.created_at}"
+
+
+@translate_model
+class MCPAccess(m.Model):
+    """What an MCP account may see depends on the data processing agreement
+    behind the LLM that uses it, so it is configured per email."""
+
+    email = m.EmailField(unique=True)
+    is_bot = m.BooleanField(
+        default=False,
+        help_text="Účet bez člověka a bez schránky: vidí data bez ohledu na role "
+        "a exporty musí posílat na e-mail někoho, kdo vidí vše.",
+    )
+    sees_personal_data = m.BooleanField(
+        default=False,
+        help_text="Jména, kontakty, data narození, adresy a poznámky. Jen pro LLM "
+        "se smlouvou o zpracování osobních údajů. Zdravotní údaje přes MCP "
+        "nevidí nikdo.",
+    )
+
+    class Meta:
+        ordering = ("email",)
+
+    def __str__(self):
+        return self.email

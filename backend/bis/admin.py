@@ -40,6 +40,7 @@ from bis.models import (
     LocationContactPerson,
     LocationPatron,
     LocationPhoto,
+    MCPAccess,
     Membership,
     Qualification,
     QualificationNote,
@@ -121,6 +122,12 @@ def merge_selected_last(model_admin, request, queryset, last=True):
 @admin.action(description="Spoj lokality do první")
 def merge_selected_first(model_admin, request, queryset):
     return merge_selected_last(model_admin, request, queryset, False)
+
+
+@admin.register(MCPAccess)
+class MCPAccessAdmin(PermissionMixin, ModelAdmin):
+    list_display = ("email", "is_bot", "sees_personal_data")
+    search_fields = ("email",)
 
 
 @admin.register(Location)

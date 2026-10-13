@@ -201,6 +201,14 @@ QualificationNote:
   fields:
     education_members_note: Poznámka
 
+MCPAccess:
+  name: Přístup k MCP
+  name_plural: Přístupy k MCP
+  fields:
+    email: E-mail účtu
+    is_bot: Bot
+    sees_personal_data: Vidí osobní údaje
+
 Event:
   name: Akce
   name_plural: Akce
@@ -393,6 +401,7 @@ Question:
     question: Otázka
     is_required: Povinná otázka?
     questionnaire: Dotazník
+    sensitivity: Citlivost odpovědí
 
 Answer:
   name: Odpověď na otázku
@@ -426,6 +435,7 @@ Inquiry:
     inquiry: Otázka
     is_required: Povinná otázka?
     feedback_form: Formulář zpětné vazby
+    sensitivity: Citlivost odpovědí
 
 Reply:
   name: Odpověď na otázku

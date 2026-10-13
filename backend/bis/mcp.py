@@ -4,7 +4,7 @@ MCP (Model Context Protocol) tools for BIS.
 Single GraphQL-based tool for BIS data analysis.
 The LLM writes GraphQL queries to select exactly the fields it needs.
 Export mode sends full XLSX (with PII) to the authenticated user's email; the
-bot has to name a recipient who can see all data instead.
+bot accounts have to name a recipient who can see all data instead.
 A second tool reads the application logs, see bis/logs.py.
 """
 
@@ -58,9 +58,10 @@ class BISTools(MCPToolset):
 
         The schema exposes events, feedbacks, applications, users, memberships,
         donors, donations, opportunities, locations and administration units,
-        plus an `aggregate` root for counts and sums. PII (names, emails,
-        phones, birthdays, addresses) is excluded; people appear as
-        anonymous users with a birth year and region.
+        plus an `aggregate` root for counts and sums. Health data is never
+        returned. Personal data (names, emails, phones, birthdays, addresses,
+        notes) is returned only to accounts allowed to see it; elsewhere people
+        appear as anonymous users with a birth year and region.
 
         When export=True, all matching data (no limit) is exported as full XLSX
         (including PII) and emailed to you instead of being returned.
@@ -71,8 +72,8 @@ class BISTools(MCPToolset):
             export: If true, exports matching data as XLSX to your email.
             export_name: File name (without .xlsx) and email subject of the
                 export; defaults to the dataset name.
-            export_to: Recipient of the export, required for the bot account
-                and only allowed for it. Must be the email of a person who can
+            export_to: Recipient of the export, required for the bot accounts
+                and only allowed for them. Must be the email of a person who can
                 see all data (office, auditors, executives, fundraisers).
 
         Returns:
@@ -170,7 +171,7 @@ class BISTools(MCPToolset):
         user = self.request.user
         if not user.is_bot:
             if export_to:
-                return None, "Error: export_to is only for the bot account."
+                return None, "Error: export_to is only for the bot accounts."
             if not user.email:
                 return None, "Error: No email address on your account."
             return user.email, None
