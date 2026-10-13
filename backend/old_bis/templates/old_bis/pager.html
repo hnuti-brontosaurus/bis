@@ -1,0 +1,6 @@
+{% load static %}<div class="topbar ">
+{% if page.has_previous %}<a href="?sort={{ sort }}&amp;strana={{ page.previous_page_number }}"><img alt="&lt;" class="arrow" src="{% static 'old_bis/images/arrow-left.png' %}"/></a>{% else %}<img alt="" class="arrow" src="{% static 'old_bis/images/arrow-left-inactive.png' %}"/>{% endif %}
+{% for number in page_range %}<span>{% if number == page.number or number == page.paginator.ELLIPSIS %}{{ number }}{% else %}<a href="?sort={{ sort }}&amp;strana={{ number }}">{{ number }}</a>{% endif %}</span>
+{% endfor %}
+{% if page.has_next %}<a href="?sort={{ sort }}&amp;strana={{ page.next_page_number }}"><img alt="&gt;" class="arrow" src="{% static 'old_bis/images/arrow-right.png' %}"/></a>{% else %}<img alt="" class="arrow" src="{% static 'old_bis/images/arrow-right-inactive.png' %}"/>{% endif %}
+</div>

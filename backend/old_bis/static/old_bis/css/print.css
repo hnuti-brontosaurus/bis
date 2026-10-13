@@ -1,0 +1,36 @@
+@import "bis.css";
+
+div#menu {		display: none; }
+div.ttop {		display: none; }
+div#inputbox-border { 	display: none; }
+td.manip {		display: none; }
+td.bot {		display: none; }
+.noprint {		display: none; }
+thead a.ibutton {	display: none }
+
+a {
+	font-weight: normal;
+}
+
+table.bdo {
+	border: solid 2px black;
+	border-collapse: collapse;
+}
+
+table.bdo td {
+	border: solid 1px black;
+	padding: 0.3ex;
+}
+
+table.bdo thead td {
+	background-color: #d0d0d0;
+	border-bottom: solid 2px black;
+}
+
+table.bdo thead td.tgroup {
+	border-bottom: solid 1px black;
+}
+
+table.bdo tbody td {
+	background-color: white;
+}

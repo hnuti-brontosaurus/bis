@@ -1,0 +1,29 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% load old_bis %}
+{% block title %}Termíny{% endblock %}
+{% block content %}
+    <h1>Termíny</h1>
+    <p class="help"><img class="icon" height="16" src="{% static 'old_bis/images/btn-create.png' %}" width="16"/><span>Nová položka</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/><span>Upravit položku</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-delete.png' %}" width="16"/><span>Smazat</span></p>
+    <table class="bdo table " id="orange">
+      <thead>
+        <tr>
+          <td>Datum</td>
+          <td>Termín</td>
+          <td>Poznámka</td>
+          <td></td>
+          {% include "old_bis/button.html" with icon="btn-create" title="Nová položka" %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in dashboard_items %}<tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ item.date|date:"j.n.Y" }}</td>
+          <td>{{ item.name|plain_text }}</td>
+          <td>{{ item.description|plain_text }}</td>
+          {% include "old_bis/button.html" with icon="btn-edit" title="Upravit" %}
+          {% include "old_bis/button.html" with icon="btn-delete" title="Smazat" delete=True %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

@@ -40,7 +40,6 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseRedirect,
 )
-from django.utils import timezone
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -296,17 +295,7 @@ class AnnouncementViewSet(ListModelMixin, GenericViewSet):
     serializer_class = AnnouncementSerializer
 
     def get_queryset(self):
-        current_time = timezone.now()
-        queryset = Announcement.objects.filter(
-            start__lte=current_time,
-            end__gte=current_time,
-        )
-        user = self.request.user
-        if user.is_authenticated:
-            return queryset.filter(
-                Q(for_roles__isnull=True) | Q(for_roles__in=user.roles.all())
-            ).distinct()
-        return queryset.filter(for_roles__isnull=True)
+        return Announcement.get_current_for_user(self.request.user)
 
 
 class LocationViewSet(PermissionViewSetBase):

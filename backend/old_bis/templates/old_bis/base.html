@@ -1,0 +1,36 @@
+{% load static %}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="cs" xml:lang="cs">
+  <head>
+{% include "old_bis/head.html" %}
+    <title>BIS | {% block title %}{% endblock %}</title>
+    {% block head %}{% endblock %}
+  </head>
+  <body{% block body_attributes %}{% endblock %}>
+    <div id="menu">
+  <div id="menutitle">BIS</div>
+  <div id="login"><b>Login:</b> {{ user.email }}</div>
+  <div class="menu-item"><a href="{% url 'old_bis:search' %}">Hledej človíčka</a></div>
+  <div class="menu-item" onmouseout="hidepopup('akce')" onmouseover="showpopup('akce')">
+    <div class="menu-popup" id="akce" onmouseout="hidepopup('akce')" onmouseover="showpopup('akce')"><a href="{% url 'old_bis:web_events' %}">Akce na brontowebu</a>
+      <a href="{% url 'old_bis:locations' %}">Lokality</a>
+      <a href="#" onclick="return false">Import z Excelu</a>
+      <a href="{% url 'old_bis:new_event' %}">Nová akce</a><a href="#" onclick="return false">Nová akce bez adresáře</a><a href="#" onclick="return false">Nový tábor</a>
+    </div><a href="{% url 'old_bis:events' %}">Akce</a>
+  </div>
+  <div class="menu-item" onmouseout="hidepopup('zc')" onmouseover="showpopup('zc')">
+    <div class="menu-popup" id="zc" onmouseout="hidepopup('zc')" onmouseover="showpopup('zc')"><a href="{% url 'old_bis:sub_units' %}">Kluby</a>
+      <a href="{% url 'old_bis:dashboard_items' %}">Termíny</a>
+    </div><a href="{% url 'old_bis:administration_units' %}">Základní články</a>
+  </div>
+  <div class="menu-item"><a href="{% url 'old_bis:members' %}">Členové</a></div>
+  <div class="menu-item"><a href="{% url 'old_bis:consultants' %}">Konzultanti OHB</a></div>
+  <div class="menu-item"><a href="#" onclick="return false">Změnit heslo</a></div>
+  <div class="menu-item"><a href="{% url 'old_bis:login' %}">Odhlásit se</a></div>
+  <div class="menu-item" onmouseout="hidepopup('help')" onmouseover="showpopup('help')">
+    <div class="menu-popup" id="help" onmouseout="hidepopup('help')" onmouseover="showpopup('help')"><a href="#" onclick="return false">Export dat na jiné weby</a></div><a href="{% url 'old_bis:help' %}">Pomóóóc!</a>
+  </div>
+</div>
+{% block content %}{% endblock %}
+{% include "old_bis/escape.html" %}
+  </body>
+</html>

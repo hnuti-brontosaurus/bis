@@ -1,0 +1,44 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Akce zveřejněné na brontosauřím webu{% endblock %}
+{% block content %}
+    <h1>Akce zveřejněné na brontosauřím webu</h1>
+    <div class="ttop">
+      {% include "old_bis/pager.html" %}
+    </div>
+    <p class="help"><span>Šedou barvou jsou označené proběhlé akce - ty se na brontowebu již nezobrazují.</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-detail.png' %}" width="16"/><span>Zobrazit detaily</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/><span>Upravit položku</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-delete.png' %}" width="16"/><span>Smazat</span></p>
+
+    <table class="bdo table nobr" id="green">
+      <thead>
+        <tr>
+          <td>Název<a href="?sort=nazev"><img class="sort" height="12" src="{% static 'old_bis/images/sort.png' %}" title="Sort by" width="11"/></a></td>
+          <td>Od<a href="?sort=od"><img class="sort" height="12" src="{% static 'old_bis/images/sort.png' %}" title="Sort by" width="11"/></a></td>
+          <td>Do</td>
+          <td>Sekce</td>
+          <td>Typ</td>
+          <td>Program</td>
+          <td>Pro koho?</td>
+          <td>Místo</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in page %}<tr class="{% cycle 'odd' 'even' %}{% if event.end < today %} inactive{% endif %}">
+          <td>{{ event.name }}</td>
+          <td>{{ event.start|date:"j.n.Y" }}</td>
+          <td>{{ event.end|date:"j.n.Y" }}</td>
+          <td>{{ event.group.name }}</td>
+          <td>{{ event.category.name }}</td>
+          <td>{{ event.program.name }}</td>
+          <td>{{ event.intended_for.name }}</td>
+          <td>{{ event.location.name }}</td>
+          {% include "old_bis/button.html" with icon="btn-detail" title="Detaily" %}
+          {% include "old_bis/button.html" with icon="btn-edit" title="Upravit" %}
+          {% include "old_bis/button.html" with icon="btn-delete" title="Smazat" delete=True %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

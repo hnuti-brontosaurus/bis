@@ -1,0 +1,40 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <div class="ttop">
+      <div class="topbar ">
+        {% if request.GET.filter == "all" %}<a href="?">Současné</a> / Včetně zrušených{% else %}Současné / <a href="?filter=all">Včetně zrušených</a>{% endif %}
+      </div>
+    </div>
+    <p class="help"><img class="icon" height="16" src="{% static 'old_bis/images/btn-create.png' %}" width="16"/><span>Nová položka</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-detail.png' %}" width="16"/><span>Zobrazit detaily</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/><span>Upravit položku</span></p>
+
+    <table class="bdo table " id="green">
+      <thead>
+        <tr>
+          <td>Zkratka</td>
+          <td>Adresa</td>
+          <td>Telefon</td>
+          <td>Email</td>
+          <td>WWW</td>
+          <td>Předseda</td>
+          <td></td>
+          {% include "old_bis/button.html" with icon="btn-create" title="Nová položka" %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in units %}<tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ row.unit.name }}</td>
+          <td>{{ row.unit.address }}</td>
+          <td>{{ row.unit.phone }}</td>
+          <td>{% if row.unit.email %}<a href="#" onclick="return false">{{ row.unit.email }}</a>{% endif %}</td>
+          <td>{% if row.unit.www %}<a href="#" onclick="return false">{{ row.unit.www }}</a>{% endif %}</td>
+          <td>{{ row.leader.get_name }}</td>
+          {% include "old_bis/button.html" with icon="btn-detail" title="Detaily" %}
+          {% include "old_bis/button.html" with icon="btn-edit" title="Upravit" %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

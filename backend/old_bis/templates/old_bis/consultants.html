@@ -1,0 +1,39 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Konzultanti OHB{% endblock %}
+{% block content %}
+    <h1>Konzultanti OHB</h1>
+    <div class="ttop">
+      <div class="topbar ">
+        {% if validity == "current" %}Současní{% else %}<a href="?">Současní</a>{% endif %}
+        /
+        {% if validity == "expired" %}Bývalí{% else %}<a href="?filter_platnost=propadla">Bývalí</a>{% endif %}
+        /
+        {% if validity == "all" %}Všichni{% else %}<a href="?filter_platnost=vsi">Všichni</a>{% endif %}
+      </div>
+    </div>
+    <p class="help"><img class="icon" height="16" src="{% static 'old_bis/images/btn-create.png' %}" width="16"/><span>Nová položka</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/><span>Upravit položku</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-delete.png' %}" width="16"/><span>Smazat</span></p>
+    <table class="bdo table " id="red">
+      <thead>
+        <tr>
+          <td>Jméno</td>
+          <td>Od</td>
+          <td>Do</td>
+          <td>Pro</td>
+          <td></td>
+          {% include "old_bis/button.html" with icon="btn-create" title="Nová položka" %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for qualification in qualifications %}<tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ qualification.user.get_name }}</td>
+          <td>{{ qualification.valid_since|date:"j.n.Y" }}</td>
+          <td>{{ qualification.valid_till|date:"j.n.Y" }}</td>
+          <td>{% if qualification.category.slug == "consultant" %}OHB{% else %}Brďo{% endif %}</td>
+          {% include "old_bis/button.html" with icon="btn-edit" title="Upravit" %}
+          {% include "old_bis/button.html" with icon="btn-delete" title="Smazat" delete=True %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.gis.db import models as m
 from django.core.files import File
 from django.db.models import CASCADE, PROTECT, Index, Q, UniqueConstraint
+from django.utils import timezone
 from donations.models import Donation
 from tinymce.models import HTMLField
 from translation.translate import translate_model
@@ -59,6 +60,16 @@ class Announcement(m.Model):
 
     def __str__(self):
         return f"[{self.severity}] {self.text[:50]}"
+
+    @classmethod
+    def get_current_for_user(cls, user):
+        current_time = timezone.now()
+        queryset = cls.objects.filter(start__lte=current_time, end__gte=current_time)
+        if user.is_authenticated:
+            return queryset.filter(
+                Q(for_roles__isnull=True) | Q(for_roles__in=user.roles.all())
+            ).distinct()
+        return queryset.filter(for_roles__isnull=True)
 
 
 @translate_model

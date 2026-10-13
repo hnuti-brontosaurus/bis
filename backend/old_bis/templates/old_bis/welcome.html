@@ -1,0 +1,33 @@
+{% extends "old_bis/base.html" %}
+{% load old_bis %}
+{% block title %}Vítejte v BISu{% endblock %}
+{% block content %}
+    <h1>Vítejte v BISu</h1>
+    <div class="col">
+      <h2>Novinky</h2>
+      <ul>
+        {% for announcement in announcements %}<li>{{ announcement.text }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Důležité termíny</h2>
+      <table class="bdo table nomanip" id="orange">
+        <thead>
+          <tr>
+            <td>Datum</td>
+            <td>Termín</td>
+            <td>Poznámka</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in dashboard_items %}<tr class="{% cycle 'odd' 'even' %}">
+            <td>{{ item.date|date:"j.n.Y" }}</td>
+            <td>{{ item.name|plain_text }}</td>
+            <td>{{ item.description|plain_text }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+{% endblock %}

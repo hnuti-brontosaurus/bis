@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "mcp_server",
     "game_book",
     "game_book_categories",
+    "old_bis",
     "cookbook",
     "cookbook_categories",
     "django_bootstrap5",

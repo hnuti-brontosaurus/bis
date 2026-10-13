@@ -1,0 +1,602 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Nová akce{% endblock %}
+{% block head %}<script src="{% static 'old_bis/akce.js' %}" type="text/javascript"></script>{% endblock %}
+{% block body_attributes %} onload="javascript:akce_toggle()"{% endblock %}
+{% block content %}
+    <h1>
+      Nová akce    </h1>
+
+    <p>Údaje, které po zveřejnění budou vidět na brontosauřím webu, jsou podbarvené <span style="background-color: #ffffa0">žlutě</span>.</p>
+    <p><b>Prosím zadejte organizátory akce do seznamu účastníků ještě PŘED začátkem akce, je to nutné kvůli pojištění.</b></p>
+    <form action="" class="bdo" method="get" onsubmit="return false">
+      <table class="bdo edit ">
+        <tr class="zver odd">
+          <th>Název</th>
+          <td><span class="required">*</span>
+            <input id="focus" maxlength="80" size="40" type="text" name="akce_nazev"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Od</th>
+          <td><span class="required">*</span>
+            <input maxlength="10" size="10" type="text" name="akce_od"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Do</th>
+          <td><span class="required">*</span>
+            <input maxlength="10" size="10" type="text" name="akce_do"  value=""/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Počet akcí v uvedeném období<br/>
+            <small>Používá se u opakovaných akcí (typicky oddílové schůzky). <br/>
+               U klasické jednorázové akce zde nechte jedničku.</small></th>
+          <td><span class="required">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_pocet"  value="1"/>
+                      </td>
+        </tr>
+                        <tr class="odd">
+          <th>Typ</th>
+          <td><span class="required">*</span>
+            <select onchange="akce_toggle()" name="akce_typ" >
+                            <option value="1" >Dobrovolnická</option>
+                            <option value="2" >Zážitková</option>
+                            <option value="5" >Sportovní</option>
+                            <option value="18" >Vzdělávací – přednášky</option>
+                            <option value="6" >Vzdělávací – kurzy, školení</option>
+                            <option value="21" >Vzdělávací - Kurz OHB</option>
+                            <option value="12" >Výukový program</option>
+                            <option value="13" >Pobytový výukový program</option>
+                            <option value="19" >Klub – setkání</option>
+                            <option value="25" >Klub – přednáška</option>
+                            <option value="10" >Akce pro veřejnost (velká)</option>
+                            <option value="22" >Ekostan</option>
+                            <option value="14" >Výstava</option>
+                            <option value="17" >Akční skupina</option>
+                            <option value="7" >Interní akce (VH a jiné)</option>
+                            <option value="20" >Oddílová, družinová schůzka</option>
+                          </select>
+             <a href="#" onclick="return false">Nápověda</a>
+          </td>
+        </tr>
+                <tr class="zver even">
+          <th>Program</th>
+          <td><span class="required no">*</span>
+            <select onchange="akce_toggle()" name="akce_program" >
+              <option></option>
+                            <option value="2" >Akce Památky</option>
+                            <option value="1" >Akce Příroda</option>
+                            <option value="4" >BRĎO</option>
+                            <option value="5" >Ekostan</option>
+                            <option value="3" >PsB</option>
+                            <option value="6" >Vzdělávání</option>
+                          </select>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Pro koho?<br/>
+            <small>Pokud zaškrtnete volbu Pro prvoúčastníky, musí vaše akce splňovat kritéria akcí pro prvoúčastníky 15–22 let</small></th>
+          <td><span class="required">*</span>
+            <select name="akce_prokoho" >
+                            <option value="1" >pro všechny</option>
+                            <option value="2" >pro mládež a dospělé</option>
+                            <option value="3" >pro děti</option>
+                            <option value="4" >pro rodiče s dětmi</option>
+                            <option value="5" >pro prvoúčastníky</option>
+                          </select>
+                      </td>
+        </tr>
+                <tr class="zver even">
+          <th>Lokalita (u AP)</th>
+          <td><span class="required no">*</span>
+            <select name="akce_lokalita" >
+              <option></option>
+                            <option value="40" >Alkazar</option>
+                            <option value="159" >Bartošovice (u Studénky)</option>
+                            <option value="18" >BAUCIS</option>
+                            <option value="60" >Bělá u Jevíčka</option>
+                            <option value="84" >Bernartice</option>
+                            <option value="80" >Bílé Karpaty</option>
+                            <option value="151" >Brno - ptačí budky</option>
+                            <option value="58" >Broumovské stěny</option>
+                            <option value="162" >Brtnice zámek</option>
+                            <option value="158" >Břeclav</option>
+                            <option value="26" >České Kopisty</option>
+                            <option value="59" >Divoká Šárka</option>
+                            <option value="97" >Ekocentrum Dúbrava Hodonín</option>
+                            <option value="15" >Ekocentrum Podhoubí</option>
+                            <option value="32" >Filipovické louky</option>
+                            <option value="146" >Hájek (klášter)</option>
+                            <option value="86" >Hostětín</option>
+                            <option value="141" >Hrušky</option>
+                            <option value="78" >Hynčice na Moravě</option>
+                            <option value="155" >Chata Kristýna</option>
+                            <option value="95" >Chebzí</option>
+                            <option value="22" >CHKO Kokořínsko</option>
+                            <option value="39" >CHKO Moravský kras</option>
+                            <option value="65" >Jizerské Hory</option>
+                            <option value="28" >Josefův Důl</option>
+                            <option value="150" >Kaly</option>
+                            <option value="103" >Kaprálův mlýn</option>
+                            <option value="25" >Kladská</option>
+                            <option value="132" >Klubovna BRĎO Bláťák,  ZČ HB S.U.P.</option>
+                            <option value="157" >Klubovna Čejkovice</option>
+                            <option value="154" >Klubovna Lužice</option>
+                            <option value="153" >Klubovna Mikulčice</option>
+                            <option value="152" >Klubovna Moravská Nová Ves</option>
+                            <option value="24" >Kosénka</option>
+                            <option value="145" >Křivolík</option>
+                            <option value="81" >Kubrychtova bouda</option>
+                            <option value="93" >Kudlačena</option>
+                            <option value="147" >Kynžvart</option>
+                            <option value="142" >Legato Brno</option>
+                            <option value="71" >Lesní škola Jezírko</option>
+                            <option value="99" >Lukov</option>
+                            <option value="91" >Marcela</option>
+                            <option value="57" >Mariánskohorské boudy</option>
+                            <option value="96" >Mikulčický luh</option>
+                            <option value="63" >Mohelnice</option>
+                            <option value="16" >MRKEV</option>
+                            <option value="94" >Muchovice</option>
+                            <option value="23" >Niva Branné</option>
+                            <option value="77" >Oucmanice EC Paleta</option>
+                            <option value="101" >Pardubice</option>
+                            <option value="104" >Pasíčka</option>
+                            <option value="70" >Pavlov</option>
+                            <option value="67" >Permalot</option>
+                            <option value="98" >Plumlov</option>
+                            <option value="35" >Podlesí u Ohnišťan</option>
+                            <option value="43" >Podomí</option>
+                            <option value="161" >Porta coeli (klášter)</option>
+                            <option value="30" >Prokopské údolí</option>
+                            <option value="83" >Příkazy</option>
+                            <option value="100" >Radešín</option>
+                            <option value="144" >Radostický mlýn</option>
+                            <option value="92" >Rusalka</option>
+                            <option value="27" >Růženec</option>
+                            <option value="41" >Rychta Krásensko</option>
+                            <option value="79" >Sluňákov u Olomouce</option>
+                            <option value="1" >Sobíňov</option>
+                            <option value="148" >Solvayovy lomy</option>
+                            <option value="31" >Spáleniště u Dobrušky</option>
+                            <option value="19" >Střemeníčko u Olomouce</option>
+                            <option value="76" >Studniční vrch Jeseníky</option>
+                            <option value="82" >Sudetské Sady</option>
+                            <option value="73" >Švýcárna</option>
+                            <option value="69" >Těchonice</option>
+                            <option value="149" >Templštejn</option>
+                            <option value="64" >Uherské Hradiště</option>
+                            <option value="102" >Veltrusy</option>
+                            <option value="75" >Vidče</option>
+                            <option value="33" >Vinice u Hořic</option>
+                            <option value="74" >Vlašim</option>
+                            <option value="62" >Vlčice</option>
+                            <option value="156" >Zakarpatská Ukrajina</option>
+                            <option value="37" >Zákolany</option>
+                            <option value="143" >Žítková, Hutiska</option>
+                            <option value="140" >Žítková, PR  Hutě</option>
+                          </select>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Jiné místo<br/>
+             <small>není-li v seznamu lokalit AP</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="50" size="40" type="text" name="akce_lokalita_jina"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>GPS</th>
+          <td><span class="required no">*</span>
+            <input maxlength="50" size="40" type="text" name="akce_gps"  value=""/>
+                      </td>
+        </tr>
+                <tr class="odd">
+          <th>Kraj<br/>
+             <small>pokud jste nezadali lokalitu AP</small></th>
+          <td><span class="required no">*</span>
+            <select name="akce_kraj" >
+              <option></option>
+                            <option value="1" >Praha</option>
+                            <option value="2" >Středočeský</option>
+                            <option value="3" >Ústecký</option>
+                            <option value="4" >Liberecký</option>
+                            <option value="5" >Pardubický</option>
+                            <option value="6" >Královehradecký</option>
+                            <option value="7" >Jihočeský</option>
+                            <option value="8" >Plzeňský</option>
+                            <option value="9" >Karlovarský</option>
+                            <option value="10" >Vysočina</option>
+                            <option value="11" >Jihomoravský</option>
+                            <option value="12" >Olomoucký</option>
+                            <option value="13" >Moravskoslezský</option>
+                            <option value="14" >Zlínský</option>
+                            <option value="15" >Zahraničí</option>
+                          </select>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Poznámka<br/>
+             <small>pro vás a pro koordinátory, nezveřejňuje se</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="255" size="40" type="text" name="akce_poznamka"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Dotaz v přihlášce<br/>
+             <small> Zde můžete formulovat dodatečnou otázku, která se objeví v přihlášce na tuto akci.<br/>
+               Nemáte-li žádnou takovou otázku, nechte políčko prázdné. </small> </th>
+          <td><span class="required no">*</span>
+            <input maxlength="160" size="40" type="text" name="akce_add_info_title"  value=""/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Druhý dotaz v přihlášce</th>
+          <td><span class="required no">*</span>
+            <input maxlength="160" size="40" type="text" name="akce_add_info_title_2"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Třetí dotaz v přihlášce</th>
+          <td><span class="required no">*</span>
+            <input maxlength="160" size="40" type="text" name="akce_add_info_title_3"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Pořádající ZČ/klub</th>
+          <td><span class="required no">*</span>
+            <select multiple="multiple" name="porada[]" size="10">
+                            <option value="5" >1.BRĎO Tišnov GINGO</option>
+                            <option value="4" >96. BRĎO Tišnov</option>
+                            <option value="202" >Ardea Břeclav</option>
+                            <option value="184" >ARDEA Lesní klub Babička Země</option>
+                            <option value="1" >Baobab</option>
+                            <option value="200" >Bosky</option>
+                            <option value="2" >Botič</option>
+                            <option value="213" >Brďo Čachrovníci</option>
+                            <option value="185" >BRĎO Čejkovice</option>
+                            <option value="204" >Brďo Draci</option>
+                            <option value="195" >Brďo Koníček</option>
+                            <option value="207" >Brďo Lišky</option>
+                            <option value="206" >Brďo Lovčíčata</option>
+                            <option value="217" >BRĎO Pardubice</option>
+                            <option value="216" >BRĎO Praha - Letná</option>
+                            <option value="215" >BRĎO Praha - Toulcův dvůr</option>
+                            <option value="162" >BRĎO Tuláci Kosov</option>
+                            <option value="7" >BRĎO Vlčí stopa</option>
+                            <option value="8" >BRĎO Vlkani</option>
+                            <option value="191" >Brontosauři v Himalájích</option>
+                            <option value="9" >Campanula Barbata</option>
+                            <option value="11" >Delfín</option>
+                            <option value="211" >Extempore</option>
+                            <option value="176" >Fénix</option>
+                            <option value="14" >Forest</option>
+                            <option value="179" >HB</option>
+                            <option value="34" >Chudák Svišť</option>
+                            <option value="203" >InteGREAT</option>
+                            <option value="16" >Kandík</option>
+                            <option value="193" >Karavela</option>
+                            <option value="180" >Kolovrátek</option>
+                            <option value="17" >KPL</option>
+                            <option value="19" >Mařatice</option>
+                            <option value="20" >Modrý Kámen</option>
+                            <option value="201" >Muna</option>
+                            <option value="35" >Nomisterion</option>
+                            <option value="210" >Oldomáš</option>
+                            <option value="21"  selected="selected" >Orchis</option>
+                            <option value="214" >PELLEGRINI-POUTNÍCI</option>
+                            <option value="218" >Plch</option>
+                            <option value="15" >RC HB Jeseníky</option>
+                            <option value="188" >RC HB Podluží</option>
+                            <option value="189" >RC HB Praha</option>
+                            <option value="183" >Remízek</option>
+                            <option value="22" >Rosnatka</option>
+                            <option value="23" >Rozruch</option>
+                            <option value="27" >S.U.P.</option>
+                            <option value="175" >Salamandr</option>
+                            <option value="198" >Satalický pramínek</option>
+                            <option value="24" >SEVER</option>
+                            <option value="25" >Slunovrat</option>
+                            <option value="199" >Spadlí z hrušky</option>
+                            <option value="192" >Svízel přítula</option>
+                            <option value="190" >Tam pod Ještědem</option>
+                            <option value="186" >Tuareg</option>
+                            <option value="187" >Uroboros</option>
+                            <option value="196" >WOODCRAFT Jeseníky</option>
+                            <option value="212" >Zastávka Jesenicko</option>
+                            <option value="194" >Zelený dům</option>
+                            <option value="177" >Zeměchvály</option>
+                            <option value="30" >Zvonek</option>
+                            <option value="31" >Žirafa</option>
+                          </select>
+          </td>
+        </tr>
+        <tr class="odd">
+          <th>Pobíráte na akci dotaci?<br/>
+            <small>Zaškrtněte <i>z jiných projektů</i>, pokud na tuto akci čerpáte dotace z jiných projektů,<br/>
+              tj. nelze ji zahrnout do výstupu celobrontosauřího projektu MŠMT.</small></th>
+          <td><span class="required">*</span>
+            <select name="akce_dotace" >
+                            <option value="0"  selected="selected" >nedotováno</option>
+                            <option value="1" >přímo z MŠMT</option>
+                            <option value="2" >z jiných projektů</option>
+                          </select>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Akce zaměřená na členy<br/>
+            <small>(organizované děti a mládež, organizátory...)</small></th>
+          <td><span class="required no">*</span>
+            <input type="checkbox" name="akce_zamereno_na_cleny"  />
+                      </td>
+        </tr>
+        <tr>
+          <td class="hr" colspan="2">
+            <h2>Údaje na brontoweb</h2>
+          </td>
+        </tr>
+        <tr class="odd">
+          <th>Zveřejnit na brontosauřím webu</th>
+          <td><span class="required no">*</span>
+            <input onchange="javascript:akce_toggle()" type="checkbox" name="akce_zverejnit"  />
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Způsob přihlášení</th>
+          <td><span class="required">*</span>
+            <select onchange="javascript:akce_toggle()" name="akce_prihlaska" >
+                            <option value="1"  selected="selected" >Standardní přihláška na brontowebu</option>
+                            <option value="3" >Jiná elektronická přihláška (vlastní web, Google Forms atd.)</option>
+                            <option value="2" >Účastníci se přihlašují na mail organizátora</option>
+                            <option value="4" >Registrace není potřeba, stačí přijít</option>
+                            <option value="5" >Máme bohužel plno, zkuste jinou z našich akcí</option>
+                          </select>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Klubová akce<br/>
+            <small>v kalendáři akcí se objeví pod Kluby</small></th>
+          <td><span class="required no">*</span>
+            <input type="checkbox" name="akce_klubova"  />
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Věk od</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_vek_od"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Věk do</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_vek_do"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Začátek akce</th>
+          <td><span class="required no">*</span>
+            <input maxlength="10" size="10" type="text" name="akce_sraz"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Účastnický poplatek</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_poplatek"  value="0"/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Organizační tým<br/>
+            <small>Seznam organizátorů zadejte do adresáře akce a zaškrtněte u nich sloupec <i>Org</i>.<br/>
+              Toto prosím udělejte ještě před začátkem akce, je to nutné kvůli pojištění.</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="80" size="40" type="text" name="akce_org"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Kontaktní osoba</th>
+          <td><span class="required no">*</span>
+            <input maxlength="30" size="30" type="text" name="akce_kontakt"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Kontaktní telefon</th>
+          <td><span class="required no">*</span>
+            <input maxlength="16" size="16" type="text" name="akce_kontakt_telefon"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Kontaktní email<br/>
+            <small>Povinný, pokud chcete zaslat přihlášku emailem</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="40" size="40" type="text" name="akce_kontakt_email"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>URL přihlášky<br/>
+            <small>Povinný, pokud máte přihlášku na vlastním webu</small></th>
+          <td><span class="required no">*</span>http://
+            <input maxlength="120" size="40" type="text" name="akce_kontakt_url"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Web o akci</th>
+          <td><span class="required no">*</span>http://
+            <input maxlength="60" size="40" type="text" name="akce_web"  value=""/>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th> Zvací text: Co na nás čeká
+            <p>Uvedení do příběhu, pokud nějaký máš, základní informace o své akci, popiš téma akce a nastiň, co se tam bude dít a jak budete pomáhat, co se dozvíte nového, jak vás to posune…</p>
+          </th>
+          <td><span class="required no">*</span>
+            <textarea cols="70" rows="8" name="akce_text_uvod" ></textarea>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th> Zvací text: Co, kde a jak
+            <p>Nástřel programu akce – jakého typu budou aktivity na akci, jak se bude spát, co se bude jíst a další technické záležitosti. Na konec přidej, co uznáš za vhodné. Pokud jde o akci pro děti nebo pro akci pro rodiče s dětmi, zvaž, zda není na místě více informací o programu, ubytování a jídle vzhledem k dětem a starostlivějším rodičům :-)</p>
+          </th>
+          <td><span class="required no">*</span>
+            <textarea cols="70" rows="8" name="akce_text_info" ></textarea>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th> Zvací text: Dobrovolnická pomoc
+            <p>Jak budete konkrétně dobrovolničit a jaký to má smysl („sázíme vrbky, aby měli místní ptáci kde hnízdit“), vypíchni něco zajímavého.</p>
+          </th>
+          <td><span class="required no">*</span>
+            <textarea cols="70" rows="8" name="akce_text_dobr" ></textarea>
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th> Zvací text: Malá ochutnávka
+            <p>Co už máte organizátorsky za sebou nebo jak vypadaly akce na stejném místě v minulosti a přihoď pár fotek – to naláká více, než A4ka textu.</p>
+          </th>
+          <td><span class="required no">*</span>
+            <textarea cols="70" rows="8" name="akce_text_mnam" ></textarea>
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Hlavní fotka<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_1" />
+            <input type="checkbox" name="akce_priloha_1_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_2" />
+            <input type="checkbox" name="akce_priloha_2_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Druhá fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_3" />
+            <input type="checkbox" name="akce_priloha_3_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Třetí fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_4" />
+            <input type="checkbox" name="akce_priloha_4_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Čtvrtá fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_5" />
+            <input type="checkbox" name="akce_priloha_5_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver odd">
+          <th>Pátá fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_6" />
+            <input type="checkbox" name="akce_priloha_6_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr class="zver even">
+          <th>Šestá fotka k malé ochutnávce<br/>
+             <small>maximální velikost 10 MB</small></th>
+          <td><span class="required no">*</span>
+                        <input name="MAX_FILE_SIZE" type="hidden" value="10000000"/>
+            <input type="file" name="akce_priloha_7" />
+            <input type="checkbox" name="akce_priloha_7_delete"/>Smazat soubor
+                      </td>
+        </tr>
+        <tr>
+          <td class="hr" colspan="2">
+            <h2>Evidence práce</h2> Zadáte-li odpracované hodiny, je nutné vyplnit slovní popis práce (výše) nebo číselnou evidenci v následujících polích.
+          </td>
+        </tr>
+        <tr class="odd">
+          <th>Odpracováno člověkohodin<br/>
+             <small>Součet všech odpracovaných hodin – organizátoři i účastníci.</small> </th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_odpracovano"  value="0"/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Počet vysazených stromů</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_stromy"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Počet vysazených keřů</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_kere"  value=""/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Plocha pokosených luk<br/>
+            <small>v hektarech</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_louky"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Plocha údržby CHÚ<br/>
+            <small>např. odstraňování náletů, v hektarech</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_chu"  value=""/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Uklizená plocha od odpadků<br/>
+            <small>v hektarech</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_odpadky"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Plocha odstraněných invazních porostů <br/>
+            <small>v hektarech</small></th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_invaze"  value=""/>
+                      </td>
+        </tr>
+        <tr class="even">
+          <th>Počet opravených drobných památek</th>
+          <td><span class="required no">*</span>
+            <input maxlength="12" size="12" type="text" name="akce_prace_pamatky"  value=""/>
+                      </td>
+        </tr>
+        <tr class="odd">
+          <th>Jiná práce<br/>
+            <small>typ vysazených dřevin, typ práce, výsledek práce, atd.<br/>
+              Povinný údaj pro AP a ZSSS.</small></th>
+          <td><span class="required no">*</span>
+            <textarea cols="70" rows="20" name="akce_prace_jine" ></textarea>
+                      </td>
+        </tr>
+        <tr class="bottom">
+          <th></th>
+          <td><span class="required yes">*</span> Povinný údaj</td>
+        </tr>
+        <tr class="submit">
+          <th></th>
+          <td>
+            <input type="submit" value="Odeslat"/>
+          </td>
+        </tr>
+      </table>
+    </form>
+{% endblock %}

@@ -543,6 +543,20 @@ reads for the editor skin) from localStorage `game_book_theme`, else the OS.
   (`RequestFactory`, `request.user = …`) and serving that HTML to Playwright via
   `page.route`.
 
+### Old BIS (1 April)
+
+`backend/old_bis/` re-creates the pre-2023 PHP BIS at `/stary/`: its original
+CSS and images, Django templates copied from saved pages, filled with live data
+through `Permissions(..., "frontend")`. Links either move between its own
+pages or do nothing (`href="#" onclick="return false"`); the only way out is
+the "Zpět do nového BISu" button, so nothing sends an organizer to the admin.
+The login form posts to the real `/api/auth/login/`. On 1 April (Prague)
+`frontend/src/utils/redirectToOldBis.ts` sends the bare `/` there, unless the
+"Zpět do nového BISu" button stored the year in localStorage
+`old-bis-escaped`. Deep links (applications, `/login?next=`) are never
+redirected. HTML fields (`DashboardItem`) render through the `plain_text`
+filter, never `|safe`, because some items embed event names.
+
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API
 2. API validates via Django models → PostgreSQL + PostGIS (geospatial)

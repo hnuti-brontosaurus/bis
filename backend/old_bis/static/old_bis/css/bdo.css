@@ -1,0 +1,194 @@
+/* General settings */
+
+table {
+	font-size: 100%;
+	border-collapse: collapse;
+}
+
+td {
+	border-style: none;
+	margin: 0px;
+}
+
+input {
+	font-size: 100%;
+}
+
+img {
+	border-style: none;
+}
+
+.l { text-align: left }
+.c { text-align: center }
+.r { text-align: right }
+
+/* BDO tables */
+
+table.bdo {
+	border: solid 1px black;
+	border-collapse: separate;
+	padding: 0.2ex;
+}
+
+table.bdo td {
+	margin: 0.2ex;
+	padding: 0ex 0.5ex;
+	border-style: none;
+}
+
+table.bdo thead td {
+	background-color: #a0a0a0;
+	font-weight: bold;
+	text-align: left;
+	vertical-align: middle;
+}
+
+table.bdo.nomanip td {
+	padding: 0.3ex 0.5ex;
+}
+
+td.tgroup {
+	text-align: center;
+}
+
+a.ibutton img, td.manip img {
+	margin-top: 2px;
+	margin-bottom: -1px;
+}
+
+thead a.ibutton img {
+	margin-top: 0px;
+	margin-bottom: -2px;
+}
+
+td.currency {
+	white-space: nowrap;
+	text-align: right;
+}
+
+div.ttop {
+	margin: 1ex;
+}
+
+div.topbar {
+	line-height: 2;
+}
+
+div.topbar img {
+	position: relative;
+	top: 4px;
+}
+
+div.topbar span {
+	margin-right: 1.3ex;
+}
+
+p.help {
+	width: 90%;
+}
+
+p.help img.icon {
+	position: relative;
+	top: 3px;
+}
+
+p.help span {
+	margin-left: 0.4ex;
+	margin-right: 1.5ex;
+}
+
+
+/* Editing forms */
+
+form {
+	text-align: left;
+}
+
+select {
+	border: none;
+	font-size: 100%;
+	color: #404040;
+}
+
+input, textarea {
+	margin: 0px;
+	padding: 0.3ex;
+	border: solid 1px #9090a0;
+	font-family: sans-serif;
+	font-size: 100%;
+	color: #404040;
+}
+
+input[type=submit] {
+	font-weight: bold;
+	cursor: pointer;
+	background-color: #606080;
+	color: white;
+}
+
+
+span.error {
+	color: red;
+}
+
+input.error, textarea.error, select.error {
+	border: solid 1px red;
+}
+
+span.required {
+	color: red;
+	font-size: 130%;
+}
+
+span.no {
+	visibility: hidden;
+}
+
+img.sort {
+	position: relative;
+	top: 1px;
+	margin-left: 1ex;
+}
+
+table.edit th, table.detail th {
+	text-align: right;
+	color: white;
+}
+
+table.edit td, table.edit th {
+	padding: 0.5ex 1ex;
+}
+
+table.detail td, table.detail th {
+	padding: 0.7ex 1ex;
+}
+
+table.edit a.button img {
+	top: 0.7ex;
+}
+
+table.edit th small, table.detail th small {
+	font-size: 90%;
+	font-weight: normal;
+}
+
+table.edit th p, table.detail th p {
+	font-size: 90%;
+	font-weight: normal;
+	width: 66ex;
+	margin-left: auto;
+	margin-right: 0px;
+}
+
+
+/* Edit/detail form colors */
+
+table.edit tr.odd  th { 	background-color: #2050b0; }
+table.edit tr.even th {		background-color: #4e6fd3; }
+table.edit tr.odd  td {		background-color: #d0d8ff; }
+table.edit tr.even td {		background-color: #ecf0ff; }
+
+table.detail tr.odd  th {	background-color: #a040a0; }
+table.detail tr.even th {	background-color: #c070c0; }
+table.detail tr.odd  td {	background-color: #f8d0f8; }
+table.detail tr.even td {	background-color: #ffe0ff; }

@@ -1,0 +1,58 @@
+{% load static %}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="cs" xml:lang="cs">
+  <head>
+{% include "old_bis/head.html" %}
+    <link href="{% static 'old_bis/css/login.css' %}" media="screen" rel="stylesheet" type="text/css"/>
+    <title>BIS | Login</title>
+    <script type="text/javascript">
+      function log_in(form) {
+        var next = new URLSearchParams(location.search).get('next');
+        if (!next || next.indexOf('/stary/') !== 0) next = '{% url "old_bis:welcome" %}';
+        {% if user.is_authenticated %}location.href = next;{% else %}
+        fetch('/{{ api_base }}auth/login/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: form.login.value, password: form.pswd.value})
+        }).then(function (response) {
+          if (response.ok) location.href = next;
+          else document.getElementById('com').textContent = response.status === 429
+            ? 'Příliš mnoho pokusů, zkuste to později.'
+            : 'Špatný login nebo heslo.';
+        });{% endif %}
+        return false;
+      }
+    </script>
+  </head>
+  <body onload="javascript:focus()">
+    <h1>BIS - Brontosauří informační systém</h1>
+    <p id="com">
+    </p>
+    <form action="{% url 'old_bis:welcome' %}" class="bdo" method="post" onsubmit="return log_in(this)">
+      <table class="bdo edit " id="login">
+        <tr class="odd">
+          <th>Login</th>
+          <td>
+            <input id="focus" size="30" type="text" name="login" value="{{ user.email|default:'' }}"/>
+          </td>
+        </tr>
+        <tr class="even">
+          <th>Heslo</th>
+          <td>
+            <input size="30" type="password" name="pswd"/>
+          </td>
+        </tr>
+        <tr class="submit">
+          <th></th>
+          <td>
+            <input type="submit" value="Login"/>
+          </td>
+        </tr>
+      </table>
+    </form>
+    <p id="ou">Přihlášením do Brontosauřího informačního systému vyjadřuji souhlas s <a href="#" onclick="return false">Prohlášením o nakládání s osobními údaji</a>.</p>
+    <p id="logo"> <img alt="Hnutí Brontosaurus" height="113" src="{% static 'old_bis/images/logo.png' %}" width="100"/> </p>
+    <p id="mail">Pokud jste zapomněli anebo ještě nedostali login a heslo, napište si na kancelář <b>hnuti[uzenáč]brontosaurus[puntík]cz</b>.</p>
+    <p id="wm">© 2007-2020 <a href="#" onclick="return false">Robert-Antonio</a></p>
+{% include "old_bis/escape.html" %}
+  </body>
+</html>

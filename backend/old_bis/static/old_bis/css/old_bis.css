@@ -1,0 +1,19 @@
+tr.inactive td {
+	color: #606060;
+}
+
+a.escape {
+	position: fixed;
+	right: 2ex;
+	bottom: 2ex;
+	z-index: 2;
+	padding: 1ex 2ex;
+	background-color: #d0d0c0;
+	border: outset 2px white;
+	font-size: 120%;
+}
+
+a.escape:hover {
+	background-color: #f0f0e0;
+	text-decoration: none;
+}

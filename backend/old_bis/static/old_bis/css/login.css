@@ -1,0 +1,50 @@
+body {
+	text-align: center;
+}
+
+h1 {
+	text-align: center;
+	padding-top: 10%;
+}
+
+p#ou {
+	width: 100%;
+	text-align: center;
+}
+
+p#mail {
+	width: 100%;
+	text-align: center;
+	font-size: 90%;
+}
+
+p#com {
+	height: 2ex;
+	width: auto;
+	margin-bottom: 2ex;
+	text-align: center;
+}
+
+p#wm {
+	margin: auto;
+	text-align: right;
+}
+
+p#logo {
+	width: 100%;
+	margin-top: 5%;
+	margin-bottom: 5%;
+	text-align: center;
+}
+
+p#logo img {
+	margin: 0px 15px;
+}
+
+table#login {
+	width: 40ex;
+	margin: auto;
+}
+
+table#login tr.odd th, table#login tr.odd td {	 background-color: #f0a070; }
+table#login tr.even th, table#login tr.even td { background-color: #f0c0a0; }

@@ -1,0 +1,59 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Nápověda{% endblock %}
+{% block content %}
+    <h1>Nápověda k BISu</h1>
+    <p>BIS slouží k správě akcí, adres, členů ZČ, účastníků a organizátorů. Další funkce jsou přístupné jen pro kancelář Brontosaura, takže je zde nepopisuji :)</p>
+    <h2>Obecný návod</h2>
+    <p>BIS se skládá z tabulek, jejichž záznamy je možné upravovat, třídit, dělat z nich různé výpisy atd. Pro úpravu záznamů v tabulkách slouží obecná tlačítka, která najdete v pravém okraji tabulky:</p>
+    <p><img alt="Náhled pravého okraje tabulky" src="{% static 'old_bis/images/help-buttons.png' %}"/></p>
+    <p> <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-create.png' %}" width="16"/> - Vytvoř nový záznam<br/>
+       <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-detail.png' %}" width="16"/> - Zobraz detaily záznamu - do tabulky se často nevejdou všechny údaje, ty chybějící si zobrazíte v detailu<br/>
+       <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/> - Uprav záznam<br/>
+       <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-delete.png' %}" width="16"/> - Smaž záznam<br/>
+       </p>
+    <p>Pokud si nejste jisti, co které tlačítko znamená, najeďte na něj myší a zobrazí se vám funkce tohoto tlačítka.</p>
+    <p>Nad tabulkou najdete různé filtry a různé druhy zobrazení. Pro třídění záznamů slouží tlačítko <img alt="" class="btn" height="12" src="{% static 'old_bis/images/btn-sort.png' %}" width="13"/> v daném sloupci (není ve všech sloupcích, to by zbytečně systém zesložiťovalo a např. třídit adresy dle ulice je zbytečné).</p>
+    <p>Při vkládání údajů zapisujte datum ve formátu dd.mm.yyyy (příklad: 30.9.1974). PSČ a telefonní čísla můžete vkládat s mezerami i bez nich.</p>
+    <h2>Akce</h2>
+    <p>V seznamu akcí vidíte všechny akce, které váš ZČ pořádá. Kliknutím na název akce se zobrazí seznam účastníků této akce.</p>
+    <p>Speciální údaje o akcích:</p>
+    <dl>
+      <dt>Lokalita</dt>
+      <dd>zde jsou na výběr lokality, v nichž probíhají Akce příroda. Není-li vaše akce AP, nechte políčko prázdné.</dd>
+      <dt>Odpracováno člověkohodin</dt>
+      <dd>to potřebujeme do výroční zprávy, pokud neznáte přesné číslo, stačí i odhad.</dd>
+      <dt>Pořádající ZČ</dt>
+      <dd>pořádá-li akci více ZČ, vyberete je pomocí Ctrl+klik. Pozor, pokud z pořádajících ZČ vyhodíte svůj vlastní základní článek, akce se vám poté nezobrazí v seznamu!</dd>
+    </dl>
+    <h2>Nová akce</h2>
+    <p>Zadáváte-li novou akci, rozhodněte se mezi třemi typy:</p>
+    <ul>
+      <li>Běžná akce - typicky víkendovka. U této akce zadáváte adresář účastníků.</li>
+      <li>Akce bez adresáře - typicky klub nebo výstava. U této akce adresář nezadáváte, ale jen vyplníte počet účastníků na akci, případně průměrný počet účastníků, pokud jde o opakovanou akci.</li>
+      <li>Tábor - u tábora zadáváte výrazně více údajů nežli u běžné akce. Tyto údaje potřebujeme pro propagaci vašeho tábora na plakátech.</li>
+    </ul>
+    <p>Pokud chcete zadat klubovou akci či schůzku (tj. aby se na brontowebu objevil pod záložkou Kluby), zaškrtněte v zadávacím formuláři políčko <i>Klubová akce</i>. Je možné mít klub s adresářem i bez, záleží na zvyklostech vašeho ZČ. Pokud děláte kluby pravidelně, stačí je zadat do BISu jednou, do políček <i>od-do</i> zadáte celé období, kdy kluby probíhají, a do políčka <i>Počet akcí v daném období</i> zadáte celkový počet klubových akcí.</p>
+    <p>Po skončení akce prosím vyplňte adresář účastníků a evidenci práce, je to důležité pro závěrečnou zprávu HB. U Akce Příroda je evidence práce povinná.</p>
+    <h2>Adresář</h2>
+    <p>Adresář zobrazuje seznam členů vašeho ZČ, seznam účastníků dané akce anebo seznam nalezených lidí z UC Hledej človíčka.</p>
+    <p>V tabulce adres je navíc tlačítko <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-member-remove.png' %}" width="16"/> - odstranit člena/účastníka. Tímto zrušíte daného člověka jako člena/účastníka, ale nevymažete jeho údaje z databáze. Smazat adresu v BISu nelze, kvůli statistikám za minulé roky.</p>
+    <p>Dále je zde sloupec Org - příznak, zdali je daný člověk organizátorem či účastníkem dané akce. Kliknutím přepínáte mezi fajfkou a křížkem.</p>
+    <p>Kliknutím na údaj ve sloupci Typ členství můžete změnit typ členství (individuální, rodinné, rodinné-dítě atd.). Totéž můžete měnit kliknutím na tlačítko <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-member.png' %}" width="16"/> (úprava členství) - zde navíc můžete zadat, zdali člen platí dobrovolně vyšší příspěvek, nežli musí.</p>
+    <p>Pro přidávání členů/účastníků, jejichž adresy jsou v BISu, slouží formulář pod tabulkou. Zde zadáte začátek jména, příjmení nebo přezdívky (háčky a čárky nejsou nutné) a BIS buď rovnou vloží člověka do tabulky anebo vám nabídne seznam více lidí, kteří zadaným řetězcem začínají.</p>
+    <p>Kvůli ochraně osobních údajů jsou pro vás viditelné pouze adresy vašich členů a účastníků vašich akcí. Přidáváte-li nového člena/účastníka, který je již vedený v BISu, ale v jiném základním článku, BIS po vás bude chtít jeho datum narození jako potvrzení, že tento člověk poskytl své osobní údaje vašemu ZČ. Zdá-li se vám to zbytečná byrokracie, směřujte své stížnosti do <a href="#" onclick="return false">Poslanecké sněmovny</a>, já ten zákon nevymyslel.</p>
+    <h2>Kterak vykázat akci - stručná kuchařka</h2>
+    <p>1. V menu Akce vyber Nová akce, Nová akce bez adresáře anebo Nový tábor.</p>
+    <p>2. Po zadání údajů o akci se vám objeví adresář. Tedy pokud nejde o akci bez adresáře, v tom případě jste hotovi.</p>
+    <p>3. Do formuláře na spodku adresáře zadej začátek jména, příjmení nebo přezdívky účastníka.</p>
+    <p>4a. Je-li účastník vedený v BISu, doplní se jeho osobní údaje automaticky.</p>
+    <p>4b. Není-li účatník vedený v BISu, zobrazí se vám formulář pro vložení nového člověka.</p>
+    <p>5. Opakuj 3. a 4a,b. pro všechny účatníky :)</p>
+    <h2>Klouzavé členství</h2>
+    <p>Klouzavé členství používají některé ZČ, které registrují své členy na jiné období nežli kalendářní rok. Oproti standardnímu člensví zde můžete nastavit přesný časový interval, za který je daný člověk členem vašeho ZČ. Pro prodloužení či změnu členství klikněte na tlačítko <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-member.png' %}" width="16"/>. Pro smazání klouzavého člena klikněte na <img alt="" class="btn" height="16" src="{% static 'old_bis/images/btn-member-remove.png' %}" width="16"/> (tímto odstraníte člena za celé zadané období, takže pokud chcete smazat klouzavého člena za daný rok, zkraťte časový interval).</p>
+    <h2>Příznivci</h2>
+    <p>Příznivci jsou lidé, kteří posílají Brontosauru sponzorské dary. Mohou ale nemusí být zároveň členové Brontosaura. Příznivce můžete zadat buď přes <a href="#" onclick="return false">formulář</a> na brontowebu anebo přímo v BISu - menu Členové, položka Příznivci. Příznivce může být příznivce celého Hnutí nebo vašeho článku.<br/>
+       Jako ZČ můžete prohlížet a upravovat údaje o příznivcích vašeho článku. Samotné dary a platby má na starosti kancelář.</p>
+    <h2>Cokoliv dalšího</h2>
+    <p>Další dotazy, upozornění na chyby, náměty ke zlepšení a děkovné dopisy mi pište na adresu <a href="#" onclick="return false">robert@antonio.cz</a>.</p>
+{% endblock %}

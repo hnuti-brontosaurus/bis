@@ -1,0 +1,50 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Hledej človíčka{% endblock %}
+{% block body_attributes %} onload="javascript:focus()"{% endblock %}
+{% block content %}
+    <h1>Hledej človíčka</h1>
+    <form action="" class="bdo" method="get">
+      <table class="bdo edit " id="search">
+        <tr class="odd">
+          <th>Přezdívka nebo jméno a/nebo příjmení:<br/>
+            <br/>
+            <small>Stačí zadat pár prvních písmen. Hledání je nezávislé na velikosti písmen, háčkách a čárkách.</small> </th>
+          <td>
+            <input id="focus" maxlength="50" size="40" type="text" name="pattern" value="{{ pattern }}"/>
+          </td>
+        </tr>
+        <tr class="submit">
+          <th></th>
+          <td>
+            <input type="submit" value="Hledej"/>
+          </td>
+        </tr>
+      </table>
+    </form>
+    {% if users is not None %}
+    <h2>Nalezení človíčci</h2>
+    <table class="bdo table " id="blue">
+      <thead>
+        <tr>
+          <td>Příjmení</td>
+          <td>Jméno</td>
+          <td>Přezdívka</td>
+          <td>Email</td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for found in users %}<tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ found.last_name }}</td>
+          <td>{{ found.first_name }}</td>
+          <td>{{ found.nickname }}</td>
+          <td>{{ found.email|default:'' }}</td>
+          {% include "old_bis/button.html" with icon="btn-detail" title="Detaily" %}
+        </tr>
+        {% empty %}<tr class="odd"><td colspan="5">Nikdo takový tu není.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+{% endblock %}

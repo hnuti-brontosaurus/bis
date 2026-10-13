@@ -1,0 +1,211 @@
+/* General */
+
+body {
+	font-family: LiberationSans, Tahoma, Verdana, sans-serif;
+	font-size: 70%;
+	padding: 0ex;
+	margin: 2ex 1ex;
+}
+
+h1 {
+	margin: 0.5ex;
+	margin-bottom: 1ex;
+	font-size: 170%;
+	font-weight: bold;
+}
+
+
+h2 {
+	margin: 0.5ex;
+	font-size: 130%;
+	font-weight: bold;
+}
+
+p, ul {
+	width: 90ex;
+	text-align: justify;
+	margin: 1ex;
+}
+
+a {
+	font-weight: bold;
+}
+a:link {	color: black; text-decoration: none }
+a:visited {	color: black; text-decoration: none }
+a:hover {	color: black; text-decoration: underline }
+
+.valign td {
+	vertical-align: middle;
+	padding: 0px;
+}
+
+.clear {
+	clear: both;
+}
+
+p.mail {
+	width: 90%;
+	margin-top: 3ex;
+	line-height: 1.6;
+	text-align: left;
+}
+
+p.mail span {
+	white-space: nowrap;
+}
+
+span.mail {
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+li {
+	margin: 1ex 0ex;
+}
+
+table.nobr td {
+	white-space: nowrap;
+}
+
+table.bdo td.hr {
+	border-top: solid 1px black;
+}
+
+tr.zver input, tr.zver select, tr.zver textarea, span.zver {
+	background-color: #ffffa0;
+}
+
+tr.plak input, tr.plak select, tr.plak textarea, span.plak {
+	background-color: #ffd080;
+}
+
+
+/* Page layout */
+
+div.col {
+	width: 49%;
+	height: 100%;
+	float: left;
+}
+
+
+/* Input box under table */
+
+div#inputbox-border {
+	margin-top: 1ex;
+	padding: 0.5ex;
+	border: solid 1px black;
+}
+
+div#inputbox {
+	padding: 0.5ex;
+	background-color: #ffc0c0;
+}
+
+div#inputbox input {
+	margin: 0ex 1ex;
+}
+
+
+/* Menu */
+
+div#menu {
+	margin-bottom: 2ex;
+	background-color: #f0f0a0;
+	height: 3ex;
+	font-weight: bold;
+}
+
+div.menu-item {
+	float: left;
+	width: auto;
+	min-width: 5ex;
+	padding: 0.5ex 2ex;
+}
+
+div.menu-popup {
+	position: absolute;
+	visibility: hidden;
+	z-index: 1;
+	margin-top: 2.3ex;
+	margin-left: -1.4ex;
+	padding: 0.7ex;
+	background-color: #f0f0a0;
+}
+
+div.menu-popup a {
+	display: block;
+	padding: 0.7ex;
+}
+
+div#menutitle {
+	float: left;
+	margin: -0.2ex 0ex -0.4ex 0ex;
+	padding: 0ex 2ex 0ex 1ex;
+	font-size: 200%;
+	color: #b0b080;
+}
+
+div#login {
+	float: right;
+	padding: 1ex 1ex 0ex 0ex;
+	font-size: 80%;
+	font-weight: normal;
+}
+
+
+/* Message boxes */
+
+div.msgbox-border {
+	border: solid 1px black;
+	width: 80ex;
+	margin: auto;
+	margin-top: 10ex;
+	padding: 0.5ex;
+}
+
+div.msgbox {
+	background-color: #ffc080;
+	padding: 2ex;
+	text-align: center;
+}
+
+img.msgbox-icon {
+	float: left;
+}
+
+a.msgbox-button {
+	padding: 0.3ex 2ex;
+	line-height: 2ex;
+	background-color: #d0d0c0;
+	border-style: outset;
+	border-width: 2px;
+	border-color: white;
+	font-weight: bold;
+}
+
+a.msgbox-button:hover {
+	text-decoration: none;
+	background-color: #f0f0e0;
+}
+
+
+/* Specific table colors */
+
+table#green tr.odd {	background-color: #48d838 }
+table#green tr.even {	background-color: #98f878 }
+
+table#red tr.odd {		background-color: #ff8080 }
+table#red tr.even {		background-color: #ffc0c0 }
+
+table#blue tr.odd {		background-color: #80a0f0 }
+table#blue tr.even {	background-color: #b0d0ff }
+
+table#violet tr.odd {	background-color: #ff5090 }
+table#violet tr.even {	background-color: #ffb0c0 }
+
+table#orange tr.odd {	background-color: #ff9050 }
+table#orange tr.even {	background-color: #ffd0a0 }
+
+table#yellow tr.odd {	background-color: #b0b030 }
+table#yellow tr.even {	background-color: #e0e040 }

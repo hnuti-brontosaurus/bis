@@ -1,0 +1,34 @@
+{% extends "old_bis/base.html" %}
+{% load static %}
+{% block title %}Lokality{% endblock %}
+{% block content %}
+    <h1>Lokality</h1>
+    <div class="ttop">
+      {% include "old_bis/pager.html" %}
+    </div>
+    <p class="help"><img class="icon" height="16" src="{% static 'old_bis/images/btn-create.png' %}" width="16"/><span>Nová položka</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-edit.png' %}" width="16"/><span>Upravit položku</span><img class="icon" height="16" src="{% static 'old_bis/images/btn-delete.png' %}" width="16"/><span>Smazat</span></p>
+
+    <table class="bdo table " id="violet">
+      <thead>
+        <tr>
+          <td>Název</td>
+          <td>Místo</td>
+          <td>Kraj</td>
+          <td>Patron</td>
+          <td></td>
+          {% include "old_bis/button.html" with icon="btn-create" title="Nová položka" %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for location in page %}<tr class="{% cycle 'odd' 'even' %}">
+          <td>{{ location.name }}</td>
+          <td>{{ location.address }}</td>
+          <td>{{ location.region.name }}</td>
+          <td>{{ location.patron.first_name }} {{ location.patron.last_name }}</td>
+          {% include "old_bis/button.html" with icon="btn-edit" title="Upravit" %}
+          {% include "old_bis/button.html" with icon="btn-delete" title="Smazat" delete=True %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

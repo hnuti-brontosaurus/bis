@@ -12,6 +12,9 @@ import { persistor, store } from './app/store'
 import { ErrorBoundary, ErrorBoundaryFallback } from './config/sentry'
 import { SystemMessages } from './features/systemMessage/SystemMessages'
 import { reportWebVitals } from './reportWebVitals'
+import { redirectToOldBisOnAprilFools } from './utils/redirectToOldBis'
+
+redirectToOldBisOnAprilFools()
 
 const container = document.getElementById('root')!
 const root = createRoot(container)

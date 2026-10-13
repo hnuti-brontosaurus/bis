@@ -35,6 +35,7 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
     path(f"{settings.API_BASE}", include("api.urls")),
     path("sbornik/", include("game_book.urls")),
+    path("stary/", include("old_bis.urls")),
     # OAuth 2.0 Authorization Server Metadata (RFC 8414, required by MCP spec)
     path(
         ".well-known/oauth-authorization-server",

@@ -106,6 +106,12 @@ export const App = () => {
           }
         />
         <Route
+          path="stary/*"
+          element={
+            <ServerRedirect notConfigured="Starý BIS není pro tuto doménu nastavený" />
+          }
+        />
+        <Route
           path="o/*"
           element={
             <ServerRedirect notConfigured="Přihlašování aplikací není pro tuto doménu nastavené" />
