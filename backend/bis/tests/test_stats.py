@@ -27,6 +27,14 @@ def test_age_stats_count_whole_years_at_the_date():
     assert stats.oldest == 26
 
 
+@pytest.mark.django_db
+def test_age_stats_of_a_queryset_that_matches_nothing():
+    stats = AgeStats("lidí", User.objects.filter(id__in=[]), date(2026, 1, 1))
+
+    assert stats.total == 0
+    assert stats.get_data() == {}
+
+
 @pytest.fixture
 def unit(db):
     # AdministrationUnit.clean() wants a manager, which these stats ignore

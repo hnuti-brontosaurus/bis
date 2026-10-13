@@ -7,6 +7,7 @@ from time import time
 from bis.logs import operation
 from dateutil.utils import today
 from django.core.cache import cache
+from django.core.exceptions import EmptyResultSet
 from django.db import connection
 from django.db.models import Count
 from django.utils.safestring import mark_safe
@@ -199,23 +200,32 @@ class AgeStats:
         self.date = date
         self.header = header
 
+        counts = self.count_ages(queryset, date)
+        self.total = sum(counts.values())
+        self.without_birthday = counts.pop(None, 0)
+        self.unborn = sum(count for age, count in counts.items() if age < 0)
+        self.birthdays_stats = {age: count for age, count in counts.items() if age >= 0}
+        self.oldest = max([*self.birthdays_stats, 0])
+
+    @staticmethod
+    def count_ages(queryset, date):
         # Counted over the queryset's own rows, so a joined queryset counts each
         # row, a distinct or grouped one each person once.
-        rows, params = (
-            queryset.order_by().values("pk", "birthday").query.sql_with_params()
-        )
+        try:
+            rows, params = (
+                queryset.order_by().values("pk", "birthday").query.sql_with_params()
+            )
+        except EmptyResultSet:
+            # Django refuses to compile a query it can tell matches nothing,
+            # such as `id__in=[]`; the ORM itself returns no rows for it.
+            return {}
         with connection.cursor() as cursor:
             cursor.execute(
                 f"SELECT EXTRACT(YEAR FROM age(%s, birthday))::int, COUNT(*) "
                 f"FROM ({rows}) AS rows GROUP BY 1",
                 [date, *params],
             )
-            counts = dict(cursor.fetchall())
-        self.total = sum(counts.values())
-        self.without_birthday = counts.pop(None, 0)
-        self.unborn = sum(count for age, count in counts.items() if age < 0)
-        self.birthdays_stats = {age: count for age, count in counts.items() if age >= 0}
-        self.oldest = max([*self.birthdays_stats, 0])
+            return dict(cursor.fetchall())
 
     def age_count(self, low, high):
         return sum(self.birthdays_stats.get(age, 0) for age in range(low, high + 1))
