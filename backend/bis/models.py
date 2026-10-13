@@ -163,6 +163,15 @@ class Location(SearchMixin, m.Model):
                             obj.location = first
                             obj.save()
 
+                    elif relation.name == "photos":
+                        duplicates = other.photos.filter(
+                            photo__in=first.photos.values("photo")
+                        )
+                        # A normal delete would make django_cleanup remove the
+                        # file, which the kept photo still uses
+                        duplicates._raw_delete(duplicates.db)
+                        other.photos.update(location=first)
+
                     elif isinstance(relation, (m.ManyToOneRel, m.OneToOneRel)):
                         for obj in relation.field.model.objects.filter(
                             **{relation.field.name: other}
@@ -199,6 +208,9 @@ class LocationPhoto(m.Model):
 
     class Meta:
         ordering = ("id",)
+        constraints = [
+            UniqueConstraint(fields=["location", "photo"], name="location_photo_unique")
+        ]
 
     def __str__(self):
         return basename(self.photo.name)
