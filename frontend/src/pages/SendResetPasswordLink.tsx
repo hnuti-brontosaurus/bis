@@ -15,6 +15,8 @@ const getErrorMessage = (
   if ('status' in error) {
     if (error.status === 500) {
       return 'Problém s odesláním odkazu. Prosím zkuste to znovu.'
+    } else if (error.status === 404) {
+      return 'Účet s tímto e-mailem neexistuje. Zkontroluj, že je napsaný správně.'
     } else if (error.status === 429) {
       return 'Příliš mnoho neúspěšných pokusů o přihlášení k vašemu účtu. Před opětovným odesláním odkazu musíte počkat 1 hodinu.'
     } else {
