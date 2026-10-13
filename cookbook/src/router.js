@@ -110,4 +110,16 @@ router.beforeEach(to => {
   }
 })
 
+// A tab opened before a deploy still asks for the previous build's chunks,
+// which the new deploy no longer has, so load the target page afresh instead.
+const missingChunkErrors = new WeakSet()
+window.addEventListener("vite:preloadError", event =>
+  missingChunkErrors.add(event.payload),
+)
+
+router.onError((error, to) => {
+  if (missingChunkErrors.has(error))
+    window.location.assign(router.resolve(to.fullPath).href)
+})
+
 export default router

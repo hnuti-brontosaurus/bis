@@ -16,6 +16,11 @@ import { redirectToOldBisOnAprilFools } from './utils/redirectToOldBis'
 
 redirectToOldBisOnAprilFools()
 
+// A tab opened before a deploy still asks for the previous build's chunks,
+// which the new deploy no longer has. The URL has already changed by the time
+// a lazy component loads, so a reload lands on the page that was asked for.
+window.addEventListener('vite:preloadError', () => window.location.reload())
+
 const container = document.getElementById('root')!
 const root = createRoot(container)
 

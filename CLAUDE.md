@@ -557,6 +557,16 @@ The login form posts to the real `/api/auth/login/`. On 1 April (Prague)
 redirected. HTML fields (`DashboardItem`) render through the `plain_text`
 filter, never `|safe`, because some items embed event names.
 
+### Deploys and open tabs
+Both SPAs are Vite builds whose `assets/` file names are content-hashed, and a
+deploy replaces the whole static directory. The production nginx
+(`deployments/base/configs/nginx.conf`) therefore serves every `index.html`
+with `Cache-Control: no-cache` and `assets/` as `immutable`, and lets a missing
+asset 404 instead of falling back to `index.html`. A tab opened before a deploy
+still asks for the old chunks: the resulting `vite:preloadError` reloads the
+page (`frontend/src/index.tsx`) or, in the cookbook, fully loads the route it
+was navigating to (`router.onError` in `cookbook/src/router.js`).
+
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API
 2. API validates via Django models → PostgreSQL + PostGIS (geospatial)
