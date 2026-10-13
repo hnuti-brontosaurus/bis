@@ -14,6 +14,9 @@ from rest_framework.permissions import BasePermission
 
 class MCPPermission(BasePermission):
     def has_permission(self, request, view):
+        # Off in production until the data processing agreements are signed
+        if settings.ENVIRONMENT == "prod":
+            return False
         user = request.user
         if not user or not user.is_authenticated:
             return False

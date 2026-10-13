@@ -64,3 +64,12 @@ def test_staff_user_allowed(request_with_user, mcp_permission):
     user.roles.add(role)
     request = request_with_user(user)
     assert mcp_permission.has_permission(request, None)
+
+
+@pytest.mark.django_db
+def test_disabled_in_production(request_with_user, mcp_permission, settings):
+    from bis.tests.test_mcp_visibility import make_bot
+
+    settings.ENVIRONMENT = "prod"
+    request = request_with_user(make_bot("brontosaurus.bot@gmail.com"))
+    assert not mcp_permission.has_permission(request, None)
