@@ -72,14 +72,3 @@ class PermissionMixin:
     def get_formset(self, request, obj=None, **kwargs):
         self.set_no_validation_if_raw_saving(request, kwargs)
         return super().get_formset(request, obj, **kwargs)
-
-
-class ReadonlyMixin:
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
