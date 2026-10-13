@@ -868,24 +868,6 @@ export const api = createApi({
               ])
           : [],
     }),
-    updateFinanceReceipt: build.mutation<
-      FinanceReceipt,
-      {
-        eventId: number
-        id: number
-        patchedFinanceReceipt: Partial<FinanceReceipt>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/finance/receipts/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedFinanceReceipt,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'FinanceReceipt', id: `${eventId}_${id}` },
-        { type: 'FinanceReceipt', id: `${eventId}_RECEIPT_LIST` },
-      ],
-    }),
     deleteFinanceReceipt: build.mutation<void, { eventId: number; id: number }>(
       {
         query: queryArg => ({
@@ -1088,24 +1070,6 @@ export const api = createApi({
         { type: 'AttendanceListPage', id: `${eventId}_ATTENDANCE_LIST` },
       ],
     }),
-    updateAttendanceListPage: build.mutation<
-      AttendanceListPage,
-      {
-        eventId: number
-        id: number
-        patchedAttendanceListPage: Partial<AttendanceListPagePayload>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/attendance_list_pages/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedAttendanceListPage,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'AttendanceListPage', id: `${eventId}_${id}` },
-        { type: 'AttendanceListPage', id: `${eventId}_ATTENDANCE_LIST` },
-      ],
-    }),
     deleteAttendanceListPage: build.mutation<
       void,
       { eventId: number; id: number }
@@ -1156,24 +1120,6 @@ export const api = createApi({
                 },
               ])
           : [],
-    }),
-    updateEventPhoto: build.mutation<
-      EventPhoto,
-      {
-        eventId: number
-        id: number
-        patchedEventPhoto: Partial<EventPhotoPayload>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/photos/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedEventPhoto,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'EventPhoto', id: `${eventId}_${id}` },
-        { type: 'EventPhoto', id: `${eventId}_EVENT_PHOTO_LIST` },
-      ],
     }),
     deleteEventPhoto: build.mutation<void, { eventId: number; id: number }>({
       query: queryArg => ({
