@@ -22,7 +22,13 @@ from bis.models import (
     UserContactAddress,
     UserEmail,
 )
-from donations.models import Donation, Donor, UploadBankRecords, VariableSymbol
+from donations.models import (
+    Donation,
+    Donor,
+    FundraisingCampaign,
+    UploadBankRecords,
+    VariableSymbol,
+)
 from event.models import Event, EventDraft
 from feedback.models import EventFeedback, FeedbackForm, Inquiry, Reply
 from opportunities.models import OfferedHelp, Opportunity
@@ -111,6 +117,7 @@ class Permissions:
         if self.model in [
             BrontosaurusMovement,
             DonationPoints,
+            FundraisingCampaign,
         ] or self.model._meta.app_label in [
             "categories",
             "regions",

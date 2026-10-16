@@ -289,6 +289,11 @@ def test_non_fundraiser_gets_403(categories, campaign, board_member_role):
     response_call = client.get(url_call)
     assert response_call.status_code == 403
 
+    response_admin = client.get(
+        reverse("admin:donations_fundraisingcampaign_changelist")
+    )
+    assert response_admin.status_code == 403
+
 
 @pytest.mark.django_db
 def test_fundraiser_can_see_donors_in_worklist(categories, campaign):
