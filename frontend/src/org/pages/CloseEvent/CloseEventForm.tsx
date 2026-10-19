@@ -1,8 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
+  AttendanceListPagePayload,
   AttendanceListTypeEnum,
   Event,
+  EventPhotoPayload,
   Finance,
+  FinanceReceipt,
   FullEvent,
   InquiryRead,
   PatchedEvent,
@@ -41,6 +44,9 @@ export type CloseEventPayload = DeepPick<
   PatchedEvent,
   'is_closed' | 'record' | 'finance.bank_account_number' | 'feedback_form'
 > & {
+  photos: EventPhotoPayload[]
+  pages: AttendanceListPagePayload[]
+  receipts: Optional<FinanceReceipt, 'id'>[]
   inquiries: Optional<InquiryRead, 'id'>[]
 }
 
@@ -53,6 +59,10 @@ export type EvidenceStepFormShape = {
     | 'is_event_closed_email_enabled'
   >
   finance: Pick<Finance, 'bank_account_number'>
+} & {
+  photos: EventPhotoPayload[]
+  pages: AttendanceListPagePayload[]
+  receipts: Optional<FinanceReceipt, 'id'>[]
 }
 
 export type ParticipantsStepFormShape = {
@@ -82,6 +92,9 @@ const pickEvidenceData = (data: Partial<CloseEventFormShape>) =>
     'record.comment_on_work_done',
     'record.is_event_closed_email_enabled',
     'finance.bank_account_number',
+    'photos',
+    'pages',
+    'receipts',
   )
 
 const pickParticipantsData = (data: Partial<CloseEventFormShape>) =>
@@ -300,6 +313,12 @@ export const CloseEventForm = ({
         send_feedback
           ? { feedback_form: { sent_at: toDateString(new Date()) } }
           : {},
+        {
+          photos: evidence?.photos?.filter(photo => photo.photo) || [],
+          pages: evidence?.pages?.filter(page => page.page) || [],
+          receipts:
+            evidence?.receipts?.filter(receipt => receipt.receipt) || [],
+        },
         withOverwriteArray,
       )
 

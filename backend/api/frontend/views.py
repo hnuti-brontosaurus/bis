@@ -339,22 +339,10 @@ class OpportunityViewSet(PermissionViewSetBase):
         return super().get_queryset().filter(contact_person=self.kwargs["user_id"])
 
 
-class EventFileViewSetBase(PermissionViewSetBase):
-    kwargs_serializer_class = EventRouterKwargsSerializer
-
-    def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
-        # BISPermissions checks create without an object, which passes any
-        # organizer, and the serializer creates the event's record or finance
-        if self.action == "create":
-            event = get_object_or_404(Event, pk=self.kwargs["event_id"])
-            if not event.has_edit_permission(request.user):
-                raise PermissionDenied()
-
-
-class FinanceReceiptViewSet(EventFileViewSetBase):
+class FinanceReceiptViewSet(PermissionViewSetBase):
     serializer_class = FinanceReceiptSerializer
     queryset = EventFinanceReceipt.objects.all()
+    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(finance__event=self.kwargs["event_id"])
@@ -369,17 +357,19 @@ class EventPropagationImageViewSet(PermissionViewSetBase):
         return super().get_queryset().filter(propagation__event=self.kwargs["event_id"])
 
 
-class EventPhotoViewSet(EventFileViewSetBase):
+class EventPhotoViewSet(PermissionViewSetBase):
     serializer_class = EventPhotoSerializer
     queryset = EventPhoto.objects.all()
+    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(record__event=self.kwargs["event_id"])
 
 
-class AttendanceListPageViewSet(EventFileViewSetBase):
+class AttendanceListPageViewSet(PermissionViewSetBase):
     serializer_class = AttendanceListPageSerializer
     queryset = EventAttendanceListPage.objects.all()
+    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(record__event=self.kwargs["event_id"])
