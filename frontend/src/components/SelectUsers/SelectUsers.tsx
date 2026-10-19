@@ -135,17 +135,14 @@ export const SelectUnknownUser = forwardRef<
   ) => {
     const [searchQuery, debouncedSearchQuery, setSearchQuery] =
       useDebouncedState(1000, '')
-    const {
-      data: userOptions,
-      isFetching: isOptionsFetching,
-      isFullUsersFetching,
-    } = useReadUnknownAndFullUsers(
-      debouncedSearchQuery.length >= 2
-        ? {
-            search: debouncedSearchQuery,
-          }
-        : skipToken,
-    )
+    const { data: userOptions, isFetching: isOptionsFetching } =
+      useReadUnknownAndFullUsers(
+        debouncedSearchQuery.length >= 2
+          ? {
+              search: debouncedSearchQuery,
+            }
+          : skipToken,
+      )
 
     const readFullUser = useReadFullUser()
 
@@ -175,10 +172,7 @@ export const SelectUnknownUser = forwardRef<
             else onBirthdayError?.('Jiná chyba')
           }
         }}
-        isOptionDisabled={user =>
-          Boolean(getDisabled?.(user)) ||
-          (isFullUsersFetching && !('id' in user))
-        }
+        isOptionDisabled={user => Boolean(getDisabled?.(user))}
         getOptionLabel={
           getLabel ?? (user => user.display_name + ('id' in user ? '' : ' ?'))
         }
@@ -281,17 +275,14 @@ export const SelectUnknownUsers = forwardRef<
     1000,
     '',
   )
-  const {
-    data: userOptions,
-    isFetching: isOptionsFetching,
-    isFullUsersFetching,
-  } = useReadUnknownAndFullUsers(
-    debouncedSearchQuery.length >= 2
-      ? {
-          search: debouncedSearchQuery,
-        }
-      : skipToken,
-  )
+  const { data: userOptions, isFetching: isOptionsFetching } =
+    useReadUnknownAndFullUsers(
+      debouncedSearchQuery.length >= 2
+        ? {
+            search: debouncedSearchQuery,
+          }
+        : skipToken,
+    )
 
   const readFullUser = useReadFullUser()
 
@@ -326,9 +317,6 @@ export const SelectUnknownUsers = forwardRef<
         }
       }}
       getOptionLabel={user => user.display_name + ('id' in user ? '' : ' ?')}
-      isOptionDisabled={user =>
-        isFullUsersFetching && !('id' in (user as User | UserSearch))
-      }
       getOptionValue={user => user._search_id}
       formatOptionLabel={user =>
         formatUnknownUserOptionLabel(user, isOptionsFetching)
@@ -359,8 +347,17 @@ const getVerificationErrorMessage = (
 }
 
 export const useReadFullUser = () => {
+  const [readUsers] = api.endpoints.readUsers.useLazyQuery()
   const [readUserByBirthday] = api.endpoints.readUserByBirthdate.useLazyQuery()
   return async (user: UserSearch): Promise<User> => {
+    // The option list fills in full profiles only once a slow query finishes,
+    // so a user the requester may see can still be picked as unknown
+    const { results: visibleUsers } = await readUsers(
+      { _search_id: [user._search_id] },
+      true,
+    ).unwrap()
+    if (visibleUsers.length > 0) return visibleUsers[0]
+
     // settled once the dialog flow ends: a full user on success,
     // canceledError on cancel/escape/dismiss, or an Error with a message to
     // surface to the caller (fallback; normally errors stay in the dialog)
