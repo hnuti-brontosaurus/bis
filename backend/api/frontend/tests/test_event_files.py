@@ -74,3 +74,37 @@ def test_organizer_of_another_event_cannot_upload(event_without_record):
 
     assert response.status_code == 403
     assert not EventRecord.objects.filter(event=event_without_record).exists()
+
+
+@pytest.mark.django_db
+def test_office_worker_uploads_to_an_event_they_do_not_organize(event_without_record):
+    office_worker = User.objects.create(
+        first_name="Kancl", last_name="Brontosaura", email="office@example.com"
+    )
+    office_worker.roles.add(
+        RoleCategory.objects.get_or_create(
+            slug="office_worker", defaults={"name": "office_worker"}
+        )[0]
+    )
+
+    response = authenticated_client(office_worker).post(
+        f"/api/frontend/events/{event_without_record.id}/record/photos/",
+        {"photo": _png()},
+        format="json",
+    )
+
+    assert response.status_code == 201, response.data
+
+
+@pytest.mark.django_db
+def test_organizer_cannot_upload_to_an_archived_event(api_client, event):
+    event.is_archived = True
+    event.save(update_fields=["is_archived"])
+
+    response = api_client.post(
+        f"/api/frontend/events/{event.id}/record/photos/",
+        {"photo": _png()},
+        format="json",
+    )
+
+    assert response.status_code == 403
