@@ -588,10 +588,19 @@ English for code, comments, variable names. Czech for user-facing strings.
 - No abbreviations — use the full word (`ingredient`, not `ing`). Single-letter loop variables in tight scopes are fine.
 
 ### React/TypeScript
+Before writing frontend code, read `frontend/docs/style-guide.md` and, for
+anything with a form, `frontend/docs/forms.md`. They hold the conventions
+reviewers check for (naming, constants, user-facing text, promises, error
+handling, form internals). In short:
 - One component per file, no default exports
 - Use absolute imports
 - Style with CSS modules + SCSS
 - Forms use react-hook-form + yup validation
+- Czech UI strings inline, not added to the generated `translations.ts`
+- Cancel resolves `null` rather than rejecting; errors are told apart by class, never by message
+
+When review feedback names a convention the docs don't have yet, add it to
+`style-guide.md` or `forms.md`.
 
 ### Comments
 - Default: no comments. Code with well-named identifiers should explain itself, rather rewrite the code to be more readable.

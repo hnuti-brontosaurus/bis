@@ -27,6 +27,63 @@ In Typescript, we name variables with `camelCase` or `PascalCase`.
 
 In this project, some object properties are named by `snake_case`. We do that to simplify dealing with data returned from api. Otherwise this practice should be avoided in favor of `camelCase` and `PascalCase`.
 
+### Constants
+
+Name module-level constants with `UPPER_CASE`, so they are not mistaken for
+variables.
+
+```ts
+const DEFAULT_TIMEOUTS = { success: 4_000, error: 12_000 } as const
+```
+
+## User-facing text
+
+Write Czech strings directly where they are displayed. `config/static/translations.ts`
+is generated from the backend yamls for the names of models, fields and
+choices; don't add strings of a single component to it.
+
+## Code structure
+
+### Keep handlers out of the markup
+
+A handler longer than a few lines doesn't belong inline in JSX. Give it a name
+and define it above the `return`, or move the logic into a hook (see
+[forms.md](forms.md#extract-async-operations-into-a-hook)).
+
+### Promises
+
+- Call `resolve` and `reject` directly. Don't wrap them in a function that
+  decides between them by the type of its argument.
+- A cancelled dialog or a declined confirmation is not an error. Resolve with
+  `null` (or `false`) and let the caller return early, instead of rejecting
+  and filtering the rejection out again.
+- Wrap a callback-style API in a helper that returns a promise, once, instead
+  of building the plumbing at every call site. [`openModal`](../src/utils/openModal.tsx)
+  does this for `react-confirm-alert`:
+
+```tsx
+const user = await openModal<User>({
+  title: 'Zadat datum narození',
+  message: user.display_name,
+  render: close => <BirthdayForm onSubmit={…} onCancel={() => close(null)} />,
+})
+if (!user) return
+```
+
+### Errors
+
+- Don't swallow errors. Every `catch` either shows the error to the user or
+  rethrows it; a `catch` that doesn't recognise an error rethrows it.
+- To tell one kind of error from another, define an error class and check it
+  with `instanceof`. Never compare `error.message`: the message is text for
+  the user and may change.
+
+```ts
+class LockedOutError extends Error {}
+
+if (error instanceof LockedOutError) …
+```
+
 ## Exports and imports
 
 - write and export only one react component per file
