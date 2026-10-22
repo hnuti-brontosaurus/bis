@@ -1,35 +1,19 @@
-import type { SerializedError } from '@reduxjs/toolkit'
-import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import classNames from 'classnames'
-import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
-import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import forEach from 'lodash/forEach'
-import { FC, ReactNode, useEffect, useState } from 'react'
+import { FC, ReactNode, useEffect } from 'react'
 import {
   Controller,
   useFieldArray,
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { FaDownload, FaImage, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
+import { FileGrid } from './FileGrid'
+import { FileGridItem } from './FileGridItem'
+import { FilePreview } from './FilePreview'
 import styles from './ImageUpload.module.scss'
-
-export const DownloadLink: FC<{ url: string }> = ({ url }) => {
-  const fileName =
-    url.match(/filename=(.*?);/)?.[1] ?? url.match(/[^/]*$/)?.[0] ?? ''
-  return (
-    <a
-      href={url}
-      download={fileName}
-      className={classNames(styles.button, styles.downloadButton)}
-    >
-      <FaDownload />
-    </a>
-  )
-}
 
 const ImageInput: FC<{ name: string; required?: boolean }> = ({
   name,
@@ -74,19 +58,7 @@ const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
 
 const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
-  return (
-    <div className={styles.imageWrapper}>
-      <object data={value} className={styles.image}>
-        <div className={styles.fallback}>
-          <FaImage size={60} />
-          (nelze zobrazit)
-        </div>
-      </object>
-      <div className={styles.editOverlay}>
-        <FaPencilAlt size={26} />
-      </div>
-    </div>
-  )
+  return <FilePreview url={value} editable />
 }
 
 const ImageThumbnail: FC<{ name: string; thumbnail?: string }> = ({
@@ -177,109 +149,24 @@ export const ImagesUpload = ({
   }
 
   return (
-    <ul className={styles.imageList}>
-      {imageFields.fields.map((item, index) => {
-        return (
-          <li key={item.id} className={styles.imageItem}>
-            <label tabIndex={0}>
-              <ImageInput name={`${name}.${index}.${image}`} />
-              <ImageThumbnail
-                name={`${name}.${index}.${image}`}
-                thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
-              />
-            </label>
-            <div className={styles.toolbar}>
-              <DownloadLink url={watch(`${name}.${index}.${image}`)} />
-              <button
-                className={classNames(styles.button, styles.removeButton)}
-                type="button"
-                onClick={() => imageFields.remove(index)}
-              >
-                <FaTimes />
-              </button>
-            </div>
-          </li>
-        )
-      })}
-      <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />
-      </li>
-    </ul>
-  )
-}
-
-export type UploadedFile = { id: number; url: string; preview?: string }
-
-/**
- * Saves each file on the server as soon as it is picked, one at a time, so
- * the browser never holds more than one of them as base64.
- */
-export const FilesUpload = ({
-  name,
-  files,
-  upload,
-  remove,
-}: {
-  name: string
-  files: UploadedFile[] | undefined
-  upload: (file: string) => Promise<unknown>
-  remove: (id: number) => Promise<unknown>
-}) => {
-  const [pending, setPending] = useState<File[]>([])
-  const [error, setError] = useState<FetchBaseQueryError | SerializedError>()
-  useShowApiErrorMessage(error, 'Soubor se nepodařilo uložit')
-
-  const uploadAll = async (fileList: FileList) => {
-    const queue = Array.from(fileList)
-    setPending(pending => [...pending, ...queue])
-    for (const file of queue) {
-      try {
-        await upload(await file2base64(file))
-      } catch (error) {
-        setError(error as FetchBaseQueryError | SerializedError)
-      } finally {
-        setPending(pending => pending.filter(other => other !== file))
-      }
-    }
-  }
-
-  return (
-    <ul className={styles.imageList}>
-      {files?.map(file => (
-        <li key={file.id} className={styles.imageItem}>
-          <object data={file.preview ?? file.url} className={styles.image}>
-            <div className={styles.fallback}>
-              <FaImage size={60} />
-              (nelze zobrazit)
-            </div>
-          </object>
-          <div className={styles.toolbar}>
-            <DownloadLink url={file.url} />
-            <button
-              className={classNames(styles.button, styles.removeButton)}
-              type="button"
-              onClick={() =>
-                remove(file.id).catch(error =>
-                  setError(error as FetchBaseQueryError | SerializedError),
-                )
-              }
-            >
-              <FaTimes />
-            </button>
-          </div>
-        </li>
+    <FileGrid
+      add={<ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />}
+    >
+      {imageFields.fields.map((item, index) => (
+        <FileGridItem
+          key={item.id}
+          url={watch(`${name}.${index}.${image}`)}
+          onRemove={() => imageFields.remove(index)}
+        >
+          <label tabIndex={0}>
+            <ImageInput name={`${name}.${index}.${image}`} />
+            <ImageThumbnail
+              name={`${name}.${index}.${image}`}
+              thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
+            />
+          </label>
+        </FileGridItem>
       ))}
-      {pending.map((file, index) => (
-        <li key={`pending-${index}`} className={styles.imageItem}>
-          <div className={styles.fallback}>
-            <LoadingIcon size={60} />
-            {file.name}
-          </div>
-        </li>
-      ))}
-      <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={uploadAll} />
-      </li>
-    </ul>
+    </FileGrid>
   )
 }
