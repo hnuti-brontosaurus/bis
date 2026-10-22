@@ -54,6 +54,12 @@ database. The helpers live in [`e2e/support/`](../e2e/support):
   themselves. `expectPath` and `expectText` stand in for
   `cy.location('pathname')` and `cy.contains`.
 
+One test checks one behaviour: creating and deleting something are two
+tests, so a failure names what broke. When the same behaviour exists in
+several variants (photos, attendance list pages, receipts), loop over the
+variants and generate a test for each instead of testing only one; see the
+"Event files" tests in [`closeEvent.spec.ts`](../e2e/closeEvent.spec.ts).
+
 Fixtures are plain JSON in [`e2e/fixtures/`](../e2e/fixtures), read with
 `fixture('name')`. Binary inputs (images, spreadsheets) live in
 [`e2e/assets/`](../e2e/assets) and are resolved with `asset('name.png')`.

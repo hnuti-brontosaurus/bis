@@ -40,3 +40,29 @@ If you need a new endpoint, try to locate it in the `testApi.ts`, copy it to `bi
 If you want to export a type from `testApi.ts`, first import it to `bisTypes.ts`, fix it if needed, and export it from `bisTypes.ts`. All the types from `testApi` should go through `bisTypes`, so we keep track of what's included and what's not.
 
 In other words, don't import types directly from `testApi`. Use `bisTypes` for that purpose.
+
+## Update the cache instead of invalidating it
+
+Invalidating a list's tag refetches the whole list. That is fine after a
+single change, but a mutation that runs many times in a row (one per file of a
+multi-file upload) then refetches the list after every call. Such a mutation
+puts its response into the cached list itself:
+
+```ts
+onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+  try {
+    const { data: photo } = await queryFulfilled
+    dispatch(
+      api.util.updateQueryData('readEventPhotos', { eventId }, list => {
+        list.results.push(photo)
+        list.count += 1
+      }),
+    )
+  } catch {
+    // the caller of the mutation shows the error
+  }
+},
+```
+
+`queryFulfilled` rejects when the request fails, and rtk-query (1.8) doesn't
+catch what `onQueryStarted` throws, so the `catch` is needed.
