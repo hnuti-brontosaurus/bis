@@ -762,6 +762,42 @@ test.describe('create event', () => {
       await expect(page.getByText('Zadat datum narození')).toHaveCount(0)
     })
 
+    test('keeps the birthday dialog open on a wrong birthday until cancelled', async ({
+      page,
+    }) => {
+      await openTeamStep(page)
+      await mock(
+        page,
+        { method: 'GET', pathname: '/api/frontend/get_unknown_user/' },
+        { status: 404, body: {} },
+      )
+
+      await pickFromReactSelect(
+        page,
+        7,
+        ['ArrowDown', 'Enter'],
+        'displayname2',
+        { force: true },
+      )
+      await page.locator('[placeholder=DD]').fill('29')
+      await page.locator('[placeholder=MM]').fill('02')
+      await page.locator('[placeholder=RRRR]').fill('2000')
+      await page
+        .locator('.react-confirm-alert [type=submit]', {
+          hasText: 'Pokračovat',
+        })
+        .click()
+
+      await expect(page.getByText('Nesprávné datum narození')).toBeVisible()
+
+      await page
+        .locator('.react-confirm-alert [type=reset]', { hasText: 'Zrušit' })
+        .click()
+
+      await expect(page.getByText('Zadat datum narození')).toHaveCount(0)
+      await expect(page.getByText('Nepodařilo se')).toHaveCount(0)
+    })
+
     test.describe('user is organizer', () => {
       test('should show validation error when they are not part of team', async ({
         page,

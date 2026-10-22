@@ -2,7 +2,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { FetchBaseQueryError, skipToken } from '@reduxjs/toolkit/query'
 import { api } from 'app/services/bis'
 import { User, UserSearch } from 'app/services/bisTypes'
-import * as translations from 'config/static/translations'
 import {
   Actions,
   BirthdayInput,
@@ -10,20 +9,14 @@ import {
   FormInputError,
   LoadingIcon,
 } from 'components'
-import modalStyles from 'components/StyledModal/StyledModal.module.scss'
 import { useDebouncedState } from 'hooks/debouncedState'
 import { useReadUnknownAndFullUsers } from 'hooks/readUnknownAndFullUsers'
-import { forwardRef, InputHTMLAttributes, ReactNode, useState } from 'react'
-import { confirmAlert } from 'react-confirm-alert'
-import {
-  Controller,
-  FormProvider,
-  useForm,
-  UseFormReturn,
-} from 'react-hook-form'
+import { forwardRef, InputHTMLAttributes, ReactNode } from 'react'
+import { Controller, FormProvider, useForm } from 'react-hook-form'
 import { FaBirthdayCake } from 'react-icons/fa'
 import Select from 'react-select'
 import { Assign } from 'utility-types'
+import { openModal } from 'utils/openModal'
 import * as yup from 'yup'
 import { Button } from '..'
 import styles from './SelectUsers.module.scss'
@@ -162,13 +155,13 @@ export const SelectUnknownUser = forwardRef<
           if ('id' in user) return onChange(user)
           try {
             const fullUser = await readFullUser(user)
+            if (!fullUser) return
             if (getDisabled && getDisabled(fullUser)) {
               throw new Error(getDisabled(fullUser))
             }
             return onChange(fullUser)
           } catch (error) {
-            if (error instanceof Error && error.message === 'Canceled') return
-            else if (error instanceof Error) onBirthdayError?.(error.message)
+            if (error instanceof Error) onBirthdayError?.(error.message)
             else onBirthdayError?.('Jiná chyba')
           }
         }}
@@ -200,30 +193,32 @@ const birthdayValidationSchema: yup.ObjectSchema<{
   birthday: string
 }> = yup.object({ birthday: birthdayValidation.required() })
 
+/**
+ * `onSubmit` throws an Error whose message is shown under the birthday input.
+ */
 export const BirthdayForm = ({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: (
-    data: { birthday: string },
-    form: UseFormReturn<{ birthday: string }>,
-  ) => Promise<void> | void
+  onSubmit: (data: { birthday: string }) => Promise<void>
   onCancel: () => void
 }) => {
   const methods = useForm<{ birthday: string }>({
     resolver: yupResolver(birthdayValidationSchema),
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const { handleSubmit, control } = methods
+  const {
+    handleSubmit,
+    control,
+    setError,
+    formState: { isSubmitting },
+  } = methods
 
   const handleFormSubmit = handleSubmit(async data => {
-    if (isSubmitting) return
-    setIsSubmitting(true)
     try {
-      await onSubmit(data, methods)
-    } finally {
-      setIsSubmitting(false)
+      await onSubmit(data)
+    } catch (error) {
+      if (!(error instanceof Error)) throw error
+      setError('birthday', { type: 'manual', message: error.message })
     }
   })
 
@@ -244,16 +239,11 @@ export const BirthdayForm = ({
           />
         </FormInputError>
         <div className={styles.attemptsHint}>
-          {translations.unknownUser.attempts_hint}
+          Po 5 neúspěšných pokusech se ověření na 24 hodin zablokuje.
         </div>
         <Actions>
           <Button type="reset">Zrušit</Button>
-          <Button
-            primary
-            type="submit"
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
-          >
+          <Button primary type="submit" isLoading={isSubmitting}>
             Pokračovat
           </Button>
         </Actions>
@@ -305,12 +295,12 @@ export const SelectUnknownUsers = forwardRef<
 
         try {
           const fullUser = await readFullUser(user)
+          if (!fullUser) return
           const updatedUsers = [...users] as User[]
           updatedUsers[userIndex] = fullUser
           return onChange(updatedUsers)
         } catch (e) {
-          if (e instanceof Error && e.message === 'Canceled') return
-          else if (e instanceof Error) onBirthdayError?.(e.message)
+          if (e instanceof Error) onBirthdayError?.(e.message)
           else {
             onBirthdayError?.('Jiná chyba')
           }
@@ -325,31 +315,37 @@ export const SelectUnknownUsers = forwardRef<
   )
 })
 
-/**
- * Error thrown to callers of useReadFullUser when the user cancels the
- * birthday-verification dialog. Callers treat it as a silent no-op.
- */
-const canceledError = new Error('Canceled')
-
-const getVerificationErrorMessage = (
-  error: FetchBaseQueryError,
-): string | null => {
-  switch (error.status) {
-    case 404:
-      // wrong birthday: let the user correct it in the dialog
-      return translations.unknownUser.wrong_birthday
-    case 429:
-      // throttled: max 5 failures per (first_name, last_name, requester) per 24h
-      return translations.unknownUser.locked_out
-    default:
-      return null
-  }
+const getVerificationErrorMessage = (error: unknown) => {
+  const status = (error as FetchBaseQueryError).status
+  if (status === 404) return 'Nesprávné datum narození'
+  // the backend allows 5 failures per name and requester in 24 hours
+  if (status === 429)
+    return 'Příliš mnoho neúspěšných pokusů. Ověření tohoto uživatele je na 24 hodin zablokováno.'
+  return 'Ověření se nezdařilo. Zkus to prosím znovu.'
 }
 
+/**
+ * Resolves with the full profile of the picked user, asking for their
+ * birthday when the requester may not see them, or with null when the
+ * birthday dialog is cancelled.
+ */
 export const useReadFullUser = () => {
   const [readUsers] = api.endpoints.readUsers.useLazyQuery()
   const [readUserByBirthday] = api.endpoints.readUserByBirthdate.useLazyQuery()
-  return async (user: UserSearch): Promise<User> => {
+
+  const verifyBirthday = async (user: UserSearch, birthday: string) => {
+    let verifiedUser: User
+    try {
+      verifiedUser = await readUserByBirthday({ ...user, birthday }).unwrap()
+    } catch (error) {
+      throw new Error(getVerificationErrorMessage(error))
+    }
+    if (verifiedUser._search_id !== user._search_id)
+      throw new Error('Nesprávné datum narození')
+    return verifiedUser
+  }
+
+  return async (user: UserSearch): Promise<User | null> => {
     // The option list fills in full profiles only once a slow query finishes,
     // so a user the requester may see can still be picked as unknown
     const { results: visibleUsers } = await readUsers(
@@ -358,87 +354,17 @@ export const useReadFullUser = () => {
     ).unwrap()
     if (visibleUsers.length > 0) return visibleUsers[0]
 
-    // settled once the dialog flow ends: a full user on success,
-    // canceledError on cancel/escape/dismiss, or an Error with a message to
-    // surface to the caller (fallback; normally errors stay in the dialog)
-    let settle: (value: User | Error) => void = () => undefined
-    const result = new Promise<User>((resolve, reject) => {
-      settle = value =>
-        value instanceof Error ? reject(value) : resolve(value)
-    })
-
-    // settle only once, no matter how many close paths fire
-    let finish = (value: User | Error) => {
-      settle(value)
-      finish = () => undefined
-    }
-
-    confirmAlert({
-      customUI: ({ title, message, onClose }) => {
-        return (
-          <div className={modalStyles.modal}>
-            <div className={modalStyles.content}>
-              <header className={modalStyles.modalTitleBox}>{title}</header>
-              <div className={modalStyles.modalFormBox}>
-                <div className={modalStyles.infoBox}>{message}</div>
-                <BirthdayForm
-                  onSubmit={async ({ birthday }, form) => {
-                    try {
-                      const fullUser = await readUserByBirthday({
-                        ...user,
-                        birthday,
-                      }).unwrap()
-
-                      if (fullUser._search_id === user._search_id) {
-                        finish(fullUser)
-                        onClose()
-                      } else {
-                        // verified user doesn't match the picked one
-                        form.setError('birthday', {
-                          type: 'manual',
-                          message: translations.unknownUser.wrong_birthday,
-                        })
-                      }
-                    } catch (error) {
-                      if (
-                        error &&
-                        typeof error === 'object' &&
-                        'status' in error
-                      ) {
-                        const verificationError = getVerificationErrorMessage(
-                          error as FetchBaseQueryError,
-                        )
-                        if (verificationError) {
-                          form.setError('birthday', {
-                            type: 'manual',
-                            message: verificationError,
-                          })
-                          return
-                        }
-                      }
-                      form.setError('birthday', {
-                        type: 'manual',
-                        message: translations.unknownUser.verification_failed,
-                      })
-                    }
-                  }}
-                  onCancel={() => {
-                    finish(canceledError)
-                    onClose()
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )
-      },
-      // the dialog can also be closed via Escape / click outside; treat
-      // those like cancel (this also settles the promise on unmount)
-      willUnmount: () => finish(canceledError),
+    return openModal<User>({
       title: 'Zadat datum narození',
       message: user.display_name,
+      render: close => (
+        <BirthdayForm
+          onSubmit={async ({ birthday }) =>
+            close(await verifyBirthday(user, birthday))
+          }
+          onCancel={() => close(null)}
+        />
+      ),
     })
-
-    return result
   }
 }
