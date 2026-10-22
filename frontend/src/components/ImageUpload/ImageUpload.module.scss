@@ -39,14 +39,19 @@
 }
 
 .imageWrapper {
-  cursor: pointer;
   position: relative;
   .image {
     height: 10rem;
-    cursor: pointer;
   }
   .editOverlay {
     display: none;
+  }
+}
+
+.editable {
+  cursor: pointer;
+  .image {
+    cursor: pointer;
   }
   &:hover .editOverlay {
     position: absolute;

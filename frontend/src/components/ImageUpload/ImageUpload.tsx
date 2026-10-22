@@ -7,25 +7,13 @@ import {
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { FaDownload, FaImage, FaPencilAlt, FaTimes } from 'react-icons/fa'
 import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
+import { FileGrid } from './FileGrid'
+import { FileGridItem } from './FileGridItem'
+import { FilePreview } from './FilePreview'
 import styles from './ImageUpload.module.scss'
-
-export const DownloadLink: FC<{ url: string }> = ({ url }) => {
-  const fileName =
-    url.match(/filename=(.*?);/)?.[1] ?? url.match(/[^/]*$/)?.[0] ?? ''
-  return (
-    <a
-      href={url}
-      download={fileName}
-      className={classNames(styles.button, styles.downloadButton)}
-    >
-      <FaDownload />
-    </a>
-  )
-}
 
 const ImageInput: FC<{ name: string; required?: boolean }> = ({
   name,
@@ -70,19 +58,7 @@ const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
 
 const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
-  return (
-    <div className={styles.imageWrapper}>
-      <object data={value} className={styles.image}>
-        <div className={styles.fallback}>
-          <FaImage size={60} />
-          (nelze zobrazit)
-        </div>
-      </object>
-      <div className={styles.editOverlay}>
-        <FaPencilAlt size={26} />
-      </div>
-    </div>
-  )
+  return <FilePreview url={value} editable />
 }
 
 const ImageThumbnail: FC<{ name: string; thumbnail?: string }> = ({
@@ -173,33 +149,24 @@ export const ImagesUpload = ({
   }
 
   return (
-    <ul className={styles.imageList}>
-      {imageFields.fields.map((item, index) => {
-        return (
-          <li key={item.id} className={styles.imageItem}>
-            <label tabIndex={0}>
-              <ImageInput name={`${name}.${index}.${image}`} />
-              <ImageThumbnail
-                name={`${name}.${index}.${image}`}
-                thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
-              />
-            </label>
-            <div className={styles.toolbar}>
-              <DownloadLink url={watch(`${name}.${index}.${image}`)} />
-              <button
-                className={classNames(styles.button, styles.removeButton)}
-                type="button"
-                onClick={() => imageFields.remove(index)}
-              >
-                <FaTimes />
-              </button>
-            </div>
-          </li>
-        )
-      })}
-      <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />
-      </li>
-    </ul>
+    <FileGrid
+      add={<ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />}
+    >
+      {imageFields.fields.map((item, index) => (
+        <FileGridItem
+          key={item.id}
+          url={watch(`${name}.${index}.${image}`)}
+          onRemove={() => imageFields.remove(index)}
+        >
+          <label tabIndex={0}>
+            <ImageInput name={`${name}.${index}.${image}`} />
+            <ImageThumbnail
+              name={`${name}.${index}.${image}`}
+              thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
+            />
+          </label>
+        </FileGridItem>
+      ))}
+    </FileGrid>
   )
 }

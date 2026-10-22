@@ -29,9 +29,36 @@ In this project, some object properties are named by `snake_case`. We do that to
 
 ## Exports and imports
 
-- write and export only one react component per file
+- write and export only one react component per file, small helper components
+  included; a file that already holds several is no reason to add another
 - don't use default exports
 - use absolute paths for imports when possible
+
+## Components
+
+### Share markup, don't copy it
+
+When two components look the same but keep their data differently (in a form,
+saved to the server right away), pull the look out into a component that only
+takes props and renders, and build both on top of it. A copy of the markup
+means every later change to the look has to be made twice.
+[`FileGrid`](../src/components/ImageUpload/FileGrid.tsx) and
+[`FileGridItem`](../src/components/ImageUpload/FileGridItem.tsx) are shared by
+`ImagesUpload` (form) and `FilesUpload` (direct upload).
+
+### Keys
+
+- Key list items by something that stays with the item. An index is fine only
+  for a list that never loses items from the middle or gets reordered; when
+  items have no id of their own, give them one when they are added (a counter
+  in a `useRef`).
+- Keys only have to be unique among the items of one array. Two `.map()`s next
+  to each other don't need prefixes to keep their keys apart.
+
+### Name what failed
+
+When several things can fail at once (files of one upload), the error message
+says which one: `Soubor ${file.name} se nepodařilo uložit`.
 
 ## Styles
 
