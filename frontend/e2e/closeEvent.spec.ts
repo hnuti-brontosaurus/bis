@@ -995,61 +995,79 @@ test.describe('Close event - evidence and participants', () => {
   })
 
   test.describe('Event files', () => {
-    test('should upload each photo once picked and delete it on remove', async ({
-      page,
-    }) => {
-      const photos: { id: number; photo: Record<string, string> }[] = []
-      const thumbnail = (id: number) => `/media/${id}.png`
-      await mock(
-        page,
-        { method: 'GET', pathname: '/api/frontend/events/1000/record/photos/' },
-        () => ({ body: { results: photos } }),
-      )
-      const createPhoto = await mock(
-        page,
-        {
-          method: 'POST',
-          pathname: '/api/frontend/events/1000/record/photos/',
-        },
-        () => {
-          const id = photos.length + 1
-          const urls = { small: thumbnail(id), original: thumbnail(id) }
-          photos.push({ id, photo: urls })
-          return { status: 201, body: { id, photo: urls } }
-        },
-      )
-      const deletePhoto = await mock(
-        page,
-        {
-          method: 'DELETE',
-          pathname: '/api/frontend/events/1000/record/photos/1/',
-        },
-        () => {
-          photos.splice(0, 1)
-          return {}
-        },
-      )
-
-      await page.goto('/org/akce/1000/uzavrit?krok=2')
-      await page
-        .locator('input[name="photos.add"]')
-        .setInputFiles([asset('image.png'), asset('image.png')])
-
-      const created = await createPhoto.all(2)
-      for (const { body } of created)
-        expect(body.photo).toMatch(/^data:image\/png;filename=image;base64,/)
-      await expect(page.locator(`object[data="${thumbnail(2)}"]`)).toBeVisible()
-
-      await page
-        .locator('li', { has: page.locator(`object[data="${thumbnail(1)}"]`) })
-        .locator('button')
-        .click()
-
-      await deletePhoto.first()
-      await expect(page.locator(`object[data="${thumbnail(1)}"]`)).toHaveCount(
-        0,
-      )
-      await expect(page.locator(`object[data="${thumbnail(2)}"]`)).toBeVisible()
+    const kinds = [
+      { name: 'photos', path: 'record/photos', field: 'photo' },
+      { name: 'pages', path: 'record/attendance_list_pages', field: 'page' },
+      { name: 'receipts', path: 'finance/receipts', field: 'receipt' },
+    ]
+    const fileUrl = (id: number) => `/media/${id}.png`
+    // a photo is a thumbnail dict, the other files a plain url
+    const fileRow = (field: string, id: number) => ({
+      id,
+      [field]:
+        field === 'photo'
+          ? { small: fileUrl(id), original: fileUrl(id) }
+          : fileUrl(id),
     })
+
+    for (const { name, path, field } of kinds) {
+      const listPath = `/api/frontend/events/1000/${path}/`
+
+      test(`should upload ${name} as soon as they are picked`, async ({
+        page,
+      }) => {
+        const list = await mock(
+          page,
+          { method: 'GET', pathname: listPath },
+          { body: { results: [] } },
+        )
+        let lastId = 0
+        const create = await mock(
+          page,
+          { method: 'POST', pathname: listPath },
+          () => ({ status: 201, body: fileRow(field, ++lastId) }),
+        )
+
+        await page.goto('/org/akce/1000/uzavrit?krok=2')
+        await page
+          .locator(`input[name="${name}.add"]`)
+          .setInputFiles([asset('image.png'), asset('image.png')])
+
+        const created = await create.all(2)
+        for (const { body } of created)
+          expect(body[field]).toMatch(/^data:image\/png;filename=image;base64,/)
+        await expect(page.locator(`object[data="${fileUrl(1)}"]`)).toBeVisible()
+        await expect(page.locator(`object[data="${fileUrl(2)}"]`)).toBeVisible()
+        // each created file is appended to the cached list, not refetched
+        expect(list.calls).toHaveLength(1)
+      })
+
+      test(`should delete ${name} on remove`, async ({ page }) => {
+        const rows = [fileRow(field, 1), fileRow(field, 2)]
+        await mock(page, { method: 'GET', pathname: listPath }, () => ({
+          body: { results: rows },
+        }))
+        const remove = await mock(
+          page,
+          { method: 'DELETE', pathname: `${listPath}1/` },
+          () => {
+            rows.splice(0, 1)
+            return {}
+          },
+        )
+
+        await page.goto('/org/akce/1000/uzavrit?krok=2')
+        await page
+          .locator('li', { has: page.locator(`object[data="${fileUrl(1)}"]`) })
+          .locator('button')
+          .click()
+
+        await remove.first()
+        await expect(page.locator(`object[data="${fileUrl(1)}"]`)).toHaveCount(
+          0,
+        )
+        await expect(page.locator(`object[data="${fileUrl(2)}"]`)).toBeVisible()
+      })
+    }
   })
 })

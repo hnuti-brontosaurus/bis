@@ -839,9 +839,25 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.financeReceipt,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'FinanceReceipt', id: `${eventId}_RECEIPT_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: receipt } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData(
+              'readFinanceReceipts',
+              { eventId },
+              list => {
+                list.results.push(receipt)
+                list.count += 1
+              },
+            ),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     readFinanceReceipts: build.query<
       PaginatedList<FinanceReceipt>,
@@ -1066,9 +1082,25 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.eventAttendanceListPage,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'AttendanceListPage', id: `${eventId}_ATTENDANCE_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: page } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData(
+              'readAttendanceListPages',
+              { eventId },
+              list => {
+                list.results.push(page)
+                list.count += 1
+              },
+            ),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     deleteAttendanceListPage: build.mutation<
       void,
@@ -1092,9 +1124,21 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.eventPhoto,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'EventPhoto', id: `${eventId}_EVENT_PHOTO_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: photo } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData('readEventPhotos', { eventId }, list => {
+              list.results.push(photo)
+              list.count += 1
+            }),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     readEventPhotos: build.query<
       PaginatedList<EventPhoto>,
