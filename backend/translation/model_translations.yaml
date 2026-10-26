@@ -253,7 +253,7 @@ EventFinance:
     total_event_cost: Celkové náklady akce
     budget: Rozpočet
     bank_account_number:
-      - Číslo bankvního účtu
+      - Číslo bankovního účtu
       - Pro zaslání dotací
 EventFinanceReceipt:
   name: Účtenka
