@@ -49,7 +49,6 @@ ALLOWED = {
     ("AdministrationUnitType", "address"),
     ("AdministrationSubUnitType", "address"),
     ("AdministrationUnitType", "bankAccountNumber"),
-    ("OfferedHelpType", "info"),
 }
 
 
