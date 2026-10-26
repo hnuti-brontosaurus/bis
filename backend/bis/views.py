@@ -1,5 +1,7 @@
+from bis.data_sensitivity import LEVEL_DESCRIPTIONS, overview
 from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views import View
 from oauth_dcr.views import DynamicClientRegistrationView
 
@@ -41,3 +43,15 @@ class OAuthAuthorizationServerMetadataView(View):
             },
             headers={"Access-Control-Allow-Origin": "*"},
         )
+
+
+def data_sensitivity(request):
+    levels = [
+        {"value": level.value, "label": level.label, "description": description}
+        for level, description in LEVEL_DESCRIPTIONS.items()
+    ]
+    return render(
+        request,
+        "docs/data_sensitivity.html",
+        {"levels": levels, "models": overview()},
+    )
