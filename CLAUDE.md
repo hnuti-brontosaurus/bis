@@ -32,6 +32,17 @@ changelist loads each take about three times as long. gunicorn's 8 threads
 overlap only the time spent waiting on postgres, and a second worker would not
 help either while the limit is 1 CPU, since both would share that one CPU.
 
+Postgres JIT is off for Django's connections (`OPTIONS` in
+`project/settings.py`). It starts above a planner cost threshold that
+correlated subqueries over a whole table cross even under a `LIMIT 100`: the
+event changelist spent 1.4s compiling a query that then ran in 10ms. When a
+page is slow but `EXPLAIN ANALYZE` shows a fast plan, look for a `JIT:` block.
+
+Postgres flattens a join or `EXISTS` from a correlated subquery into a hash
+join and can then scan a whole table per row; a scalar subquery
+(`Subquery(...values("x"))`) keeps it an index lookup. See
+`EventRecord.participant_counts`.
+
 ### Testing
 ```bash
 make test              # Run all tests (backend + frontend + cookbook)

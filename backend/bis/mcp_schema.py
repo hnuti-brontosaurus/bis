@@ -525,15 +525,11 @@ class EventRegistrationType:
 class EventRecordType:
     participants: list[UserType]
 
-    @strawberry_django.field(
-        prefetch_related=["participants", "event__other_organizers"],
-    )
+    @strawberry_django.field(annotate=EventRecord.participant_counts())
     def participants_count(self) -> int:
         return self.get_participants_count()
 
-    @strawberry_django.field(
-        prefetch_related=["participants", "event__other_organizers"],
-    )
+    @strawberry_django.field(annotate=EventRecord.participant_counts())
     def young_participants_count(self) -> int:
         return self.get_young_participants_count()
 

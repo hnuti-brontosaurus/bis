@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.db.models import Count, Exists, OuterRef, Prefetch, Subquery, Value
 from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor, Pledge, annotate_donation_stats
 from event.models import (
@@ -380,9 +380,12 @@ class EventExportSerializer(ModelSerializer):
                 "vip_propagation",
                 "intended_for",
                 "registration",
-                "record",
             )
             .prefetch_related(
+                Prefetch(
+                    "record",
+                    EventRecord.objects.annotate(**EventRecord.participant_counts()),
+                ),
                 "administration_units",
                 "other_organizers",
                 "propagation__diets",

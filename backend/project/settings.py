@@ -142,6 +142,10 @@ DATABASES = {
         "NAME": environ["DB_NAME"],
         "USER": environ["DB_USERNAME"],
         "PASSWORD": environ["DB_PASSWORD"],
+        # JIT starts above a planner cost threshold, which correlated
+        # subqueries over a whole table cross even under a LIMIT of 100: the
+        # event changelist spent 1.4s compiling a query that ran in 10ms.
+        "OPTIONS": {"options": "-c jit=off"},
     }
 }
 
