@@ -37,13 +37,7 @@ export type {
   UserSearch,
 } from './testApi'
 
-export type User = Overwrite<
-  original.User,
-  {
-    roles: RoleCategory[]
-    subscription_status: original.SubscriptionStatusEnum
-  }
->
+export type User = Overwrite<original.User, { roles: RoleCategory[] }>
 
 export type OpportunityCategory = Overwrite<
   original.OpportunityCategory,
@@ -189,6 +183,8 @@ type UserPayloadFields =
   | 'health_issues'
   | 'all_emails'
   | 'subscription_status'
+  | 'do_not_call'
+  | 'do_not_solicit'
 
 export type UserPayload = Optional<
   Overwrite<

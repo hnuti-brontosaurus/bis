@@ -55,6 +55,8 @@ User:
     roles: Role
     office_workers_note: Poznámka ústředí
     subscription_status: Stav odběru newsletteru
+    do_not_call: Už nevolat
+    do_not_solicit: Už nežádat o dar
     last_after_event_email: Poslední e-mail po akci
     is_contact_information_verified: Ověřil své kontaktní údaje?
     is_bot: Bot (MCP)
@@ -530,8 +532,6 @@ Donor:
     date_joined: Dárcem od
     regional_center_support: podpora RC
     basic_section_support: podpora ZČ
-    do_not_call: Už nevolat
-    do_not_solicit: Už nežádat o dar
     fundraisers_note: Interní poznámka
 Pledge:
   name: Pravidelný dar

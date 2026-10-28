@@ -38,5 +38,7 @@
     "zip_code": "79001"
   },
   "pronoun": { "id": 1 },
-  "subscription_status": 1
+  "subscription_status": 1,
+  "do_not_call": false,
+  "do_not_solicit": false
 }

@@ -85,6 +85,31 @@ test.describe('Edit user', () => {
     })
   })
 
+  test.describe('communication preferences', () => {
+    test('should save a refusal of calls when unchecked', async ({ page }) => {
+      await mock(
+        page,
+        { method: 'GET', pathname: '/api/frontend/users/1234/' },
+        { fixture: 'organizer' },
+      )
+      await page.goto('/profil/1234/upravit')
+
+      const calls = page.locator('#do_not_call')
+      await expect(calls).toBeChecked()
+      await calls.uncheck()
+
+      const updateUser = await mock(page, {
+        method: 'PATCH',
+        pathname: '/api/frontend/users/*/',
+      })
+      await page.locator('button', { hasText: 'Potvrdit' }).first().click()
+
+      const body = (await updateUser.first()).body
+      expect(body).toHaveProperty('do_not_call', true)
+      expect(body).toHaveProperty('do_not_solicit', false)
+    })
+  })
+
   test.describe('other user', () => {
     test('[i have access] should not be able to save pronoun', async ({
       page,
@@ -99,6 +124,7 @@ test.describe('Edit user', () => {
       await expect(page.locator('form')).not.toContainText('Oslovení')
       await expect(page.locator('[name=pronoun]')).toHaveCount(0)
       await expect(page.locator('#subscription_status')).toHaveCount(0)
+      await expect(page.locator('#do_not_call')).toHaveCount(0)
 
       const updateUser = await mock(page, {
         method: 'PATCH',
@@ -107,9 +133,13 @@ test.describe('Edit user', () => {
       await page.locator('button', { hasText: 'Potvrdit' }).first().click()
 
       expect((await updateUser.first()).body).not.toHaveProperty('pronoun')
-      expect((await updateUser.first()).body).not.toHaveProperty(
+      for (const preference of [
         'subscription_status',
-      )
+        'do_not_call',
+        'do_not_solicit',
+      ]) {
+        expect((await updateUser.first()).body).not.toHaveProperty(preference)
+      }
     })
 
     test.fixme("[i don't have access] should show 403 error", () => {

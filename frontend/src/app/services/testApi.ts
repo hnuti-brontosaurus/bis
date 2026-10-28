@@ -3192,6 +3192,8 @@ export type User = {
   birthday: string
   close_person: ClosePerson | null
   subscription_status?: SubscriptionStatusEnum
+  do_not_call?: boolean
+  do_not_solicit?: boolean
   health_insurance_company: HealthInsuranceCompany
   health_issues?: string
   behaviour_issues?: string
@@ -3587,6 +3589,8 @@ export type PatchedUser = {
   birthday?: string
   close_person?: ClosePerson | null
   subscription_status?: SubscriptionStatusEnum
+  do_not_call?: boolean
+  do_not_solicit?: boolean
   health_insurance_company?: number | null
   health_issues?: string
   pronoun?: number | null

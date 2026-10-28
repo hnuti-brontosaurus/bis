@@ -119,6 +119,8 @@ class UserExportSerializer(ModelSerializer):
             "date_joined",
             "roles",
             "subscription_status",
+            "do_not_call",
+            "do_not_solicit",
             "eyca_card",
             "pronoun",
             "close_person",
@@ -179,8 +181,6 @@ class BaseDonorExportSerializer(ModelSerializer):
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
-            "do_not_call",
-            "do_not_solicit",
         )
 
 

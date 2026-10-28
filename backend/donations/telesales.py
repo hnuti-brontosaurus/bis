@@ -135,8 +135,8 @@ def _with_recent_events(qs, campaign):
 def _exclude_unreachable(qs):
     return (
         qs.exclude(user__phone="")
-        .exclude(do_not_call=True)
-        .exclude(do_not_solicit=True)
+        .exclude(user__do_not_call=True)
+        .exclude(user__do_not_solicit=True)
     )
 
 
@@ -175,8 +175,8 @@ def get_finished(campaign):
             Q(calls_in_window__gte=4)
             | Q(latest_call_slug="call_reached")
             | Q(user__phone="")
-            | Q(do_not_call=True)
-            | Q(do_not_solicit=True)
+            | Q(user__do_not_call=True)
+            | Q(user__do_not_solicit=True)
         )
         .order_by(F("latest_call_at").desc(nulls_last=True))
     )

@@ -45,8 +45,6 @@ class Donor(m.Model):
     subscribed_to_newsletter = m.BooleanField(default=True)
     is_public = m.BooleanField(default=True)
     fundraisers_note = m.TextField(blank=True)
-    do_not_call = m.BooleanField(default=False)
-    do_not_solicit = m.BooleanField(default=False)
 
     date_joined = m.DateField(default=get_today)
     regional_center_support = m.ForeignKey(
@@ -78,10 +76,6 @@ class Donor(m.Model):
         for field in self._meta.fields:
             if field.name in ["id", "subscribed_to_newsletter", "is_public", "user"]:
                 continue
-
-            elif field.name in ["do_not_call", "do_not_solicit"]:
-                if getattr(other, field.name):
-                    setattr(self, field.name, True)
 
             elif field.name in [
                 "regional_center_support",

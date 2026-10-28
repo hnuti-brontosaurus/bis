@@ -248,6 +248,33 @@ def test_call_form_accepts_postponed_without_reminder(
 
 
 @pytest.mark.django_db
+def test_call_form_stores_contact_preferences_on_the_user(
+    categories, campaign, fundraiser_role
+):
+    caller = make_fundraiser("fr3@example.com", fundraiser_role)
+    donor = make_donor(make_user("donor_form3@example.com"))
+    add_to_campaign(donor, campaign, categories)
+
+    client = Client()
+    client.force_login(caller)
+
+    url = reverse("admin:donations_telesales_call", args=[campaign.id, donor.id])
+    client.post(
+        url,
+        {
+            "outcome": "call_reached",
+            "fundraisers_note": "",
+            "pledge": "",
+            "do_not_call": "on",
+        },
+    )
+
+    donor.user.refresh_from_db()
+    assert donor.user.do_not_call
+    assert not donor.user.do_not_solicit
+
+
+@pytest.mark.django_db
 def test_call_form_rejects_postponed_with_past_reminder(
     categories, campaign, fundraiser_role
 ):
@@ -316,8 +343,8 @@ def test_donor_without_phone_goes_to_finished(categories, campaign):
 @pytest.mark.django_db
 def test_do_not_call_donor_goes_to_finished(categories, campaign):
     donor = make_donor(make_user("donor_dnc@example.com"))
-    donor.do_not_call = True
-    donor.save()
+    donor.user.do_not_call = True
+    donor.user.save()
     add_to_campaign(donor, campaign, categories)
 
     assert donor not in list(get_worklist(campaign))
@@ -328,8 +355,8 @@ def test_do_not_call_donor_goes_to_finished(categories, campaign):
 @pytest.mark.django_db
 def test_do_not_solicit_donor_goes_to_finished(categories, campaign):
     donor = make_donor(make_user("donor_dns@example.com"))
-    donor.do_not_solicit = True
-    donor.save()
+    donor.user.do_not_solicit = True
+    donor.user.save()
     add_to_campaign(donor, campaign, categories)
 
     assert donor not in list(get_worklist(campaign))

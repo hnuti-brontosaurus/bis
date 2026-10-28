@@ -201,6 +201,8 @@ class RegionType:
         "is_active",
         "date_joined",
         "subscription_status",
+        "do_not_call",
+        "do_not_solicit",
         "is_contact_information_verified",
     ],
 )
@@ -610,8 +612,6 @@ class DonorEventType:
     fields=[
         "id",
         "is_public",
-        "do_not_call",
-        "do_not_solicit",
         "date_joined",
     ],
 )

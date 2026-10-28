@@ -65,10 +65,10 @@
 </div>
 {% endif %}
 
-{% if donor.do_not_call or donor.do_not_solicit %}
+{% if donor.user.do_not_call or donor.user.do_not_solicit %}
 <div class="telesales-donor-flags">
-  {% if donor.do_not_call %}<span class="telesales-flag telesales-flag--no-call">Už nevolat</span>{% endif %}
-  {% if donor.do_not_solicit %}<span class="telesales-flag telesales-flag--no-solicit">Už nežádat o dar</span>{% endif %}
+  {% if donor.user.do_not_call %}<span class="telesales-flag telesales-flag--no-call">Už nevolat</span>{% endif %}
+  {% if donor.user.do_not_solicit %}<span class="telesales-flag telesales-flag--no-solicit">Už nežádat o dar</span>{% endif %}
 </div>
 {% endif %}
 

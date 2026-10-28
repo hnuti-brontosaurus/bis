@@ -134,8 +134,8 @@
         </td>
         <td>
           {% if not donor.user.phone %}Bez telefonního čísla
-          {% elif donor.do_not_call %}Už nevolat
-          {% elif donor.do_not_solicit %}Už nežádat o dar
+          {% elif donor.user.do_not_call %}Už nevolat
+          {% elif donor.user.do_not_solicit %}Už nežádat o dar
           {% elif donor.latest_call_slug == "call_reached" %}Odvoláno
           {% else %}Příliš mnoho pokusů{% endif %}
         </td>

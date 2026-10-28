@@ -103,6 +103,8 @@ SENSITIVITY = {
         INTERNAL: [
             "last_login",
             "subscription_status",
+            "do_not_call",
+            "do_not_solicit",
             "health_insurance_company",
             "pronoun",
             "is_active",
@@ -364,8 +366,6 @@ SENSITIVITY = {
             "user",
             "subscribed_to_newsletter",
             "is_public",
-            "do_not_call",
-            "do_not_solicit",
             "date_joined",
             "regional_center_support",
             "basic_section_support",

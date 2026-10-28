@@ -40,6 +40,7 @@ import { withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
 import { AddressSubform } from './AddressSubform'
+import { CommunicationSubform } from './CommunicationSubform'
 
 /**
  * Expected fields are defined here:
@@ -137,6 +138,8 @@ export const form2payload = (
       'email',
       'phone',
       'subscription_status',
+      'do_not_call',
+      'do_not_solicit',
       'address',
       'donor',
       'offers',
@@ -157,6 +160,8 @@ export const form2payload = (
   if (!isSelf) {
     delete finalData.pronoun
     delete finalData.subscription_status
+    delete finalData.do_not_call
+    delete finalData.do_not_solicit
   }
 
   return finalData
@@ -208,6 +213,8 @@ const validationSchema: yup.ObjectSchema<UserFormShape> = yup.object({
   // }),
   phone: yup.string(),
   subscription_status: yup.mixed<SubscriptionStatusEnum>(),
+  do_not_call: yup.boolean(),
+  do_not_solicit: yup.boolean(),
   address: yup
     .object()
     .shape({
@@ -466,42 +473,6 @@ export const UserForm = ({
                 <input type="tel" {...register('phone')} />
               </FormInputError>
             </InlineSection>
-            {isSelf &&
-              (initialData?.subscription_status ===
-              subscriptionStatus.hardBounce ? (
-                <InlineSection>
-                  <Label>Posílat newsletter?</Label>
-                  <span>Newsletter na tento e-mail nelze doručit.</span>
-                </InlineSection>
-              ) : (
-                <InlineSection>
-                  <Label htmlFor="subscription_status">
-                    Posílat newsletter?
-                  </Label>
-                  <FormInputError>
-                    <Controller
-                      control={control}
-                      name="subscription_status"
-                      render={({ field }) => (
-                        <input
-                          type="checkbox"
-                          id="subscription_status"
-                          checked={
-                            field.value === subscriptionStatus.subscribed
-                          }
-                          onChange={event =>
-                            field.onChange(
-                              event.target.checked
-                                ? subscriptionStatus.subscribed
-                                : subscriptionStatus.unsubscribed,
-                            )
-                          }
-                        />
-                      )}
-                    />
-                  </FormInputError>
-                </InlineSection>
-              ))}
             <FormSubsection header="Adresa" required>
               <AddressSubform name="address" />
             </FormSubsection>
@@ -509,6 +480,16 @@ export const UserForm = ({
               <AddressSubform name="contact_address" />
             </FormSubsection>
           </FormSection>
+          {isSelf && (
+            <FormSection header="Komunikace">
+              <CommunicationSubform
+                isHardBounce={
+                  initialData?.subscription_status ===
+                  subscriptionStatus.hardBounce
+                }
+              />
+            </FormSection>
+          )}
           <FormSection
             header={isChild ? 'Rodič/zákonný zástupce' : 'Blízká osoba'}
             required={isChild}

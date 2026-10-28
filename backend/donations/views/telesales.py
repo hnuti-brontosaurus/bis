@@ -106,9 +106,9 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
                 reminder=form.cleaned_data["reminder"],
                 created_by=request.user,
             )
-            donor.do_not_call = form.cleaned_data["do_not_call"]
-            donor.do_not_solicit = form.cleaned_data["do_not_solicit"]
-            donor.save(update_fields=["do_not_call", "do_not_solicit"])
+            donor.user.do_not_call = form.cleaned_data["do_not_call"]
+            donor.user.do_not_solicit = form.cleaned_data["do_not_solicit"]
+            donor.user.save(update_fields=["do_not_call", "do_not_solicit"])
             messages.success(
                 request, f"Zaznamenáno: {donor} — {OUTCOME_LABELS[outcome]}."
             )
@@ -118,8 +118,8 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
     else:
         form = CallForm(
             initial={
-                "do_not_call": donor.do_not_call,
-                "do_not_solicit": donor.do_not_solicit,
+                "do_not_call": donor.user.do_not_call,
+                "do_not_solicit": donor.user.do_not_solicit,
             }
         )
 

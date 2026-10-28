@@ -442,6 +442,8 @@ class UserSerializer(ModelSerializer):
             "photo",
             "close_person",
             "subscription_status",
+            "do_not_call",
+            "do_not_solicit",
             "health_insurance_company",
             "health_issues",
             "behaviour_issues",
@@ -510,6 +512,27 @@ class UserSerializer(ModelSerializer):
             return ["donor"]
 
         return []
+
+    # Only the person decides how BIS may contact them; staff change it in
+    # the admin, not through the organizers' interface.
+    COMMUNICATION_PREFERENCES = "subscription_status", "do_not_call", "do_not_solicit"
+
+    def _is_self(self, instance):
+        return instance == self.context["request"].user
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not self._is_self(instance):
+            for field in self.COMMUNICATION_PREFERENCES:
+                data.pop(field)
+        return data
+
+    def to_internal_value(self, data):
+        validated_data = super().to_internal_value(data)
+        if not self._is_self(self.instance):
+            for field in self.COMMUNICATION_PREFERENCES:
+                validated_data.pop(field, None)
+        return validated_data
 
     def get_display_name(self, instance) -> str:
         return str(instance)

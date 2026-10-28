@@ -10,7 +10,14 @@ import {
 } from './ImportParticipantsList/ImportParticipantsList'
 
 export type UserImport = Overwrite<
-  Omit<UserPayload, 'pronoun' | 'subscription_status' | 'all_emails'>,
+  Omit<
+    UserPayload,
+    | 'pronoun'
+    | 'subscription_status'
+    | 'do_not_call'
+    | 'do_not_solicit'
+    | 'all_emails'
+  >,
   {
     health_insurance_company: string
     address: string

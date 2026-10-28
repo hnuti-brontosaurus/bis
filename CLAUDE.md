@@ -240,9 +240,14 @@ The newsletter choice is `User.subscription_status`, pushed to Ecomail by the
 ignores `status: 1` for a contact that unsubscribed unless `subscribe-bulk`
 also gets `resubscribe: true` (verified), so the signal sends it when a status
 changes to subscribed in BIS — and only then, since a bulk push of a stale 1
-would undo an unsubscribe the nightly pull has not seen yet. Users change it
-only for themselves, in the profile form. `Donor.subscribed_to_newsletter` is
-an unused leftover of the old BIS.
+would undo an unsubscribe the nightly pull has not seen yet.
+`Donor.subscribed_to_newsletter` is an unused leftover of the old BIS.
+
+The newsletter, `User.do_not_call` and `User.do_not_solicit` are the person's
+communication preferences: the frontend `UserSerializer` returns and accepts
+them only for the signed-in user themself (the profile's "Komunikace"
+section), so an organizer editing a participant cannot change them. Staff
+change them in the admin; telesales sets the two refusals from a call.
 
 A per-email overview (trigger, recipients, variables, code reference) lives in
 the "přehled emailů" tab of the Automatické emaily spreadsheet.

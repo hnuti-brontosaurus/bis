@@ -530,9 +530,19 @@ class UserAdmin(
             "Osobní informace",
             {
                 "fields": (
-                    "subscription_status",
                     "health_insurance_company",
                     "health_issues",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "Komunikace",
+            {
+                "fields": (
+                    "subscription_status",
+                    "do_not_call",
+                    "do_not_solicit",
                 ),
                 "classes": ("collapse",),
             },
@@ -659,6 +669,10 @@ class UserAdmin(
         ("offers__programs", MultiSelectRelatedDropdownFilter),
         ("offers__organizer_roles", MultiSelectRelatedDropdownFilter),
         ("offers__team_roles", MultiSelectRelatedDropdownFilter),
+        list_filter_extra_title("Kontaktování"),
+        "subscription_status",
+        "do_not_call",
+        "do_not_solicit",
         list_filter_extra_title("Ostatní"),
         ("roles", MultiSelectRelatedDropdownFilter),
         ("tags", MultiSelectRelatedDropdownFilter),

@@ -280,6 +280,8 @@ class User(SearchMixin, AbstractBaseUser):
         choices=SubscriptionStatus.choices,
         default=SubscriptionStatus.SUBSCRIBED,
     )
+    do_not_call = m.BooleanField(default=False)
+    do_not_solicit = m.BooleanField(default=False)
 
     health_insurance_company = m.ForeignKey(
         HealthInsuranceCompany,
@@ -515,6 +517,8 @@ class User(SearchMixin, AbstractBaseUser):
                     "vokativ",
                     "is_bot",
                     "sees_personal_data_over_mcp",
+                    "do_not_call",
+                    "do_not_solicit",
                 ]:
                     continue
 

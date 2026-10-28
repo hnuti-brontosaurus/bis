@@ -175,10 +175,6 @@ export const ViewProfile = () => {
                 <td>{user.phone ? user.phone : '-'}</td>
               </tr>
               <tr>
-                <th>Odebírá novinky?</th>
-                <td>{newsletterLabels[user.subscription_status]}</td>
-              </tr>
-              <tr>
                 <td colSpan={ALL_COLUMNS} className={styles.oneCellRowSmall}>
                   Adresa
                 </td>
@@ -250,6 +246,28 @@ export const ViewProfile = () => {
                 </>
               ) : (
                 ''
+              )}
+              {/* The API sends the preferences to the person themself only. */}
+              {user.subscription_status && (
+                <>
+                  <tr>
+                    <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
+                      Komunikace
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Odebírá novinky?</th>
+                    <td>{newsletterLabels[user.subscription_status]}</td>
+                  </tr>
+                  <tr>
+                    <th>Můžeme ti zavolat?</th>
+                    <td>{user.do_not_call ? 'ne' : 'ano'}</td>
+                  </tr>
+                  <tr>
+                    <th>Můžeme tě požádat o finanční podporu?</th>
+                    <td>{user.do_not_solicit ? 'ne' : 'ano'}</td>
+                  </tr>
+                </>
               )}
               <tr>
                 <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
