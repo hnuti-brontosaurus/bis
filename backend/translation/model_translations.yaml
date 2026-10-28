@@ -198,8 +198,8 @@ Qualification:
     valid_since: Platnost od
     approved_by: Schválilo
 QualificationNote:
-  name: Poznámka ke kvalifikacím uživatele
-  name_plural: Poznámky ke kvalifikacím uživatele
+  name: Poznámka ke kvalifikacím
+  name_plural: Poznámky ke kvalifikacím
   fields:
     education_members_note: Poznámka
 

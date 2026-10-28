@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 3af5cbf343e28365
+// source-hash: bb3b093b11916bae
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -221,8 +221,8 @@ export const qualification = {
 } as const
 
 export const qualificationNote = {
-  _name: 'Poznámka ke kvalifikacím uživatele',
-  _name_plural: 'Poznámka ke kvalifikacím uživatele',
+  _name: 'Poznámka ke kvalifikacím',
+  _name_plural: 'Poznámka ke kvalifikacím',
   education_members_note: 'Poznámka',
 } as const
 
