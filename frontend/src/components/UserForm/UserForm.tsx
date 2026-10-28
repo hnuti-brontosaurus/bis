@@ -3,7 +3,12 @@
  */
 import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from 'app/services/bis'
-import { EventApplication, User, UserPayload } from 'app/services/bisTypes'
+import {
+  EventApplication,
+  SubscriptionStatusEnum,
+  User,
+  UserPayload,
+} from 'app/services/bisTypes'
 import {
   Actions,
   BirthdayInput,
@@ -19,6 +24,7 @@ import {
   Loading,
 } from 'components'
 import * as translations from 'config/static/translations'
+import { subscriptionStatus } from 'config/subscriptionStatus'
 import dayjs from 'dayjs'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import {
@@ -130,7 +136,7 @@ export const form2payload = (
       'health_issues',
       'email',
       'phone',
-      'subscribed_to_newsletter',
+      'subscription_status',
       'address',
       'donor',
       'offers',
@@ -148,7 +154,10 @@ export const form2payload = (
   // (maybe deleting it would also work)
   if (!finalData.email) finalData.email = null
 
-  if (!isSelf) delete finalData.pronoun
+  if (!isSelf) {
+    delete finalData.pronoun
+    delete finalData.subscription_status
+  }
 
   return finalData
 }
@@ -198,7 +207,7 @@ const validationSchema: yup.ObjectSchema<UserFormShape> = yup.object({
   //   otherwise: schema => schema.required(),
   // }),
   phone: yup.string(),
-  subscribed_to_newsletter: yup.boolean().required(),
+  subscription_status: yup.mixed<SubscriptionStatusEnum>(),
   address: yup
     .object()
     .shape({
@@ -286,7 +295,6 @@ export const UserForm = ({
         health_insurance_company: 0,
         address: { street: '', city: '', zip_code: '' },
         contact_address: { street: '', city: '', zip_code: '' },
-        subscribed_to_newsletter: true,
       },
       initialData || dataFromApplication
         ? data2form(initialData, dataFromApplication)
@@ -458,18 +466,42 @@ export const UserForm = ({
                 <input type="tel" {...register('phone')} />
               </FormInputError>
             </InlineSection>
-            <InlineSection>
-              <Label htmlFor="subscribed_to_newsletter">
-                Posílat newsletter?
-              </Label>
-              <FormInputError>
-                <input
-                  type="checkbox"
-                  id="subscribed_to_newsletter"
-                  {...register('subscribed_to_newsletter')}
-                />
-              </FormInputError>
-            </InlineSection>
+            {isSelf &&
+              (initialData?.subscription_status ===
+              subscriptionStatus.hardBounce ? (
+                <InlineSection>
+                  <Label>Posílat newsletter?</Label>
+                  <span>Newsletter na tento e-mail nelze doručit.</span>
+                </InlineSection>
+              ) : (
+                <InlineSection>
+                  <Label htmlFor="subscription_status">
+                    Posílat newsletter?
+                  </Label>
+                  <FormInputError>
+                    <Controller
+                      control={control}
+                      name="subscription_status"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          id="subscription_status"
+                          checked={
+                            field.value === subscriptionStatus.subscribed
+                          }
+                          onChange={event =>
+                            field.onChange(
+                              event.target.checked
+                                ? subscriptionStatus.subscribed
+                                : subscriptionStatus.unsubscribed,
+                            )
+                          }
+                        />
+                      )}
+                    />
+                  </FormInputError>
+                </InlineSection>
+              ))}
             <FormSubsection header="Adresa" required>
               <AddressSubform name="address" />
             </FormSubsection>

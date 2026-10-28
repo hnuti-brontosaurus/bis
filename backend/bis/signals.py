@@ -119,7 +119,13 @@ def push_to_ecomail(instance: User, created, **kwargs):
     new = instance.subscription_status
     if not created and old == new:
         return
-    bulk_subscribe(get_session(), settings.ECOMAIL_LIST_ID, [instance])
+    # Ecomail keeps an unsubscribed contact unsubscribed unless told to
+    # resubscribe. Only an explicit change in BIS may do that: a bulk push of a
+    # stale status would undo an unsubscribe the nightly pull hasn't seen yet.
+    resubscribe = not created and new == User.SubscriptionStatus.SUBSCRIBED
+    bulk_subscribe(
+        get_session(), settings.ECOMAIL_LIST_ID, [instance], resubscribe=resubscribe
+    )
     instance._original_subscription_status = new
 
 

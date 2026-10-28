@@ -31,12 +31,19 @@ export type {
   Region,
   Registration,
   StateEnum,
+  SubscriptionStatusEnum,
   TokenResponse,
   UserAddress as Address,
   UserSearch,
 } from './testApi'
 
-export type User = Overwrite<original.User, { roles: RoleCategory[] }>
+export type User = Overwrite<
+  original.User,
+  {
+    roles: RoleCategory[]
+    subscription_status: original.SubscriptionStatusEnum
+  }
+>
 
 export type OpportunityCategory = Overwrite<
   original.OpportunityCategory,
@@ -181,7 +188,7 @@ type UserPayloadFields =
   | 'health_insurance_company'
   | 'health_issues'
   | 'all_emails'
-  | 'subscribed_to_newsletter'
+  | 'subscription_status'
 
 export type UserPayload = Optional<
   Overwrite<

@@ -613,7 +613,6 @@ class DonorEventType:
     Donor,
     fields=[
         "id",
-        "subscribed_to_newsletter",
         "is_public",
         "do_not_call",
         "do_not_solicit",

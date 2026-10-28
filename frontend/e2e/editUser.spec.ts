@@ -57,6 +57,32 @@ test.describe('Edit user', () => {
 
       expect((await updateUser.first()).body).toHaveProperty('pronoun', null)
     })
+
+    test('should be able to unsubscribe from the newsletter', async ({
+      page,
+    }) => {
+      await mock(
+        page,
+        { method: 'GET', pathname: '/api/frontend/users/1234/' },
+        { fixture: 'organizer' },
+      )
+      await page.goto('/profil/1234/upravit')
+
+      const newsletter = page.locator('#subscription_status')
+      await expect(newsletter).toBeChecked()
+      await newsletter.uncheck()
+
+      const updateUser = await mock(page, {
+        method: 'PATCH',
+        pathname: '/api/frontend/users/*/',
+      })
+      await page.locator('button', { hasText: 'Potvrdit' }).first().click()
+
+      expect((await updateUser.first()).body).toHaveProperty(
+        'subscription_status',
+        2,
+      )
+    })
   })
 
   test.describe('other user', () => {
@@ -72,6 +98,7 @@ test.describe('Edit user', () => {
 
       await expect(page.locator('form')).not.toContainText('Oslovení')
       await expect(page.locator('[name=pronoun]')).toHaveCount(0)
+      await expect(page.locator('#subscription_status')).toHaveCount(0)
 
       const updateUser = await mock(page, {
         method: 'PATCH',
@@ -80,6 +107,9 @@ test.describe('Edit user', () => {
       await page.locator('button', { hasText: 'Potvrdit' }).first().click()
 
       expect((await updateUser.first()).body).not.toHaveProperty('pronoun')
+      expect((await updateUser.first()).body).not.toHaveProperty(
+        'subscription_status',
+      )
     })
 
     test.fixme("[i don't have access] should show 403 error", () => {

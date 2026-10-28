@@ -224,6 +224,15 @@ Never create a new template instead of editing one; the id is in the code.
 Triggers are either Django signals / DRF serializers, or the `daily` command run
 by `backend/bis/scheduler.py` at 7:00 Prague (`nightly` at 5:00).
 
+The newsletter choice is `User.subscription_status`, pushed to Ecomail by the
+`push_to_ecomail` signal and pulled back by `nightly`'s `sync_ecomail`. Ecomail
+ignores `status: 1` for a contact that unsubscribed unless `subscribe-bulk`
+also gets `resubscribe: true` (verified), so the signal sends it when a status
+changes to subscribed in BIS — and only then, since a bulk push of a stale 1
+would undo an unsubscribe the nightly pull has not seen yet. Users change it
+only for themselves, in the profile form. `Donor.subscribed_to_newsletter` is
+an unused leftover of the old BIS.
+
 A per-email overview (trigger, recipients, variables, code reference) lives in
 the "přehled emailů" tab of the Automatické emaily spreadsheet.
 

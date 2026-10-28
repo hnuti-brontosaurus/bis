@@ -37,5 +37,6 @@
     "city": "Jeseník",
     "zip_code": "79001"
   },
-  "pronoun": { "id": 1 }
+  "pronoun": { "id": 1 },
+  "subscription_status": 1
 }

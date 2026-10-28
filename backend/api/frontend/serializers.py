@@ -305,7 +305,6 @@ class DonorSerializer(ModelSerializer):
     class Meta:
         model = Donor
         fields = (
-            "subscribed_to_newsletter",
             "is_public",
             "date_joined",
             "regional_center_support",

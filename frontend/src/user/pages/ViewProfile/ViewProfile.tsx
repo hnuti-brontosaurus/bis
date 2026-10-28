@@ -1,6 +1,6 @@
 import { api } from 'app/services/bis'
 import { Fragment } from 'react'
-import { User } from 'app/services/bisTypes'
+import { SubscriptionStatusEnum, User } from 'app/services/bisTypes'
 import {
   Actions,
   Breadcrumbs,
@@ -11,6 +11,7 @@ import {
   PageHeader,
 } from 'components'
 import * as combinedTranslations from 'config/static/combinedTranslations'
+import { subscriptionStatus } from 'config/subscriptionStatus'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
 import { mergeWith, omit } from 'lodash'
@@ -18,6 +19,12 @@ import { FaPencilAlt } from 'react-icons/fa'
 import { useOutletContext } from 'react-router-dom'
 import { withOverwriteArray, formatDateTime } from 'utils/helpers'
 import styles from './ViewProfile.module.scss'
+
+const newsletterLabels: Record<SubscriptionStatusEnum, string> = {
+  [subscriptionStatus.subscribed]: 'ano',
+  [subscriptionStatus.unsubscribed]: 'ne',
+  [subscriptionStatus.hardBounce]: 'ne, e-mail je nedoručitelný',
+}
 
 export const ViewProfile = () => {
   const { user } = useOutletContext<{ user: User }>()
@@ -169,7 +176,7 @@ export const ViewProfile = () => {
               </tr>
               <tr>
                 <th>Odebírá novinky?</th>
-                <td>{user.subscribed_to_newsletter ? 'ano' : 'ne'}</td>
+                <td>{newsletterLabels[user.subscription_status]}</td>
               </tr>
               <tr>
                 <td colSpan={ALL_COLUMNS} className={styles.oneCellRowSmall}>

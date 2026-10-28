@@ -40,6 +40,8 @@ def annotate_donation_stats(donors, donation_filter=None, sum_filter=None):
 class Donor(m.Model):
     user = m.OneToOneField(User, related_name="donor", on_delete=PROTECT)
     formal_vokativ = m.CharField(max_length=63, blank=True)
+    # Imported from the old BIS and no longer used: the newsletter choice is
+    # User.subscription_status, kept in sync with Ecomail. To be removed.
     subscribed_to_newsletter = m.BooleanField(default=True)
     is_public = m.BooleanField(default=True)
     fundraisers_note = m.TextField(blank=True)

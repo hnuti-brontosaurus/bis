@@ -173,7 +173,6 @@ class BaseDonorExportSerializer(ModelSerializer):
         model = Donor
         fields = (
             "user",
-            "subscribed_to_newsletter",
             "is_public",
             "has_recurrent_donation",
             "date_joined",
