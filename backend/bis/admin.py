@@ -2,6 +2,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from admin_numeric_filter.admin import NumericFilterModelAdmin
 from bis.admin_filters import (
     AgeFilter,
+    ColumnsFilter,
     EventsWhereWasAsMainOrganizerCountFilter,
     EventsWhereWasOrganizerCountFilter,
     FirstParticipatedInEventRangeFilter,
@@ -66,12 +67,20 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db.models import PointField
 from django.contrib.messages import ERROR
 from django.core.exceptions import ValidationError
-from django.db.models import prefetch_related_objects
+from django.db.models import (
+    Exists,
+    Max,
+    OuterRef,
+    Subquery,
+    Sum,
+    prefetch_related_objects,
+)
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from donations.models import Donor, DonorEvent, FundraisingCampaign
+from donations.models import Donor, DonorEvent, FundraisingCampaign, Pledge
 from login_code.models import guess_birthday_throttle
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -411,6 +420,31 @@ def export_emails(view, request, queryset):
     return HttpResponse("<br>".join(emails))
 
 
+def annotate_visible_donor_stats(users, viewer):
+    # Subqueries rather than joins, so postgres computes them only for the rows
+    # on the page. They stay None for a user whose donor the viewer may not see.
+    visible_donors = Permissions(viewer, Donor, "backend").filter_queryset(
+        Donor.objects.all()
+    )
+    donor = visible_donors.filter(user=OuterRef("pk"))
+    active_recurrent_pledges = Pledge.objects.filter(
+        donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
+    )
+    return users.annotate(
+        donations_sum=Subquery(
+            donor.annotate(total=Coalesce(Sum("donations__amount"), 0)).values("total")
+        ),
+        last_donation=Subquery(
+            donor.annotate(last=Max("donations__donated_at")).values("last")
+        ),
+        has_active_recurrent_donation=Subquery(
+            donor.annotate(recurrent=Exists(active_recurrent_pledges)).values(
+                "recurrent"
+            )
+        ),
+    )
+
+
 @admin.register(User)
 class UserAdmin(
     QuerySearchMixin,
@@ -572,18 +606,21 @@ class UserAdmin(
 
         return fieldsets
 
-    list_display = (
-        "get_name",
-        "get_links",
-        "birthday",
-        "address",
-        "email",
-        "phone",
-        "get_qualifications",
-        "get_memberships",
-    )
+    def get_list_display(self, request):
+        columns = ["get_name", "get_links", "birthday", "address", "email", "phone"]
+        match request.GET.get(ColumnsFilter.parameter_name):
+            case "organizer":
+                columns += ["get_qualifications", "get_memberships"]
+            case "donor":
+                columns += [
+                    "get_donations_sum",
+                    "get_last_donation",
+                    "get_has_active_recurrent_donation",
+                ]
+        return columns
 
     list_filter = [
+        ColumnsFilter,
         list_filter_extra_text(
             "Pokud chceš vybrat více možností u jednotho filtru (např.vybrat dva typy kvalifikace), "
             "přidrž tlačítko ctrl/shift"
@@ -666,16 +703,17 @@ class UserAdmin(
         return "Vedli akci v období"
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .prefetch_related(
-                "memberships__administration_unit",
-                "qualifications__category",
-                "memberships",
-                "memberships__category",
-            )
-        )
+        queryset = super().get_queryset(request)
+        match request.GET.get(ColumnsFilter.parameter_name):
+            case "organizer":
+                return queryset.prefetch_related(
+                    "memberships__administration_unit",
+                    "memberships__category",
+                    "qualifications__category",
+                )
+            case "donor":
+                return annotate_visible_donor_stats(queryset, request.user)
+        return queryset
 
     def get_object(self, request, object_id, from_field=None):
         obj = super().get_object(request, object_id, from_field)
@@ -699,6 +737,18 @@ class UserAdmin(
     @admin.display(description="Token")
     def get_token(self, obj):
         return f"Token {obj.auth_token}"
+
+    @admin.display(description="Suma darů", ordering="donations_sum")
+    def get_donations_sum(self, obj):
+        return obj.donations_sum
+
+    @admin.display(description="Poslední dar", ordering="last_donation")
+    def get_last_donation(self, obj):
+        return obj.last_donation
+
+    @admin.display(description="Pravidelný dárce", boolean=True)
+    def get_has_active_recurrent_donation(self, obj):
+        return obj.has_active_recurrent_donation
 
     @admin.display(description="Odkazy")
     def get_links(self, obj):

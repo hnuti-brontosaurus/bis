@@ -7,6 +7,7 @@ from bis.admin_helpers import (
     event_of_administration_unit_filter_factory,
 )
 from bis.models import Qualification
+from bis.permissions import Permissions
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.admin.options import IncorrectLookupParameters
@@ -14,7 +15,27 @@ from django.core.exceptions import ValidationError
 from django.db.models import Min, Q
 from django.utils import timezone
 from django.utils.timezone import now
+from donations.models import Donor
 from more_admin_filters import MultiSelectRelatedDropdownFilter
+
+
+class ColumnsFilter(admin.SimpleListFilter):
+    title = "Sloupce"
+    parameter_name = "columns"
+
+    def lookups(self, request, model_admin):
+        presets = [("organizer", "Organizátor")]
+        if Permissions(request.user, Donor, "backend").has_view_permission():
+            presets.append(("donor", "Dárce"))
+        return presets
+
+    def queryset(self, request, queryset):
+        return queryset
+
+    def choices(self, changelist):
+        choices = super().choices(changelist)
+        yield {**next(choices), "display": "Základní"}
+        yield from choices
 
 
 class HasDonorFilter(YesNoFilter):
