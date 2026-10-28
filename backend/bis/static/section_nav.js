@@ -26,8 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
     addLink(heading.textContent.trim(), () => {
       const details = heading.closest("details");
       if (details) details.open = true;
+      const isBar = getComputedStyle(nav).flexDirection === "row";
       window.scrollTo({
-        top: section.getBoundingClientRect().top + window.scrollY - nav.offsetHeight,
+        top:
+          section.getBoundingClientRect().top +
+          window.scrollY -
+          (isBar ? nav.offsetHeight : 0),
         behavior: "smooth",
       });
     });
