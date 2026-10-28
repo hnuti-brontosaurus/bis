@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const nav = document.createElement("nav");
   nav.className = "section-nav";
+  const links = document.createElement("div");
+  links.className = "section-nav-links";
+  nav.append(links);
   const addLink = (text, onClick) => {
     const link = document.createElement("a");
     link.href = "#";
@@ -18,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       onClick();
     });
-    nav.append(link);
+    links.append(link);
   };
 
   addLink("Základní údaje", () => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -26,14 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addLink(heading.textContent.trim(), () => {
       const details = heading.closest("details");
       if (details) details.open = true;
-      const isBar = getComputedStyle(nav).flexDirection === "row";
-      window.scrollTo({
-        top:
-          section.getBoundingClientRect().top +
-          window.scrollY -
-          (isBar ? nav.offsetHeight : 0),
-        behavior: "smooth",
-      });
+      section.scrollIntoView({ behavior: "smooth" });
     });
   }
   form.prepend(nav);
