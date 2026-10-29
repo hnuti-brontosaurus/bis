@@ -115,7 +115,7 @@ export const ImagesUpload = ({
       {imageFields.fields.map((item, index) => (
         <FileGridItem key={item.id}>
           <UploadedFile
-            url={watch(`${name}.${index}.${image}`)}
+            downloadUrl={watch(`${name}.${index}.${image}`)}
             onRemove={() => imageFields.remove(index)}
           >
             <label tabIndex={0}>

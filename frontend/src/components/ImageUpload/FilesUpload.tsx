@@ -74,7 +74,10 @@ export const FilesUpload = ({
     <FileGrid>
       {files?.map(file => (
         <FileGridItem key={file.id}>
-          <UploadedFile url={file.url} onRemove={() => removeFile(file.id)}>
+          <UploadedFile
+            downloadUrl={file.url}
+            onRemove={() => removeFile(file.id)}
+          >
             <FilePreview url={file.preview ?? file.url} />
           </UploadedFile>
         </FileGridItem>
