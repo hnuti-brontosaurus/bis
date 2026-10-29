@@ -10,7 +10,7 @@ import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
 import { AddImageButton } from './AddImageButton'
 import { AddImageInput } from './AddImageInput'
-import { FileGrid } from './FileGrid'
+import { FileGrid, FileGridItem } from './FileGrid'
 import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 
@@ -111,9 +111,9 @@ export const ImagesUpload = ({
   }
 
   return (
-    <FileGrid add={<AddImageInput onAdd={addImages} colorTheme={colorTheme} />}>
+    <FileGrid>
       {imageFields.fields.map((item, index) => (
-        <li key={item.id}>
+        <FileGridItem key={item.id}>
           <UploadedFile
             url={watch(`${name}.${index}.${image}`)}
             onRemove={() => imageFields.remove(index)}
@@ -126,8 +126,11 @@ export const ImagesUpload = ({
               />
             </label>
           </UploadedFile>
-        </li>
+        </FileGridItem>
       ))}
+      <FileGridItem>
+        <AddImageInput onAdd={addImages} colorTheme={colorTheme} />
+      </FileGridItem>
     </FileGrid>
   )
 }

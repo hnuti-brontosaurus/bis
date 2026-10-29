@@ -6,7 +6,7 @@ import { useRef, useState } from 'react'
 import { file2base64 } from 'utils/helpers'
 import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
-import { FileGrid } from './FileGrid'
+import { FileGrid, FileGridItem } from './FileGrid'
 import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 import styles from './ImageUpload.module.scss'
@@ -72,19 +72,22 @@ export const FilesUpload = ({
   }
 
   return (
-    <FileGrid add={<AddImageInput onAdd={uploadAll} colorTheme={colorTheme} />}>
+    <FileGrid>
       {files?.map(file => (
-        <li key={file.id}>
+        <FileGridItem key={file.id}>
           <UploadedFile url={file.url} onRemove={() => removeFile(file.id)}>
             <FilePreview url={file.preview ?? file.url} />
           </UploadedFile>
-        </li>
+        </FileGridItem>
       ))}
       {pending.map(({ key, file }) => (
-        <li key={key}>
+        <FileGridItem key={key}>
           <FileFallback Icon={LoadingIcon}>{file.name}</FileFallback>
-        </li>
+        </FileGridItem>
       ))}
+      <FileGridItem>
+        <AddImageInput onAdd={uploadAll} colorTheme={colorTheme} />
+      </FileGridItem>
     </FileGrid>
   )
 }

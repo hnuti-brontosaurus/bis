@@ -1,20 +1,14 @@
-import { ReactNode } from 'react'
-import styles from './ImageUpload.module.scss'
+import { FC, ReactNode } from 'react'
+import styles from './FileGrid.module.scss'
 
-/**
- * The look shared by the uploads that keep files in a form and those that
- * save them right away; `children` are `FileGridItem`s, `add` the tile that
- * picks new files.
- */
-export const FileGrid = ({
-  children,
-  add,
-}: {
+interface Props {
   children: ReactNode
-  add: ReactNode
-}) => (
-  <ul className={styles.imageList}>
-    {children}
-    <li className={styles.imageItem}>{add}</li>
-  </ul>
+}
+
+export const FileGrid: FC<Props> = ({ children }) => (
+  <ul className={styles.list}>{children}</ul>
+)
+
+export const FileGridItem: FC<Props> = ({ children }) => (
+  <li className={styles.item}>{children}</li>
 )
