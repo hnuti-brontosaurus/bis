@@ -1,5 +1,5 @@
 from administration_units.models import AdministrationUnit
-from bis.helpers import filter_queryset_with_multiple_or_queries, permission_cache
+from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import User
 from categories.models import DonationSourceCategory, DonorEventCategory
 from dateutil.utils import today
@@ -124,14 +124,6 @@ class Donor(m.Model):
             ]
 
         return filter_queryset_with_multiple_or_queries(queryset, queries)
-
-    @permission_cache
-    def has_edit_permission(self, user):
-        return (
-            self.user == user
-            or self.regional_center_support in user.administration_units.all()
-            or self.basic_section_support in user.administration_units.all()
-        )
 
     def has_active_recurrent_donation(self):
         return self.pledges.filter(

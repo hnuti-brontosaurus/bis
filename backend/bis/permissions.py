@@ -221,7 +221,6 @@ class Permissions:
 
         if self.user.is_board_member:
             if self.model in [
-                Donor,
                 DuplicateUser,
                 Membership,
                 AdministrationUnitAddress,
@@ -275,7 +274,6 @@ class Permissions:
             UserClosePerson,
             EYCACard,
             OfferedHelp,
-            Donor,
             EventDraft,
         ]:
             if not obj or obj.has_edit_permission(self.user):

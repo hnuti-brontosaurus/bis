@@ -82,6 +82,17 @@ def listed_users(viewer, params):
     return set(changelist.get_queryset(request))
 
 
+def test_board_members_see_donors_read_only(unit, board_member):
+    supporter = make_donor("supporter@example.com", [], basic_section_support=unit)
+    request = RequestFactory().get("/admin/bis/user/")
+    request.user = board_member
+    inline = DonorAdminInline(User, site)
+
+    assert inline.has_view_permission(request, supporter.user)
+    assert not inline.has_change_permission(request, supporter.user)
+    assert not inline.has_add_permission(request, supporter.user)
+
+
 def test_donor_filters_see_only_visible_donors(unit, board_member):
     supporter = make_donor("supporter@example.com", [600], basic_section_support=unit)
     member = make_donor("member@example.com", [600]).user

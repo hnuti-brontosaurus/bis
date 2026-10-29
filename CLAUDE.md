@@ -424,8 +424,8 @@ donor and campaign filters, and the donor actions (confirmations, donor xlsx
 export). `DonorAdmin` stays registered, hidden from the menu, only because
 `DonationAdmin`'s donor autocomplete needs it; its pages redirect to the user.
 
-Board members see only the donors supporting their units, and those users join
-their backend user list (`User.filter_queryset`). A filter on donor data must
+Board members see only the donors supporting their units, read-only, and those
+users join their backend user list (`User.filter_queryset`). A filter on donor data must
 therefore never match a donor the viewer cannot see, or it is an oracle for
 their gifts: wrap donor filters in `on_visible_donors` and campaign filters in
 `on_visible_campaign_history` (`bis/admin_filters.py`). A related filter with
