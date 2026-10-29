@@ -65,9 +65,10 @@ says which one: `Soubor ${file.name} se nepodařilo uložit`.
 
 ## Styles
 
-We style components using [css modules](https://github.com/css-modules/css-modules) with [scss](https://sass-lang.com/)
+We style components using [CSS modules](https://github.com/css-modules/css-modules) with [scss](https://sass-lang.com/)
 
-- css module should be placed in the same folder as the component it belongs to, and be named `ComponentName.module.scss`
+- each component file should have its own separate CSS module.
+- CSS module should be placed in the same folder as the component it belongs to, and be named `ComponentName.module.scss`
 - other stylesheets should be placed in `src/styles`
 
 ## Commit messages
