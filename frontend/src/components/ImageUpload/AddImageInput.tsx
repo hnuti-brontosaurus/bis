@@ -10,7 +10,7 @@ interface Props {
 export const AddImageInput: FC<Props> = ({ name, onAdd, colorTheme }) => (
   <label tabIndex={0}>
     <input
-      name={`${name}.add`}
+      name={name}
       style={{ display: 'none' }}
       type="file"
       accept="image/*,application/pdf"

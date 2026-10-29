@@ -1030,7 +1030,7 @@ test.describe('Close event - evidence and participants', () => {
 
         await page.goto('/org/akce/1000/uzavrit?krok=2')
         await page
-          .locator(`input[name="${name}.add"]`)
+          .locator(`input[name="${name}"]`)
           .setInputFiles([asset('image.png'), asset('image.png')])
 
         const created = await create.all(2)
