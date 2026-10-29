@@ -2,7 +2,7 @@ import type { SerializedError } from '@reduxjs/toolkit'
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
 import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
-import { useRef, useState } from 'react'
+import { FC, useRef, useState } from 'react'
 import { file2base64 } from 'utils/helpers'
 import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
@@ -10,29 +10,33 @@ import { FileGrid, FileGridItem } from './FileGrid'
 import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 
-export type UploadedFileType = { id: number; url: string; preview?: string }
+export interface UploadedFileType {
+  id: number
+  url: string
+  preview?: string
+}
 
-type Failure = {
+interface Failure {
   error: FetchBaseQueryError | SerializedError
   message: string
+}
+
+interface Props {
+  files: UploadedFileType[] | undefined
+  upload: (file: string) => Promise<unknown>
+  remove: (id: number) => Promise<unknown>
+  colorTheme?: string
 }
 
 /**
  * Saves each file on the server as soon as it is picked, one at a time, so
  * the browser never holds more than one of them as base64.
  */
-export const FilesUpload = ({
-  name,
+export const DirectFilesUpload: FC<Props> = ({
   files,
   upload,
   remove,
   colorTheme,
-}: {
-  name: string
-  files: UploadedFileType[] | undefined
-  upload: (file: string) => Promise<unknown>
-  remove: (id: number) => Promise<unknown>
-  colorTheme?: string
 }) => {
   const [pending, setPending] = useState<{ key: number; file: File }[]>([])
   const nextPendingKey = useRef(0)

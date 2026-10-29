@@ -44,7 +44,7 @@ takes props and renders, and build both on top of it. A copy of the markup
 means every later change to the look has to be made twice.
 [`FileGrid`](../src/components/ImageUpload/FileGrid.tsx) and
 [`UploadedFile`](../src/components/ImageUpload/UploadedFile.tsx) are shared by
-`ImagesUpload` (form) and `FilesUpload` (direct upload).
+`ImagesUpload` (form) and `DirectFilesUpload` (direct upload).
 
 ### Keys
 

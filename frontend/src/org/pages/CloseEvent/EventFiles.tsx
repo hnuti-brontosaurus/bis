@@ -1,5 +1,5 @@
 import { api } from 'app/services/bis'
-import { FilesUpload } from 'components'
+import { DirectFilesUpload } from 'components'
 
 export const EventPhotos = ({ eventId }: { eventId: number }) => {
   const { data } = api.endpoints.readEventPhotos.useQuery({ eventId })
@@ -7,8 +7,7 @@ export const EventPhotos = ({ eventId }: { eventId: number }) => {
   const [deletePhoto] = api.endpoints.deleteEventPhoto.useMutation()
 
   return (
-    <FilesUpload
-      name="photos"
+    <DirectFilesUpload
       files={data?.results.map(({ id, photo }) => ({
         id,
         url: photo.original,
@@ -26,8 +25,7 @@ export const AttendanceListPages = ({ eventId }: { eventId: number }) => {
   const [deletePage] = api.endpoints.deleteAttendanceListPage.useMutation()
 
   return (
-    <FilesUpload
-      name="pages"
+    <DirectFilesUpload
       files={data?.results.map(({ id, page }) => ({
         id,
         url: page as string,
@@ -46,8 +44,7 @@ export const FinanceReceipts = ({ eventId }: { eventId: number }) => {
   const [deleteReceipt] = api.endpoints.deleteFinanceReceipt.useMutation()
 
   return (
-    <FilesUpload
-      name="receipts"
+    <DirectFilesUpload
       files={data?.results.map(({ id, receipt }) => ({ id, url: receipt }))}
       upload={receipt =>
         createReceipt({ eventId, financeReceipt: { receipt } }).unwrap()
