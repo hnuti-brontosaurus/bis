@@ -8,6 +8,7 @@ export const EventPhotos = ({ eventId }: { eventId: number }) => {
 
   return (
     <DirectFilesUpload
+      name="photos"
       files={data?.results.map(({ id, photo }) => ({
         id,
         url: photo.original,
@@ -26,6 +27,7 @@ export const AttendanceListPages = ({ eventId }: { eventId: number }) => {
 
   return (
     <DirectFilesUpload
+      name="pages"
       files={data?.results.map(({ id, page }) => ({
         id,
         url: page as string,
@@ -45,7 +47,8 @@ export const FinanceReceipts = ({ eventId }: { eventId: number }) => {
 
   return (
     <DirectFilesUpload
-      files={data?.results.map(({ id, receipt }) => ({ id, url: receipt }))}
+      name="receipts"
+      files={data?.results.map(({ id, receipt })=> ({ id, url: receipt }))}
       upload={receipt =>
         createReceipt({ eventId, financeReceipt: { receipt } }).unwrap()
       }

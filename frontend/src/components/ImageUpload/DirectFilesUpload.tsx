@@ -23,6 +23,7 @@ interface Failure {
 }
 
 interface Props {
+  name: string
   files: UploadedFileType[] | undefined
   upload: (file: string) => Promise<unknown>
   remove: (id: number) => Promise<unknown>
@@ -34,6 +35,7 @@ interface Props {
  * the browser never holds more than one of them as base64.
  */
 export const DirectFilesUpload: FC<Props> = ({
+  name,
   files,
   upload,
   remove,
@@ -88,7 +90,7 @@ export const DirectFilesUpload: FC<Props> = ({
         </FileGridItem>
       ))}
       <FileGridItem>
-        <AddImageInput onAdd={uploadAll} colorTheme={colorTheme} />
+        <AddImageInput name={name} onAdd={uploadAll} colorTheme={colorTheme} />
       </FileGridItem>
     </FileGrid>
   )
