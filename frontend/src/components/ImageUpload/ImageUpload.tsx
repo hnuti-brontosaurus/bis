@@ -1,19 +1,17 @@
-import classNames from 'classnames'
 import forEach from 'lodash/forEach'
-import { FC, ReactNode, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import {
   Controller,
   useFieldArray,
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
+import { AddImageButton } from './AddImageButton'
 import { FileGrid } from './FileGrid'
 import { FileGridItem } from './FileGridItem'
 import { FilePreview } from './FilePreview'
-import styles from './ImageUpload.module.scss'
 
 const ImageInput: FC<{ name: string; required?: boolean }> = ({
   name,
@@ -40,21 +38,6 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
     />
   )
 }
-
-const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
-  children,
-  colorTheme,
-}) => (
-  <div
-    className={classNames(
-      styles.addButton,
-      colorTheme === 'opportunities' && styles.opportunitiesTheme,
-    )}
-  >
-    <MdPhotoCamera size={60} />
-    {children}
-  </div>
-)
 
 const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
@@ -94,7 +77,7 @@ export const ImageUpload = ({
       {value ? (
         <ImageThumbnail name={name} thumbnail={thumbnail} />
       ) : (
-        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
+        <AddImageButton colorTheme={colorTheme}>Přidej fotku</AddImageButton>
       )}
     </label>
   )
@@ -118,7 +101,7 @@ export const ImageAdd = ({
       multiple
       onChange={event => event.target.files && onAdd(event.target.files)}
     />
-    <ImageAddIcon colorTheme={colorTheme}>Přidej fotky</ImageAddIcon>
+    <AddImageButton colorTheme={colorTheme}>Přidej fotky</AddImageButton>
   </label>
 )
 
