@@ -9,7 +9,6 @@ import { FileFallback } from './FileFallback'
 import { FileGrid, FileGridItem } from './FileGrid'
 import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
-import styles from './ImageUpload.module.scss'
 
 export type UploadedFileType = { id: number; url: string; preview?: string }
 
