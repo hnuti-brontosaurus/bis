@@ -562,8 +562,8 @@ FundraisingCampaign:
     name: Název
     slug: Slug
 DonorEvent:
-  name: Značka dárce
-  name_plural: Značky dárce
+  name: Událost kampaně
+  name_plural: Historie kampaní
   fields:
     user: Uživatel
     event_type: Typ
