@@ -129,7 +129,7 @@ export const ImagesUpload = ({
         </FileGridItem>
       ))}
       <FileGridItem>
-        <AddImageInput onAdd={addImages} colorTheme={colorTheme} />
+        <AddImageInput name={name} onAdd={addImages} colorTheme={colorTheme} />
       </FileGridItem>
     </FileGrid>
   )
