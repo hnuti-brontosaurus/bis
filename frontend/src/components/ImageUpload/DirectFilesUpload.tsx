@@ -1,10 +1,11 @@
 import type { SerializedError } from '@reduxjs/toolkit'
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
-import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
-import { FC, useState } from 'react'
+import { useShowMessage } from 'features/systemMessage/useSystemMessage'
+import { useArrayState } from 'hooks/useArrayState'
+import { FC } from 'react'
+import { apiErrors2Message } from 'utils/apiErrors'
 import { file2base64 } from 'utils/helpers'
-import { useArrayState } from '../../hooks/useArrayState'
 import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
 import { FileGrid, FileGridItem } from './FileGrid'
@@ -15,11 +16,6 @@ export interface UploadedFileType {
   id: number
   url: string
   preview?: string
-}
-
-interface Failure {
-  error: FetchBaseQueryError | SerializedError
-  message: string
 }
 
 interface Props {
@@ -42,8 +38,7 @@ export const DirectFilesUpload: FC<Props> = ({
   colorTheme,
 }) => {
   const [pending, addPending, removePending] = useArrayState<File>()
-  const [failure, setFailure] = useState<Failure>()
-  useShowApiErrorMessage(failure?.error, failure?.message)
+  const showMessage = useShowMessage()
 
   const uploadAll = async (queue: FileList) => {
     addPending(Array.from(queue))
@@ -51,9 +46,10 @@ export const DirectFilesUpload: FC<Props> = ({
       try {
         await upload(await file2base64(file))
       } catch (error) {
-        setFailure({
-          error: error as Failure['error'],
+        showMessage({
+          type: 'error',
           message: `Soubor ${file.name} se nepodařilo uložit`,
+          detail: apiErrors2Message(error as FetchBaseQueryError),
         })
       } finally {
         removePending(file)
@@ -65,9 +61,10 @@ export const DirectFilesUpload: FC<Props> = ({
     try {
       await remove(id)
     } catch (error) {
-      setFailure({
-        error: error as Failure['error'],
+      showMessage({
+        type: 'error',
         message: 'Soubor se nepodařilo smazat',
+        detail: apiErrors2Message(error as FetchBaseQueryError),
       })
     }
   }
