@@ -40,6 +40,7 @@ const ImageInput: FC<ImageInputProps> = ({ name, required, children }) => (
         />
       )}
     />
+    {children}
   </label>
 )
 
