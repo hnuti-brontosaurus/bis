@@ -48,7 +48,7 @@ export const FinanceReceipts = ({ eventId }: { eventId: number }) => {
   return (
     <DirectFilesUpload
       name="receipts"
-      files={data?.results.map(({ id, receipt })=> ({ id, url: receipt }))}
+      files={data?.results.map(({ id, receipt }) => ({ id, url: receipt }))}
       upload={receipt =>
         createReceipt({ eventId, financeReceipt: { receipt } }).unwrap()
       }
