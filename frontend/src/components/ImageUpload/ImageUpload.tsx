@@ -1,4 +1,3 @@
-import classNames from 'classnames'
 import forEach from 'lodash/forEach'
 import { FC, ReactNode, useEffect } from 'react'
 import {
@@ -7,31 +6,22 @@ import {
   useFormContext,
   useWatch,
 } from 'react-hook-form'
-import { FaDownload, FaImage, FaPencilAlt, FaTimes } from 'react-icons/fa'
-import { MdPhotoCamera } from 'react-icons/md'
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
-import styles from './ImageUpload.module.scss'
+import { AddImageButton } from './AddImageButton'
+import { AddImageInput } from './AddImageInput'
+import { FileGrid, FileGridItem } from './FileGrid'
+import { UploadedFile } from './UploadedFile'
+import { FilePreview } from './FilePreview'
 
-export const DownloadLink: FC<{ url: string }> = ({ url }) => {
-  const fileName =
-    url.match(/filename=(.*?);/)?.[1] ?? url.match(/[^/]*$/)?.[0] ?? ''
-  return (
-    <a
-      href={url}
-      download={fileName}
-      className={classNames(styles.button, styles.downloadButton)}
-    >
-      <FaDownload />
-    </a>
-  )
+interface ImageInputProps {
+  name: string
+  required?: boolean
+  children: ReactNode
 }
 
-const ImageInput: FC<{ name: string; required?: boolean }> = ({
-  name,
-  required,
-}) => {
-  return (
+const ImageInput: FC<ImageInputProps> = ({ name, required, children }) => (
+  <label tabIndex={0}>
     <Controller
       name={name}
       rules={{ required: required && messages.required }}
@@ -50,39 +40,13 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
         />
       )}
     />
-  )
-}
-
-const ImageAddIcon: FC<{ children: ReactNode; colorTheme?: string }> = ({
-  children,
-  colorTheme,
-}) => (
-  <div
-    className={classNames(
-      styles.addButton,
-      colorTheme === 'opportunities' && styles.opportunitiesTheme,
-    )}
-  >
-    <MdPhotoCamera size={60} />
     {children}
-  </div>
+  </label>
 )
 
 const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
-  return (
-    <div className={styles.imageWrapper}>
-      <object data={value} className={styles.image}>
-        <div className={styles.fallback}>
-          <FaImage size={60} />
-          (nelze zobrazit)
-        </div>
-      </object>
-      <div className={styles.editOverlay}>
-        <FaPencilAlt size={26} />
-      </div>
-    </div>
-  )
+  return <FilePreview url={value} editable />
 }
 
 const ImageThumbnail: FC<{ name: string; thumbnail?: string }> = ({
@@ -113,38 +77,15 @@ export const ImageUpload = ({
 }) => {
   const value = useWatch({ name })
   return (
-    <label tabIndex={0}>
-      <ImageInput name={name} required={required} />
+    <ImageInput name={name} required={required}>
       {value ? (
         <ImageThumbnail name={name} thumbnail={thumbnail} />
       ) : (
-        <ImageAddIcon colorTheme={colorTheme}>Přidej fotku</ImageAddIcon>
+        <AddImageButton colorTheme={colorTheme}>Přidej fotku</AddImageButton>
       )}
-    </label>
+    </ImageInput>
   )
 }
-
-export const ImageAdd = ({
-  name,
-  onAdd,
-  colorTheme,
-}: {
-  name: string
-  onAdd: (files: FileList) => void
-  colorTheme?: string
-}) => (
-  <label tabIndex={0}>
-    <input
-      name={`${name}.add`}
-      style={{ display: 'none' }}
-      type="file"
-      accept="image/*,application/pdf"
-      multiple
-      onChange={event => event.target.files && onAdd(event.target.files)}
-    />
-    <ImageAddIcon colorTheme={colorTheme}>Přidej fotky</ImageAddIcon>
-  </label>
-)
 
 export const ImagesUpload = ({
   name,
@@ -173,33 +114,29 @@ export const ImagesUpload = ({
   }
 
   return (
-    <ul className={styles.imageList}>
-      {imageFields.fields.map((item, index) => {
-        return (
-          <li key={item.id} className={styles.imageItem}>
-            <label tabIndex={0}>
-              <ImageInput name={`${name}.${index}.${image}`} />
+    <FileGrid>
+      {imageFields.fields.map((item, index) => (
+        <FileGridItem key={item.id}>
+          <UploadedFile
+            downloadUrl={watch(`${name}.${index}.${image}`)}
+            onRemove={() => imageFields.remove(index)}
+          >
+            <ImageInput name={`${name}.${index}.${image}`}>
               <ImageThumbnail
                 name={`${name}.${index}.${image}`}
                 thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
               />
-            </label>
-            <div className={styles.toolbar}>
-              <DownloadLink url={watch(`${name}.${index}.${image}`)} />
-              <button
-                className={classNames(styles.button, styles.removeButton)}
-                type="button"
-                onClick={() => imageFields.remove(index)}
-              >
-                <FaTimes />
-              </button>
-            </div>
-          </li>
-        )
-      })}
-      <li key="add" className={styles.imageItem}>
-        <ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />
-      </li>
-    </ul>
+            </ImageInput>
+          </UploadedFile>
+        </FileGridItem>
+      ))}
+      <FileGridItem>
+        <AddImageInput
+          name={`${name}.add`}
+          onAdd={addImages}
+          colorTheme={colorTheme}
+        />
+      </FileGridItem>
+    </FileGrid>
   )
 }

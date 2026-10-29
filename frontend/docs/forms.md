@@ -65,6 +65,10 @@ useShowApiErrorMessage(
 Prefer this over catching the error and calling `useShowMessage` with a message
 of your own — that throws the backend's explanation away.
 
+However, only use it to format error status of a RTK query or mutation,
+do not use it for errors caught in try-catch block. Stay with `useShowMessage` there
+-- use the `detail` argument to display additional information.
+
 ## Extract async operations into a hook
 
 When submitting or switching something means several steps — an API call, a

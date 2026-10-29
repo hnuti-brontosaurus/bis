@@ -29,15 +29,46 @@ In this project, some object properties are named by `snake_case`. We do that to
 
 ## Exports and imports
 
-- write and export only one react component per file
+- write and export only one react component per file, small helper components
+  included; a file that already holds several is no reason to add another
 - don't use default exports
 - use absolute paths for imports when possible
 
+## Components
+
+### Share markup, don't copy it
+
+When two components look the same but keep their data differently (in a form,
+saved to the server right away), pull the look out into a component that only
+takes props and renders, and build both on top of it. A copy of the markup
+means every later change to the look has to be made twice.
+[`FileGrid`](../src/components/ImageUpload/FileGrid.tsx) and
+[`UploadedFile`](../src/components/ImageUpload/UploadedFile.tsx) are shared by
+`ImagesUpload` (form) and `DirectFilesUpload` (direct upload).
+
+### Keys
+
+- When displaying array of items, use key (see [docs](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key)).
+  Use values, which 1) are unique among items, 2) do not change in time, ideally the following:
+  1. Intrinsic id (or slug) of the item (mostly when item is downloaded from the backend).
+  2. Array index. This is **only** OK when no components (only elements) are used to display items
+     (simple components without state or effects would be OK, but you never know when this changes).
+  3. Generated index (use `useRef` to store the counter). Index must be stored in state with the items.
+     **Do not use this for items from props!** Or better, use (or extend) [useArrayState](../src/hooks/useArrayState.ts).
+- Keys only have to be unique among the items of one array. Two `.map()`s next
+  to each other don't need prefixes to keep their keys apart.
+
+### Name what failed
+
+When several things can fail at once (files of one upload), the error message
+says which one: `Soubor ${file.name} se nepodařilo uložit`.
+
 ## Styles
 
-We style components using [css modules](https://github.com/css-modules/css-modules) with [scss](https://sass-lang.com/)
+We style components using [CSS modules](https://github.com/css-modules/css-modules) with [scss](https://sass-lang.com/)
 
-- css module should be placed in the same folder as the component it belongs to, and be named `ComponentName.module.scss`
+- each component file should have its own separate CSS module.
+- CSS module should be placed in the same folder as the component it belongs to, and be named `ComponentName.module.scss`
 - other stylesheets should be placed in `src/styles`
 
 ## Commit messages
