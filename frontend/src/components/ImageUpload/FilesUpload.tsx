@@ -7,11 +7,11 @@ import { file2base64 } from 'utils/helpers'
 import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
 import { FileGrid } from './FileGrid'
-import { FileGridItem } from './FileGridItem'
+import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 import styles from './ImageUpload.module.scss'
 
-export type UploadedFile = { id: number; url: string; preview?: string }
+export type UploadedFileType = { id: number; url: string; preview?: string }
 
 type Failure = {
   error: FetchBaseQueryError | SerializedError
@@ -30,7 +30,7 @@ export const FilesUpload = ({
   colorTheme,
 }: {
   name: string
-  files: UploadedFile[] | undefined
+  files: UploadedFileType[] | undefined
   upload: (file: string) => Promise<unknown>
   remove: (id: number) => Promise<unknown>
   colorTheme?: string
@@ -74,16 +74,14 @@ export const FilesUpload = ({
   return (
     <FileGrid add={<AddImageInput onAdd={uploadAll} colorTheme={colorTheme} />}>
       {files?.map(file => (
-        <FileGridItem
-          key={file.id}
-          url={file.url}
-          onRemove={() => removeFile(file.id)}
-        >
-          <FilePreview url={file.preview ?? file.url} />
-        </FileGridItem>
+        <li key={file.id}>
+          <UploadedFile url={file.url} onRemove={() => removeFile(file.id)}>
+            <FilePreview url={file.preview ?? file.url} />
+          </UploadedFile>
+        </li>
       ))}
       {pending.map(({ key, file }) => (
-        <li key={key} className={styles.imageItem}>
+        <li key={key}>
           <FileFallback Icon={LoadingIcon}>{file.name}</FileFallback>
         </li>
       ))}

@@ -11,7 +11,7 @@ import * as messages from 'utils/validationMessages'
 import { AddImageButton } from './AddImageButton'
 import { AddImageInput } from './AddImageInput'
 import { FileGrid } from './FileGrid'
-import { FileGridItem } from './FileGridItem'
+import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 
 const ImageInput: FC<{ name: string; required?: boolean }> = ({
@@ -113,19 +113,20 @@ export const ImagesUpload = ({
   return (
     <FileGrid add={<AddImageInput onAdd={addImages} colorTheme={colorTheme} />}>
       {imageFields.fields.map((item, index) => (
-        <FileGridItem
-          key={item.id}
-          url={watch(`${name}.${index}.${image}`)}
-          onRemove={() => imageFields.remove(index)}
-        >
-          <label tabIndex={0}>
-            <ImageInput name={`${name}.${index}.${image}`} />
-            <ImageThumbnail
-              name={`${name}.${index}.${image}`}
-              thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
-            />
-          </label>
-        </FileGridItem>
+        <li key={item.id}>
+          <UploadedFile
+            url={watch(`${name}.${index}.${image}`)}
+            onRemove={() => imageFields.remove(index)}
+          >
+            <label tabIndex={0}>
+              <ImageInput name={`${name}.${index}.${image}`} />
+              <ImageThumbnail
+                name={`${name}.${index}.${image}`}
+                thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
+              />
+            </label>
+          </UploadedFile>
+        </li>
       ))}
     </FileGrid>
   )

@@ -43,7 +43,7 @@ saved to the server right away), pull the look out into a component that only
 takes props and renders, and build both on top of it. A copy of the markup
 means every later change to the look has to be made twice.
 [`FileGrid`](../src/components/ImageUpload/FileGrid.tsx) and
-[`FileGridItem`](../src/components/ImageUpload/FileGridItem.tsx) are shared by
+[`UploadedFile`](../src/components/ImageUpload/UploadedFile.tsx) are shared by
 `ImagesUpload` (form) and `FilesUpload` (direct upload).
 
 ### Keys
