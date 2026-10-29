@@ -1,5 +1,6 @@
 import classNames from 'classnames'
 import { FaImage, FaPencilAlt } from 'react-icons/fa'
+import { FileFallback } from './FileFallback'
 import styles from './ImageUpload.module.scss'
 
 export const FilePreview = ({
@@ -11,10 +12,7 @@ export const FilePreview = ({
 }) => (
   <div className={classNames(styles.imageWrapper, editable && styles.editable)}>
     <object data={url} className={styles.image}>
-      <div className={styles.fallback}>
-        <FaImage size={60} />
-        (nelze zobrazit)
-      </div>
+      <FileFallback Icon={FaImage}>(nelze zobrazit)</FileFallback>
     </object>
     {editable && (
       <div className={styles.editOverlay}>

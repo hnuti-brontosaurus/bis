@@ -4,6 +4,7 @@ import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
 import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useRef, useState } from 'react'
 import { file2base64 } from 'utils/helpers'
+import { FileFallback } from './FileFallback'
 import { FileGrid } from './FileGrid'
 import { FileGridItem } from './FileGridItem'
 import { FilePreview } from './FilePreview'
@@ -81,10 +82,7 @@ export const FilesUpload = ({
       ))}
       {pending.map(({ key, file }) => (
         <li key={key} className={styles.imageItem}>
-          <div className={styles.fallback}>
-            <LoadingIcon size={60} />
-            {file.name}
-          </div>
+          <FileFallback Icon={LoadingIcon}>{file.name}</FileFallback>
         </li>
       ))}
     </FileGrid>
