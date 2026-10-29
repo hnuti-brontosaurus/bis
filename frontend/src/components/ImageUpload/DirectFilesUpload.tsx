@@ -2,13 +2,14 @@ import type { SerializedError } from '@reduxjs/toolkit'
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
 import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
-import { FC, useRef, useState } from 'react'
+import { FC, useState } from 'react'
 import { file2base64 } from 'utils/helpers'
+import { useArrayState } from '../../hooks/useArrayState'
 import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
 import { FileGrid, FileGridItem } from './FileGrid'
-import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
+import { UploadedFile } from './UploadedFile'
 
 export interface UploadedFileType {
   id: number
@@ -38,27 +39,22 @@ export const DirectFilesUpload: FC<Props> = ({
   remove,
   colorTheme,
 }) => {
-  const [pending, setPending] = useState<{ key: number; file: File }[]>([])
-  const nextPendingKey = useRef(0)
+  const [pending, addPending, removePending] = useArrayState<File>()
   const [failure, setFailure] = useState<Failure>()
   useShowApiErrorMessage(failure?.error, failure?.message)
 
-  const uploadAll = async (fileList: FileList) => {
-    const queue = Array.from(fileList, file => ({
-      key: nextPendingKey.current++,
-      file,
-    }))
-    setPending(pending => [...pending, ...queue])
-    for (const item of queue) {
+  const uploadAll = async (queue: FileList) => {
+    addPending(Array.from(queue))
+    for (const file of queue) {
       try {
-        await upload(await file2base64(item.file))
+        await upload(await file2base64(file))
       } catch (error) {
         setFailure({
           error: error as Failure['error'],
-          message: `Soubor ${item.file.name} se nepodařilo uložit`,
+          message: `Soubor ${file.name} se nepodařilo uložit`,
         })
       } finally {
-        setPending(pending => pending.filter(other => other !== item))
+        removePending(file)
       }
     }
   }
@@ -86,9 +82,9 @@ export const DirectFilesUpload: FC<Props> = ({
           </UploadedFile>
         </FileGridItem>
       ))}
-      {pending.map(({ key, file }) => (
+      {pending.map(({ key, item }) => (
         <FileGridItem key={key}>
-          <FileFallback Icon={LoadingIcon}>{file.name}</FileFallback>
+          <FileFallback Icon={LoadingIcon}>{item.name}</FileFallback>
         </FileGridItem>
       ))}
       <FileGridItem>

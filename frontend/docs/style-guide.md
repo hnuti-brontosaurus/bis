@@ -54,7 +54,7 @@ means every later change to the look has to be made twice.
   2. Array index. This is **only** OK when no components (only elements) are used to display items
      (simple components without state or effects would be OK, but you never know when this changes).
   3. Generated index (use `useRef` to store the counter). Index must be stored in state with the items.
-     **Do not use this for items from props!**
+     **Do not use this for items from props!** Or better, use (or extend) [useArrayState](../src/hooks/useArrayState.ts).
 - Keys only have to be unique among the items of one array. Two `.map()`s next
   to each other don't need prefixes to keep their keys apart.
 
