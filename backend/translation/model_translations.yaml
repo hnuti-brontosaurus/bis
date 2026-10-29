@@ -565,7 +565,7 @@ DonorEvent:
   name: Značka dárce
   name_plural: Značky dárce
   fields:
-    donor: Dárce
+    user: Uživatel
     event_type: Typ
     campaign: Kampaň
     pledge: Příslib

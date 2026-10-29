@@ -387,7 +387,7 @@ SENSITIVITY = {
     "donations.FundraisingCampaign": {INTERNAL: ["name", "slug"]},
     "donations.DonorEvent": {
         INTERNAL: [
-            "donor",
+            "user",
             "event_type",
             "created_at",
             "campaign",

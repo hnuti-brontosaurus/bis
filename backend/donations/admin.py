@@ -36,7 +36,6 @@ from donations.models import (
     Company,
     Donation,
     Donor,
-    DonorEvent,
     FundraisingCampaign,
     Pledge,
     UploadBankRecords,
@@ -75,8 +74,8 @@ class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
         def worklist_campaign(request, campaign_id):
             return telesales_worklist_view(self, request, campaign_id)
 
-        def call(request, campaign_id, donor_id):
-            return telesales_call_view(self, request, campaign_id, donor_id)
+        def call(request, campaign_id, user_id):
+            return telesales_call_view(self, request, campaign_id, user_id)
 
         custom = [
             path(
@@ -85,7 +84,7 @@ class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
                 name="donations_telesales_worklist",
             ),
             path(
-                "telesales/<int:campaign_id>/call/<int:donor_id>/",
+                "telesales/<int:campaign_id>/call/<uuid:user_id>/",
                 self.admin_site.admin_view(call),
                 name="donations_telesales_call",
             ),
@@ -123,21 +122,6 @@ class VariableSymbolInline(PermissionMixin, NestedTabularInline):
 class CompanyInline(PermissionMixin, NestedTabularInline):
     model = Company
     extra = 0
-
-
-class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
-    model = DonorEvent
-    extra = 0
-    readonly_fields = ("created_at", "created_by")
-    fields = (
-        "event_type",
-        "campaign",
-        "fundraisers_note",
-        "pledge",
-        "reminder",
-        "created_at",
-        "created_by",
-    )
 
 
 def mark_with_pronoun(model_admin, request, queryset, pronoun):
@@ -229,7 +213,6 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         CompanyInline,
         VariableSymbolInline,
         DonationAdminInline,
-        DonorEventAdminInline,
     )
     search_fields = User.get_search_fields(prefix="user__")
     list_filter = (
@@ -264,8 +247,11 @@ class DonorAdmin(PermissionMixin, NestedModelAdmin):
         ),
         RecurringDonorWhoStoppedFilter,
         list_filter_extra_title("Fundraisingové kampaně"),
-        ("events__campaign", MultiSelectRelatedDropdownFilter),
-        ("events__event_type", MultiSelectRelatedDropdownAndCampaignFilter),
+        ("user__campaign_events__campaign", MultiSelectRelatedDropdownFilter),
+        (
+            "user__campaign_events__event_type",
+            MultiSelectRelatedDropdownAndCampaignFilter,
+        ),
         HasPledgeInCampaignFilter,
         ("user__tags", MultiSelectRelatedDropdownFilter),
     )

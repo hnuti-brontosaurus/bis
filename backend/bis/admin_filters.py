@@ -319,6 +319,15 @@ class HasFeedbackFilter(YesNoFilter):
     query = {"feedbacks__isnull": False}
 
 
+CAMPAIGN_EVENTS_PATH = "user__campaign_events__"
+
+
+def campaign_filter_ids(request):
+    """Campaigns picked in the donor list's campaign filter."""
+    selected = request.GET.get(f"{CAMPAIGN_EVENTS_PATH}campaign__id__in", "")
+    return [c for c in selected.split(",") if c]
+
+
 class HasPledgeInCampaignFilter(admin.SimpleListFilter):
     title = "Příslib vyplněn"
     parameter_name = "has_pledge_in_campaign"
@@ -335,22 +344,18 @@ class HasPledgeInCampaignFilter(admin.SimpleListFilter):
 
         from donations.models import DonorEvent
 
-        campaign_ids = [
-            c for c in request.GET.get("events__campaign__id__in", "").split(",") if c
-        ]
+        campaign_ids = campaign_filter_ids(request)
 
         q = Q(pledge__gt="")
         if campaign_ids:
             q &= Q(campaign_id__in=campaign_ids)
 
-        donor_ids_with_pledge = DonorEvent.objects.filter(q).values_list(
-            "donor_id", flat=True
-        )
+        users_with_pledge = DonorEvent.objects.filter(q).values("user_id")
 
         if self.value() == "yes":
-            return queryset.filter(pk__in=donor_ids_with_pledge)
+            return queryset.filter(user__in=users_with_pledge)
         if self.value() == "no":
-            return queryset.exclude(pk__in=donor_ids_with_pledge)
+            return queryset.exclude(user__in=users_with_pledge)
 
         return queryset
 
@@ -362,9 +367,7 @@ class MultiSelectRelatedDropdownAndCampaignFilter(MultiSelectRelatedDropdownFilt
         if not self.used_parameters:
             return queryset
 
-        campaign_ids = [
-            c for c in request.GET.get("events__campaign__id__in", "").split(",") if c
-        ]
+        campaign_ids = campaign_filter_ids(request)
         if not campaign_ids:
             return super().queryset(request, queryset)
 
@@ -372,13 +375,13 @@ class MultiSelectRelatedDropdownAndCampaignFilter(MultiSelectRelatedDropdownFilt
 
         donor_event_q = Q(campaign_id__in=campaign_ids)
         for lookup_arg, value in self.used_parameters.items():
-            donor_event_q &= Q(**{lookup_arg.replace("events__", "", 1): value})
+            donor_event_q &= Q(
+                **{lookup_arg.replace(CAMPAIGN_EVENTS_PATH, "", 1): value}
+            )
 
         try:
             return queryset.filter(
-                pk__in=DonorEvent.objects.filter(donor_event_q).values_list(
-                    "donor_id", flat=True
-                )
+                user__in=DonorEvent.objects.filter(donor_event_q).values("user_id")
             )
         except (ValueError, ValidationError) as e:
             raise IncorrectLookupParameters(e)

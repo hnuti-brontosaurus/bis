@@ -33,32 +33,32 @@
     </tr>
   </thead>
   <tbody>
-    {% for donor in reminders %}
+    {% for person in reminders %}
     <tr>
       <td>
-        <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
-          {{ donor.user.get_name }}
+        <a href="{% url 'admin:bis_user_change' person.id %}" target="_blank">
+          {{ person.get_name }}
         </a>
       </td>
-      <td class="{% if donor.latest_reminder_due_at <= now %}telesales-overdue{% endif %}">
-        {{ donor.latest_reminder_due_at|date:"j. n. Y H:i" }}
-        {% if donor.latest_reminder_due_at <= now %}
-          <span class="telesales-hint">({{ donor.latest_reminder_due_at|timesince }} zpět)</span>
+      <td class="{% if person.latest_reminder_due_at <= now %}telesales-overdue{% endif %}">
+        {{ person.latest_reminder_due_at|date:"j. n. Y H:i" }}
+        {% if person.latest_reminder_due_at <= now %}
+          <span class="telesales-hint">({{ person.latest_reminder_due_at|timesince }} zpět)</span>
         {% else %}
-          <span class="telesales-hint">(za {{ donor.latest_reminder_due_at|timeuntil }})</span>
+          <span class="telesales-hint">(za {{ person.latest_reminder_due_at|timeuntil }})</span>
         {% endif %}
       </td>
       <td>
-        {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+        {% if person.latest_call_at %}{{ person.latest_call_at|timesince }} zpět{% else %}—{% endif %}
       </td>
       <td>
-        <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
-          {{ donor.calls_in_window }}/4
+        <span class="telesales-badge telesales-badge-{{ person.calls_in_window }}">
+          {{ person.calls_in_window }}/4
         </span>
       </td>
-      <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
+      <td class="telesales-note">{{ person.last_nonempty_note|truncatechars:60 }}</td>
       <td>
-        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id person.id %}">
           Zavolat
         </a>
       </td>
@@ -81,24 +81,24 @@
     </tr>
   </thead>
   <tbody>
-    {% for donor in worklist %}
+    {% for person in worklist %}
     <tr>
       <td>
-        <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
-          {{ donor.user.get_name }}
+        <a href="{% url 'admin:bis_user_change' person.id %}" target="_blank">
+          {{ person.get_name }}
         </a>
       </td>
       <td>
-        {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+        {% if person.latest_call_at %}{{ person.latest_call_at|timesince }} zpět{% else %}—{% endif %}
       </td>
       <td>
-        <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
-          {{ donor.calls_in_window }}/4
+        <span class="telesales-badge telesales-badge-{{ person.calls_in_window }}">
+          {{ person.calls_in_window }}/4
         </span>
       </td>
-      <td class="telesales-note">{{ donor.last_nonempty_note|truncatechars:60 }}</td>
+      <td class="telesales-note">{{ person.last_nonempty_note|truncatechars:60 }}</td>
       <td>
-        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+        <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id person.id %}">
           Zavolat
         </a>
       </td>
@@ -107,7 +107,7 @@
   </tbody>
 </table>
 {% else %}
-<p class="telesales-empty">Žádní dárci ke kontaktu.</p>
+<p class="telesales-empty">Nikdo ke kontaktu.</p>
 {% endif %}
 
 {% if finished %}
@@ -125,35 +125,35 @@
       </tr>
     </thead>
     <tbody>
-      {% for donor in finished %}
+      {% for person in finished %}
       <tr>
         <td>
-          <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">
-            {{ donor.user.get_name }}
+          <a href="{% url 'admin:bis_user_change' person.id %}" target="_blank">
+            {{ person.get_name }}
           </a>
         </td>
         <td>
-          {% if not donor.user.phone %}Bez telefonního čísla
-          {% elif donor.user.do_not_call %}Už nevolat
-          {% elif donor.user.do_not_solicit %}Už nežádat o dar
-          {% elif donor.latest_call_slug == "call_reached" %}Odvoláno
+          {% if not person.phone %}Bez telefonního čísla
+          {% elif person.do_not_call %}Už nevolat
+          {% elif person.do_not_solicit %}Už nežádat o dar
+          {% elif person.latest_call_slug == "call_reached" %}Odvoláno
           {% else %}Příliš mnoho pokusů{% endif %}
         </td>
         <td>
-          {% if donor.latest_call_at %}{{ donor.latest_call_at|timesince }} zpět{% else %}—{% endif %}
+          {% if person.latest_call_at %}{{ person.latest_call_at|timesince }} zpět{% else %}—{% endif %}
         </td>
         <td>
-          <span class="telesales-badge telesales-badge-{{ donor.calls_in_window }}">
-            {{ donor.calls_in_window }}/4
+          <span class="telesales-badge telesales-badge-{{ person.calls_in_window }}">
+            {{ person.calls_in_window }}/4
           </span>
         </td>
         <td class="telesales-note">
-          {% if donor.recent_campaign_events %}
-            {{ donor.recent_campaign_events.0.fundraisers_note|truncatechars:60 }}
+          {% if person.recent_campaign_events %}
+            {{ person.recent_campaign_events.0.fundraisers_note|truncatechars:60 }}
           {% endif %}
         </td>
         <td>
-          <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id donor.id %}">
+          <a class="button" href="{% url 'admin:donations_telesales_call' campaign.id person.id %}">
             Zavolat
           </a>
         </td>

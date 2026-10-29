@@ -56,7 +56,7 @@ def make_donor(pledged_years_ago, milestones=()):
     )
     for year in milestones:
         DonorEvent.objects.create(
-            donor=donor,
+            user=user,
             event_type=DonorEventCategory.objects.get(slug=f"pledge_{year}y"),
             campaign=FundraisingCampaign.objects.get(slug="automatic_emails"),
         )
@@ -64,7 +64,7 @@ def make_donor(pledged_years_ago, milestones=()):
 
 
 def milestones(donor):
-    return set(donor.events.values_list("event_type__slug", flat=True))
+    return set(donor.user.campaign_events.values_list("event_type__slug", flat=True))
 
 
 def test_new_donor_gets_only_the_highest_milestone(sent_emails):

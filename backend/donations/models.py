@@ -217,7 +217,7 @@ class FundraisingCampaign(m.Model):
 
 @translate_model
 class DonorEvent(m.Model):
-    donor = m.ForeignKey(Donor, on_delete=CASCADE, related_name="events")
+    user = m.ForeignKey(User, on_delete=CASCADE, related_name="campaign_events")
     event_type = m.ForeignKey(DonorEventCategory, on_delete=PROTECT)
     created_at = m.DateTimeField(auto_now_add=True)
     campaign = m.ForeignKey(

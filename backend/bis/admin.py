@@ -219,6 +219,23 @@ class EYCACardAdmin(PermissionMixin, NestedTabularInline):
     model = EYCACard
 
 
+class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
+    model = DonorEvent
+    fk_name = "user"
+    extra = 0
+    classes = ("collapse",)
+    readonly_fields = ("created_at", "created_by")
+    fields = (
+        "event_type",
+        "campaign",
+        "fundraisers_note",
+        "pledge",
+        "reminder",
+        "created_at",
+        "created_by",
+    )
+
+
 class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
     model = OfferedHelp
     classes = ("collapse",)
@@ -295,24 +312,21 @@ def change_fundraising_campaign(model_admin, request, queryset):
             messages.error(request, "Vyberte operaci.")
             return
 
-        donors = queryset
-        if model_admin.model is User:
-            if operation_slug == "added_to_campaign":
-                for user in queryset.filter(donor__isnull=True):
-                    Donor.objects.create(user=user)
-            donors = Donor.objects.filter(user__in=queryset)
+        users = queryset
+        if model_admin.model is Donor:
+            users = User.objects.filter(donor__in=queryset)
 
         added_type = DonorEventCategory.objects.get(slug="added_to_campaign")
 
         count = 0
-        for donor in donors:
+        for user in users:
             membership_qs = DonorEvent.objects.filter(
-                donor=donor, campaign=campaign, event_type=added_type
+                user=user, campaign=campaign, event_type=added_type
             )
             if operation_slug == "added_to_campaign":
                 if not membership_qs.exists():
                     DonorEvent.objects.create(
-                        donor=donor,
+                        user=user,
                         event_type=added_type,
                         campaign=campaign,
                         created_by=request.user,
@@ -322,15 +336,13 @@ def change_fundraising_campaign(model_admin, request, queryset):
                 membership = membership_qs.first()
                 if membership:
                     other_events = DonorEvent.objects.filter(
-                        donor=donor, campaign=campaign
+                        user=user, campaign=campaign
                     ).exclude(pk=membership.pk)
                     if not other_events.exists():
                         membership.delete()
                         count += 1
 
-        messages.success(
-            request, f"Provedeno pro {count} dárce/dárců v kampani {campaign}."
-        )
+        messages.success(request, f"Provedeno pro {count} osob v kampani {campaign}.")
         return
 
     return TemplateResponse(
@@ -418,6 +430,16 @@ def export_emails(view, request, queryset):
     emails = [email for email in emails if email]
 
     return HttpResponse("<br>".join(emails))
+
+
+def sees_campaign_history(viewer, user):
+    # The history used to hang on the donor, so it stays visible to exactly
+    # those who may see the person's donor profile.
+    return viewer.can_see_all or (
+        Permissions(viewer, Donor, "backend")
+        .filter_queryset(Donor.objects.filter(user=user))
+        .exists()
+    )
 
 
 def annotate_visible_donor_stats(users, viewer):
@@ -697,6 +719,8 @@ class UserAdmin(
             EYCACardAdmin,
             DuplicateUserAdminInline,
         ]
+        if obj and sees_campaign_history(request.user, obj):
+            inlines.append(DonorEventAdminInline)
         if request.user.is_superuser and obj:
             inlines.append(UserEmailAdmin)
         return inlines

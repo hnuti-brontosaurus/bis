@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 9112df7853628efc
+// source-hash: a98b190e4467810d
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -642,7 +642,7 @@ export const fundraisingCampaign = {
 export const donorEvent = {
   _name: 'Značka dárce',
   _name_plural: 'Značka dárce',
-  donor: 'Dárce',
+  user: 'Uživatel',
   event_type: 'Typ',
   campaign: 'Kampaň',
   pledge: 'Příslib',

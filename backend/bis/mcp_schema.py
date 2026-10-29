@@ -229,6 +229,7 @@ class UserType:
     events_where_was_organizer: list[EventType]
     applications: list[EventApplicationType]
     donor: DonorType | None
+    campaign_events: list[DonorEventType]
     offers: OfferedHelpType | None
 
     @strawberry_django.field(only=["birthday"])
@@ -601,7 +602,7 @@ class DonationType:
 @strawberry_django.type(DonorEvent, exclude=["fundraisers_note"])
 class DonorEventType:
     fundraisers_note: auto = personal()
-    donor: DonorType
+    user: UserType
     event_type: DonorEventCategoryType
     campaign: FundraisingCampaignType | None
     created_by: UserType | None
@@ -622,7 +623,6 @@ class DonorType:
     basic_section_support: AdministrationUnitType | None
     donations: list[DonationType]
     pledges: list[PledgeType]
-    events: list[DonorEventType]
 
 
 # Root datasets: GraphQL field name -> model. Also the choices of `aggregate`.

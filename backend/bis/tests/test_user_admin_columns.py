@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 from administration_units.models import AdministrationUnit
-from bis.admin import annotate_visible_donor_stats
+from bis.admin import DonorEventAdminInline, annotate_visible_donor_stats
 from bis.models import User
 from categories.models import AdministrationUnitCategory, DonationSourceCategory
 from django.contrib.admin.sites import site
@@ -110,3 +110,20 @@ def test_donor_stats_are_shown_only_for_visible_donors(unit, board_member):
     assert stats[supporter.user.pk] == (600, datetime.date(2026, 3, 1), True)
     assert stats[stranger.user.pk] == (None, None, None)
     assert stats[nobody.pk] == (None, None, None)
+
+
+def user_inlines(viewer, user):
+    request = RequestFactory().get("/admin/bis/user/")
+    request.user = viewer
+    return site._registry[User].get_inlines(request, user)
+
+
+def test_campaign_history_is_shown_to_those_who_see_the_donor(unit, board_member):
+    supporter = make_donor("supporter@example.com", basic_section_support=unit)
+    stranger = make_donor("stranger@example.com")
+    office = make_user("office@example.com")
+    office.can_see_all = True
+
+    assert DonorEventAdminInline in user_inlines(board_member, supporter.user)
+    assert DonorEventAdminInline not in user_inlines(board_member, stranger.user)
+    assert DonorEventAdminInline in user_inlines(office, stranger.user)
