@@ -4,11 +4,11 @@ import { LoadingIcon } from 'components/LoadingIcon/LoadingIcon'
 import { useShowApiErrorMessage } from 'features/systemMessage/useSystemMessage'
 import { useRef, useState } from 'react'
 import { file2base64 } from 'utils/helpers'
+import { AddImageInput } from './AddImageInput'
 import { FileFallback } from './FileFallback'
 import { FileGrid } from './FileGrid'
 import { FileGridItem } from './FileGridItem'
 import { FilePreview } from './FilePreview'
-import { ImageAdd } from './ImageUpload'
 import styles from './ImageUpload.module.scss'
 
 export type UploadedFile = { id: number; url: string; preview?: string }
@@ -27,11 +27,13 @@ export const FilesUpload = ({
   files,
   upload,
   remove,
+  colorTheme,
 }: {
   name: string
   files: UploadedFile[] | undefined
   upload: (file: string) => Promise<unknown>
   remove: (id: number) => Promise<unknown>
+  colorTheme?: string
 }) => {
   const [pending, setPending] = useState<{ key: number; file: File }[]>([])
   const nextPendingKey = useRef(0)
@@ -70,7 +72,7 @@ export const FilesUpload = ({
   }
 
   return (
-    <FileGrid add={<ImageAdd name={name} onAdd={uploadAll} />}>
+    <FileGrid add={<AddImageInput onAdd={uploadAll} colorTheme={colorTheme} />}>
       {files?.map(file => (
         <FileGridItem
           key={file.id}

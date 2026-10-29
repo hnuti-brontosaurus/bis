@@ -9,6 +9,7 @@ import {
 import { file2base64 } from 'utils/helpers'
 import * as messages from 'utils/validationMessages'
 import { AddImageButton } from './AddImageButton'
+import { AddImageInput } from './AddImageInput'
 import { FileGrid } from './FileGrid'
 import { FileGridItem } from './FileGridItem'
 import { FilePreview } from './FilePreview'
@@ -83,28 +84,6 @@ export const ImageUpload = ({
   )
 }
 
-export const ImageAdd = ({
-  name,
-  onAdd,
-  colorTheme,
-}: {
-  name: string
-  onAdd: (files: FileList) => void
-  colorTheme?: string
-}) => (
-  <label tabIndex={0}>
-    <input
-      name={`${name}.add`}
-      style={{ display: 'none' }}
-      type="file"
-      accept="image/*,application/pdf"
-      multiple
-      onChange={event => event.target.files && onAdd(event.target.files)}
-    />
-    <AddImageButton colorTheme={colorTheme}>Přidej fotky</AddImageButton>
-  </label>
-)
-
 export const ImagesUpload = ({
   name,
   image = 'image',
@@ -132,9 +111,7 @@ export const ImagesUpload = ({
   }
 
   return (
-    <FileGrid
-      add={<ImageAdd name={name} onAdd={addImages} colorTheme={colorTheme} />}
-    >
+    <FileGrid add={<AddImageInput onAdd={addImages} colorTheme={colorTheme} />}>
       {imageFields.fields.map((item, index) => (
         <FileGridItem
           key={item.id}
