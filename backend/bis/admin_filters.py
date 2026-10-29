@@ -10,13 +10,128 @@ from bis.models import Qualification
 from bis.permissions import Permissions
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
+from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
+from django.contrib.admin.utils import get_fields_from_path
 from django.core.exceptions import ValidationError
-from django.db.models import Min, Q
+from django.db.models import Exists, Min, OuterRef, Q
 from django.utils import timezone
 from django.utils.timezone import now
-from donations.models import Donor
+from donations.models import (
+    Donation,
+    Donor,
+    DonorEvent,
+    Pledge,
+    annotate_donation_stats,
+)
 from more_admin_filters import MultiSelectRelatedDropdownFilter
+
+
+def sees_donors(viewer):
+    return Permissions(viewer, Donor, "backend").has_view_permission()
+
+
+def visible_donors(viewer):
+    return Permissions(viewer, Donor, "backend").filter_queryset(Donor.objects.all())
+
+
+def donation_source_ids(request):
+    selected = request.GET.get("donations__donation_source__id__in", "")
+    return [s for s in selected.split(",") if s]
+
+
+def visible_donor_stats(request, model_admin):
+    """The donors the viewer may see, with the stats the donor filters and
+    the donor export work with, scoped to the chosen donation sources and the
+    date range of the donation sum."""
+    donors = visible_donors(request.user).annotate(
+        has_active_recurrent_donation=Exists(
+            Pledge.objects.filter(
+                donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
+            )
+        ),
+        had_recurrent_donation=Exists(
+            Pledge.objects.filter(
+                donor=OuterRef("pk"), is_recurrent=True, recurrent_state="stopped"
+            )
+        ),
+    )
+    donation_filter = None
+    if source_ids := donation_source_ids(request):
+        donation_filter = Q(donations__donation_source_id__in=source_ids)
+    sum_range_filter = DonationSumRangeFilter(
+        Donation.donated_at.field,
+        request,
+        dict(request.GET.lists()),
+        Donor,
+        model_admin,
+        "donations__donated_at",
+    )
+    return annotate_donation_stats(
+        donors,
+        donation_filter=donation_filter,
+        sum_filter=sum_range_filter.narrow(request, donation_filter),
+    )
+
+
+def is_active(filter_spec, request):
+    return any(request.GET.get(p) for p in filter_spec.expected_parameters())
+
+
+def on_visible_donors(filter_class, donor_field_path=None):
+    """A donor list filter for the user list. It filters the donors the viewer
+    may see and keeps their users, so that it cannot tell anything about the
+    gifts of a donor the viewer does not see.
+
+    Pass the donor field path for a FieldListFilter and list the result as
+    `("donor", ...)`, a path that does not make the changelist deduplicate."""
+    if issubclass(filter_class, FieldListFilter):
+
+        class Filter(filter_class):
+            def __init__(self, field, request, params, model, model_admin, field_path):
+                field = get_fields_from_path(Donor, donor_field_path)[-1]
+                super().__init__(
+                    field, request, params, Donor, model_admin, donor_field_path
+                )
+                self.model_admin = model_admin
+
+    else:
+
+        class Filter(filter_class):
+            def __init__(self, request, params, model, model_admin):
+                super().__init__(request, params, Donor, model_admin)
+                self.model_admin = model_admin
+
+    def queryset(self, request, users):
+        if not is_active(self, request):
+            return users
+        donors = filter_class.queryset(
+            self, request, visible_donor_stats(request, self.model_admin)
+        )
+        return users.filter(donor__in=donors.values("pk"))
+
+    Filter.queryset = queryset
+    return Filter
+
+
+def on_visible_campaign_history(filter_class):
+    """The campaign history hung on the donor before, so whoever does not see
+    all users filters it only among the donors they see."""
+
+    class Filter(filter_class):
+        def has_output(self):
+            # A related filter with a single choice hides itself, and the
+            # changelist then applies its parameter as a plain lookup,
+            # bypassing the restriction below.
+            return True
+
+        def queryset(self, request, users):
+            users = super().queryset(request, users)
+            if is_active(self, request) and not request.user.can_see_all:
+                users = users.filter(donor__in=visible_donors(request.user))
+            return users
+
+    return Filter
 
 
 class ColumnsFilter(admin.SimpleListFilter):
@@ -25,7 +140,7 @@ class ColumnsFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         presets = [("organizer", "Organizátor")]
-        if Permissions(request.user, Donor, "backend").has_view_permission():
+        if sees_donors(request.user):
             presets.append(("donor", "Dárce"))
         return presets
 
@@ -42,6 +157,22 @@ class HasDonorFilter(YesNoFilter):
     title = "Má přiřazeného dárce"
     parameter_name = "has_donor"
     query = {"donor__isnull": False}
+
+
+class IsDonorFilter(admin.SimpleListFilter):
+    title = "Má profil dárce"
+    parameter_name = "is_donor"
+
+    def lookups(self, request, model_admin):
+        return (("yes", "Ano"), ("no", "Ne"))
+
+    def queryset(self, request, users):
+        donors = visible_donors(request.user)
+        if self.value() == "yes":
+            return users.filter(donor__in=donors)
+        if self.value() == "no":
+            return users.exclude(donor__in=donors)
+        return users
 
 
 class ActiveQualificationFilter(YesNoFilter):
@@ -86,10 +217,6 @@ class AgeFilter(RawRangeNumericFilter):
             )
 
         return queryset.filter(**filters)
-
-
-class DonorAgeFilter(AgeFilter):
-    birthday_field = "user__birthday"
 
 
 class NoBirthdayFilter(YesNoFilter):
@@ -319,11 +446,11 @@ class HasFeedbackFilter(YesNoFilter):
     query = {"feedbacks__isnull": False}
 
 
-CAMPAIGN_EVENTS_PATH = "user__campaign_events__"
+CAMPAIGN_EVENTS_PATH = "campaign_events__"
 
 
 def campaign_filter_ids(request):
-    """Campaigns picked in the donor list's campaign filter."""
+    """Campaigns picked in the user list's campaign filter."""
     selected = request.GET.get(f"{CAMPAIGN_EVENTS_PATH}campaign__id__in", "")
     return [c for c in selected.split(",") if c]
 
@@ -342,8 +469,6 @@ class HasPledgeInCampaignFilter(admin.SimpleListFilter):
         if not self.value():
             return queryset
 
-        from donations.models import DonorEvent
-
         campaign_ids = campaign_filter_ids(request)
 
         q = Q(pledge__gt="")
@@ -353,9 +478,9 @@ class HasPledgeInCampaignFilter(admin.SimpleListFilter):
         users_with_pledge = DonorEvent.objects.filter(q).values("user_id")
 
         if self.value() == "yes":
-            return queryset.filter(user__in=users_with_pledge)
+            return queryset.filter(pk__in=users_with_pledge)
         if self.value() == "no":
-            return queryset.exclude(user__in=users_with_pledge)
+            return queryset.exclude(pk__in=users_with_pledge)
 
         return queryset
 
@@ -371,8 +496,6 @@ class MultiSelectRelatedDropdownAndCampaignFilter(MultiSelectRelatedDropdownFilt
         if not campaign_ids:
             return super().queryset(request, queryset)
 
-        from donations.models import DonorEvent
-
         donor_event_q = Q(campaign_id__in=campaign_ids)
         for lookup_arg, value in self.used_parameters.items():
             donor_event_q &= Q(
@@ -381,7 +504,7 @@ class MultiSelectRelatedDropdownAndCampaignFilter(MultiSelectRelatedDropdownFilt
 
         try:
             return queryset.filter(
-                user__in=DonorEvent.objects.filter(donor_event_q).values("user_id")
+                pk__in=DonorEvent.objects.filter(donor_event_q).values("user_id")
             )
         except (ValueError, ValidationError) as e:
             raise IncorrectLookupParameters(e)

@@ -203,8 +203,8 @@ class DonorExportSerializer(BaseDonorExportSerializer):
     @staticmethod
     def get_related(queryset):
         queryset = BaseDonorExportSerializer.get_related(queryset)
-        # DonorAdmin.get_queryset already annotates these, scoped to the
-        # changelist's donation source and date filters; annotating again
+        # visible_donor_stats already annotates these, scoped to the user
+        # list's donation source and date filters; annotating again
         # would silently replace them with lifetime totals.
         if "donations_sum" in queryset.query.annotations:
             return queryset

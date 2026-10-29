@@ -416,13 +416,27 @@ same volume; its access log is off, since it was never rotated.
 twice, and the default silently disables every logger created in between.
 Tests drop the file handler (`backend/conftest.py`).
 
-### Fundraising campaigns
-Campaign membership is a `DonorEvent` and the telesales views are keyed by donor
-id, so only a `Donor` can be in a campaign. The `change_fundraising_campaign`
-admin action (in `bis/admin.py`, shared by `UserAdmin` and `DonorAdmin`) creates
-the missing `Donor` profiles when run on users. A donor profile therefore does
-not mean the person ever gave: the Ecomail `Dárce` tag (`ecomail/tags.py`) needs
-a donation or a pledge, except for profiles from before
+### Donors and fundraising campaigns
+A `Donor` is a one-to-one profile of a `User`, edited as a section of the user
+admin form (`DonorAdminInline` with its companies, variable symbols, pledges and
+donations). There is no donor list: the user list has a "Dárce" column preset,
+donor and campaign filters, and the donor actions (confirmations, donor xlsx
+export). `DonorAdmin` stays registered, hidden from the menu, only because
+`DonationAdmin`'s donor autocomplete needs it; its pages redirect to the user.
+
+Board members see only the donors supporting their units, and those users join
+their backend user list (`User.filter_queryset`). A filter on donor data must
+therefore never match a donor the viewer cannot see, or it is an oracle for
+their gifts: wrap donor filters in `on_visible_donors` and campaign filters in
+`on_visible_campaign_history` (`bis/admin_filters.py`). A related filter with
+fewer than two choices hides itself, and the changelist then applies its
+parameter as a plain lookup — which is why the campaign wrapper forces
+`has_output`.
+
+Campaign membership is a `DonorEvent` on the user (`campaign_events`, shown as
+"Historie kampaní"), and the telesales views are keyed by user. A donor profile
+does not mean the person ever gave: the Ecomail `Dárce` tag (`ecomail/tags.py`)
+needs a donation or a pledge, except for profiles from before
 `GIFTLESS_DONOR_CUTOFF` — those are legacy donors whose gifts predate the
 donation records. The tag definitions are mirrored for the office in the
 "Tagy pro ecomail.xlsm" file on Drive; keep it in step.

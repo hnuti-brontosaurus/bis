@@ -678,12 +678,6 @@ class User(SearchMixin, AbstractBaseUser):
             )
         )
 
-    @admin.display(description="Profil dárce (pokud existuje)")
-    def get_donor(self):
-        if not hasattr(self, "donor"):
-            return "Neexistuje"
-        return get_admin_edit_url(self.donor)
-
     @classmethod
     def filter_queryset(cls, queryset, perm):
         if perm.user.is_education_member:
@@ -727,6 +721,13 @@ class User(SearchMixin, AbstractBaseUser):
                 # clenove meho clanku
                 Q(memberships__administration_unit__board_members=perm.user),
             ]
+            if perm.source == "backend":
+                # The donor list was folded into the user list, so the donors
+                # the viewer sees bring their users along.
+                queries += [
+                    Q(donor__regional_center_support__board_members=perm.user),
+                    Q(donor__basic_section_support__board_members=perm.user),
+                ]
         return filter_queryset_with_multiple_or_queries(queryset, queries)
 
     @permission_cache

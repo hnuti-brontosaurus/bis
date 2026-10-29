@@ -10,6 +10,13 @@
         <div class="submit-row">
             <input type="submit" value="Přidat přístup do organizátorského BISu" name="_add_access"/>
         </div>
+        {% if has_visible_donor %}
+            <div class="submit-row">
+                Potvrzení o daru:
+                <input type="submit" value="pdf" name="_donation_confirmation_pdf_export"/>
+                <input type="submit" value="zaslat na e-mail" name="_donation_confirmation_pdf_email"/>
+            </div>
+        {% endif %}
     {% endif %}
     {{ block.super }}
 {% endblock %}

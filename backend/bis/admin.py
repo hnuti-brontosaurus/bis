@@ -3,15 +3,23 @@ from admin_numeric_filter.admin import NumericFilterModelAdmin
 from bis.admin_filters import (
     AgeFilter,
     ColumnsFilter,
+    DonationSumAmountFilter,
+    DonationSumRangeFilter,
     EventsWhereWasAsMainOrganizerCountFilter,
     EventsWhereWasOrganizerCountFilter,
+    FirstDonorsDonationFilter,
     FirstParticipatedInEventRangeFilter,
-    HasDonorFilter,
+    HasPledgeInCampaignFilter,
+    HasRecurrentDonationFilter,
+    IsCompanyDonorFilter,
+    IsDonorFilter,
+    LastDonorsDonationFilter,
     MainOrganizerOfEventOfAdministrationUnitFilter,
     MainOrganizerOfEventRangeFilter,
     MemberDuringYearsFilter,
     MemberOfAdministrationUnitFilter,
     MembershipCountFilter,
+    MultiSelectRelatedDropdownAndCampaignFilter,
     NoBirthdayFilter,
     NoLoginFilter,
     OrganizerOfEventOfAdministrationUnitFilter,
@@ -21,7 +29,13 @@ from bis.admin_filters import (
     ParticipatedInEventsCountFilter,
     QualificationCategoryFilter,
     QualificationValidAtFilter,
+    RecurringDonorWhoStoppedFilter,
     UserStatsDateFilter,
+    on_visible_campaign_history,
+    on_visible_donors,
+    sees_donors,
+    visible_donor_stats,
+    visible_donors,
 )
 from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
@@ -30,10 +44,12 @@ from bis.admin_helpers import (
     QuerySearchMixin,
     UserExportFilter,
     get_admin_edit_url,
+    list_filter_extra_note,
     list_filter_extra_text,
     list_filter_extra_title,
 )
 from bis.admin_permissions import PermissionMixin
+from bis.emails import donation_confirmation
 from bis.helpers import make_a, make_table
 from bis.models import (
     EYCACard,
@@ -61,6 +77,7 @@ from dateutil.utils import today
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin, action, helpers
+from django.contrib.admin.filters import BooleanFieldListFilter
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.contrib.auth.models import Group
@@ -76,11 +93,20 @@ from django.db.models import (
     prefetch_related_objects,
 )
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from donations.models import Donor, DonorEvent, FundraisingCampaign, Pledge
+from donations.models import (
+    Company,
+    Donation,
+    Donor,
+    DonorEvent,
+    FundraisingCampaign,
+    Pledge,
+    VariableSymbol,
+)
 from login_code.models import guess_birthday_throttle
 from more_admin_filters import MultiSelectRelatedDropdownFilter
 from nested_admin.forms import SortableHiddenMixin
@@ -96,7 +122,7 @@ from rangefilter.filters import DateRangeFilter
 from rest_framework.authtoken.models import TokenProxy
 from rest_framework.exceptions import Throttled
 from translation.translate import _
-from xlsx_export.export import export_to_xlsx
+from xlsx_export.export import export_to_xlsx, get_donation_confirmation
 
 admin.site.unregister(TokenProxy)
 admin.site.unregister(Group)
@@ -234,6 +260,60 @@ class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
         "created_at",
         "created_by",
     )
+
+
+class CompanyAdminInline(PermissionMixin, NestedTabularInline):
+    model = Company
+    extra = 0
+
+
+class VariableSymbolAdminInline(PermissionMixin, NestedTabularInline):
+    model = VariableSymbol
+    extra = 0
+
+
+class ReadOnlyInlineMixin:
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class PledgeAdminInline(ReadOnlyInlineMixin, PermissionMixin, NestedTabularInline):
+    model = Pledge
+    classes = ("collapse",)
+    fields = ("id", "donation_source", "is_recurrent", "recurrent_state", "pledged_at")
+
+
+class DonationAdminInline(ReadOnlyInlineMixin, PermissionMixin, NestedTabularInline):
+    model = Donation
+    classes = ("collapse",)
+    fields = ("donated_at", "amount", "donation_source", "info")
+
+
+class DonorAdminInline(PermissionMixin, NestedStackedInline):
+    model = Donor
+    fk_name = "user"
+    extra = 0
+    exclude = ("subscribed_to_newsletter",)
+    readonly_fields = ("get_donations_sum",)
+    autocomplete_fields = ("regional_center_support", "basic_section_support")
+    inlines = (
+        CompanyAdminInline,
+        VariableSymbolAdminInline,
+        PledgeAdminInline,
+        DonationAdminInline,
+    )
+
+    @admin.display(description="Suma darů")
+    def get_donations_sum(self, obj):
+        if obj.pk is None:
+            return 0
+        return obj.donations.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
 
 
 class UserOfferedHelpAdmin(PermissionMixin, NestedStackedInline):
@@ -432,23 +512,42 @@ def export_emails(view, request, queryset):
     return HttpResponse("<br>".join(emails))
 
 
-def sees_campaign_history(viewer, user):
-    # The history used to hang on the donor, so it stays visible to exactly
-    # those who may see the person's donor profile.
-    return viewer.can_see_all or (
-        Permissions(viewer, Donor, "backend")
-        .filter_queryset(Donor.objects.filter(user=user))
-        .exists()
+def sees_donor_data(viewer, user):
+    # The campaign history used to hang on the donor, so it stays visible to
+    # exactly those who may see the person's donor profile.
+    return viewer.can_see_all or visible_donors(viewer).filter(user=user).exists()
+
+
+@admin.action(description="Zašli potvrzení o daru")
+def send_donation_confirmation(model_admin, request, queryset):
+    donors = visible_donors(request.user).filter(user__in=queryset.values("pk"))
+    perms = Permissions(request.user, Donor, "backend")
+    if not all(perms.has_change_permission(donor) for donor in donors):
+        return model_admin.message_user(
+            request, "Nemáš právo editovat vybrané objekty", ERROR
+        )
+    sent = 0
+    for donor in donors:
+        try:
+            donation_confirmation(donor, *get_donation_confirmation(donor))
+            sent += 1
+        except AssertionError as e:
+            messages.error(request, str(e))
+    messages.info(request, f"Úspěšně posláno {sent} potvrzení")
+
+
+@admin.action(description="Exportuj dárce")
+def export_donors_to_xlsx(model_admin, request, queryset):
+    donors = visible_donor_stats(request, model_admin).filter(
+        user__in=queryset.values("pk")
     )
+    return export_to_xlsx(model_admin, request, donors)
 
 
 def annotate_visible_donor_stats(users, viewer):
     # Subqueries rather than joins, so postgres computes them only for the rows
     # on the page. They stay None for a user whose donor the viewer may not see.
-    visible_donors = Permissions(viewer, Donor, "backend").filter_queryset(
-        Donor.objects.all()
-    )
-    donor = visible_donors.filter(user=OuterRef("pk"))
+    donor = visible_donors(viewer).filter(user=OuterRef("pk"))
     active_recurrent_pledges = Pledge.objects.filter(
         donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
     )
@@ -504,6 +603,11 @@ class UserAdmin(
                 change_fundraising_campaign.short_description,
             )
 
+        if sees_donors(request.user):
+            for action_func in [send_donation_confirmation, export_donors_to_xlsx]:
+                name = action_func.__name__
+                actions[name] = (action_func, name, action_func.short_description)
+
         return actions
 
     def get_readonly_fields(self, request, obj=None):
@@ -515,7 +619,6 @@ class UserAdmin(
             "get_events_where_was_organizer",
             "get_participated_in_events",
             "roles",
-            "get_donor",
             "get_board_member_of",
             "get_token",
             "last_after_event_email",
@@ -535,7 +638,6 @@ class UserAdmin(
             None,
             {
                 "fields": [
-                    "get_donor",
                     "first_name",
                     "last_name",
                     "birth_name",
@@ -701,9 +803,63 @@ class UserAdmin(
         ("date_joined", DateRangeFilter),
         ("chairman_of__existed_since", UserStatsDateFilter),
         NoLoginFilter,
-        HasDonorFilter,
         UserExportFilter,
     ]
+
+    donor_list_filter = [
+        list_filter_extra_title("Dárci"),
+        IsDonorFilter,
+        on_visible_donors(HasRecurrentDonationFilter),
+        on_visible_donors(IsCompanyDonorFilter),
+        on_visible_donors(
+            AutocompleteFilterFactory("Podporující RC", "regional_center_support")
+        ),
+        on_visible_donors(
+            AutocompleteFilterFactory("Podporující ZČ", "basic_section_support")
+        ),
+        ("donor", on_visible_donors(BooleanFieldListFilter, "is_public")),
+        list_filter_extra_title("Dary"),
+        (
+            "donor",
+            on_visible_donors(
+                MultiSelectRelatedDropdownFilter, "donations__donation_source"
+            ),
+        ),
+        list_filter_extra_note("Dary jen z vybraných zdrojů"),
+        (
+            "donor",
+            on_visible_donors(FirstDonorsDonationFilter, "donations__donated_at"),
+        ),
+        list_filter_extra_note("První dan dárce (z vybraných zdrojů) z daného období"),
+        ("donor", on_visible_donors(LastDonorsDonationFilter, "donations__donated_at")),
+        list_filter_extra_note(
+            "Poslední dan dárce (z vybraných zdrojů) z daného období"
+        ),
+        ("donor", on_visible_donors(DonationSumRangeFilter, "donations__donated_at")),
+        list_filter_extra_note(
+            "Dary pro celkovou sumu (z vybraných zdrojů) jen z daného období"
+        ),
+        ("donor", on_visible_donors(DonationSumAmountFilter, "donations__amount")),
+        list_filter_extra_note(
+            "Suma darů (z vybraných zdrojů) (z vybraného období) z daného rozmezí"
+        ),
+        on_visible_donors(RecurringDonorWhoStoppedFilter),
+        list_filter_extra_title("Fundraisingové kampaně"),
+        (
+            "campaign_events__campaign",
+            on_visible_campaign_history(MultiSelectRelatedDropdownFilter),
+        ),
+        (
+            "campaign_events__event_type",
+            on_visible_campaign_history(MultiSelectRelatedDropdownAndCampaignFilter),
+        ),
+        on_visible_campaign_history(HasPledgeInCampaignFilter),
+    ]
+
+    def get_list_filter(self, request):
+        if sees_donors(request.user):
+            return self.list_filter + self.donor_list_filter
+        return self.list_filter
 
     search_fields = User.get_search_fields()
     list_select_related = "address", "contact_address"
@@ -719,8 +875,8 @@ class UserAdmin(
             EYCACardAdmin,
             DuplicateUserAdminInline,
         ]
-        if obj and sees_campaign_history(request.user, obj):
-            inlines.append(DonorEventAdminInline)
+        if obj and sees_donor_data(request.user, obj):
+            inlines += [DonorAdminInline, DonorEventAdminInline]
         if request.user.is_superuser and obj:
             inlines.append(UserEmailAdmin)
         return inlines
@@ -817,9 +973,41 @@ class UserAdmin(
             )
             self.message_user(request, "Přístup přidán")
             return HttpResponseRedirect(".")
+        if object_id and "_donation_confirmation_pdf_export" in request.POST:
+            donor = self.get_visible_donor(request, object_id)
+            try:
+                return FileResponse(
+                    get_donation_confirmation(donor)[0], as_attachment=True
+                )
+            except AssertionError as e:
+                messages.error(request, str(e))
+                return HttpResponseRedirect(".")
+        if object_id and "_donation_confirmation_pdf_email" in request.POST:
+            donor = self.get_visible_donor(request, object_id)
+            try:
+                donation_confirmation(donor, *get_donation_confirmation(donor))
+                messages.info(request, "Potvrzení o daru úspěšně odesláno")
+            except AssertionError as e:
+                messages.error(request, str(e))
+            return HttpResponseRedirect(".")
         if response := Membership.process_action(request):
             return response
         return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def get_visible_donor(self, request, object_id):
+        return get_object_or_404(
+            visible_donors(request.user), user__id=unquote(object_id)
+        )
+
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url="", obj=None
+    ):
+        context["has_visible_donor"] = (
+            obj is not None and visible_donors(request.user).filter(user=obj).exists()
+        )
+        return super().render_change_form(
+            request, context, add=add, change=change, form_url=form_url, obj=obj
+        )
 
     @admin.display(description="Všechna členství")
     def get_membership_actions(self, obj):

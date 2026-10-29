@@ -6,7 +6,6 @@ from categories.models import RoleCategory
 from django.contrib.admin import helpers
 from django.test import Client
 from django.urls import reverse
-from donations.models import Donor
 from other.models import UserTag
 
 
@@ -141,28 +140,6 @@ def test_remove_nonexistent_tag_errors(office_worker_role):
 
     assert response.status_code == 302
     assert not UserTag.objects.filter(name="does-not-exist").exists()
-
-
-@pytest.mark.django_db
-def test_donor_admin_tags_underlying_user(office_worker_role):
-    actor = make_office_worker("actor6@example.com", office_worker_role)
-    donor_user = make_user("donor_user@example.com")
-    donor = Donor.objects.create(user=donor_user)
-
-    client = Client()
-    client.force_login(actor)
-
-    response = post_tag_action(
-        client,
-        reverse("admin:donations_donor_changelist"),
-        [donor.pk],
-        "add",
-        "via-donor",
-    )
-
-    assert response.status_code == 302
-    tag = UserTag.objects.get(name="via-donor")
-    assert list(tag.users.all()) == [donor_user]
 
 
 @pytest.mark.django_db
