@@ -48,10 +48,13 @@ means every later change to the look has to be made twice.
 
 ### Keys
 
-- Key list items by something that stays with the item. An index is fine only
-  for a list that never loses items from the middle or gets reordered; when
-  items have no id of their own, give them one when they are added (a counter
-  in a `useRef`).
+- When displaying array of items, use key (see [docs](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key)).
+  Use values, which 1) are unique among items, 2) do not change in time, ideally the following:
+  1. Intrinsic id (or slug) of the item (mostly when item is downloaded from the backend).
+  2. Array index. This is **only** OK when no components (only elements) are used to display items
+     (simple components without state or effects would be OK, but you never know when this changes).
+  3. Generated index (use `useRef` to store the counter). Index must be stored in state with the items.
+     **Do not use this for items from props!**
 - Keys only have to be unique among the items of one array. Two `.map()`s next
   to each other don't need prefixes to keep their keys apart.
 
