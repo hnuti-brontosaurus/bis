@@ -1,5 +1,5 @@
 import forEach from 'lodash/forEach'
-import { FC, useEffect } from 'react'
+import { FC, ReactNode, useEffect } from 'react'
 import {
   Controller,
   useFieldArray,
@@ -14,11 +14,14 @@ import { FileGrid, FileGridItem } from './FileGrid'
 import { UploadedFile } from './UploadedFile'
 import { FilePreview } from './FilePreview'
 
-const ImageInput: FC<{ name: string; required?: boolean }> = ({
-  name,
-  required,
-}) => {
-  return (
+interface ImageInputProps {
+  name: string
+  required?: boolean
+  children: ReactNode
+}
+
+const ImageInput: FC<ImageInputProps> = ({ name, required, children }) => (
+  <label tabIndex={0}>
     <Controller
       name={name}
       rules={{ required: required && messages.required }}
@@ -37,8 +40,8 @@ const ImageInput: FC<{ name: string; required?: boolean }> = ({
         />
       )}
     />
-  )
-}
+  </label>
+)
 
 const ImagePreview: FC<{ name: string }> = ({ name }) => {
   const value = useWatch({ name })
@@ -73,14 +76,13 @@ export const ImageUpload = ({
 }) => {
   const value = useWatch({ name })
   return (
-    <label tabIndex={0}>
-      <ImageInput name={name} required={required} />
+    <ImageInput name={name} required={required}>
       {value ? (
         <ImageThumbnail name={name} thumbnail={thumbnail} />
       ) : (
         <AddImageButton colorTheme={colorTheme}>Přidej fotku</AddImageButton>
       )}
-    </label>
+    </ImageInput>
   )
 }
 
@@ -118,13 +120,12 @@ export const ImagesUpload = ({
             downloadUrl={watch(`${name}.${index}.${image}`)}
             onRemove={() => imageFields.remove(index)}
           >
-            <label tabIndex={0}>
-              <ImageInput name={`${name}.${index}.${image}`} />
+            <ImageInput name={`${name}.${index}.${image}`}>
               <ImageThumbnail
                 name={`${name}.${index}.${image}`}
                 thumbnail={thumbnail && `${name}.${index}.${thumbnail}`}
               />
-            </label>
+            </ImageInput>
           </UploadedFile>
         </FileGridItem>
       ))}
