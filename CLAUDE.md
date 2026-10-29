@@ -347,6 +347,18 @@ no DPA) has only `is_bot`, the chatbot (business ChatGPT with a DPA) both.
 - `bis/tests/test_mcp_schema.py` requires every PII-named field to be tagged
   `personal()`. Add to `ALLOWED` only after deciding the field is not PII.
 
+### Data sensitivity docs
+`/docs/` is a public page listing the business data of BIS field by field as
+public / internal / personal / secret, with filters. Framework, login and token
+tables, technical models, `_`-prefixed helper columns, the cookbook and the
+game book are left out (`UNDOCUMENTED_*`).
+The levels live in `bis/data_sensitivity.py`, field by field, and a field takes
+the strictest level of any of its uses. `bis/tests/test_data_sensitivity.py`
+fails when a model field is unclassified, when a level disagrees with the MCP
+schema (`personal()` ⇔ personal, other exposed fields public or internal), or
+when the public `/api/web/` serializers show an internal or secret field — so
+adding a model field means classifying it there.
+
 ### Logs
 `bis/logs.py` writes one JSON line per record to `LOG_DIR`
 (`/app/logs/backend/<utc hour>.jsonl`, on the `django-logs` volume) and the MCP

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Citlivost dat v BISu</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f7f6f2;
+      --surface: #ffffff;
+      --line: #e2dfd6;
+      --text: #22211d;
+      --muted: #6b6860;
+      --public: #2f7d4f;
+      --public-soft: #e3f2e8;
+      --internal: #2f5f9e;
+      --internal-soft: #e3ebf7;
+      --personal: #a3650b;
+      --personal-soft: #fbefd9;
+      --secret: #b3261e;
+      --secret-soft: #fbe2df;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #171714;
+        --surface: #22221e;
+        --line: #36352f;
+        --text: #ecebe6;
+        --muted: #a19e94;
+        --public: #7dcf9c;
+        --public-soft: #1f3a2a;
+        --internal: #8fb4ec;
+        --internal-soft: #1f2d42;
+        --personal: #f0b45a;
+        --personal-soft: #41301a;
+        --secret: #f28b82;
+        --secret-soft: #46211e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    h2 { margin: 40px 0 12px; font-size: 20px; }
+    h3 { margin: 0; font-size: 16px; }
+    p { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+    code { font-size: 13px; color: var(--muted); }
+
+    .levels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .level {
+      display: flex;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--color);
+      border-radius: 8px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .level input { accent-color: var(--color); margin-top: 4px; }
+    .level strong { color: var(--color); }
+    .level span { display: block; color: var(--muted); font-size: 13px; }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 12px 0;
+      background: var(--background);
+    }
+
+    .toolbar input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .model {
+      scroll-margin-top: 80px;
+      margin: 0 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .model header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .model:target { border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+
+    a { color: var(--internal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 8px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+    tr:first-child td { border-top: 0; }
+    td:first-child { width: 34%; }
+    td:nth-child(2) { width: 110px; }
+    td.note { color: var(--muted); font-size: 13px; }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--color);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    [data-level="public"] { --color: var(--public); --soft: var(--public-soft); }
+    [data-level="internal"] { --color: var(--internal); --soft: var(--internal-soft); }
+    [data-level="personal"] { --color: var(--personal); --soft: var(--personal-soft); }
+    [data-level="secret"] { --color: var(--secret); --soft: var(--secret-soft); }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 640px) {
+      tr { display: grid; grid-template-columns: 1fr auto; }
+      td { border-top: 0; }
+      tr + tr { border-top: 1px solid var(--line); }
+      td:first-child, td:nth-child(2) { width: auto; }
+      td.note { grid-column: 1 / -1; padding-top: 0; }
+      td.note:empty { display: none; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Citlivost dat v BISu</h1>
+  <p>
+    Každý údaj, který BIS ukládá, a jak citlivý je. Údaj má nejpřísnější
+    úroveň ze všech míst, kde se objevuje: e-mail organizátora je zveřejněný
+    u akce, a přesto je osobní. Technické tabulky (přihlašování, tokeny,
+    indexy pro vyhledávání), kuchařka a sborník tu nejsou.
+  </p>
+
+  <div class="levels">
+    {% for level in levels %}
+      <label class="level" data-level="{{ level.value }}">
+        <input type="checkbox" value="{{ level.value }}" checked>
+        <div>
+          <strong>{{ level.label }}</strong>
+          <span>{{ level.description }}</span>
+        </div>
+      </label>
+    {% endfor %}
+  </div>
+
+  <div class="toolbar">
+    <input type="search" placeholder="Hledat model nebo údaj…" aria-label="Hledat">
+  </div>
+
+  {% regroup models by app as apps %}
+  {% for app in apps %}
+    <section class="app">
+      <h2>{{ app.grouper }}</h2>
+      {% for model in app.list %}
+        <article class="model" id="{{ model.model }}">
+          <header>
+            <h3>{{ model.name|capfirst }}</h3>
+            <code>{{ model.model }}</code>
+          </header>
+          <table>
+            {% for field in model.fields %}
+              <tr data-level="{{ field.level }}"
+                  data-search="{{ model.name }} {{ model.model }} {{ field.label }} {{ field.name }} {{ field.note }}">
+                <td>
+                  {% if field.target %}<a href="#{{ field.target }}">{{ field.label|capfirst }} →</a>{% else %}{{ field.label|capfirst }}{% endif %}
+                  <br><code>{{ field.name }}</code>
+                </td>
+                <td><span class="badge">{{ field.level.label }}</span></td>
+                <td class="note">{{ field.note }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </article>
+      {% endfor %}
+    </section>
+  {% endfor %}
+</main>
+
+<script>
+  const checkboxes = [...document.querySelectorAll(".level input")];
+  const search = document.querySelector(".toolbar input");
+
+  function filter() {
+    const levels = checkboxes.filter((box) => box.checked).map((box) => box.value);
+    const words = search.value.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const row of document.querySelectorAll("tr[data-level]")) {
+      const text = row.dataset.search.toLowerCase();
+      row.hidden = !levels.includes(row.dataset.level)
+        || !words.every((word) => text.includes(word));
+    }
+    for (const model of document.querySelectorAll(".model")) {
+      model.hidden = !model.querySelector("tr:not([hidden])");
+    }
+    for (const app of document.querySelectorAll(".app")) {
+      app.hidden = !app.querySelector(".model:not([hidden])");
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    const target = link && document.getElementById(link.hash.slice(1));
+    if (target?.hidden || target?.parentElement.hidden) {
+      checkboxes.forEach((box) => (box.checked = true));
+      search.value = "";
+      filter();
+    }
+  });
+
+  checkboxes.forEach((box) => box.addEventListener("change", filter));
+  search.addEventListener("input", filter);
+</script>
+</body>
+</html>
