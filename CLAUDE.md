@@ -647,6 +647,14 @@ English for code, comments, variable names. Czech for user-facing strings.
 - Style with CSS modules + SCSS
 - Forms use react-hook-form + yup validation
 
+Reading `frontend/docs/style-guide.md` and `frontend/docs/forms.md` first is not
+enough: before reporting frontend work as done, check the whole diff against
+them rule by rule. Prettier and ESLint do not enforce naming, absolute imports
+or dead imports, so passing hooks proves nothing here. A line you moved or
+rewrote counts as new code, so don't keep an old habit from the surrounding file
+(`au =>`, a relative import) when it breaks a rule. Remove imports your change
+leaves unused, and look at an existing test before writing a new one.
+
 ### Comments
 - Default: no comments. Code with well-named identifiers should explain itself, rather rewrite the code to be more readable.
 - Only write a comment for a non-obvious **why** — a constraint, an invariant, a workaround for a specific bug, or behavior that would surprise a reader.
