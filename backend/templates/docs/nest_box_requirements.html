@@ -134,7 +134,8 @@
     <li>
       Kontroly zadávají přímo dobrovolníci a garant je po čištění zkontroluje a potvrdí. Dnes garanti sbírají vyplněné papíry a zadávají je hromadně
       <ul>
-        <li>Ideálně i offline v terénu, ale musí jít zadat kontroly i na dálku, např. z papírů</li>
+        <li>Aplikace funguje i offline v terénu a kontroly jde zadat i na dálku, např. z papírů</li>
+        <li>Garant vygeneruje pro oblast odkaz s náhodným UUID v adrese, který platí, dokud ho neuzavře</li>
         <li>Kontrolu jde připsat jiné skupině, než která se o budky běžně stará. Výchozí je obvyklý článek, takže potvrzení dávky kontrol to nezdrží</li>
       </ul>
     </li>
@@ -142,7 +143,7 @@
       Cílem kontroly je vyčistit budku, proto místo jednoho stavu zvlášť:
       <ul>
         <li>jestli se budku podařilo najít a vyčistit</li>
-        <li>co v ní bylo</li>
+        <li>co v ní bylo, a když byla obsazená, tak čím: vosy, druh ptáka apod., s návodem, jak to poznat</li>
         <li>v jakém stavu zůstala</li>
       </ul>
     </li>
@@ -156,7 +157,7 @@
       </ul>
     </li>
     <li>
-      Jednoznačný výpočet statistik: jedna kontrola budky za sezónu, sezóna od dubna do března, protože se čistí od října do března
+      Jednoznačný výpočet statistik: jedna kontrola budky za sezónu, sezóna od 1. července do 30. června, protože se čistí od října do března
       <ul>
         <li>Statistiky jen z potvrzených kontrol</li>
       </ul>
@@ -174,7 +175,14 @@
         <li>Typ může BIS navrhnout podle tvaru a velikosti vletového otvoru, člověk ho potvrdí nebo změní</li>
       </ul>
     </li>
-    <li>Zrušit úroveň lokality, oblast by místo ní měla odpovědný článek</li>
+    <li>Zrušit úroveň lokality: místo ní stačí kraj vypočtený ze souřadnic budky a odpovědný článek u oblasti</li>
+    <li>
+      Zmigrované budky jsou „neověřené“, dokud v nové databázi nedostanou kontrolu, při které se může přeměřit otvor, nastavit typ apod.
+      <ul>
+        <li>U nových budek jsou tyto údaje povinné</li>
+      </ul>
+    </li>
+    <li>Role Budkař může spravovat všechny oblasti a zakládat nové, podobně jako editor v kuchařce. Členové rady spravují oblasti, za které jejich článek odpovídá</li>
     <li>Při migraci mají poznámky přednost před ostatními údaji, např. stav „nenalezena“ se sjednotí s poznámkami, kde se dřív zapisoval</li>
     <li>Nadmořskou výšku doplnit z výškového modelu, jinak „nevyplněno“ místo dnešní nuly</li>
   </ul>
