@@ -1,5 +1,13 @@
+@use 'styles/colors';
+
 .optionLabel {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.attemptsHint {
+  color: colors.$gray-400;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }

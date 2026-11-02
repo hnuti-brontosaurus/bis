@@ -509,8 +509,7 @@ export const AddParticipantModal: FC<INewApplicationModalProps> = ({
                       detail: message,
                     })
                   }
-                  if (e instanceof Error && e.message === 'Canceled') return
-                  else if (e instanceof Error) onBirthdayError?.(e.message)
+                  if (e instanceof Error) onBirthdayError?.(e.message)
                   else {
                     onBirthdayError?.('Jiná chyba')
                   }

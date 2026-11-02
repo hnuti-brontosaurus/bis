@@ -44,6 +44,34 @@ Call `setFocus` _before_ `reset`, not after: `reset` re-registers the inputs, so
 immediately after it react-hook-form cannot find the field yet and `setFocus`
 throws.
 
+## Keep the form's internals inside the form
+
+A component that owns a form doesn't hand `UseFormReturn`, `setError` or
+`setValue` to its parent. When the parent decides whether a submit succeeded,
+its `onSubmit` throws an `Error` with a message for the user, and the form
+puts the message under the field:
+
+```tsx
+const handleFormSubmit = handleSubmit(async data => {
+  try {
+    await onSubmit(data)
+  } catch (error) {
+    if (!(error instanceof Error)) throw error
+    setError('birthday', { type: 'manual', message: error.message })
+  }
+})
+```
+
+See `BirthdayForm` in
+[`SelectUsers.tsx`](../src/components/SelectUsers/SelectUsers.tsx).
+
+## Disable the submit button while submitting
+
+Use react-hook-form's `formState.isSubmitting` rather than a `useState` of your
+own; it is true for as long as an async `handleSubmit` callback runs. Pass it
+to the button as `isLoading`, which disables the button as well as showing the
+spinner.
+
 ## Show the reason the API rejected the data
 
 A generic "něco se nepovedlo" tells the user nothing about which field to fix.

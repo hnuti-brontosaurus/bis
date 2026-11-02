@@ -81,8 +81,8 @@ const mockUnknownUser = (page: Page, memberships: { year: number }[]) =>
     },
   )
 
-/** Opens the create-event page, pre-fills the fields and moves to the "team" tab. */
-const fillForm = async (page: Page) => {
+/** Opens the create-event page and fills it in up to the "team" tab. */
+const openTeamStep = async (page: Page) => {
   await page.goto('/org/akce/vytvorit')
   await expectPath(page, '/org/akce/vytvorit')
 
@@ -115,6 +115,11 @@ const fillForm = async (page: Page) => {
   await page.locator('[name=registrationMethod][value="none"]').check()
 
   await next(page)
+}
+
+/** Like openTeamStep, and picks the main organizer through the birthday dialog. */
+const fillForm = async (page: Page) => {
+  await openTeamStep(page)
   // the react-select is partially covered by the "previous step" arrow
   await pickFromReactSelect(
     page,
@@ -708,6 +713,89 @@ test.describe('create event', () => {
           has: page.locator('[name=other_organizers]'),
         }),
       ).toContainText('Nickname (FirstName LastName)')
+    })
+
+    test('picks a user they can see without asking for a birthday', async ({
+      page,
+    }) => {
+      await openTeamStep(page)
+      // the list's batch query has not filled in the profile, the lookup of
+      // the picked user finds it
+      await mock(
+        page,
+        { method: 'GET', pathname: '/api/frontend/users/' },
+        request => {
+          const searchIds =
+            new URL(request.url()).searchParams.get('_search_id')?.split(',') ??
+            []
+          return {
+            body: {
+              results:
+                searchIds.length === 1
+                  ? [
+                      {
+                        id: '1345',
+                        _search_id: searchIds[0],
+                        first_name: 'Visible',
+                        last_name: 'User',
+                        display_name: 'Visible User',
+                        birthday: '2000-01-01',
+                        qualifications: [],
+                        memberships: [{ year: 2123 }],
+                      },
+                    ]
+                  : [],
+            },
+          }
+        },
+      )
+
+      await pickFromReactSelect(
+        page,
+        7,
+        ['ArrowDown', 'Enter'],
+        'displayname2',
+        { force: true },
+      )
+
+      await expect(page.getByText('Visible User')).toBeVisible()
+      await expect(page.getByText('Zadat datum narození')).toHaveCount(0)
+    })
+
+    test('keeps the birthday dialog open on a wrong birthday until cancelled', async ({
+      page,
+    }) => {
+      await openTeamStep(page)
+      await mock(
+        page,
+        { method: 'GET', pathname: '/api/frontend/get_unknown_user/' },
+        { status: 404, body: {} },
+      )
+
+      await pickFromReactSelect(
+        page,
+        7,
+        ['ArrowDown', 'Enter'],
+        'displayname2',
+        { force: true },
+      )
+      await page.locator('[placeholder=DD]').fill('29')
+      await page.locator('[placeholder=MM]').fill('02')
+      await page.locator('[placeholder=RRRR]').fill('2000')
+      await page
+        .locator('.react-confirm-alert [type=submit]', {
+          hasText: 'Pokračovat',
+        })
+        .click()
+
+      await expect(page.getByText('Nesprávné datum narození')).toBeVisible()
+
+      await page
+        .locator('.react-confirm-alert [type=reset]', { hasText: 'Zrušit' })
+        .click()
+
+      await expect(page.getByText('Zadat datum narození')).toHaveCount(0)
+      await expect(page.getByText('Nepodařilo se')).toHaveCount(0)
     })
 
     test.describe('user is organizer', () => {

@@ -103,7 +103,7 @@ export const Button = ({
         small && styles.smallButton,
         (isLoading || disabled) && styles.disabled,
       )}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       {...props}
     >
       {children}
