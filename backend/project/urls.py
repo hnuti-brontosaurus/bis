@@ -1,6 +1,7 @@
 from bis.views import (
     MCPClientRegistrationView,
     OAuthAuthorizationServerMetadataView,
+    data_sensitivity,
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -39,6 +40,7 @@ urlpatterns = [
     path(f"{settings.API_BASE}", include("api.urls")),
     path("sbornik/", include("game_book.urls")),
     path("stary/", include("old_bis.urls")),
+    path("docs/", data_sensitivity, name="data_sensitivity"),
     # OAuth 2.0 Authorization Server Metadata (RFC 8414, required by MCP spec)
     path(
         ".well-known/oauth-authorization-server",

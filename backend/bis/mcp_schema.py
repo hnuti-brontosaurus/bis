@@ -268,8 +268,9 @@ class QualificationNoteType:
     created_by: UserType
 
 
-@strawberry_django.type(OfferedHelp, fields="__all__")
+@strawberry_django.type(OfferedHelp, exclude=["info"])
 class OfferedHelpType:
+    info: auto = personal()
     user: UserType
     programs: list[EventProgramCategoryType]
     organizer_roles: list[OrganizerRoleCategoryType]

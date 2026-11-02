@@ -46,6 +46,13 @@ Sentry.init({
     // which Sentry would group into one issue for every failing request
     // in the app. One issue per page and status lets a new failure stand out.
     if (isApiError(originalException)) {
+      // A 4xx is the API refusing by design and a 500 is already in the backend's
+      // Sentry with its traceback; only what never reached Django is ours to report.
+      if (
+        typeof originalException.status === 'number' &&
+        originalException.status <= 500
+      )
+        return null
       const path = window.location.pathname.replace(
         /\/(\d+|[0-9a-f]{8}-[0-9a-f-]{27})(?=\/|$)/g,
         '/<id>',

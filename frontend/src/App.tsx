@@ -112,6 +112,12 @@ export const App = () => {
           }
         />
         <Route
+          path="docs/*"
+          element={
+            <ServerRedirect notConfigured="Dokumentace není pro tuto doménu nastavená" />
+          }
+        />
+        <Route
           path="o/*"
           element={
             <ServerRedirect notConfigured="Přihlašování aplikací není pro tuto doménu nastavené" />

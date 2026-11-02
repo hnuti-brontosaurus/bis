@@ -118,14 +118,10 @@ const changeServings = value => {
 }
 
 const tagIds = computed(() => recipe.value?.tag_ids ?? [])
-const tagGroups = computed(() => [
-  ...new Set(
-    tagsStore.list
-      .slice()
-      .sort((a, b) => a.order - b.order)
-      .map(tag => tag.group),
-  ),
-])
+const sortedTags = computed(() =>
+  tagsStore.list.slice().sort((a, b) => a.order - b.order),
+)
+const tagGroups = computed(() => [...new Set(sortedTags.value.map(tag => tag.group))])
 
 const basicInputs = computed(() => {
   // Photos / intro / sources are required only when publishing the recipe;
@@ -205,7 +201,7 @@ const tagInputs = computed(() =>
     item: { style: { marginBottom: "22px" } },
     extra: { size: [16, 6] },
     title: group,
-    checkboxes: tagsStore.list
+    checkboxes: sortedTags.value
       .filter(tag => tag.group === group)
       .map(tag => ({
         key: tag.id,

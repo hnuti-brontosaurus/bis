@@ -127,6 +127,13 @@ class UserViewSet(PermissionViewSetBase):
     )
 
 
+def get_editable_event(user, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    if not Permissions(user, Event, "frontend").has_change_permission(event):
+        raise PermissionDenied()
+    return event
+
+
 class ParticipantsViewSet(UserViewSet):
     # Simple-list events use a minimal {id, first_name, last_name, email,
     # phone} projection; other modes use the standard User shape. POST and
@@ -169,9 +176,7 @@ class ParticipantsViewSet(UserViewSet):
         )
         if not needs_event_check:
             return
-        self.event = get_object_or_404(Event, pk=self.kwargs["event_id"])
-        if not self.event.has_edit_permission(request.user):
-            raise PermissionDenied()
+        self.event = get_editable_event(request.user, self.kwargs["event_id"])
         if self.action in ("create", "destroy") and not self._is_simple_list_event:
             raise ValidationError(
                 "Tímto endpointem lze měnit účastníky jen u akcí se "
@@ -339,10 +344,20 @@ class OpportunityViewSet(PermissionViewSetBase):
         return super().get_queryset().filter(contact_person=self.kwargs["user_id"])
 
 
-class FinanceReceiptViewSet(PermissionViewSetBase):
+class EventFileViewSetBase(PermissionViewSetBase):
+    kwargs_serializer_class = EventRouterKwargsSerializer
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        # BISPermissions checks create without an object, which passes any
+        # organizer, and the serializer creates the event's record or finance
+        if self.action == "create":
+            get_editable_event(request.user, self.kwargs["event_id"])
+
+
+class FinanceReceiptViewSet(EventFileViewSetBase):
     serializer_class = FinanceReceiptSerializer
     queryset = EventFinanceReceipt.objects.all()
-    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(finance__event=self.kwargs["event_id"])
@@ -357,19 +372,17 @@ class EventPropagationImageViewSet(PermissionViewSetBase):
         return super().get_queryset().filter(propagation__event=self.kwargs["event_id"])
 
 
-class EventPhotoViewSet(PermissionViewSetBase):
+class EventPhotoViewSet(EventFileViewSetBase):
     serializer_class = EventPhotoSerializer
     queryset = EventPhoto.objects.all()
-    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(record__event=self.kwargs["event_id"])
 
 
-class AttendanceListPageViewSet(PermissionViewSetBase):
+class AttendanceListPageViewSet(EventFileViewSetBase):
     serializer_class = AttendanceListPageSerializer
     queryset = EventAttendanceListPage.objects.all()
-    kwargs_serializer_class = EventRouterKwargsSerializer
 
     def get_queryset(self):
         return super().get_queryset().filter(record__event=self.kwargs["event_id"])

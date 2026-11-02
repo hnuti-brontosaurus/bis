@@ -900,6 +900,7 @@ class Command(BaseCommand):
                 ("side", "příloha"),
                 ("snack", "svačina"),
                 ("to_taste", "na chuť"),
+                ("dessert", "dezert"),
                 ("drink", "nápoj"),
             ],
             "Typy": [
@@ -910,11 +911,10 @@ class Command(BaseCommand):
                 ("porridge", "kaše"),
                 ("dip", "dip"),
                 ("sandwiches", "sendviče"),
-            ],
-            "Dezerty": [
                 ("cake", "dort"),
                 ("bun", "buchta"),
                 ("candy", "cukroví"),
+                ("pie", "koláč"),
             ],
             "Speciální": [
                 ("on_hike", "na čundr"),

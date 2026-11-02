@@ -839,9 +839,25 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.financeReceipt,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'FinanceReceipt', id: `${eventId}_RECEIPT_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: receipt } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData(
+              'readFinanceReceipts',
+              { eventId },
+              list => {
+                list.results.push(receipt)
+                list.count += 1
+              },
+            ),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     readFinanceReceipts: build.query<
       PaginatedList<FinanceReceipt>,
@@ -867,24 +883,6 @@ export const api = createApi({
                 },
               ])
           : [],
-    }),
-    updateFinanceReceipt: build.mutation<
-      FinanceReceipt,
-      {
-        eventId: number
-        id: number
-        patchedFinanceReceipt: Partial<FinanceReceipt>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/finance/receipts/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedFinanceReceipt,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'FinanceReceipt', id: `${eventId}_${id}` },
-        { type: 'FinanceReceipt', id: `${eventId}_RECEIPT_LIST` },
-      ],
     }),
     deleteFinanceReceipt: build.mutation<void, { eventId: number; id: number }>(
       {
@@ -1084,27 +1082,25 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.eventAttendanceListPage,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'AttendanceListPage', id: `${eventId}_ATTENDANCE_LIST` },
-      ],
-    }),
-    updateAttendanceListPage: build.mutation<
-      AttendanceListPage,
-      {
-        eventId: number
-        id: number
-        patchedAttendanceListPage: Partial<AttendanceListPagePayload>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/attendance_list_pages/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedAttendanceListPage,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'AttendanceListPage', id: `${eventId}_${id}` },
-        { type: 'AttendanceListPage', id: `${eventId}_ATTENDANCE_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: page } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData(
+              'readAttendanceListPages',
+              { eventId },
+              list => {
+                list.results.push(page)
+                list.count += 1
+              },
+            ),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     deleteAttendanceListPage: build.mutation<
       void,
@@ -1128,9 +1124,21 @@ export const api = createApi({
         method: 'POST',
         body: queryArg.eventPhoto,
       }),
-      invalidatesTags: (result, error, { eventId }) => [
-        { type: 'EventPhoto', id: `${eventId}_EVENT_PHOTO_LIST` },
-      ],
+      // appended rather than invalidated: invalidating would refetch the whole
+      // list after every file of a multi-file upload
+      onQueryStarted: async ({ eventId }, { dispatch, queryFulfilled }) => {
+        try {
+          const { data: photo } = await queryFulfilled
+          dispatch(
+            api.util.updateQueryData('readEventPhotos', { eventId }, list => {
+              list.results.push(photo)
+              list.count += 1
+            }),
+          )
+        } catch {
+          // the caller of the mutation shows the error
+        }
+      },
     }),
     readEventPhotos: build.query<
       PaginatedList<EventPhoto>,
@@ -1156,24 +1164,6 @@ export const api = createApi({
                 },
               ])
           : [],
-    }),
-    updateEventPhoto: build.mutation<
-      EventPhoto,
-      {
-        eventId: number
-        id: number
-        patchedEventPhoto: Partial<EventPhotoPayload>
-      }
-    >({
-      query: queryArg => ({
-        url: `frontend/events/${queryArg.eventId}/record/photos/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.patchedEventPhoto,
-      }),
-      invalidatesTags: (result, error, { id, eventId }) => [
-        { type: 'EventPhoto', id: `${eventId}_${id}` },
-        { type: 'EventPhoto', id: `${eventId}_EVENT_PHOTO_LIST` },
-      ],
     }),
     deleteEventPhoto: build.mutation<void, { eventId: number; id: number }>({
       query: queryArg => ({

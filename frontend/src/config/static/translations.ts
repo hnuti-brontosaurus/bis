@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 4b8cded50053cecd
+// source-hash: 3af5cbf343e28365
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -272,7 +272,7 @@ export const eventFinance = {
   grant_amount: 'Přidělené dotace',
   total_event_cost: 'Celkové náklady akce',
   budget: 'Rozpočet',
-  bank_account_number: ['Číslo bankvního účtu', 'Pro zaslání dotací'],
+  bank_account_number: ['Číslo bankovního účtu', 'Pro zaslání dotací'],
 } as const
 
 export const eventFinanceReceipt = {

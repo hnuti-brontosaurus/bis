@@ -1,0 +1,30 @@
+@use 'styles/colors';
+
+.imageWrapper {
+  position: relative;
+  .image {
+    height: 10rem;
+  }
+  .editOverlay {
+    display: none;
+  }
+}
+
+.editable {
+  cursor: pointer;
+  .image {
+    cursor: pointer;
+  }
+  &:hover .editOverlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #0009;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+}
