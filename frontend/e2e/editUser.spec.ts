@@ -1,3 +1,4 @@
+import { subscriptionStatus } from '../src/config/subscriptionStatus'
 import { mock } from './support/api'
 import { mockCategories, mockCurrentUser } from './support/mocks'
 import { expect, test } from './support/test'
@@ -80,7 +81,7 @@ test.describe('Edit user', () => {
 
       expect((await updateUser.first()).body).toHaveProperty(
         'subscription_status',
-        2,
+        subscriptionStatus.unsubscribed,
       )
     })
   })
@@ -133,14 +134,15 @@ test.describe('Edit user', () => {
       })
       await page.locator('button', { hasText: 'Potvrdit' }).first().click()
 
-      expect((await updateUser.first()).body).not.toHaveProperty('pronoun')
+      const body = (await updateUser.first()).body
+      expect(body).not.toHaveProperty('pronoun')
       for (const preference of [
         'subscription_status',
         'do_not_call',
         'do_not_solicit',
         'do_not_send_after_event_email',
       ]) {
-        expect((await updateUser.first()).body).not.toHaveProperty(preference)
+        expect(body).not.toHaveProperty(preference)
       }
     })
 

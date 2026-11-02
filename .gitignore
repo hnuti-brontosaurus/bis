@@ -43,3 +43,4 @@ __pycache__
 /backend/old_database_dump/db.json
 /deployments
 /oldbis/
+/old_budky/

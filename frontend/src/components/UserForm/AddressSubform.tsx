@@ -1,20 +1,18 @@
 import classNames from 'classnames'
-import { useDebouncedState } from 'hooks/debouncedState'
-import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
-import { FC } from 'react'
-import { Controller, useFormContext } from 'react-hook-form'
-import Select from 'react-select'
-import { FormInputError } from '../FormInputError/FormInputError'
-import { InlineSection, Label } from '../FormLayout/FormLayout'
+import { FormInputError, InlineSection, Label } from 'components'
 import {
   createOptionLabel,
   loadingMessage,
   MenuWithAttribution,
   noOptionsMessage,
-} from '../MapyCzSearch/MapyCzComponents'
-
+} from 'components/MapyCzSearch/MapyCzComponents'
+import selectStyle from 'components/SelectObject.module.scss'
+import { useDebouncedState } from 'hooks/debouncedState'
+import { MapItem, useMapSuggest } from 'hooks/useMapSuggest'
+import { FC } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+import Select from 'react-select'
 import style from './AddressSubform.module.scss'
-import selectStyle from '../SelectObject.module.scss'
 
 interface Props {
   name: string
