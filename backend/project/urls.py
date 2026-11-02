@@ -7,7 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from mcp_server.views import MCPServerStreamableHttpView
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.permissions import BasePermission
@@ -41,6 +41,11 @@ urlpatterns = [
     path("sbornik/", include("game_book.urls")),
     path("stary/", include("old_bis.urls")),
     path("docs/", data_sensitivity, name="data_sensitivity"),
+    path(
+        "docs/budky/",
+        TemplateView.as_view(template_name="docs/nest_box_requirements.html"),
+        name="nest_box_requirements",
+    ),
     # OAuth 2.0 Authorization Server Metadata (RFC 8414, required by MCP spec)
     path(
         ".well-known/oauth-authorization-server",

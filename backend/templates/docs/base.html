@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f7f6f2;
+      --surface: #ffffff;
+      --line: #e2dfd6;
+      --text: #22211d;
+      --muted: #6b6860;
+      --public: #2f7d4f;
+      --public-soft: #e3f2e8;
+      --internal: #2f5f9e;
+      --internal-soft: #e3ebf7;
+      --personal: #a3650b;
+      --personal-soft: #fbefd9;
+      --secret: #b3261e;
+      --secret-soft: #fbe2df;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #171714;
+        --surface: #22221e;
+        --line: #36352f;
+        --text: #ecebe6;
+        --muted: #a19e94;
+        --public: #7dcf9c;
+        --public-soft: #1f3a2a;
+        --internal: #8fb4ec;
+        --internal-soft: #1f2d42;
+        --personal: #f0b45a;
+        --personal-soft: #41301a;
+        --secret: #f28b82;
+        --secret-soft: #46211e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    h2 { margin: 40px 0 12px; font-size: 20px; }
+    h3 { margin: 0; font-size: 16px; }
+    p { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+
+    a { color: var(--internal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    {% block style %}{% endblock %}
+  </style>
+</head>
+<body>
+<main>
+  {% block content %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>
