@@ -40,5 +40,6 @@
   "pronoun": { "id": 1 },
   "subscription_status": 1,
   "do_not_call": false,
-  "do_not_solicit": false
+  "do_not_solicit": false,
+  "do_not_send_after_event_email": false
 }

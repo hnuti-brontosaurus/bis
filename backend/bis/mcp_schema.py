@@ -203,6 +203,7 @@ class RegionType:
         "subscription_status",
         "do_not_call",
         "do_not_solicit",
+        "do_not_send_after_event_email",
         "is_contact_information_verified",
     ],
 )

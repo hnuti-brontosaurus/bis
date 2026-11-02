@@ -173,3 +173,42 @@ def test_old_donor_links_lead_to_the_user(superuser):
     response = client.get(reverse("admin:donations_donor_change", args=[donor.id]))
 
     assert response.url == reverse("admin:bis_user_change", args=[donor.user.id])
+
+
+def test_user_list_filters_by_supported_unit(superuser, unit):
+    supporter = make_donor("supporter@example.com", [], basic_section_support=unit)
+    make_donor("other@example.com", [])
+    client = Client()
+    client.force_login(superuser)
+
+    response = client.get(
+        reverse("admin:bis_user_changelist"), {"basic_section_support": unit.pk}
+    )
+
+    assert response.status_code == 200
+    assert list(response.context["cl"].result_list) == [supporter.user]
+
+
+@pytest.mark.parametrize("order", ["7", "-7"])
+def test_sorting_by_donation_sum_keeps_non_donors_last(superuser, order):
+    make_donor("small@example.com", [100])
+    make_donor("big@example.com", [900])
+    make_user("nondonor@example.com")
+    request = RequestFactory().get("/admin/bis/user/", {"columns": "donor", "o": order})
+    request.user = superuser
+
+    changelist = site._registry[User].get_changelist_instance(request)
+
+    emails = [user.email for user in changelist.get_queryset(request)]
+    donors = ["small@example.com", "big@example.com"]
+    assert emails[:2] == (donors if order == "7" else donors[::-1])
+    assert "nondonor@example.com" in emails[2:]
+
+
+def test_donation_form_does_not_offer_adding_a_donor(superuser):
+    client = Client()
+    client.force_login(superuser)
+
+    response = client.get(reverse("admin:donations_donation_add"))
+
+    assert reverse("admin:donations_donor_add") not in response.content.decode()

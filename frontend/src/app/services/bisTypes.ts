@@ -185,6 +185,7 @@ type UserPayloadFields =
   | 'subscription_status'
   | 'do_not_call'
   | 'do_not_solicit'
+  | 'do_not_send_after_event_email'
 
 export type UserPayload = Optional<
   Overwrite<

@@ -9,7 +9,7 @@ const ConsentCheckbox = ({
   name,
   label,
 }: {
-  name: 'do_not_call' | 'do_not_solicit'
+  name: 'do_not_call' | 'do_not_solicit' | 'do_not_send_after_event_email'
   label: string
 }) => {
   const { control } = useFormContext<UserFormShape>()
@@ -76,6 +76,10 @@ export const CommunicationSubform = ({
       <ConsentCheckbox
         name="do_not_solicit"
         label="Můžeme tě požádat o finanční podporu?"
+      />
+      <ConsentCheckbox
+        name="do_not_send_after_event_email"
+        label="Můžeme ti po akci poslat info e-mail (max. 1 za půl roku)?"
       />
     </>
   )

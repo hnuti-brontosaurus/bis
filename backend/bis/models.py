@@ -282,6 +282,7 @@ class User(SearchMixin, AbstractBaseUser):
     )
     do_not_call = m.BooleanField(default=False)
     do_not_solicit = m.BooleanField(default=False)
+    do_not_send_after_event_email = m.BooleanField(default=False)
 
     health_insurance_company = m.ForeignKey(
         HealthInsuranceCompany,
@@ -519,6 +520,7 @@ class User(SearchMixin, AbstractBaseUser):
                     "sees_personal_data_over_mcp",
                     "do_not_call",
                     "do_not_solicit",
+                    "do_not_send_after_event_email",
                 ]:
                     continue
 

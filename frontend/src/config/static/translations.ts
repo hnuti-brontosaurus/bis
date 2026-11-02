@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 9ac14076ed8d4736
+// source-hash: b3344d34f6c44584
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -68,6 +68,7 @@ export const user = {
   subscription_status: 'Stav odběru newsletteru',
   do_not_call: 'Už nevolat',
   do_not_solicit: 'Už nežádat o dar',
+  do_not_send_after_event_email: 'Neposílat e-mail po akci',
   last_after_event_email: 'Poslední e-mail po akci',
   is_contact_information_verified: 'Ověřil své kontaktní údaje?',
   is_bot: 'Bot (MCP)',

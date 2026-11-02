@@ -140,6 +140,7 @@ export const form2payload = (
       'subscription_status',
       'do_not_call',
       'do_not_solicit',
+      'do_not_send_after_event_email',
       'address',
       'donor',
       'offers',
@@ -162,6 +163,7 @@ export const form2payload = (
     delete finalData.subscription_status
     delete finalData.do_not_call
     delete finalData.do_not_solicit
+    delete finalData.do_not_send_after_event_email
   }
 
   return finalData
@@ -215,6 +217,7 @@ const validationSchema: yup.ObjectSchema<UserFormShape> = yup.object({
   subscription_status: yup.mixed<SubscriptionStatusEnum>(),
   do_not_call: yup.boolean(),
   do_not_solicit: yup.boolean(),
+  do_not_send_after_event_email: yup.boolean(),
   address: yup
     .object()
     .shape({

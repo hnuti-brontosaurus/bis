@@ -107,6 +107,7 @@ test.describe('Edit user', () => {
       const body = (await updateUser.first()).body
       expect(body).toHaveProperty('do_not_call', true)
       expect(body).toHaveProperty('do_not_solicit', false)
+      expect(body).toHaveProperty('do_not_send_after_event_email', false)
     })
   })
 
@@ -137,6 +138,7 @@ test.describe('Edit user', () => {
         'subscription_status',
         'do_not_call',
         'do_not_solicit',
+        'do_not_send_after_event_email',
       ]) {
         expect((await updateUser.first()).body).not.toHaveProperty(preference)
       }

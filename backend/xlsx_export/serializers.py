@@ -121,6 +121,7 @@ class UserExportSerializer(ModelSerializer):
             "subscription_status",
             "do_not_call",
             "do_not_solicit",
+            "do_not_send_after_event_email",
             "eyca_card",
             "pronoun",
             "close_person",

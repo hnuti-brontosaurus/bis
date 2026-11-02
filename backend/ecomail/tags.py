@@ -137,6 +137,10 @@ def _donor_tags(user: User) -> list[str]:
     return []
 
 
+def _preference_tags(user: User) -> list[str]:
+    return ["Nežádat o dar"] if user.do_not_solicit else []
+
+
 def compute_tags(user: User) -> list[str]:
     today = timezone.now().date()
     tags = [role.name for role in user.roles.all()]
@@ -147,5 +151,6 @@ def compute_tags(user: User) -> list[str]:
     tags.extend(_qualification_tags(user, today))
     tags.extend(_region_tags(user))
     tags.extend(_donor_tags(user))
+    tags.extend(_preference_tags(user))
     tags.extend(tag.name for tag in user.tags.all())
     return tags

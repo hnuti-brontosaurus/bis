@@ -267,10 +267,8 @@ def event_end_participants_notification(event):
 
     participants_to_notify = event.record.participants.exclude(
         last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
-    )
-    for participant in event.record.participants.exclude(
-        last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
-    ):
+    ).exclude(do_not_send_after_event_email=True)
+    for participant in participants_to_notify:
         ecomail.send_email(
             emails["movement"],
             169,

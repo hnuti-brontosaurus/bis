@@ -9,7 +9,8 @@ from django.contrib.admin import ListFilter, SimpleListFilter
 from django.contrib.admin.widgets import AdminDateWidget
 from django.contrib.gis.geos import Point
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
+from django.db.models.expressions import OrderBy
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -361,6 +362,19 @@ class MembershipYearFilter(ListAwareRangeNumericFilter):
         }
 
         return queryset.filter(id__in=id_map.values())
+
+
+class NullsLast(OrderBy):
+    """A changelist column sort keeping empty values last in both directions.
+    The changelist reverses the ordering of a descending sort, and a plain
+    nulls_last turns into nulls_first when reversed."""
+
+    def __init__(self, name):
+        super().__init__(F(name), nulls_last=True)
+
+    def reverse_ordering(self):
+        self.descending = not self.descending
+        return self
 
 
 class QuerySearchMixin(DjangoQLSearchMixin):

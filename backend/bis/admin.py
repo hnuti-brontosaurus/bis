@@ -41,6 +41,7 @@ from bis.admin_helpers import (
     LatestMembershipOnlyFilter,
     LatLongWidget,
     MembershipYearFilter,
+    NullsLast,
     QuerySearchMixin,
     UserExportFilter,
     get_admin_edit_url,
@@ -392,14 +393,10 @@ def change_fundraising_campaign(model_admin, request, queryset):
             messages.error(request, "Vyberte operaci.")
             return
 
-        users = queryset
-        if model_admin.model is Donor:
-            users = User.objects.filter(donor__in=queryset)
-
         added_type = DonorEventCategory.objects.get(slug="added_to_campaign")
 
         count = 0
-        for user in users:
+        for user in queryset:
             membership_qs = DonorEvent.objects.filter(
                 user=user, campaign=campaign, event_type=added_type
             )
@@ -451,11 +448,6 @@ def change_user_tag(model_admin, request, queryset):
     if not (request.user.is_superuser or request.user.is_office_worker):
         return model_admin.message_user(request, "Nemáš právo upravovat štítky", ERROR)
 
-    if model_admin.model is Donor:
-        users_qs = User.objects.filter(donor__in=queryset)
-    else:
-        users_qs = queryset
-
     if "apply" in request.POST:
         operation = request.POST.get("operation")
         name = (request.POST.get("name") or "").strip()
@@ -472,19 +464,19 @@ def change_user_tag(model_admin, request, queryset):
         if operation == "add":
             if tag is None:
                 tag = UserTag.objects.create(name=name)
-            tag.users.add(*users_qs)
+            tag.users.add(*queryset)
             messages.success(
                 request,
-                f"Přidán štítek „{tag}“ pro {users_qs.count()} uživatelů.",
+                f"Přidán štítek „{tag}“ pro {queryset.count()} uživatelů.",
             )
         else:
             if tag is None:
                 messages.error(request, f"Štítek „{name}“ neexistuje.")
                 return
-            tag.users.remove(*users_qs)
+            tag.users.remove(*queryset)
             messages.success(
                 request,
-                f"Odebrán štítek „{tag}“ pro {users_qs.count()} uživatelů.",
+                f"Odebrán štítek „{tag}“ pro {queryset.count()} uživatelů.",
             )
         return
 
@@ -667,6 +659,7 @@ class UserAdmin(
                     "subscription_status",
                     "do_not_call",
                     "do_not_solicit",
+                    "do_not_send_after_event_email",
                 ),
                 "classes": ("collapse",),
             },
@@ -797,6 +790,7 @@ class UserAdmin(
         "subscription_status",
         "do_not_call",
         "do_not_solicit",
+        "do_not_send_after_event_email",
         list_filter_extra_title("Ostatní"),
         ("roles", MultiSelectRelatedDropdownFilter),
         ("tags", MultiSelectRelatedDropdownFilter),
@@ -932,11 +926,11 @@ class UserAdmin(
     def get_token(self, obj):
         return f"Token {obj.auth_token}"
 
-    @admin.display(description="Suma darů", ordering="donations_sum")
+    @admin.display(description="Suma darů", ordering=NullsLast("donations_sum"))
     def get_donations_sum(self, obj):
         return obj.donations_sum
 
-    @admin.display(description="Poslední dar", ordering="last_donation")
+    @admin.display(description="Poslední dar", ordering=NullsLast("last_donation"))
     def get_last_donation(self, obj):
         return obj.last_donation
 

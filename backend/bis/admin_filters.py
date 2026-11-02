@@ -101,6 +101,9 @@ def on_visible_donors(filter_class, donor_field_path=None):
             def __init__(self, request, params, model, model_admin):
                 super().__init__(request, params, Donor, model_admin)
                 self.model_admin = model_admin
+                # An autocomplete filter's chosen value is looked up on this
+                # model, or on the changelist's User without it.
+                self.rel_model = Donor
 
     def queryset(self, request, users):
         if not is_active(self, request):

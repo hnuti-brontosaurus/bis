@@ -444,6 +444,7 @@ class UserSerializer(ModelSerializer):
             "subscription_status",
             "do_not_call",
             "do_not_solicit",
+            "do_not_send_after_event_email",
             "health_insurance_company",
             "health_issues",
             "behaviour_issues",
@@ -515,7 +516,12 @@ class UserSerializer(ModelSerializer):
 
     # Only the person decides how BIS may contact them; staff change it in
     # the admin, not through the organizers' interface.
-    COMMUNICATION_PREFERENCES = "subscription_status", "do_not_call", "do_not_solicit"
+    COMMUNICATION_PREFERENCES = (
+        "subscription_status",
+        "do_not_call",
+        "do_not_solicit",
+        "do_not_send_after_event_email",
+    )
 
     def _is_self(self, instance):
         return instance == self.context["request"].user

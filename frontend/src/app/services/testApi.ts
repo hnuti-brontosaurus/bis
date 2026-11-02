@@ -3194,6 +3194,7 @@ export type User = {
   subscription_status?: SubscriptionStatusEnum
   do_not_call?: boolean
   do_not_solicit?: boolean
+  do_not_send_after_event_email?: boolean
   health_insurance_company: HealthInsuranceCompany
   health_issues?: string
   behaviour_issues?: string
@@ -3591,6 +3592,7 @@ export type PatchedUser = {
   subscription_status?: SubscriptionStatusEnum
   do_not_call?: boolean
   do_not_solicit?: boolean
+  do_not_send_after_event_email?: boolean
   health_insurance_company?: number | null
   health_issues?: string
   pronoun?: number | null

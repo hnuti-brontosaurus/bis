@@ -267,6 +267,12 @@ export const ViewProfile = () => {
                     <th>Můžeme tě požádat o finanční podporu?</th>
                     <td>{user.do_not_solicit ? 'ne' : 'ano'}</td>
                   </tr>
+                  <tr>
+                    <th>
+                      Můžeme ti po akci poslat info e-mail (max. 1 za půl roku)?
+                    </th>
+                    <td>{user.do_not_send_after_event_email ? 'ne' : 'ano'}</td>
+                  </tr>
                 </>
               )}
               <tr>
