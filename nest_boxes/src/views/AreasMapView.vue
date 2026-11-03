@@ -1,8 +1,10 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef } from "vue"
 import { RouterLink, useRouter } from "vue-router"
-import { NSelect } from "naive-ui"
+import { NButton, NSelect } from "naive-ui"
 
+import AppIcon from "@/components/app/AppIcon.vue"
+import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
@@ -26,6 +28,7 @@ const { season, areas, statistics } = usePublicData()
 const unitId = ref(null)
 const selectedId = ref(null)
 const map = shallowRef(null)
+const creatingArea = ref(false)
 
 const unitOptions = computed(() =>
   unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
@@ -52,8 +55,9 @@ const boxTotal = computed(() =>
   shownAreas.value.reduce((total, area) => total + area.box_count, 0),
 )
 
-const canManage = areaId =>
-  auth.me?.is_budkar || auth.me?.managed_area_ids.includes(areaId)
+const canManage = auth.canManage
+
+const onAreaCreated = area => router.push({ name: "area", params: { id: area.id } })
 
 const onBubble = area => {
   if (canManage(area.id)) router.push({ name: "area", params: { id: area.id } })
@@ -113,6 +117,11 @@ const focusArea = areaId => {
           <span>obsazeno loni</span>
         </div>
       </div>
+      <n-button v-if="auth.me?.is_budkar" size="small" @click="creatingArea = true">
+        <template #icon><AppIcon name="plus" /></template>
+        Nová oblast
+      </n-button>
+      <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
       <div class="filters">
         <n-select
           v-model:value="unitId"

@@ -6,7 +6,7 @@ const props = defineProps({
   multiple: { type: Boolean, default: false },
 })
 
-const model = defineModel({ type: [String, Array], default: null })
+const model = defineModel({ type: [String, Number, Array], default: null })
 
 const isOn = value =>
   props.multiple ? model.value.includes(value) : model.value === value

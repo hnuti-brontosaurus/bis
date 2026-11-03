@@ -45,3 +45,32 @@ export const clusterByDistance = (items, distance) => {
 }
 
 export const bubbleDiameter = boxCount => Math.round(26 + Math.sqrt(boxCount) * 1.3)
+
+const LATITUDE_SPAN = 0.0018
+const LONGITUDE_SPAN = 0.0028
+
+/** Bounds of a few hundred metres around [lng, lat], for a map of one box. */
+export const aroundPoint = ([lng, lat]) => [
+  [lng - LONGITUDE_SPAN, lat - LATITUDE_SPAN],
+  [lng + LONGITUDE_SPAN, lat + LATITUDE_SPAN],
+]
+
+/** Bounds of GeoJSON points, padded so a single point still makes a map. */
+export const boundsOf = points => {
+  const lngs = points.map(point => point.coordinates[0])
+  const lats = points.map(point => point.coordinates[1])
+  return [
+    [Math.min(...lngs) - LONGITUDE_SPAN / 4, Math.min(...lats) - LATITUDE_SPAN / 4],
+    [Math.max(...lngs) + LONGITUDE_SPAN / 4, Math.max(...lats) + LATITUDE_SPAN / 4],
+  ]
+}
+
+/** Haversine distance in metres between two GeoJSON points. */
+export const distance = (from, to) => {
+  const [lng1, lat1] = from.coordinates.map(value => (value * Math.PI) / 180)
+  const [lng2, lat2] = to.coordinates.map(value => (value * Math.PI) / 180)
+  const a =
+    Math.sin((lat2 - lat1) / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin((lng2 - lng1) / 2) ** 2
+  return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(a))
+}

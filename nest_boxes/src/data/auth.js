@@ -17,12 +17,16 @@ export const useAuthStore = defineStore("auth", () => {
   // Stays null when whoami fails: unknown, which is not the same as anonymous.
   const me = ref(null)
 
-  const loaded = client
-    .get("/whoami/")
-    .then(({ data }) => {
-      me.value = data
-    })
-    .catch(reportError)
+  // Again after a batch is created or closed, for the header's badge
+  const refresh = () =>
+    client
+      .get("/whoami/")
+      .then(({ data }) => {
+        me.value = data
+      })
+      .catch(reportError)
+
+  const loaded = refresh()
 
   const isAuthenticated = computed(() => Boolean(me.value?.is_authenticated))
   const isManager = computed(
@@ -34,14 +38,19 @@ export const useAuthStore = defineStore("auth", () => {
     return user ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}` : ""
   })
 
+  const canManage = areaId =>
+    Boolean(me.value?.is_budkar) || Boolean(me.value?.managed_area_ids.includes(areaId))
+
   const isAnonymous = computed(() => me.value?.is_authenticated === false)
 
   return {
     me,
     loaded,
+    refresh,
     isAuthenticated,
     isAnonymous,
     isManager,
+    canManage,
     openBatchCount,
     initials,
   }

@@ -1,0 +1,620 @@
+<script setup>
+import { computed, nextTick, ref, shallowRef, watch } from "vue"
+import { RouterLink, useRoute, useRouter } from "vue-router"
+import { NButton, NInput, NPopconfirm, NPopselect, NSelect, useMessage } from "naive-ui"
+
+import AppIcon from "@/components/app/AppIcon.vue"
+import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
+import GpxImportDialog from "@/components/area/GpxImportDialog.vue"
+import NewBatchDialog from "@/components/area/NewBatchDialog.vue"
+import BatchLink from "@/components/batch/BatchLink.vue"
+import BatchProgress from "@/components/batch/BatchProgress.vue"
+import BoxFormDialog from "@/components/box/BoxFormDialog.vue"
+import BaseMap from "@/components/map/BaseMap.vue"
+import BoxMarkers from "@/components/map/BoxMarkers.vue"
+import MapLegend from "@/components/map/MapLegend.vue"
+import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
+import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
+import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
+import { boundsOf } from "@/components/map/geometry.js"
+import {
+  ACTIVE_STATUSES,
+  boxRowDetail,
+  CHECKED_OPTIONS,
+  defaultFilters,
+  filterBoxes,
+  filterParams,
+  markerState,
+  splitByBatch,
+} from "@/composables/areaBoxes.js"
+import { boxCountLabel, currentSeason } from "@/composables/czech.js"
+import { byId, categoryOptions, STATUS_OPTIONS } from "@/composables/labels.js"
+import { latestChecks } from "@/composables/linkBoxes.js"
+import { useLoad } from "@/composables/useLoad.js"
+import { CZECHIA_BOUNDS } from "@/config.js"
+import { useAuthStore } from "@/data/auth.js"
+import { reportError } from "@/data/errors.js"
+import {
+  addBatchBoxes,
+  closeBatch,
+  exportUrl,
+  getArea,
+  getCategories,
+  listBatches,
+  listChecks,
+  removeBatchBoxes,
+} from "@/data/manage.js"
+
+const route = useRoute()
+const router = useRouter()
+const message = useMessage()
+const auth = useAuthStore()
+const season = currentSeason()
+const areaId = Number(route.params.id)
+
+const { data, reload } = useLoad(async () => {
+  const [area, batches, checks, categories] = await Promise.all([
+    getArea(areaId),
+    listBatches({ area: areaId, is_open: true }),
+    listChecks({ area: areaId, season }),
+    getCategories(),
+  ])
+  return { area, batches, checks: latestChecks(checks), categories }
+})
+
+const map = shallowRef(null)
+const selectedId = ref(null)
+const filters = ref(defaultFilters())
+const dialogs = ref({ area: false, batch: false, plan: false, gpx: false })
+
+const area = computed(() => data.value?.area)
+const batches = computed(() => data.value?.batches ?? [])
+const typesById = computed(() => byId(data.value?.categories.types ?? []))
+const occupantsById = computed(() => byId(data.value?.categories.occupants ?? []))
+
+const batchId = computed(() =>
+  route.query.batch ? Number(route.query.batch) : (batches.value[0]?.id ?? null),
+)
+const batch = computed(() => batches.value.find(item => item.id === batchId.value))
+const otherBatches = computed(() => batches.value.filter(item => item !== batch.value))
+const batchOptions = computed(() =>
+  batches.value.map(item => ({ value: item.id, label: item.name })),
+)
+const selectBatch = id => router.replace({ query: { ...route.query, batch: id } })
+
+const shown = computed(() =>
+  area.value ? filterBoxes(area.value.boxes, filters.value, season) : [],
+)
+const groups = computed(() => splitByBatch(shown.value, batch.value))
+const checkOf = box => data.value.checks.get(box.id)
+
+const detail = box =>
+  boxRowDetail(box, checkOf(box), {
+    typesById: typesById.value,
+    occupantsById: occupantsById.value,
+    otherBatches: otherBatches.value,
+  })
+
+const markerBoxes = computed(() =>
+  shown.value
+    .filter(box => box.status !== "planned")
+    .map(box => ({ ...box, state: markerState(box, checkOf(box), batch.value) })),
+)
+const plannedBoxes = computed(() =>
+  shown.value.filter(
+    box =>
+      box.status === "planned" &&
+      (!batch.value || batch.value.box_ids.includes(box.id)),
+  ),
+)
+
+const bounds = computed(() => {
+  const located = area.value.boxes.filter(box => ACTIVE_STATUSES.includes(box.status))
+  return located.length ? boundsOf(located.map(box => box.location)) : CZECHIA_BOUNDS
+})
+const center = computed(
+  () =>
+    area.value.marker ??
+    area.value.boxes[0]?.location ?? {
+      type: "Point",
+      coordinates: [15.5, 49.8],
+    },
+)
+
+const summary = computed(() =>
+  batch.value
+    ? `${batch.value.checked_count} z ${batch.value.box_count} zkontrolováno`
+    : boxCountLabel(shown.value.length),
+)
+
+const typeOptions = computed(() => categoryOptions(data.value.categories.types))
+const unverifiedCount = computed(
+  () =>
+    area.value.boxes.filter(
+      box => !box.is_verified && ACTIVE_STATUSES.includes(box.status),
+    ).length,
+)
+const exportParams = computed(() => ({
+  ...filterParams(filters.value, season),
+  ...(batch.value && { batch: batch.value.id }),
+}))
+
+const selectBox = async id => {
+  selectedId.value = id
+  await nextTick()
+  document.querySelector(`[data-box-row="${id}"]`)?.scrollIntoView({ block: "nearest" })
+}
+
+const focusBox = box => {
+  selectedId.value = box.id
+  map.value?.easeTo({
+    center: box.location.coordinates,
+    zoom: Math.max(map.value.getZoom(), 16),
+  })
+}
+
+const replaceBatch = updated => {
+  data.value = {
+    ...data.value,
+    batches: data.value.batches.map(item => (item.id === updated.id ? updated : item)),
+  }
+}
+
+const move = async (box, into) => {
+  try {
+    replaceBatch(
+      await (into ? addBatchBoxes : removeBatchBoxes)(batch.value.id, [box.id]),
+    )
+  } catch (error) {
+    reportError(error)
+  }
+}
+
+const close = async () => {
+  try {
+    await closeBatch(batch.value.id)
+    message.success("Dávka je uzavřená, odkaz už nic nepřijímá.")
+    await router.replace({ query: {} })
+    await reload()
+    auth.refresh()
+  } catch (error) {
+    reportError(error)
+  }
+}
+
+const onBatchCreated = async created => {
+  await reload()
+  await selectBatch(created.id)
+  auth.refresh()
+}
+
+const onPlanned = async box => {
+  message.success(`Budka ${box.name} je naplánovaná.`)
+  await reload()
+}
+
+const onImported = async count => {
+  message.success(`Import je hotový, změněných budek: ${count}.`)
+  await reload()
+}
+
+watch(batchId, () => (selectedId.value = null))
+</script>
+
+<template>
+  <MapPanelLayout v-if="data">
+    <template #map="{ bottomInset }">
+      <BaseMap :bounds="bounds" :bottom-inset="bottomInset" @ready="map = $event">
+        <PlannedBoxes :boxes="plannedBoxes" />
+        <BoxMarkers
+          :boxes="markerBoxes"
+          :selected-id="selectedId"
+          @select="selectBox"
+        />
+      </BaseMap>
+    </template>
+    <template #summary>
+      <div class="summary">
+        <div class="row title-row">
+          <div class="grow">
+            <p class="eyebrow">{{ area.administration_unit.name }}</p>
+            <h2>{{ area.name }}</h2>
+          </div>
+          <n-button size="small" quaternary @click="dialogs.area = true">
+            <template #icon><AppIcon name="edit" /></template>
+            <span class="hide-sm">Upravit</span>
+          </n-button>
+        </div>
+        <p class="small muted only-sm">{{ summary }}</p>
+      </div>
+    </template>
+
+    <section class="section batch" data-testid="batch-section">
+      <template v-if="batch">
+        <div class="row">
+          <n-select
+            v-if="batches.length > 1"
+            :value="batch.id"
+            :options="batchOptions"
+            size="small"
+            class="grow"
+            @update:value="selectBatch"
+          />
+          <b v-else class="batch-name">{{ batch.name }}</b>
+          <n-button size="small" quaternary @click="dialogs.batch = true">
+            <template #icon><AppIcon name="plus" /></template>
+            Nová dávka
+          </n-button>
+        </div>
+        <BatchProgress :batch="batch" />
+        <BatchLink :token="batch.token" />
+        <div class="row">
+          <RouterLink
+            v-slot="{ navigate }"
+            :to="{ name: 'batch', params: { id: batch.id } }"
+            custom
+          >
+            <n-button type="primary" size="small" @click="navigate">
+              Zkontrolovat a potvrdit
+            </n-button>
+          </RouterLink>
+          <n-popconfirm @positive-click="close">
+            <template #trigger>
+              <n-button size="small">Uzavřít</n-button>
+            </template>
+            Uzavřít dávku bez potvrzení? Odkaz přestane přijímat kontroly, ty čekající
+            zůstanou nepotvrzené.
+          </n-popconfirm>
+          <span class="spacer" />
+          <n-button size="small" quaternary @click="dialogs.plan = true">
+            <template #icon><AppIcon name="plus" /></template>
+            Naplánovat budku
+          </n-button>
+        </div>
+      </template>
+      <div v-else class="row">
+        <span class="muted grow">Žádná otevřená dávka kontrol.</span>
+        <n-button type="primary" size="small" @click="dialogs.batch = true">
+          <template #icon><AppIcon name="plus" /></template>
+          Vytvořit dávku
+        </n-button>
+        <n-button size="small" quaternary @click="dialogs.plan = true">
+          <template #icon><AppIcon name="plus" /></template>
+          Naplánovat budku
+        </n-button>
+      </div>
+    </section>
+
+    <section class="section filters">
+      <div class="chips">
+        <n-popselect
+          v-model:value="filters.type"
+          :options="typeOptions"
+          multiple
+          trigger="click"
+          scrollable
+        >
+          <button type="button" class="chip" :class="{ on: filters.type.length }">
+            <AppIcon name="filter" />Typ<template v-if="filters.type.length">
+              {{ filters.type.length }}</template
+            >
+          </button>
+        </n-popselect>
+        <n-popselect
+          v-model:value="filters.status"
+          :options="STATUS_OPTIONS"
+          multiple
+          trigger="click"
+        >
+          <button type="button" class="chip">
+            Stav {{ filters.status.length }}
+            <AppIcon name="chevd" />
+          </button>
+        </n-popselect>
+        <button
+          type="button"
+          class="chip"
+          :class="{ on: filters.unverified }"
+          @click="filters.unverified = !filters.unverified"
+        >
+          Neověřené {{ unverifiedCount }}
+        </button>
+        <n-popselect
+          v-model:value="filters.checked"
+          :options="CHECKED_OPTIONS"
+          trigger="click"
+        >
+          <button type="button" class="chip" :class="{ on: filters.checked }">
+            {{
+              CHECKED_OPTIONS.find(option => option.value === filters.checked)?.label ??
+              "Kontrola"
+            }}
+            <AppIcon name="chevd" />
+          </button>
+        </n-popselect>
+        <button
+          v-if="filters.checked"
+          type="button"
+          class="chip dim"
+          aria-label="Zrušit filtr kontroly"
+          @click="filters.checked = null"
+        >
+          <AppIcon name="x" />
+        </button>
+      </div>
+      <n-input
+        v-model:value="filters.search"
+        size="small"
+        clearable
+        placeholder="Hledat označení"
+      />
+      <div class="chips tools">
+        <a class="chip dim" :href="exportUrl(area.id, 'gpx', exportParams)" download>
+          <AppIcon name="down" />GPX
+        </a>
+        <a class="chip dim" :href="exportUrl(area.id, 'xlsx', exportParams)" download>
+          <AppIcon name="down" />XLS
+        </a>
+        <RouterLink
+          class="chip dim"
+          :to="{
+            name: 'area_print',
+            params: { id: area.id },
+            query: { batch: batch?.id, filters: JSON.stringify(filters) },
+          }"
+        >
+          <AppIcon name="print" />Tisk
+        </RouterLink>
+        <button type="button" class="chip dim" @click="dialogs.gpx = true">
+          <AppIcon name="up" />Import GPX
+        </button>
+      </div>
+      <MapLegend class="hide-sm" />
+    </section>
+
+    <div class="list" data-testid="box-list">
+      <template
+        v-for="group in batch
+          ? [
+              { key: 'in', title: 'V této dávce', boxes: groups.inBatch },
+              { key: 'out', title: 'Mimo dávku', boxes: groups.outside },
+            ]
+          : [{ key: 'all', title: 'Budky', boxes: groups.outside }]"
+        :key="group.key"
+      >
+        <div class="group-head">{{ group.title }} · {{ group.boxes.length }}</div>
+        <div
+          v-for="box in group.boxes"
+          :key="box.id"
+          class="box-row"
+          :class="{ selected: box.id === selectedId }"
+          :data-box-row="box.id"
+          @click="focusBox(box)"
+        >
+          <MarkerGlyph
+            :state="
+              box.status === 'planned'
+                ? 'planned'
+                : markerState(box, checkOf(box), batch)
+            "
+          />
+          <div class="box-text">
+            <RouterLink
+              class="box-name"
+              :to="{ name: 'box', params: { id: box.id } }"
+              @click.stop
+            >
+              {{ box.name }}
+            </RouterLink>
+            <div class="box-detail">
+              <span v-if="detail(box).tone" class="tag" :class="detail(box).tone">
+                {{ detail(box).text }}
+              </span>
+              <template v-else>{{ detail(box).text }}</template>
+              <span v-if="!box.is_confirmed" class="tag warn">nepotvrzená</span>
+            </div>
+          </div>
+          <RouterLink
+            v-if="box.status !== 'planned'"
+            v-slot="{ navigate }"
+            :to="{ name: 'check', params: { id: box.id } }"
+            custom
+          >
+            <n-button size="small" secondary @click.stop="navigate"
+              >Zkontrolovat</n-button
+            >
+          </RouterLink>
+          <button
+            v-if="batch"
+            type="button"
+            class="move"
+            :title="group.key === 'in' ? 'Vyřadit z dávky' : 'Přidat do dávky'"
+            :aria-label="`${group.key === 'in' ? 'Vyřadit z dávky' : 'Přidat do dávky'} ${box.name}`"
+            @click.stop="move(box, group.key !== 'in')"
+          >
+            <AppIcon :name="group.key === 'in' ? 'minus' : 'plus'" />
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <AreaFormDialog v-model:show="dialogs.area" :area="area" @saved="reload" />
+    <NewBatchDialog
+      v-model:show="dialogs.batch"
+      :area-id="area.id"
+      @created="onBatchCreated"
+    />
+    <BoxFormDialog
+      v-model:show="dialogs.plan"
+      :area-id="area.id"
+      :center="center"
+      :batch-id="batch?.id ?? null"
+      :types="data.categories.types"
+      @saved="onPlanned"
+    />
+    <GpxImportDialog
+      v-model:show="dialogs.gpx"
+      :area-id="area.id"
+      :types="data.categories.types"
+      @imported="onImported"
+    />
+  </MapPanelLayout>
+  <main v-else class="page"><p class="muted">Načítám…</p></main>
+</template>
+
+<style scoped>
+.summary {
+  padding: 18px 20px 12px;
+}
+
+.summary h2 {
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.title-row {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.section {
+  display: grid;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.batch-name {
+  flex: 1;
+  font-size: 16px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--r-chip);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: 600 13px var(--font);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.chip.on {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.chip.dim {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.list {
+  border-top: 1px solid var(--line);
+  padding-bottom: 20px;
+}
+
+.group-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 20px 6px;
+  background: var(--surface);
+  font: 700 12px var(--font);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.box-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.box-row.selected {
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.box-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.box-name {
+  font-weight: 800;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.box-name:hover {
+  text-decoration: underline;
+}
+
+.box-detail {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+}
+
+.move {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.move .icon {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 720px) {
+  .summary {
+    padding: 0 16px 10px;
+  }
+
+  .section,
+  .box-row,
+  .group-head {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+</style>

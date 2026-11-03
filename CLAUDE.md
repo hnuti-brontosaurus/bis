@@ -595,9 +595,37 @@ mockups in `mockups/`). It shares no code with the cookbook.
   component draws as a layer goes through `BaseMap`'s `setOverlay`, because
   the style is rebuilt on a theme switch and `setStyle` drops layers added
   with `addLayer`. DOM markers survive it.
+- **E2e:** `e2e/global-setup.js` seeds once per run. The seeded area is shared
+  with specs that reseed it mid-run, so the manager specs get an area of their
+  own per test (`area` fixture in `e2e/support/manager.js`), and they look the
+  seeded unit up through `public/areas/`: reseeding recomputes the budkař's
+  roles, so a manager-only request can 403 for a moment.
+- **Labels and inputs:** naive-ui's `n-input`, `n-input-number` and
+  `n-date-picker` put a plain `id` on their wrapper; a `<label for>` needs
+  `:input-props="{ id }"` to reach the input.
 - **Built static** goes to `nest_boxes/dist`, which CI copies to
   `backend/nest_boxes_static/`; production nginx serves it like the
   cookbook's (`deployments/base`).
+- **Volunteer pages** (`/d/<token>/…`, `views/link/`) work offline. The
+  `link` store (`data/link.js`) keeps the link payload in IndexedDB
+  (`data/offline.js`) and falls back to it when `GET links/<token>/` gets no
+  answer. Checks, photos and new boxes go into the outbox
+  (`data/outbox.js`) first and are sent in the order they were saved, on
+  `online`, every 30 s and after each save. The ids are client UUIDs, so
+  resends are idempotent; a resent photo replaces the one with the same
+  `order` (`LinkCheckPhotosView`). A 410 drops everything of that link, a
+  4xx is kept as rejected and skipped, a 5xx or no answer stops the run.
+- **Service worker** (vite-plugin-pwa `generateSW`, registered in `main.js`,
+  icons generated from `public/logo.svg` by `pwaAssets`): the app shell is
+  precached, map files on the map origins (anything with an extension:
+  tiles, glyphs, sprites, DEM) are cache-first, and the style and TileJSON
+  network-first, since they name the current tile version. Opening a link
+  prefetches the area (`components/map/prefetch.js`): the tiles of every
+  source in the style's TileJSON plus the DEM, over the boxes' bounds plus
+  1 km, ≤4 requests at once and ≤3,000 tiles (OpenFreeMap's terms), whole
+  zoom levels from the lowest. It just `fetch`es them, and the service
+  worker stores them, so it waits until the worker controls the page. Dev
+  has no service worker, so offline map tiles can only be tried on a build.
 
 ### Game book
 

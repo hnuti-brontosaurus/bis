@@ -1,9 +1,7 @@
 import { addProtocol } from "maplibre-gl"
 import mlcontour from "maplibre-contour"
 
-import { DEM_TILES_URL } from "@/config.js"
-
-const DEM_MAX_ZOOM = 12
+import { DEM_MAX_ZOOM, DEM_TILES_URL } from "@/config.js"
 
 let sources = null
 
