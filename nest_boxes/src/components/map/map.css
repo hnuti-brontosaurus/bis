@@ -1,0 +1,170 @@
+.maplibregl-ctrl.maplibregl-ctrl-attrib {
+  font: 10.5px var(--font);
+  background: var(--surface);
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+
+.maplibregl-ctrl-group {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-in);
+  box-shadow: 0 1px 4px var(--shadow-c);
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--line);
+}
+
+.marker-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.box-marker {
+  width: 0;
+  height: 0;
+  cursor: pointer;
+}
+
+.box-marker .dot,
+.marker-glyph {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary-ink);
+}
+
+.box-marker .dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px var(--shadow-c);
+}
+
+.box-marker.todo .dot,
+.marker-glyph.todo {
+  border-width: 4px;
+}
+
+.box-marker.done .dot,
+.marker-glyph.done {
+  background: var(--primary);
+}
+
+.box-marker.not_found .dot,
+.marker-glyph.not_found {
+  background: var(--mk-nf);
+  border-color: var(--mk-nf);
+  color: var(--mk-nf-ink);
+}
+
+.box-marker.out .dot,
+.marker-glyph.out {
+  width: 14px;
+  height: 14px;
+  border-width: 2.5px;
+  border-color: var(--mk-out);
+  box-shadow: none;
+}
+
+.marker-glyph.planned {
+  border: 2.5px dashed var(--primary);
+  background: var(--plan-bg);
+}
+
+.box-marker.selected .dot {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.box-marker .label,
+.plan-label {
+  font: 700 11.5px/1 var(--font);
+  background: var(--surface);
+  color: var(--text);
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px var(--shadow-c);
+}
+
+.box-marker .label {
+  position: absolute;
+  top: 15px;
+  transform: translateX(-50%);
+}
+
+.box-marker.out .label {
+  opacity: 0.75;
+  top: 10px;
+  font-size: 10.5px;
+}
+
+.plan-label {
+  color: var(--primary-text);
+}
+
+.area-bubble {
+  width: 0;
+  height: 0;
+  cursor: pointer;
+}
+
+.area-bubble .bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: var(--d);
+  height: var(--d);
+  padding: 0 6px;
+  border-radius: var(--r-chip);
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font: 800 14px var(--font);
+  border: 3px solid var(--surface);
+  box-shadow: 0 2px 6px var(--shadow-c);
+}
+
+.area-bubble.merged .bubble {
+  background: var(--primary-strong);
+  color: var(--surface);
+}
+
+.area-bubble.selected .bubble {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.area-bubble .label {
+  position: absolute;
+  top: calc(var(--d) / 2 + 3px);
+  transform: translateX(-50%);
+  font: 700 12px/1.15 var(--font);
+  color: var(--map-label);
+  white-space: nowrap;
+  text-align: center;
+  text-shadow:
+    0 0 3px var(--map-land),
+    0 0 3px var(--map-land),
+    0 0 3px var(--map-land);
+}
+
+.area-bubble .label small {
+  display: block;
+  font-weight: 600;
+  opacity: 0.8;
+}

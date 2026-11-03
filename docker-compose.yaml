@@ -59,6 +59,26 @@ services:
       HOME: /tmp
       HOST: 0.0.0.0
 
+  nest_boxes:
+    container_name: bis-nest-boxes
+    init: true
+    build: ./nest_boxes
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: always
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    ports:
+      - 3003:3003
+    volumes:
+      - ./logs:/logs
+      - ./nest_boxes:/app
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3003/budky/"]
+      interval: 1s
+      retries: 600
+    environment:
+      HOME: /tmp
+      HOST: 0.0.0.0
+
   backend:
     container_name: bis-backend
     init: true

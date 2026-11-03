@@ -38,7 +38,7 @@ repos:
     rev: v3.8.3
     hooks:
       - id: prettier
-        files: ^(frontend|cookbook)/.*\.(vue|ts|tsx|js|jsx|json|md|css|scss)$
+        files: ^(frontend|cookbook|nest_boxes)/.*\.(vue|ts|tsx|js|jsx|json|md|css|scss)$
   - repo: https://github.com/pre-commit/mirrors-eslint
     rev: v8.56.0
     hooks:
@@ -87,3 +87,22 @@ repos:
           - globals@14.0.0
           - "@eslint/js@9.39.2"
           - yaml@2.8.4
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v10.9.1
+    hooks:
+      - id: eslint
+        alias: nest-boxes-eslint
+        name: eslint (nest boxes)
+        language_version: "24.11.1"
+        files: ^nest_boxes/.*\.(vue|js|cjs|mjs)$
+        types: [file]
+        args: ["--config", "nest_boxes/eslint.config.cjs", "--fix"]
+        additional_dependencies:
+          - eslint@10.14.0
+          - eslint-plugin-vue@10.12.0
+          - vue-eslint-parser@10.4.1
+          - "@vue/eslint-config-prettier@10.2.0"
+          - eslint-config-prettier@10.1.8
+          - eslint-plugin-unused-imports@4.4.1
+          - globals@17.14.0
+          - "@eslint/js@10.0.1"

@@ -1,0 +1,220 @@
+@import "./base.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+@import "../components/map/map.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 15px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  text-wrap: balance;
+  margin: 0;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 19px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--primary-text);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 13px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font: 700 12px var(--font);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary-text);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+}
+
+.page {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 32px 40px;
+  display: grid;
+  gap: 26px;
+  align-content: start;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.prog {
+  height: 10px;
+  background: var(--surface-2);
+  border-radius: var(--r-chip);
+  overflow: hidden;
+}
+
+.prog > i {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  border-radius: inherit;
+}
+
+.prog.thin {
+  height: 6px;
+}
+
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tbl th {
+  text-align: left;
+  font: 700 12px var(--font);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.tbl td {
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.tbl .r {
+  text-align: right;
+}
+
+.scroll-x {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.note {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-in);
+  background: var(--info-soft);
+  font-size: 14px;
+  align-items: flex-start;
+}
+
+.note > .icon {
+  color: var(--info);
+}
+
+.note b {
+  display: block;
+}
+
+@media (max-width: 720px) {
+  h1 {
+    font-size: 22px;
+  }
+
+  .page {
+    padding: 18px 16px 28px;
+    gap: 20px;
+  }
+
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hide-sm {
+    display: none !important;
+  }
+}
+
+@media (min-width: 721px) {
+  .only-sm {
+    display: none !important;
+  }
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--r-btn);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}

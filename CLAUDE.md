@@ -10,6 +10,7 @@ BIS (Brontosaurus Information System) is a full-stack web application for managi
 - Backend: Django 4.x + Django REST Framework + PostgreSQL/PostGIS
 - Frontend: React 18 + TypeScript + Redux Toolkit (RTK-Query)
 - Cookbook: Vue 3 + Vite (separate SPA)
+- Nest box database (`nest_boxes/`, at `/budky/`): Vue 3 + Vite + naive-ui + MapLibre, a third SPA
 - Infrastructure: Docker + Docker Compose + Nginx
 
 ## Common Commands
@@ -34,7 +35,7 @@ help either while the limit is 1 CPU, since both would share that one CPU.
 
 ### Testing
 ```bash
-make test              # Run all tests (backend + frontend + cookbook)
+make test              # Run all tests (backend + frontend + cookbook + nest boxes)
 make test_backend      # Run pytest tests only
 make test_frontend     # check_frontend + e2e_frontend
 make test_cookbook     # check_cookbook + e2e_cookbook
@@ -44,6 +45,10 @@ make e2e_frontend      # Frontend Playwright — FULLY MOCKED (page.route). Cont
 make e2e_cookbook      # Cookbook Playwright — REAL e2e against backend + postgres. Containerized.
 make ui_frontend       # Interactive frontend Playwright UI mode → http://localhost:8101
 make ui_cookbook       # Interactive cookbook Playwright UI mode → http://localhost:8100
+make test_nest_boxes   # check_nest_boxes + e2e_nest_boxes
+make check_nest_boxes  # Nest box vitest, in-container
+make e2e_nest_boxes    # Nest box Playwright — REAL e2e against backend + postgres, like the cookbook
+make ui_nest_boxes     # Interactive nest box Playwright UI mode → http://localhost:8102
 ```
 
 The `check_*` / `e2e_*` split exists so CI can run them as separate parallel
@@ -58,6 +63,8 @@ Test stack profiles (`docker-compose.test.yaml`):
 - `backend` profile → backend + postgres (+ nginx) — used by `test_backend`.
 - `playwright` profile → cookbook Playwright runner (`mcr.microsoft.com/playwright`). Started on demand via `docker compose run --rm playwright`, never by `up`.
 - `playwright-frontend` profile → frontend Playwright runner. Same image, mounts `frontend/` instead.
+- `nest_boxes` profile → nginx + nest_boxes + backend + postgres — used by `e2e_nest_boxes` / `ui_nest_boxes`.
+- `playwright-nest-boxes` profile → nest box Playwright runner, mounts `nest_boxes/`, UI on 8102.
 
 Both runners are fully containerized — no host Node toolchain is needed. The
 image ships the browsers at `/ms-playwright`; `@playwright/test` itself comes
@@ -85,13 +92,14 @@ the 10s stop timeout and then SIGKILLs.
 Every compose bind-mount source must exist in the checkout, owned by the host
 user. Docker creates a missing one itself, as **root**, and the containers run
 as `${UID}:${GID}` — so the mount silently becomes unwritable. That is why
-`backend/media`, `backend/frontend_static` and `backend/cookbook_static` each
+`backend/media`, `backend/frontend_static`, `backend/cookbook_static` and
+`backend/nest_boxes_static` each
 carry a force-added `.gitkeep` despite being gitignored.
 
 ### CI (`.github/workflows/ci.yml`)
 `pre-commit`, `test-backend`, `check-frontend`, `check-cookbook`,
-`e2e-frontend`, `e2e-cookbook` and `build` all run in parallel; the deploy jobs
-need all seven. Only `build` writes the buildx (`cache-to: type=gha`) and
+`check-nest-boxes`, `e2e-frontend`, `e2e-cookbook`, `e2e-nest-boxes` and
+`build` all run in parallel; the deploy jobs need all nine. Only `build` writes the buildx (`cache-to: type=gha`) and
 node_modules caches — the rest restore only, so parallel jobs cannot race on a
 cache scope.
 
@@ -552,6 +560,45 @@ and a click handler on the table (naive-ui has no header-row hook);
 `checked-key`, by keeping the checkbox area out of `trigger-areas`. A new
 checkable list should follow the same rule rather than invent its own.
 
+### Nest box app
+
+`nest_boxes/` is the SPA of the nest box database, served at `/budky/` (vite
+`base`, from `APP_PATH` in `src/config.js`). The spec lives in the gitignored
+`old_budky/docs/` (`implementation.md`, `design.md`, `visual-design.md`, the
+mockups in `mockups/`). It shares no code with the cookbook.
+
+- **npm, not yarn.** It runs on `node:26-alpine`, which no longer ships yarn,
+  so the lockfile is `package-lock.json` and the entrypoint runs `npm install`.
+- **Dev port 3003** (`bis-nest-boxes`); 3002 is often taken on the host.
+- **Login** is the Django session that every BIS login creates
+  (`django_login` in `api/auth/views.py`), the same thing the MCP OAuth flow
+  relies on, so the SPA keeps no token of its own. The axios client sends
+  the `csrftoken` cookie back as `X-CSRFToken`, so the `/api/nest_boxes/`
+  views need DRF `SessionAuthentication` (and `whoami` should
+  `ensure_csrf_cookie`). Signing in goes to
+  `/logout?next=/login?next=/budky/…`: the BIS frontend keeps its token in
+  localStorage `persist:auth` for longer than the session lives, and with a
+  stale one `/login` would bounce straight back without a session. A route
+  with `meta.requiresLogin` redirects only once `whoami` said anonymous; a
+  failed `whoami` leaves `me` null, which is unknown, not anonymous.
+- **Theme:** `src/composables/theme.js` is the single palette (Light forest
+  1 / Forest 3 from `visual-design.md`), feeding naive-ui and CSS variables
+  named like the design doc's tokens (`surface2` → `--surface-2`, nested
+  `map.forestLine` → `--map-forest-line`, `mk.nfInk` → `--mk-nf-ink`). The
+  cookbook theme pitfalls apply, except there is no `SCALE`.
+- **maplibre-gl 6** is ESM with named exports only, and finds its worker next
+  to its own module, which Vite's pre-bundling and the build both lose;
+  `components/map/maplibre.js` hands it the bundled worker (`?worker&url`).
+- **The map style** is `MAP_STYLE_URL` (OpenFreeMap positron) recoloured by
+  `styleFor` in `components/map/mapStyle.js`, with Czech names and
+  hillshade/contours from AWS terrain tiles via maplibre-contour. Anything a
+  component draws as a layer goes through `BaseMap`'s `setOverlay`, because
+  the style is rebuilt on a theme switch and `setStyle` drops layers added
+  with `addLayer`. DOM markers survive it.
+- **Built static** goes to `nest_boxes/dist`, which CI copies to
+  `backend/nest_boxes_static/`; production nginx serves it like the
+  cookbook's (`deployments/base`).
+
 ### Game book
 
 `backend/game_book/` is server-rendered (django-bootstrap5, Bootstrap 5.3 from
@@ -592,6 +639,31 @@ The login form posts to the real `/api/auth/login/`. On 1 April (Prague)
 `old-bis-escaped`. Deep links (applications, `/login?next=`) are never
 redirected. HTML fields (`DashboardItem`) render through the `plain_text`
 filter, never `|safe`, because some items embed event names.
+
+### Nest boxes
+
+`backend/nest_boxes/` is the box database behind `/budky/`. Views stay thin:
+permissions, spacing, check upserts, confirming and statistics live in
+`nest_boxes/{permissions,boxes,checks,statistics}.py`.
+
+- "In use" is `status = in_use` **and** `is_confirmed`
+  (`NestBox.objects.in_use()`). A box a volunteer adds through a batch link is
+  unconfirmed, so it stays out of distances, warnings and statistics until a
+  manager confirms it.
+- `NestBox.save()` sets `region` from the location and recomputes the stored
+  `closest_distance` / `closest_same_type_distance` for the whole area in one
+  SQL `UPDATE`. `bulk_create`, `bulk_update` and `QuerySet.update` skip that, so
+  call `NestBox.recompute_distances(area_id)` after them.
+- Change a box through `boxes.update_box`, which writes `NestBoxHistory`;
+  `box.save()` alone records nothing.
+- `NestBox` and `Check` have client-generated UUID pks for offline use.
+  Django forces an INSERT for an unsaved instance whose pk has a default, so
+  saving a resend of an existing row needs `save(force_update=True)`.
+- A FK to `Check` can't be called `check`: it shadows `Model.check()` and
+  breaks the system checks. Hence `box_check`.
+- The budkař role is `BrontosaurusMovement.nest_box_managers` (role slug
+  `nest_box_manager`, `User.is_nest_box_manager`). It is deliberately not
+  part of `is_staff`, and the admin shows the app to superusers only.
 
 ### Deploys and open tabs
 Both SPAs are Vite builds whose `assets/` file names are content-hashed, and a

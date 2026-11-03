@@ -15,11 +15,12 @@ CLEANUP := docker compose down -t 0 --remove-orphans
 TEST_PROJECT := bis-test
 TEST_FILES := -f docker-compose.yaml -f docker-compose.test.yaml
 TEST_COMPOSE := docker compose -p $(TEST_PROJECT) $(TEST_FILES)
-TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile backend --profile playwright --profile playwright-frontend down -t 0 -v --remove-orphans
+TEST_CLEANUP := $(TEST_COMPOSE) --profile dev --profile frontend --profile cookbook --profile nest_boxes --profile backend --profile playwright --profile playwright-frontend --profile playwright-nest-boxes down -t 0 -v --remove-orphans
 
 .PHONY: build dev prodlike clean test test_backend test_frontend test_cookbook \
-        check_frontend check_cookbook e2e_frontend e2e_cookbook \
-        ui_frontend ui_cookbook build_frontend build_cookbook
+        test_nest_boxes check_frontend check_cookbook check_nest_boxes \
+        e2e_frontend e2e_cookbook e2e_nest_boxes ui_frontend ui_cookbook \
+        ui_nest_boxes build_frontend build_cookbook build_nest_boxes
 
 build: .env
 	docker compose build
@@ -38,7 +39,7 @@ prodlike: clean .env
 clean: .env
 	$(CLEANUP)
 
-test: test_backend test_frontend test_cookbook
+test: test_backend test_frontend test_cookbook test_nest_boxes
 
 # Backend pytest. Brings up only postgres + backend in the bis-test project,
 # runs the entrypoint's `test` mode (pytest), tears down with the volume.
@@ -81,6 +82,19 @@ e2e_cookbook: .env
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright test $(spec) $(if $(grep),--grep '$(grep)',)
 
+# Nest box app — REAL e2e against backend + postgres, like the cookbook. The
+# `nest_boxes` profile brings up nginx + nest_boxes + backend + postgres.
+test_nest_boxes: check_nest_boxes e2e_nest_boxes
+
+check_nest_boxes: .env
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) run --rm nest_boxes sh docker-entrypoint.sh check
+
+e2e_nest_boxes: .env
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile nest_boxes up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile nest_boxes --profile playwright-nest-boxes run --rm $(if $(workers),-e PW_WORKERS=$(workers),) playwright-nest-boxes test $(spec) $(if $(grep),--grep '$(grep)',)
+
 # Interactive Playwright for the frontend. UI mode is served over HTTP, so
 # open http://localhost:8101 once the container reports it is listening.
 ui_frontend: .env
@@ -95,8 +109,17 @@ ui_cookbook: .env
 	$(TEST_COMPOSE) --profile cookbook up --quiet-pull --wait -d
 	$(TEST_COMPOSE) --profile cookbook --profile playwright run --rm --service-ports playwright test --ui --ui-host=0.0.0.0 --ui-port=8100
 
+# Interactive Playwright for the nest box app. Open http://localhost:8102.
+ui_nest_boxes: .env
+	trap '$(TEST_CLEANUP)' EXIT
+	$(TEST_COMPOSE) --profile nest_boxes up --quiet-pull --wait -d
+	$(TEST_COMPOSE) --profile nest_boxes --profile playwright-nest-boxes run --rm --service-ports playwright-nest-boxes test --ui --ui-host=0.0.0.0 --ui-port=8100
+
 build_frontend: .env
 	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build
 
 build_cookbook: .env
 	docker compose run --rm cookbook sh docker-entrypoint.sh build
+
+build_nest_boxes: .env
+	docker compose run --rm nest_boxes sh docker-entrypoint.sh build

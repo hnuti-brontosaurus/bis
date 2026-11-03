@@ -100,6 +100,12 @@ export const App = () => {
           }
         />
         <Route
+          path="budky/*"
+          element={
+            <ServerRedirect notConfigured="Databáze budek není pro tuto doménu nastavená" />
+          }
+        />
+        <Route
           path="sbornik/*"
           element={
             <ServerRedirect notConfigured="Sborník není pro tuto doménu nastavený" />

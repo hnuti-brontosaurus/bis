@@ -11,6 +11,7 @@ local_settings.py
 /backend/backend_static
 /backend/frontend_static
 /backend/cookbook_static
+/backend/nest_boxes_static
 /frontend/public/application.*
 /frontend/public/index.html
 /frontend/test/public

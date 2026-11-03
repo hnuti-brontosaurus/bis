@@ -35,6 +35,7 @@ services:
     profiles:
       - backend
       - cookbook
+      - nest_boxes
       - dev
 
   backend:
@@ -53,6 +54,7 @@ services:
     profiles:
       - backend
       - cookbook
+      - nest_boxes
       - dev
 
   frontend:
@@ -82,6 +84,20 @@ services:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     profiles:
       - cookbook
+      - dev
+
+  nest_boxes:
+    image: bis-nest_boxes:latest
+    container_name: bis-test-nest-boxes
+    restart: "no"
+    ports: !override []
+    command: ["sh", "docker-entrypoint.sh", "dev"]
+    environment:
+      HOME: /tmp
+      HOST: 0.0.0.0
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    profiles:
+      - nest_boxes
       - dev
 
   # Host-less Playwright runner using the upstream image, which ships the
@@ -153,6 +169,33 @@ services:
       PULSE_SERVER: ${PULSE_SERVER:-}
     profiles:
       - playwright-frontend
+
+  # Same runner for the nest box app, against the real backend like the
+  # cookbook's.
+  playwright-nest-boxes:
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    container_name: bis-test-playwright-nest-boxes
+    restart: "no"
+    init: true
+    working_dir: /e2e
+    user: "${UID:-1000}:${GID:-1000}"
+    entrypoint: ["npx", "playwright"]
+    ports:
+      - 8102:8100
+    volumes:
+      - ./nest_boxes:/e2e
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    environment:
+      HOME: /tmp
+      PW_BASE_URL: http://nginx
+      CI: ${CI:-}
+      DISPLAY: ${DISPLAY:-}
+      WAYLAND_DISPLAY: ${WAYLAND_DISPLAY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/tmp}
+      PULSE_SERVER: ${PULSE_SERVER:-}
+    profiles:
+      - playwright-nest-boxes
 
 volumes:
   postgresqldata_test:
