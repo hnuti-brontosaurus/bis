@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 from datetime import date
 from unittest.mock import patch
@@ -12,6 +14,7 @@ from django.utils.timezone import now
 from nest_boxes.checks import close_batch
 from nest_boxes.models import Area, Batch, Check, HelpArticle, NestBox
 from nest_boxes.tests.conftest import made_at, near
+from PIL import Image
 
 
 def geojson(point):
@@ -154,6 +157,31 @@ def test_later_check_wins(anonymous, batch):
     assert resend.json()["accepted"]
     assert Check.objects.get().note == "pozdě"
     assert not Check.objects.get().is_confirmed
+
+
+def test_resent_photo_replaces_the_one_with_its_order(
+    anonymous, batch, settings, tmp_path
+):
+    settings.MEDIA_ROOT = tmp_path
+    buffer = io.BytesIO()
+    Image.new("RGB", (4, 4), "red").save(buffer, format="PNG")
+    photo = f"data:image/png;filename=a.png;base64,{base64.b64encode(buffer.getvalue()).decode()}"
+    check = anonymous.post(
+        f"{API}/links/{batch.token}/checks/",
+        link_check(batch.boxes.get()),
+        format="json",
+    ).json()["check"]
+    url = f"{API}/links/{batch.token}/check_photos/"
+
+    for order in (0, 0, 1):
+        response = anonymous.post(
+            url,
+            {"parent_id": check["id"], "photo": photo, "order": order},
+            format="json",
+        )
+        assert response.status_code == 201
+
+    assert sorted(Check.objects.get().photos.values_list("order", flat=True)) == [0, 1]
 
 
 def test_volunteer_adds_a_pending_box(anonymous, batch, types):

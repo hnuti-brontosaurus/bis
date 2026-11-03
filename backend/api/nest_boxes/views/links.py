@@ -92,5 +92,7 @@ class LinkCheckPhotosView(NestBoxAPIMixin, APIView):
         check = serializer.validated_data["box_check"]
         if check.batch_id != batch.pk or check.is_confirmed:
             raise PermissionDenied
+        # The phone resends a photo whose answer it lost; the order names it
+        check.photos.filter(order=serializer.validated_data.get("order", 0)).delete()
         serializer.save()
         return Response(serializer.data, status=HTTP_201_CREATED)
