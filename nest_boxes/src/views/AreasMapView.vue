@@ -127,7 +127,9 @@ const focusArea = areaId => {
           v-model:value="unitId"
           :options="unitOptions"
           size="small"
+          placeholder="Všechny jednotky"
           filterable
+          clearable
         />
         <n-select v-model:value="season" :options="seasonOptions" size="small" />
       </div>
@@ -160,7 +162,9 @@ const focusArea = areaId => {
                 <b>{{ row.area.name }}</b>
               </RouterLink>
               <b v-else>{{ row.area.name }}</b>
-              <div class="small muted">{{ row.area.administration_unit.name }}</div>
+              <div class="small muted">
+                {{ row.area.administration_unit.abbreviation }}
+              </div>
             </td>
             <td class="r num">{{ formatNumber(row.boxes) }}</td>
             <td class="r num">
@@ -239,13 +243,12 @@ const focusArea = areaId => {
 }
 
 .bar {
-  display: inline-block;
+  display: block;
   width: 46px;
   height: 6px;
   border-radius: 9px;
   background: var(--surface-2);
-  vertical-align: middle;
-  margin-left: 6px;
+  margin: 4px 0 0 auto;
   overflow: hidden;
 }
 
