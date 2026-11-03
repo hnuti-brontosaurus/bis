@@ -465,5 +465,6 @@ def test_e2e_seed(anonymous, movement):
     assert anonymous.get(f"{API}/links/{first['closed_token']}/").status_code == 410
 
 
+@override_settings(TESTING=False)
 def test_seed_is_off_outside_tests(anonymous):
     assert anonymous.post(f"{API}/testing/seed/").status_code == 404
