@@ -3,7 +3,12 @@
  */
 import { yupResolver } from '@hookform/resolvers/yup'
 import { api } from 'app/services/bis'
-import { EventApplication, User, UserPayload } from 'app/services/bisTypes'
+import {
+  EventApplication,
+  SubscriptionStatusEnum,
+  User,
+  UserPayload,
+} from 'app/services/bisTypes'
 import {
   Actions,
   BirthdayInput,
@@ -19,6 +24,7 @@ import {
   Loading,
 } from 'components'
 import * as translations from 'config/static/translations'
+import { subscriptionStatus } from 'config/subscriptionStatus'
 import dayjs from 'dayjs'
 import { useShowMessage } from 'features/systemMessage/useSystemMessage'
 import {
@@ -34,6 +40,7 @@ import { withOverwriteArray } from 'utils/helpers'
 import { validationErrors2Message } from 'utils/validationErrors'
 import * as yup from 'yup'
 import { AddressSubform } from './AddressSubform'
+import { CommunicationSubform } from './CommunicationSubform'
 
 /**
  * Expected fields are defined here:
@@ -130,7 +137,10 @@ export const form2payload = (
       'health_issues',
       'email',
       'phone',
-      'subscribed_to_newsletter',
+      'subscription_status',
+      'do_not_call',
+      'do_not_solicit',
+      'do_not_send_after_event_email',
       'address',
       'donor',
       'offers',
@@ -148,7 +158,13 @@ export const form2payload = (
   // (maybe deleting it would also work)
   if (!finalData.email) finalData.email = null
 
-  if (!isSelf) delete finalData.pronoun
+  if (!isSelf) {
+    delete finalData.pronoun
+    delete finalData.subscription_status
+    delete finalData.do_not_call
+    delete finalData.do_not_solicit
+    delete finalData.do_not_send_after_event_email
+  }
 
   return finalData
 }
@@ -198,7 +214,10 @@ const validationSchema: yup.ObjectSchema<UserFormShape> = yup.object({
   //   otherwise: schema => schema.required(),
   // }),
   phone: yup.string(),
-  subscribed_to_newsletter: yup.boolean().required(),
+  subscription_status: yup.mixed<SubscriptionStatusEnum>(),
+  do_not_call: yup.boolean(),
+  do_not_solicit: yup.boolean(),
+  do_not_send_after_event_email: yup.boolean(),
   address: yup
     .object()
     .shape({
@@ -286,7 +305,6 @@ export const UserForm = ({
         health_insurance_company: 0,
         address: { street: '', city: '', zip_code: '' },
         contact_address: { street: '', city: '', zip_code: '' },
-        subscribed_to_newsletter: true,
       },
       initialData || dataFromApplication
         ? data2form(initialData, dataFromApplication)
@@ -458,18 +476,6 @@ export const UserForm = ({
                 <input type="tel" {...register('phone')} />
               </FormInputError>
             </InlineSection>
-            <InlineSection>
-              <Label htmlFor="subscribed_to_newsletter">
-                Posílat newsletter?
-              </Label>
-              <FormInputError>
-                <input
-                  type="checkbox"
-                  id="subscribed_to_newsletter"
-                  {...register('subscribed_to_newsletter')}
-                />
-              </FormInputError>
-            </InlineSection>
             <FormSubsection header="Adresa" required>
               <AddressSubform name="address" />
             </FormSubsection>
@@ -477,6 +483,16 @@ export const UserForm = ({
               <AddressSubform name="contact_address" />
             </FormSubsection>
           </FormSection>
+          {isSelf && (
+            <FormSection header="Komunikace">
+              <CommunicationSubform
+                isHardBounce={
+                  initialData?.subscription_status ===
+                  subscriptionStatus.hardBounce
+                }
+              />
+            </FormSection>
+          )}
           <FormSection
             header={isChild ? 'Rodič/zákonný zástupce' : 'Blízká osoba'}
             required={isChild}

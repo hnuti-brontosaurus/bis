@@ -201,6 +201,9 @@ class RegionType:
         "is_active",
         "date_joined",
         "subscription_status",
+        "do_not_call",
+        "do_not_solicit",
+        "do_not_send_after_event_email",
         "is_contact_information_verified",
     ],
 )
@@ -227,6 +230,7 @@ class UserType:
     events_where_was_organizer: list[EventType]
     applications: list[EventApplicationType]
     donor: DonorType | None
+    campaign_events: list[DonorEventType]
     offers: OfferedHelpType | None
 
     @strawberry_django.field(only=["birthday"])
@@ -525,15 +529,11 @@ class EventRegistrationType:
 class EventRecordType:
     participants: list[UserType]
 
-    @strawberry_django.field(
-        prefetch_related=["participants", "event__other_organizers"],
-    )
+    @strawberry_django.field(annotate=EventRecord.participant_counts())
     def participants_count(self) -> int:
         return self.get_participants_count()
 
-    @strawberry_django.field(
-        prefetch_related=["participants", "event__other_organizers"],
-    )
+    @strawberry_django.field(annotate=EventRecord.participant_counts())
     def young_participants_count(self) -> int:
         return self.get_young_participants_count()
 
@@ -603,7 +603,7 @@ class DonationType:
 @strawberry_django.type(DonorEvent, exclude=["fundraisers_note"])
 class DonorEventType:
     fundraisers_note: auto = personal()
-    donor: DonorType
+    user: UserType
     event_type: DonorEventCategoryType
     campaign: FundraisingCampaignType | None
     created_by: UserType | None
@@ -613,10 +613,7 @@ class DonorEventType:
     Donor,
     fields=[
         "id",
-        "subscribed_to_newsletter",
         "is_public",
-        "do_not_call",
-        "do_not_solicit",
         "date_joined",
     ],
 )
@@ -627,7 +624,6 @@ class DonorType:
     basic_section_support: AdministrationUnitType | None
     donations: list[DonationType]
     pledges: list[PledgeType]
-    events: list[DonorEventType]
 
 
 # Root datasets: GraphQL field name -> model. Also the choices of `aggregate`.

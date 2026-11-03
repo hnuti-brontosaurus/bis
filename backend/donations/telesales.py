@@ -1,3 +1,4 @@
+from bis.models import User
 from django.db.models import (
     CharField,
     Count,
@@ -11,16 +12,16 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Coalesce, Greatest
-from donations.models import Donor, DonorEvent
+from donations.models import DonorEvent
 
 CALL_OUTCOME_SLUGS = frozenset({"call_no_answer", "call_postponed", "call_reached"})
 
 
 def _membership_qs(campaign):
-    return Donor.objects.filter(
+    return User.objects.filter(
         Exists(
             DonorEvent.objects.filter(
-                donor=OuterRef("pk"),
+                user=OuterRef("pk"),
                 event_type__slug="added_to_campaign",
                 campaign=campaign,
             )
@@ -31,7 +32,7 @@ def _membership_qs(campaign):
 def _added_at_subq(campaign, outer_ref="pk"):
     return Subquery(
         DonorEvent.objects.filter(
-            donor=OuterRef(outer_ref),
+            user=OuterRef(outer_ref),
             campaign=campaign,
             event_type__slug="added_to_campaign",
         )
@@ -43,7 +44,7 @@ def _added_at_subq(campaign, outer_ref="pk"):
 def _latest_reminder_event_subq(campaign, outer_ref="pk"):
     return Subquery(
         DonorEvent.objects.filter(
-            donor=OuterRef(outer_ref),
+            user=OuterRef(outer_ref),
             campaign=campaign,
             reminder__isnull=False,
         )
@@ -66,7 +67,7 @@ def _window_start(campaign, outer_ref="pk"):
 def _annotate_worklist(qs, campaign):
     latest_reminder_due_subq = Subquery(
         DonorEvent.objects.filter(
-            donor=OuterRef("pk"),
+            user=OuterRef("pk"),
             campaign=campaign,
             reminder__isnull=False,
         )
@@ -76,19 +77,19 @@ def _annotate_worklist(qs, campaign):
 
     calls_in_window_subq = Subquery(
         DonorEvent.objects.filter(
-            donor=OuterRef("pk"),
+            user=OuterRef("pk"),
             campaign=campaign,
             event_type__slug__in=list(CALL_OUTCOME_SLUGS),
             created_at__gt=_window_start(campaign, outer_ref=OuterRef("pk")),
         )
-        .values("donor")
+        .values("user")
         .annotate(c=Count("id"))
         .values("c"),
         output_field=IntegerField(),
     )
 
     _latest_call_qs = DonorEvent.objects.filter(
-        donor=OuterRef("pk"),
+        user=OuterRef("pk"),
         campaign=campaign,
         event_type__slug__in=list(CALL_OUTCOME_SLUGS),
     ).order_by("-created_at")
@@ -101,7 +102,7 @@ def _annotate_worklist(qs, campaign):
 
     last_nonempty_note_subq = Subquery(
         DonorEvent.objects.filter(
-            donor=OuterRef("pk"),
+            user=OuterRef("pk"),
             campaign=campaign,
         )
         .exclude(fundraisers_note="")
@@ -123,21 +124,17 @@ def _annotate_worklist(qs, campaign):
 
 def _with_recent_events(qs, campaign):
     recent = Prefetch(
-        "events",
+        "campaign_events",
         queryset=DonorEvent.objects.filter(campaign=campaign)
         .select_related("event_type")
         .order_by("-created_at"),
         to_attr="recent_campaign_events",
     )
-    return qs.select_related("user", "user__pronoun").prefetch_related(recent)
+    return qs.select_related("pronoun").prefetch_related(recent)
 
 
 def _exclude_unreachable(qs):
-    return (
-        qs.exclude(user__phone="")
-        .exclude(do_not_call=True)
-        .exclude(do_not_solicit=True)
-    )
+    return qs.exclude(phone="").exclude(do_not_call=True).exclude(do_not_solicit=True)
 
 
 def get_reminders_due(campaign):
@@ -155,7 +152,7 @@ def get_worklist(campaign):
     qs = _annotate_worklist(qs, campaign)
     qs = qs.filter(calls_in_window__lt=4)
     qs = qs.exclude(latest_call_slug__isnull=False, latest_call_slug="call_reached")
-    # Exclude donors shown in the reminders section (any reminder + no call since).
+    # Exclude people shown in the reminders section (any reminder + no call since).
     # Use isnull=False to avoid NOT(NULL AND ...) = NULL incorrectly dropping rows.
     qs = qs.exclude(
         latest_reminder_due_at__isnull=False,
@@ -174,7 +171,7 @@ def get_finished(campaign):
         .filter(
             Q(calls_in_window__gte=4)
             | Q(latest_call_slug="call_reached")
-            | Q(user__phone="")
+            | Q(phone="")
             | Q(do_not_call=True)
             | Q(do_not_solicit=True)
         )
@@ -182,10 +179,10 @@ def get_finished(campaign):
     )
 
 
-def get_donor_campaign_context(donor, campaign):
+def get_campaign_context(user, campaign):
     added_event = (
         DonorEvent.objects.filter(
-            donor=donor,
+            user=user,
             campaign=campaign,
             event_type__slug="added_to_campaign",
         )
@@ -196,7 +193,7 @@ def get_donor_campaign_context(donor, campaign):
 
     latest_reminder_event = (
         DonorEvent.objects.filter(
-            donor=donor,
+            user=user,
             campaign=campaign,
             reminder__isnull=False,
         )
@@ -215,14 +212,14 @@ def get_donor_campaign_context(donor, campaign):
     calls_in_window = 0
     if window_started_at:
         calls_in_window = DonorEvent.objects.filter(
-            donor=donor,
+            user=user,
             campaign=campaign,
             event_type__slug__in=CALL_OUTCOME_SLUGS,
             created_at__gt=window_started_at,
         ).count()
 
     history = list(
-        DonorEvent.objects.filter(donor=donor, campaign=campaign)
+        DonorEvent.objects.filter(user=user, campaign=campaign)
         .select_related("event_type", "created_by")
         .order_by("-created_at")
     )

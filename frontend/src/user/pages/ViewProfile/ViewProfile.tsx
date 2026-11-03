@@ -1,6 +1,5 @@
 import { api } from 'app/services/bis'
-import { Fragment } from 'react'
-import { User } from 'app/services/bisTypes'
+import { SubscriptionStatusEnum, User } from 'app/services/bisTypes'
 import {
   Actions,
   Breadcrumbs,
@@ -11,13 +10,23 @@ import {
   PageHeader,
 } from 'components'
 import * as combinedTranslations from 'config/static/combinedTranslations'
+import { subscriptionStatus } from 'config/subscriptionStatus'
 import { useCurrentUser } from 'hooks/currentUser'
 import { useTitle } from 'hooks/title'
-import { mergeWith, omit } from 'lodash'
 import { FaPencilAlt } from 'react-icons/fa'
 import { useOutletContext } from 'react-router-dom'
-import { withOverwriteArray, formatDateTime } from 'utils/helpers'
+import {
+  formatYearRanges,
+  groupMemberships,
+} from 'user/pages/ViewProfile/groupMemberships'
+import { formatDateTime } from 'utils/helpers'
 import styles from './ViewProfile.module.scss'
+
+const newsletterLabels: Record<SubscriptionStatusEnum, string> = {
+  [subscriptionStatus.subscribed]: 'ano',
+  [subscriptionStatus.unsubscribed]: 'ne',
+  [subscriptionStatus.hardBounce]: 'ne, e-mail je nedoručitelný',
+}
 
 export const ViewProfile = () => {
   const { user } = useOutletContext<{ user: User }>()
@@ -32,24 +41,16 @@ export const ViewProfile = () => {
 
   useTitle(title)
 
-  //membership helpers
-  const formattedMemberships = user.memberships.map(
-    ({ administration_unit, ...rest }) => ({
-      administration_unit:
-        administrationUnits?.results.find(au => au.id === administration_unit)
-          ?.name ?? administration_unit,
-      ...rest,
-    }),
-  )
-
-  const sortedMemberships = formattedMemberships
-    .slice()
-    .sort((a, b) => b.year - a.year)
-
-  const currentYear = new Date().getFullYear()
-
-  const hasCurrentMemberships = sortedMemberships.some(
-    memb => memb.year >= currentYear,
+  const membershipRows = groupMemberships(user.memberships).map(
+    ({ key, administration_unit, category, years }) => {
+      const abbreviation =
+        administrationUnits?.results.find(
+          unit => unit.id === administration_unit,
+        )?.abbreviation ?? administration_unit
+      const text = `${abbreviation}, ${category.name}, ${formatYearRanges(years)}`
+      const isCurrent = years[years.length - 1] >= new Date().getFullYear()
+      return <div key={key}>{isCurrent ? text : <i>{text}</i>}</div>
+    },
   )
 
   const ALL_COLUMNS = 8
@@ -86,12 +87,6 @@ export const ViewProfile = () => {
     const validTillDate = new Date(qualification.valid_till).getTime()
     return validTillDate < currentTime
   })
-
-  /* const formattedUser = mergeWith(
-    omit(user, 'id', '_search_id', 'display_name'),
-    { memberships: formattedMemberships },
-    withOverwriteArray,
-  ) */
 
   return (
     <>
@@ -168,10 +163,6 @@ export const ViewProfile = () => {
                 <td>{user.phone ? user.phone : '-'}</td>
               </tr>
               <tr>
-                <th>Odebírá novinky?</th>
-                <td>{user.subscribed_to_newsletter ? 'ano' : 'ne'}</td>
-              </tr>
-              <tr>
                 <td colSpan={ALL_COLUMNS} className={styles.oneCellRowSmall}>
                   Adresa
                 </td>
@@ -244,6 +235,34 @@ export const ViewProfile = () => {
               ) : (
                 ''
               )}
+              {/* The API sends the preferences to the person themself only. */}
+              {user.subscription_status && (
+                <>
+                  <tr>
+                    <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
+                      Komunikace
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Odebírá novinky?</th>
+                    <td>{newsletterLabels[user.subscription_status]}</td>
+                  </tr>
+                  <tr>
+                    <th>Můžeme ti zavolat?</th>
+                    <td>{user.do_not_call ? 'ne' : 'ano'}</td>
+                  </tr>
+                  <tr>
+                    <th>Můžeme tě požádat o finanční podporu?</th>
+                    <td>{user.do_not_solicit ? 'ne' : 'ano'}</td>
+                  </tr>
+                  <tr>
+                    <th>
+                      Můžeme ti po akci poslat info e-mail (max. 1 za půl roku)?
+                    </th>
+                    <td>{user.do_not_send_after_event_email ? 'ne' : 'ano'}</td>
+                  </tr>
+                </>
+              )}
               <tr>
                 <td colSpan={ALL_COLUMNS} className={styles.oneCellRow}>
                   Organizační informace
@@ -310,40 +329,7 @@ export const ViewProfile = () => {
               </tr>
               <tr>
                 <th>Členství</th>
-                <td>
-                  {formattedMemberships?.length > 0
-                    ? sortedMemberships.map(memb =>
-                        memb.year >= currentYear ? (
-                          <Fragment key={memb.category?.id}>
-                            <span className={styles.bold}>
-                              Organizační jednotka:{' '}
-                            </span>
-                            {memb.administration_unit}
-                            <br />
-                            <span className={styles.bold}>Typ členství: </span>
-                            {memb.category?.name}
-                            <br />
-                            <span className={styles.bold}>
-                              Členství v roce:{' '}
-                            </span>
-                            {memb.year}
-                            <br />
-                            {hasCurrentMemberships ? (
-                              <br key="last-br" />
-                            ) : null}
-                          </Fragment>
-                        ) : (
-                          <Fragment key={memb.category?.id}>
-                            <i>
-                              {memb.administration_unit}, {memb.category?.name},{' '}
-                              {memb.year}
-                            </i>
-                            <br />
-                          </Fragment>
-                        ),
-                      )
-                    : '-'}
-                </td>
+                <td>{membershipRows.length > 0 ? membershipRows : '-'}</td>
               </tr>
               <tr>
                 <th>EYCA nebo členská karta</th>

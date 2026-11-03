@@ -3119,7 +3119,6 @@ export type Donation = {
   donation_source: DonationSourceCategory
 }
 export type Donor = {
-  subscribed_to_newsletter?: boolean
   /** na webu a v závěrečné zprávě */
   is_public?: boolean
   date_joined: string
@@ -3178,6 +3177,7 @@ export type Qualification = {
   valid_till: string
   approved_by: QualificationApprovedBy
 }
+export type SubscriptionStatusEnum = 1 | 2 | 4
 export type User = {
   id: string
   _search_id: string
@@ -3191,7 +3191,10 @@ export type User = {
   all_emails: string[]
   birthday: string
   close_person: ClosePerson | null
-  subscribed_to_newsletter?: boolean
+  subscription_status?: SubscriptionStatusEnum
+  do_not_call?: boolean
+  do_not_solicit?: boolean
+  do_not_send_after_event_email?: boolean
   health_insurance_company: HealthInsuranceCompany
   health_issues?: string
   behaviour_issues?: string
@@ -3586,7 +3589,10 @@ export type PatchedUser = {
   all_emails?: string[]
   birthday?: string
   close_person?: ClosePerson | null
-  subscribed_to_newsletter?: boolean
+  subscription_status?: SubscriptionStatusEnum
+  do_not_call?: boolean
+  do_not_solicit?: boolean
+  do_not_send_after_event_email?: boolean
   health_insurance_company?: number | null
   health_issues?: string
   pronoun?: number | null

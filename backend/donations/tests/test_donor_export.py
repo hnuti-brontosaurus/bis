@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from bis.admin_filters import visible_donor_stats
 from bis.models import User
 from categories.models import DonationSourceCategory
 from django.contrib.admin.sites import site
@@ -40,14 +41,12 @@ def test_export_computes_donation_stats_itself(donor):
 
 def test_admin_export_keeps_sum_scoped_to_changelist_filter(donor):
     request = RequestFactory().get(
-        "/admin/donations/donor/",
+        "/admin/bis/user/",
         {"donated_at__range__gte": "2026-01-01"},
     )
     request.user = User.objects.create(email="admin@example.com", _str="Admin")
     request.user.is_superuser = True
-    model_admin = site._registry[Donor]
-    changelist = model_admin.get_changelist_instance(request)
 
-    row = export_row(changelist.get_queryset(request))
+    row = export_row(visible_donor_stats(request, site._registry[User]))
 
     assert row["donations_sum"] == 500

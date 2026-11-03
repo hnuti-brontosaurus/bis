@@ -1,5 +1,5 @@
 from administration_units.models import AdministrationUnit
-from bis.helpers import filter_queryset_with_multiple_or_queries, permission_cache
+from bis.helpers import filter_queryset_with_multiple_or_queries
 from bis.models import User
 from categories.models import DonationSourceCategory, DonorEventCategory
 from dateutil.utils import today
@@ -40,11 +40,11 @@ def annotate_donation_stats(donors, donation_filter=None, sum_filter=None):
 class Donor(m.Model):
     user = m.OneToOneField(User, related_name="donor", on_delete=PROTECT)
     formal_vokativ = m.CharField(max_length=63, blank=True)
+    # Imported from the old BIS and no longer used: the newsletter choice is
+    # User.subscription_status, kept in sync with Ecomail. To be removed.
     subscribed_to_newsletter = m.BooleanField(default=True)
     is_public = m.BooleanField(default=True)
     fundraisers_note = m.TextField(blank=True)
-    do_not_call = m.BooleanField(default=False)
-    do_not_solicit = m.BooleanField(default=False)
 
     date_joined = m.DateField(default=get_today)
     regional_center_support = m.ForeignKey(
@@ -76,10 +76,6 @@ class Donor(m.Model):
         for field in self._meta.fields:
             if field.name in ["id", "subscribed_to_newsletter", "is_public", "user"]:
                 continue
-
-            elif field.name in ["do_not_call", "do_not_solicit"]:
-                if getattr(other, field.name):
-                    setattr(self, field.name, True)
 
             elif field.name in [
                 "regional_center_support",
@@ -128,14 +124,6 @@ class Donor(m.Model):
             ]
 
         return filter_queryset_with_multiple_or_queries(queryset, queries)
-
-    @permission_cache
-    def has_edit_permission(self, user):
-        return (
-            self.user == user
-            or self.regional_center_support in user.administration_units.all()
-            or self.basic_section_support in user.administration_units.all()
-        )
 
     def has_active_recurrent_donation(self):
         return self.pledges.filter(
@@ -221,7 +209,7 @@ class FundraisingCampaign(m.Model):
 
 @translate_model
 class DonorEvent(m.Model):
-    donor = m.ForeignKey(Donor, on_delete=CASCADE, related_name="events")
+    user = m.ForeignKey(User, on_delete=CASCADE, related_name="campaign_events")
     event_type = m.ForeignKey(DonorEventCategory, on_delete=PROTECT)
     created_at = m.DateTimeField(auto_now_add=True)
     campaign = m.ForeignKey(

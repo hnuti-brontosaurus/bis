@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 3af5cbf343e28365
+// source-hash: b3344d34f6c44584
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -66,6 +66,9 @@ export const user = {
   roles: 'Role',
   office_workers_note: 'Poznámka ústředí',
   subscription_status: 'Stav odběru newsletteru',
+  do_not_call: 'Už nevolat',
+  do_not_solicit: 'Už nežádat o dar',
+  do_not_send_after_event_email: 'Neposílat e-mail po akci',
   last_after_event_email: 'Poslední e-mail po akci',
   is_contact_information_verified: 'Ověřil své kontaktní údaje?',
   is_bot: 'Bot (MCP)',
@@ -221,8 +224,8 @@ export const qualification = {
 } as const
 
 export const qualificationNote = {
-  _name: 'Poznámka ke kvalifikacím uživatele',
-  _name_plural: 'Poznámka ke kvalifikacím uživatele',
+  _name: 'Poznámka ke kvalifikacím',
+  _name_plural: 'Poznámka ke kvalifikacím',
   education_members_note: 'Poznámka',
 } as const
 
@@ -605,8 +608,6 @@ export const donor = {
   date_joined: 'Dárcem od',
   regional_center_support: 'podpora RC',
   basic_section_support: 'podpora ZČ',
-  do_not_call: 'Už nevolat',
-  do_not_solicit: 'Už nežádat o dar',
   fundraisers_note: 'Interní poznámka',
 } as const
 
@@ -640,9 +641,9 @@ export const fundraisingCampaign = {
 } as const
 
 export const donorEvent = {
-  _name: 'Značka dárce',
-  _name_plural: 'Značka dárce',
-  donor: 'Dárce',
+  _name: 'Událost kampaně',
+  _name_plural: 'Událost kampaně',
+  user: 'Uživatel',
   event_type: 'Typ',
   campaign: 'Kampaň',
   pledge: 'Příslib',

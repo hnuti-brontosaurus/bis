@@ -1,53 +1,26 @@
-from admin_auto_filters.filters import AutocompleteFilterFactory
-from bis.admin import change_fundraising_campaign, change_user_tag
-from bis.admin_filters import (
-    DonationSumAmountFilter,
-    DonationSumRangeFilter,
-    DonorAgeFilter,
-    FirstDonorsDonationFilter,
-    HasDonorFilter,
-    HasPledgeInCampaignFilter,
-    HasRecurrentDonationFilter,
-    IsCompanyDonorFilter,
-    LastDonorsDonationFilter,
-    MultiSelectRelatedDropdownAndCampaignFilter,
-    RecurringDonorWhoStoppedFilter,
-)
-from bis.admin_helpers import (
-    ListAwareRangeNumericFilter,
-    list_filter_extra_note,
-    list_filter_extra_title,
-)
+from bis.admin_filters import HasDonorFilter
+from bis.admin_helpers import ListAwareRangeNumericFilter
 from bis.admin_permissions import PermissionMixin
-from bis.emails import donation_confirmation
 from bis.models import User
-from bis.permissions import Permissions
-from categories.models import PronounCategory
-from django.contrib import admin, messages
-from django.contrib.admin.options import TO_FIELD_VAR
+from django.contrib import admin
 from django.contrib.admin.utils import unquote
 from django.contrib.messages import ERROR, INFO
-from django.db.models import Exists, OuterRef, Q
-from django.http import FileResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.html import format_html
 from donations.helpers import upload_bank_records
 from donations.models import (
-    Company,
     Donation,
     Donor,
-    DonorEvent,
     FundraisingCampaign,
-    Pledge,
     UploadBankRecords,
-    VariableSymbol,
-    annotate_donation_stats,
 )
 from more_admin_filters import MultiSelectRelatedDropdownFilter
-from nested_admin.nested import NestedModelAdmin, NestedTabularInline
+from nested_admin.nested import NestedModelAdmin
 from rangefilter.filters import DateRangeFilter
 from solo.admin import SingletonModelAdmin
-from xlsx_export.export import export_to_xlsx, get_donation_confirmation
+from xlsx_export.export import export_to_xlsx
 
 
 @admin.register(FundraisingCampaign)
@@ -75,8 +48,8 @@ class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
         def worklist_campaign(request, campaign_id):
             return telesales_worklist_view(self, request, campaign_id)
 
-        def call(request, campaign_id, donor_id):
-            return telesales_call_view(self, request, campaign_id, donor_id)
+        def call(request, campaign_id, user_id):
+            return telesales_call_view(self, request, campaign_id, user_id)
 
         custom = [
             path(
@@ -85,7 +58,7 @@ class FundraisingCampaignAdmin(PermissionMixin, admin.ModelAdmin):
                 name="donations_telesales_worklist",
             ),
             path(
-                "telesales/<int:campaign_id>/call/<int:donor_id>/",
+                "telesales/<int:campaign_id>/call/<uuid:user_id>/",
                 self.admin_site.admin_view(call),
                 name="donations_telesales_call",
             ),
@@ -110,281 +83,29 @@ class DonationAdmin(PermissionMixin, NestedModelAdmin):
     search_fields = User.get_search_fields(prefix="donor__user__")
 
 
-class DonationAdminInline(PermissionMixin, NestedTabularInline):
-    model = Donation
-    exclude = ("_variable_symbol", "_import_id", "pledge")
-
-
-class VariableSymbolInline(PermissionMixin, NestedTabularInline):
-    model = VariableSymbol
-    extra = 0
-
-
-class CompanyInline(PermissionMixin, NestedTabularInline):
-    model = Company
-    extra = 0
-
-
-class DonorEventAdminInline(PermissionMixin, NestedTabularInline):
-    model = DonorEvent
-    extra = 0
-    readonly_fields = ("created_at", "created_by")
-    fields = (
-        "event_type",
-        "campaign",
-        "fundraisers_note",
-        "pledge",
-        "reminder",
-        "created_at",
-        "created_by",
-    )
-
-
-def mark_with_pronoun(model_admin, request, queryset, pronoun):
-    perms = Permissions(request.user, Donor, "backend")
-    if not all(perms.has_change_permission(obj) for obj in queryset):
-        return model_admin.message_user(
-            request, "Nemáš právo editovat vybrané objekty", ERROR
-        )
-    users = User.objects.filter(id__in=queryset.values_list("user_id"))
-    users.update(pronoun=pronoun)
-
-
-@admin.action(description="Označ vybrané mužským oslovením")
-def mark_as_man(model_admin, request, queryset):
-    mark_with_pronoun(
-        model_admin, request, queryset, PronounCategory.objects.get(slug="man")
-    )
-
-
-@admin.action(description="Označ vybrané ženským oslovením")
-def mark_as_woman(model_admin, request, queryset):
-    mark_with_pronoun(
-        model_admin, request, queryset, PronounCategory.objects.get(slug="woman")
-    )
-
-
-@admin.action(description="Zašli potvrzení o daru")
-def send_donation_confirmation(model_admin, request, queryset):
-    perms = Permissions(request.user, Donor, "backend")
-    if not all(perms.has_change_permission(obj) for obj in queryset):
-        return model_admin.message_user(
-            request, "Nemáš právo editovat vybrané objekty", ERROR
-        )
-    i = 0
-    for obj in queryset:
-        try:
-            donation_confirmation(obj, *get_donation_confirmation(obj))
-            i += 1
-        except AssertionError as e:
-            messages.error(request, str(e))
-    messages.info(request, f"Úspěšně posláno {i} potvrzení")
-
-
 @admin.register(Donor)
-class DonorAdmin(PermissionMixin, NestedModelAdmin):
-    change_form_template = "bis/donor_change_form.html"
-    actions = [
-        send_donation_confirmation,
-        mark_as_woman,
-        mark_as_man,
-        export_to_xlsx,
-        change_fundraising_campaign,
-    ]
+class DonorAdmin(PermissionMixin, admin.ModelAdmin):
+    """Donors are edited on their user. This stays registered for
+    DonationAdmin's donor autocomplete, and sends old links to the user."""
 
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if request.user.is_superuser or request.user.is_office_worker:
-            actions["change_user_tag"] = (
-                change_user_tag,
-                "change_user_tag",
-                change_user_tag.short_description,
-            )
-        return actions
-
-    list_display = (
-        "user",
-        "get_user_email",
-        "get_user_phone",
-        "formal_vokativ",
-        "get_user_pronoun",
-        "date_joined",
-        "get_donations_sum",
-        "get_last_donation",
-        "get_donations_sources",
-        "has_active_recurrent_donation_display",
-        "regional_center_support",
-        "basic_section_support",
-        "subscribed_to_newsletter",
-        "is_public",
-    )
-
-    list_select_related = (
-        "user",
-        "user__pronoun",
-        "regional_center_support",
-        "basic_section_support",
-    )
-    inlines = (
-        CompanyInline,
-        VariableSymbolInline,
-        DonationAdminInline,
-        DonorEventAdminInline,
-    )
     search_fields = User.get_search_fields(prefix="user__")
-    list_filter = (
-        "user__pronoun",
-        ("user__roles", MultiSelectRelatedDropdownFilter),
-        DonorAgeFilter,
-        HasRecurrentDonationFilter,
-        IsCompanyDonorFilter,
-        AutocompleteFilterFactory("Podporující RC", "regional_center_support"),
-        AutocompleteFilterFactory("Podporující ZČ", "basic_section_support"),
-        list_filter_extra_title("Kontaktování"),
-        "subscribed_to_newsletter",
-        "is_public",
-        "do_not_call",
-        "do_not_solicit",
-        list_filter_extra_title("Dary"),
-        ("donations__donation_source", MultiSelectRelatedDropdownFilter),
-        list_filter_extra_note("Dary jen z vybraných zdrojů"),
-        ("donations__donated_at", FirstDonorsDonationFilter),
-        list_filter_extra_note("První dan dárce (z vybraných zdrojů) z daného období"),
-        ("donations__donated_at", LastDonorsDonationFilter),
-        list_filter_extra_note(
-            "Poslední dan dárce (z vybraných zdrojů) z daného období"
-        ),
-        ("donations__donated_at", DonationSumRangeFilter),
-        list_filter_extra_note(
-            "Dary pro celkovou sumu (z vybraných zdrojů) jen z daného období"
-        ),
-        ("donations__amount", DonationSumAmountFilter),
-        list_filter_extra_note(
-            "Suma darů (z vybraných zdrojů) (z vybraného období) z daného rozmezí"
-        ),
-        RecurringDonorWhoStoppedFilter,
-        list_filter_extra_title("Fundraisingové kampaně"),
-        ("events__campaign", MultiSelectRelatedDropdownFilter),
-        ("events__event_type", MultiSelectRelatedDropdownAndCampaignFilter),
-        HasPledgeInCampaignFilter,
-        ("user__tags", MultiSelectRelatedDropdownFilter),
-    )
 
-    def get_list_filter(self, request):
-        filters = super().get_list_filter(request)
-        if not (request.user.is_superuser or request.user.is_office_worker):
-            filters = tuple(
-                f
-                for f in filters
-                if not (isinstance(f, tuple) and f[0] == "user__tags")
-            )
-        return filters
+    def has_module_permission(self, request):
+        return False
 
-    autocomplete_fields = "regional_center_support", "basic_section_support", "user"
+    def has_add_permission(self, request, obj=None):
+        return False
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return "user", "get_donations_sum"
-        return ("get_donations_sum",)
-
-    def save_formset(self, request, form, formset, change):
-        if formset.model is Donation:
-            formset.new_objects = []
-            formset.changed_objects = []
-            formset.deleted_objects = []
-            return
-        super().save_formset(request, form, formset, change)
-
-    def get_queryset(self, request):
-        queryset = (
-            super().get_queryset(request).prefetch_related("donations__donation_source")
-        )
-        active_recurrent_pledges = Pledge.objects.filter(
-            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="collecting"
-        )
-        queryset = queryset.annotate(
-            has_active_recurrent_donation=Exists(active_recurrent_pledges)
+    def changelist_view(self, request, extra_context=None):
+        return HttpResponseRedirect(
+            reverse("admin:bis_user_changelist") + "?columns=donor&is_donor=yes"
         )
 
-        past_recurrent_pledges = Pledge.objects.filter(
-            donor=OuterRef("pk"), is_recurrent=True, recurrent_state="stopped"
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        donor = get_object_or_404(self.get_queryset(request), pk=unquote(object_id))
+        return HttpResponseRedirect(
+            reverse("admin:bis_user_change", args=[donor.user_id])
         )
-        queryset = queryset.annotate(
-            had_recurrent_donation=Exists(past_recurrent_pledges)
-        )
-
-        donations_source_filter = MultiSelectRelatedDropdownFilter(
-            field=Donation.donation_source.field,
-            request=request,
-            params=dict(request.GET.items()),
-            model=self.model,
-            model_admin=self,
-            field_path="donations__donation_source",
-        )
-        annotate_filter = None
-        if source_ids := donations_source_filter.used_parameters.values():
-            source_ids = next(iter(source_ids))
-            annotate_filter = Q(donations__donation_source_id__in=source_ids)
-
-        donations_sum_filter = DonationSumRangeFilter(
-            field=Donation.donated_at,
-            request=request,
-            params=dict(request.GET.items()),
-            model=self.model,
-            model_admin=self,
-            field_path="donations__donated_at",
-        )
-        return annotate_donation_stats(
-            queryset,
-            donation_filter=annotate_filter,
-            sum_filter=donations_sum_filter.narrow(request, annotate_filter),
-        )
-
-    @admin.display(description="Suma darů")
-    def get_donations_sum(self, obj):
-        return obj.donations_sum
-
-    @admin.display(description="Poslední dar")
-    def get_last_donation(self, obj):
-        return obj.last_donation
-
-    @admin.display(description="E-mail")
-    def get_user_email(self, obj):
-        return obj.user.email
-
-    @admin.display(description="Telefon")
-    def get_user_phone(self, obj):
-        return obj.user.phone
-
-    @admin.display(description="Oslovení")
-    def get_user_pronoun(self, obj):
-        return obj.user.pronoun
-
-    @admin.display(description="Darovací kampaně")
-    def get_donations_sources(self, obj):
-        return obj.donation_sources
-
-    @admin.display(description="Pravidelný dárce", boolean=True)
-    def has_active_recurrent_donation_display(self, obj):
-        return obj.has_active_recurrent_donation
-
-    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        if object_id:
-            to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
-            obj = self.get_object(request, unquote(object_id), to_field)
-
-            try:
-                if "_donation_confirmation_pdf_export" in request.POST:
-                    return FileResponse(
-                        get_donation_confirmation(obj)[0], as_attachment=True
-                    )
-                if "_donation_confirmation_pdf_email" in request.POST:
-                    donation_confirmation(obj, *get_donation_confirmation(obj))
-                    messages.info(request, "Potvrzení o daru úspěšně odesláno")
-            except AssertionError as e:
-                messages.error(request, str(e))
-
-        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 @admin.register(UploadBankRecords)

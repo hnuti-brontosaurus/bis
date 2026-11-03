@@ -1,3 +1,4 @@
+from bis.models import User
 from categories.models import DonorEventCategory
 from django import forms
 from django.contrib import messages
@@ -6,9 +7,9 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils import timezone
-from donations.models import Donor, DonorEvent, FundraisingCampaign
+from donations.models import DonorEvent, FundraisingCampaign
 from donations.telesales import (
-    get_donor_campaign_context,
+    get_campaign_context,
     get_finished,
     get_reminders_due,
     get_worklist,
@@ -86,19 +87,19 @@ def telesales_worklist_view(model_admin, request, campaign_id):
     )
 
 
-def telesales_call_view(model_admin, request, campaign_id, donor_id):
+def telesales_call_view(model_admin, request, campaign_id, user_id):
     if not _has_permission(request):
         return HttpResponseForbidden("Nemáš oprávnění pro telesales.")
 
     campaign = get_object_or_404(FundraisingCampaign, pk=campaign_id)
-    donor = get_object_or_404(Donor, pk=donor_id)
+    person = get_object_or_404(User, pk=user_id)
 
     if request.method == "POST":
         form = CallForm(request.POST)
         if form.is_valid():
             outcome = form.cleaned_data["outcome"]
             DonorEvent.objects.create(
-                donor=donor,
+                user=person,
                 event_type=DonorEventCategory.objects.get(slug=outcome),
                 campaign=campaign,
                 fundraisers_note=form.cleaned_data["fundraisers_note"],
@@ -106,11 +107,11 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
                 reminder=form.cleaned_data["reminder"],
                 created_by=request.user,
             )
-            donor.do_not_call = form.cleaned_data["do_not_call"]
-            donor.do_not_solicit = form.cleaned_data["do_not_solicit"]
-            donor.save(update_fields=["do_not_call", "do_not_solicit"])
+            person.do_not_call = form.cleaned_data["do_not_call"]
+            person.do_not_solicit = form.cleaned_data["do_not_solicit"]
+            person.save(update_fields=["do_not_call", "do_not_solicit"])
             messages.success(
-                request, f"Zaznamenáno: {donor} — {OUTCOME_LABELS[outcome]}."
+                request, f"Zaznamenáno: {person} — {OUTCOME_LABELS[outcome]}."
             )
             return HttpResponseRedirect(
                 reverse("admin:donations_telesales_worklist", args=[campaign.id])
@@ -118,23 +119,23 @@ def telesales_call_view(model_admin, request, campaign_id, donor_id):
     else:
         form = CallForm(
             initial={
-                "do_not_call": donor.do_not_call,
-                "do_not_solicit": donor.do_not_solicit,
+                "do_not_call": person.do_not_call,
+                "do_not_solicit": person.do_not_solicit,
             }
         )
 
-    donor_context = get_donor_campaign_context(donor, campaign)
+    campaign_context = get_campaign_context(person, campaign)
 
     return TemplateResponse(
         request,
         "donations/telesales/call.html",
         {
             **model_admin.admin_site.each_context(request),
-            "title": f"Zavolat: {donor}",
+            "title": f"Zavolat: {person}",
             "campaign": campaign,
-            "donor": donor,
+            "person": person,
             "form": form,
-            "donor_context": donor_context,
+            "campaign_context": campaign_context,
             "outcome_choices": OUTCOME_CHOICES,
             "opts": FundraisingCampaign._meta,
         },

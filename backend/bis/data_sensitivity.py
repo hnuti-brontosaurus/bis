@@ -103,6 +103,9 @@ SENSITIVITY = {
         INTERNAL: [
             "last_login",
             "subscription_status",
+            "do_not_call",
+            "do_not_solicit",
+            "do_not_send_after_event_email",
             "health_insurance_company",
             "pronoun",
             "is_active",
@@ -364,8 +367,6 @@ SENSITIVITY = {
             "user",
             "subscribed_to_newsletter",
             "is_public",
-            "do_not_call",
-            "do_not_solicit",
             "date_joined",
             "regional_center_support",
             "basic_section_support",
@@ -387,7 +388,7 @@ SENSITIVITY = {
     "donations.FundraisingCampaign": {INTERNAL: ["name", "slug"]},
     "donations.DonorEvent": {
         INTERNAL: [
-            "donor",
+            "user",
             "event_type",
             "created_at",
             "campaign",

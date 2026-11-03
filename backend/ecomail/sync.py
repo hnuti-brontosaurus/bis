@@ -130,6 +130,7 @@ def bulk_subscribe(
     session: Session,
     list_id: int,
     users: Iterable[User],
+    resubscribe: bool = False,
 ) -> None:
     payloads = [
         {"email": user.email, **_user_to_subscriber_data(user)} for user in users
@@ -150,6 +151,7 @@ def bulk_subscribe(
             "subscriber_data": payloads,
             "update_existing": True,
             "trigger_autoresponders": False,
+            "resubscribe": resubscribe,
         },
         timeout=120,
     )

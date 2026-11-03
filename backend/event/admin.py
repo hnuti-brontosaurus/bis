@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.contrib.admin.options import TO_FIELD_VAR
 from django.contrib.admin.utils import unquote
 from django.core.exceptions import ValidationError
+from django.db.models import OuterRef, Subquery
 from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from event.models import (
@@ -25,6 +26,7 @@ from event.models import (
     EventRecord,
     EventRegistration,
     VIPEventPropagation,
+    young_percentage,
 )
 from feedback.models import EventFeedback
 from more_admin_filters import (
@@ -222,17 +224,13 @@ class EventAdmin(QuerySearchMixin, PermissionMixin, NestedModelAdmin):
 
     @admin.display(description="Počet účastníků + organizátorů")
     def get_participants_count(self, obj):
-        if not hasattr(obj, "record"):
-            return None
-        obj.record.event = obj
-        return obj.record.get_participants_count()
+        return obj.participants_count
 
     @admin.display(description="% do 26 let")
     def get_young_percentage(self, obj):
-        if not hasattr(obj, "record"):
+        if obj.participants_count is None:
             return None
-        obj.record.event = obj
-        return obj.record.get_young_percentage()
+        return young_percentage(obj.participants_count, obj.young_participants_count)
 
     @admin.display(description="Odpracováno hodin")
     def get_total_hours_worked(self, obj):
@@ -253,11 +251,14 @@ class EventAdmin(QuerySearchMixin, PermissionMixin, NestedModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if getattr(request, "_is_changelist", False):
-            qs = qs.prefetch_related(
-                "administration_units",
-                "other_organizers",
-                "record__participants",
-                "tags",
+            records = EventRecord.objects.filter(event=OuterRef("pk")).annotate(
+                **EventRecord.participant_counts()
+            )
+            qs = qs.prefetch_related("administration_units", "tags").annotate(
+                participants_count=Subquery(records.values("participants_count")),
+                young_participants_count=Subquery(
+                    records.values("young_participants_count")
+                ),
             )
         return qs
 

@@ -267,10 +267,8 @@ def event_end_participants_notification(event):
 
     participants_to_notify = event.record.participants.exclude(
         last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
-    )
-    for participant in event.record.participants.exclude(
-        last_after_event_email__gte=timezone.now().date() - timedelta(days=6 * 30)
-    ):
+    ).exclude(do_not_send_after_event_email=True)
+    for participant in participants_to_notify:
         ecomail.send_email(
             emails["movement"],
             169,
@@ -628,7 +626,7 @@ def bulk_create_donor_event(
     DonorEvent.objects.bulk_create(
         [
             DonorEvent(
-                donor=donor,
+                user_id=donor.user_id,
                 event_type=event_type,
                 campaign=campaign,
             )
@@ -648,7 +646,7 @@ def recurrent_donor_stopped():
     # Subquery to check if an event was already sent AFTER the last donation
     latest_event_date = (
         DonorEvent.objects.filter(
-            donor=OuterRef("pk"),
+            user=OuterRef("user_id"),
             event_type=event_type,
         )
         .values("created_at")
@@ -722,7 +720,7 @@ def new_recurrent_donors():
         pledges__is_recurrent=True,
         pledges__recurrent_state=RecurrentState.COLLECTING,
         pledges__pledged_at=timezone.now().date() - timedelta(days=2),
-    ).exclude(events__event_type=event_type)
+    ).exclude(user__campaign_events__event_type=event_type)
 
     if not donors.exists():
         return
@@ -755,7 +753,7 @@ def donated_10k():
     donors = (
         Donor.objects.annotate(total_donated=Sum("donations__amount"))
         .filter(total_donated__gte=10000)
-        .exclude(events__event_type=event_type)
+        .exclude(user__campaign_events__event_type=event_type)
         .distinct()
     )
     if not donors.exists():
@@ -791,7 +789,7 @@ def donates_for_years():
                 pledges__recurrent_state=RecurrentState.COLLECTING,
                 pledges__pledged_at__lte=cutoff,
             )
-            .exclude(events__event_type__slug__in=reached_milestones)
+            .exclude(user__campaign_events__event_type__slug__in=reached_milestones)
             .distinct()
         )
 

@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from administration_units.models import AdministrationUnit
 from bis.models import Location, Membership, User, UserClosePerson
-from django.db.models import Count, Exists, OuterRef, Subquery, Value
+from django.db.models import Count, Exists, OuterRef, Prefetch, Subquery, Value
 from django.db.models.functions import Coalesce
 from donations.models import Donation, Donor, Pledge, annotate_donation_stats
 from event.models import (
@@ -119,6 +119,9 @@ class UserExportSerializer(ModelSerializer):
             "date_joined",
             "roles",
             "subscription_status",
+            "do_not_call",
+            "do_not_solicit",
+            "do_not_send_after_event_email",
             "eyca_card",
             "pronoun",
             "close_person",
@@ -173,15 +176,12 @@ class BaseDonorExportSerializer(ModelSerializer):
         model = Donor
         fields = (
             "user",
-            "subscribed_to_newsletter",
             "is_public",
             "has_recurrent_donation",
             "date_joined",
             "regional_center_support",
             "basic_section_support",
             "variable_symbols",
-            "do_not_call",
-            "do_not_solicit",
         )
 
 
@@ -204,8 +204,8 @@ class DonorExportSerializer(BaseDonorExportSerializer):
     @staticmethod
     def get_related(queryset):
         queryset = BaseDonorExportSerializer.get_related(queryset)
-        # DonorAdmin.get_queryset already annotates these, scoped to the
-        # changelist's donation source and date filters; annotating again
+        # visible_donor_stats already annotates these, scoped to the user
+        # list's donation source and date filters; annotating again
         # would silently replace them with lifetime totals.
         if "donations_sum" in queryset.query.annotations:
             return queryset
@@ -381,9 +381,12 @@ class EventExportSerializer(ModelSerializer):
                 "vip_propagation",
                 "intended_for",
                 "registration",
-                "record",
             )
             .prefetch_related(
+                Prefetch(
+                    "record",
+                    EventRecord.objects.annotate(**EventRecord.participant_counts()),
+                ),
                 "administration_units",
                 "other_organizers",
                 "propagation__diets",

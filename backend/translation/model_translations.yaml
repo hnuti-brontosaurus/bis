@@ -55,6 +55,9 @@ User:
     roles: Role
     office_workers_note: Poznámka ústředí
     subscription_status: Stav odběru newsletteru
+    do_not_call: Už nevolat
+    do_not_solicit: Už nežádat o dar
+    do_not_send_after_event_email: Neposílat e-mail po akci
     last_after_event_email: Poslední e-mail po akci
     is_contact_information_verified: Ověřil své kontaktní údaje?
     is_bot: Bot (MCP)
@@ -198,8 +201,8 @@ Qualification:
     valid_since: Platnost od
     approved_by: Schválilo
 QualificationNote:
-  name: Poznámka ke kvalifikacím uživatele
-  name_plural: Poznámky ke kvalifikacím uživatele
+  name: Poznámka ke kvalifikacím
+  name_plural: Poznámky ke kvalifikacím
   fields:
     education_members_note: Poznámka
 
@@ -530,8 +533,6 @@ Donor:
     date_joined: Dárcem od
     regional_center_support: podpora RC
     basic_section_support: podpora ZČ
-    do_not_call: Už nevolat
-    do_not_solicit: Už nežádat o dar
     fundraisers_note: Interní poznámka
 Pledge:
   name: Pravidelný dar
@@ -562,10 +563,10 @@ FundraisingCampaign:
     name: Název
     slug: Slug
 DonorEvent:
-  name: Značka dárce
-  name_plural: Značky dárce
+  name: Událost kampaně
+  name_plural: Historie kampaní
   fields:
-    donor: Dárce
+    user: Uživatel
     event_type: Typ
     campaign: Kampaň
     pledge: Příslib

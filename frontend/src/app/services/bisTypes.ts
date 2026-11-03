@@ -31,6 +31,7 @@ export type {
   Region,
   Registration,
   StateEnum,
+  SubscriptionStatusEnum,
   TokenResponse,
   UserAddress as Address,
   UserSearch,
@@ -181,7 +182,10 @@ type UserPayloadFields =
   | 'health_insurance_company'
   | 'health_issues'
   | 'all_emails'
-  | 'subscribed_to_newsletter'
+  | 'subscription_status'
+  | 'do_not_call'
+  | 'do_not_solicit'
+  | 'do_not_send_after_event_email'
 
 export type UserPayload = Optional<
   Overwrite<

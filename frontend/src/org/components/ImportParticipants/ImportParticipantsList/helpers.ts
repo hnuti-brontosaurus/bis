@@ -43,7 +43,6 @@ export const import2payload = (
     nickname: '',
     health_issues: '',
     pronoun: null,
-    subscribed_to_newsletter: true,
     donor: null,
     offers: null,
     eyca_card: null,

@@ -7,22 +7,20 @@
 
 {% block content %}
 <div class="telesales-call-header">
-  <h1>{{ donor.user.get_full_name }}</h1>
+  <h1>{{ person.get_name }}</h1>
   <div class="telesales-call-links">
-    <a href="{% url 'admin:donations_donor_change' donor.id %}" target="_blank">Profil dárce</a>
-    &bull;
-    <a href="{% url 'admin:bis_user_change' donor.user_id %}" target="_blank">Profil uživatele</a>
+    <a href="{% url 'admin:bis_user_change' person.id %}" target="_blank">Profil uživatele</a>
   </div>
   <div class="telesales-call-meta">
-    {% if donor.user.pronoun %}
-      <span class="telesales-pronoun">{{ donor.user.pronoun }}</span>
+    {% if person.pronoun %}
+      <span class="telesales-pronoun">{{ person.pronoun }}</span>
     {% endif %}
-    {% if donor.formal_vokativ %}
-      <span class="telesales-vokativ">{{ donor.formal_vokativ }}</span>
+    {% if person.donor.formal_vokativ %}
+      <span class="telesales-vokativ">{{ person.donor.formal_vokativ }}</span>
     {% endif %}
-    {% if donor.user.phone %}
-      <a class="telesales-phone-hero" href="tel:{{ donor.user.phone }}">
-        {{ donor.user.phone }}
+    {% if person.phone %}
+      <a class="telesales-phone-hero" href="tel:{{ person.phone }}">
+        {{ person.phone }}
       </a>
     {% else %}
       <span class="telesales-no-phone">Bez telefonního čísla</span>
@@ -31,13 +29,13 @@
   <div class="telesales-call-stats">
     Kampaň: <strong>{{ campaign }}</strong>
     &bull;
-    Volání v okně: <strong>{{ donor_context.calls_in_window }}/4</strong>
+    Volání v okně: <strong>{{ campaign_context.calls_in_window }}/4</strong>
   </div>
 </div>
 
-{% if donor_context.history %}
+{% if campaign_context.history %}
 <div class="telesales-history">
-  <h2>Historie kampaně ({{ donor_context.history|length }} událostí)</h2>
+  <h2>Historie kampaně ({{ campaign_context.history|length }} událostí)</h2>
   <table class="telesales-table">
     <thead>
       <tr>
@@ -50,7 +48,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for event in donor_context.history %}
+      {% for event in campaign_context.history %}
       <tr>
         <td>{{ event.created_at|date:"j. n. Y H:i" }}</td>
         <td>{{ event.event_type }}</td>
@@ -65,10 +63,10 @@
 </div>
 {% endif %}
 
-{% if donor.do_not_call or donor.do_not_solicit %}
+{% if person.do_not_call or person.do_not_solicit %}
 <div class="telesales-donor-flags">
-  {% if donor.do_not_call %}<span class="telesales-flag telesales-flag--no-call">Už nevolat</span>{% endif %}
-  {% if donor.do_not_solicit %}<span class="telesales-flag telesales-flag--no-solicit">Už nežádat o dar</span>{% endif %}
+  {% if person.do_not_call %}<span class="telesales-flag telesales-flag--no-call">Už nevolat</span>{% endif %}
+  {% if person.do_not_solicit %}<span class="telesales-flag telesales-flag--no-solicit">Už nežádat o dar</span>{% endif %}
 </div>
 {% endif %}
 
@@ -127,7 +125,7 @@
   </p>
 
   <fieldset class="telesales-donor-prefs">
-    <legend>Preference dárce</legend>
+    <legend>Preference kontaktu</legend>
     <label class="telesales-pref-label">
       {{ form.do_not_call }} {{ form.do_not_call.label }}
     </label>

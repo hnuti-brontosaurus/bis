@@ -33,3 +33,18 @@ def test_merge_keeps_the_photo_taken_over_from_the_deleted_user(
     assert user.photo
     assert (media / user.photo.name).exists()
     assert not (media / "user_photos" / "photo.png").exists()
+
+
+@pytest.mark.django_db
+def test_merge_keeps_only_the_refusals_of_the_user_merged_into():
+    user = User.objects.create(first_name="Kept", do_not_solicit=True)
+    other = User.objects.create(
+        first_name="Merged", do_not_call=True, do_not_send_after_event_email=True
+    )
+
+    user.merge_with(other)
+
+    user.refresh_from_db()
+    assert not user.do_not_call
+    assert not user.do_not_send_after_event_email
+    assert user.do_not_solicit

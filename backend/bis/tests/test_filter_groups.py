@@ -2,22 +2,34 @@ from bis.models import User
 from bis.templatetags.bis_tags import active_filters, filter_groups
 from django.contrib.admin import site
 from django.test import RequestFactory
-from donations.models import Donor
 
 
 def groups_for(params):
-    request = RequestFactory().get("/admin/donations/donor/", params)
+    request = RequestFactory().get("/admin/bis/user/", params)
     request.user = User.objects.create(email="admin@example.com", _str="Admin")
     request.user.is_superuser = True
-    changelist = site._registry[Donor].get_changelist_instance(request)
+    changelist = site._registry[User].get_changelist_instance(request)
     return {group["title"]: group for group in filter_groups(changelist)}
 
 
 def test_filters_are_grouped_under_their_title(db):
     groups = groups_for({})
 
-    assert list(groups) == [None, "Kontaktování", "Dary", "Fundraisingové kampaně"]
-    assert all(group["filters"] for group in groups.values())
+    assert list(groups) == [
+        None,
+        "Členství",
+        "Hlavní organizátor",
+        "Organizátor",
+        "Účast na akcích",
+        "Kvalifikace",
+        "Osobní info",
+        "Nabízená pomoc",
+        "Kontaktování",
+        "Ostatní",
+        "Dárci",
+        "Dary",
+        "Fundraisingové kampaně",
+    ]
     assert groups["Dary"]["collapsed"]
     assert not groups["Dary"]["active_count"]
 

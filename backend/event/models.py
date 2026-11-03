@@ -21,12 +21,25 @@ from categories.models import (
 )
 from common.helpers import get_date_range
 from common.thumbnails import ThumbnailImageField
-from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.gis.db import models as m
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from django.db.models import CASCADE, PROTECT, Index, Q
+from django.db.models import (
+    CASCADE,
+    PROTECT,
+    DateField,
+    Exists,
+    F,
+    Func,
+    Index,
+    OuterRef,
+    Q,
+    Subquery,
+)
+from django.db.models.functions import Coalesce, NullIf
+from django.db.models.lookups import GreaterThan
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from geopy.distance import distance
 from phonenumber_field.modelfields import PhoneNumberField
@@ -330,6 +343,16 @@ class EventRegistration(m.Model):
         return self.event.has_edit_permission(user)
 
 
+def turns_27(birthday):
+    # Adding the years to the birthday rather than subtracting them from the
+    # start makes someone born on 29 February turn 27 on 28 February.
+    return Func(
+        birthday,
+        template="(%(expressions)s + interval '27 years')::date",
+        output_field=DateField(),
+    )
+
+
 @translate_model
 class EventRecord(m.Model):
     class AttendanceListType(m.TextChoices):
@@ -369,49 +392,93 @@ class EventRecord(m.Model):
     def has_edit_permission(self, user):
         return self.event.has_edit_permission(user)
 
-    def _get_all_participants_list(self):
-        if not hasattr(self, "_all_participants_list_cache"):
-            seen = set()
-            result = []
-            for user in list(self.participants.all()) + list(
-                self.event.other_organizers.all()
-            ):
-                if user.id not in seen:
-                    seen.add(user.id)
-                    result.append(user)
-            self._all_participants_list_cache = result
-        return self._all_participants_list_cache
+    @classmethod
+    def participant_counts(cls):
+        """Annotations for an EventRecord queryset. An entered count wins
+        unless it is 0; otherwise everyone attending, participant or other
+        organizer, is counted once per sub-event. Young means at most 26 at the
+        start of the event."""
+        # Counted on the link tables as participants + organizers - both: a
+        # join of users to both with OR cannot use their indexes.
+        participants = cls.participants.through.objects.filter(
+            eventrecord_id=OuterRef("pk")
+        )
+        organizers = Event.other_organizers.through.objects.filter(
+            event_id=OuterRef("event_id")
+        )
+        both = participants.filter(
+            Exists(
+                Event.other_organizers.through.objects.filter(
+                    event_id=OuterRef(OuterRef("event_id")),
+                    user_id=OuterRef("user_id"),
+                )
+            )
+        )
+
+        def size(links):
+            return Coalesce(
+                Subquery(
+                    links.order_by()
+                    .annotate(count=Func(F("pk"), function="COUNT"))
+                    .values("count")
+                ),
+                0,
+            )
+
+        def counted(*conditions):
+            attending = (
+                size(participants.filter(*conditions))
+                + size(organizers.filter(*conditions))
+                - size(both.filter(*conditions))
+            )
+            return attending * F("event__number_of_sub_events")
+
+        # A scalar subquery, unlike a join or EXISTS, is not flattened into a
+        # hash join over all users: it stays one index lookup per attendee.
+        birthday = Subquery(
+            User.objects.filter(pk=OuterRef("user_id")).values("birthday")
+        )
+        young = GreaterThan(turns_27(birthday), OuterRef("event__start"))
+        return {
+            "participants_count": Coalesce(
+                NullIf("number_of_participants", 0), counted()
+            ),
+            "young_participants_count": Coalesce(
+                NullIf("number_of_participants_under_26", 0), counted(young)
+            ),
+        }
+
+    @cached_property
+    def _participant_counts(self):
+        if hasattr(self, "participants_count"):
+            return self.participants_count, self.young_participants_count
+        return (
+            EventRecord.objects.filter(pk=self.pk)
+            .annotate(**self.participant_counts())
+            .values_list("participants_count", "young_participants_count")
+            .get()
+        )
 
     def get_participants_count(self):
-        return (
-            self.number_of_participants
-            or len(self._get_all_participants_list()) * self.event.number_of_sub_events
-        )
+        return self._participant_counts[0]
 
     def get_young_participants_count(self):
-        under_26 = len(
-            [
-                p
-                for p in self._get_all_participants_list()
-                if p.birthday
-                and relativedelta(self.event.start, p.birthday).years <= 26
-            ]
-        )
-        return (
-            self.number_of_participants_under_26
-            or under_26 * self.event.number_of_sub_events
-        )
+        return self._participant_counts[1]
 
     def get_young_percentage(self):
-        participants_count = self.get_participants_count()
-        if not participants_count:
-            return "0%"
-        return f"{int(self.get_young_participants_count() / participants_count * 100)}%"
+        return young_percentage(*self._participant_counts)
 
     def get_all_participants(self):
         return User.objects.filter(
-            id__in=[p.id for p in self._get_all_participants_list()]
+            Q(pk__in=self.participants.values("pk"))
+            | Q(pk__in=self.event.other_organizers.values("pk"))
         )
+
+
+def young_percentage(participants_count, young_participants_count):
+    if not participants_count:
+        return "0%"
+    return f"{int(young_participants_count / participants_count * 100)}%"
 
 
 @translate_model

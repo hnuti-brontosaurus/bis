@@ -159,6 +159,40 @@
             width: auto !important;
         }
 
+        .section-nav {
+            margin-bottom: 16px;
+        }
+
+        .section-nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 16px;
+        }
+
+        /* The nav itself takes no height, so its links float over the form
+           instead of pushing it down or taking a column of its own. */
+        @media (min-width: 1500px) {
+            .section-nav {
+                position: sticky;
+                top: 16px;
+                z-index: 10;
+                height: 0;
+                margin: 0;
+            }
+
+            .section-nav-links {
+                position: absolute;
+                right: 0;
+                flex-direction: column;
+                flex-wrap: nowrap;
+                padding: 12px 16px;
+                background: var(--body-bg);
+                border: 1px solid var(--hairline-color);
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+        }
+
 
 
 

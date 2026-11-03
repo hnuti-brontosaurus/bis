@@ -32,6 +32,17 @@ changelist loads each take about three times as long. gunicorn's 8 threads
 overlap only the time spent waiting on postgres, and a second worker would not
 help either while the limit is 1 CPU, since both would share that one CPU.
 
+Postgres JIT is off for Django's connections (`OPTIONS` in
+`project/settings.py`). It starts above a planner cost threshold that
+correlated subqueries over a whole table cross even under a `LIMIT 100`: the
+event changelist spent 1.4s compiling a query that then ran in 10ms. When a
+page is slow but `EXPLAIN ANALYZE` shows a fast plan, look for a `JIT:` block.
+
+Postgres flattens a join or `EXISTS` from a correlated subquery into a hash
+join and can then scan a whole table per row; a scalar subquery
+(`Subquery(...values("x"))`) keeps it an index lookup. See
+`EventRecord.participant_counts`.
+
 ### Testing
 ```bash
 make test              # Run all tests (backend + frontend + cookbook)
@@ -224,6 +235,23 @@ Never create a new template instead of editing one; the id is in the code.
 Triggers are either Django signals / DRF serializers, or the `daily` command run
 by `backend/bis/scheduler.py` at 7:00 Prague (`nightly` at 5:00).
 
+The newsletter choice is `User.subscription_status`, pushed to Ecomail by the
+`push_to_ecomail` signal and pulled back by `nightly`'s `sync_ecomail`. Ecomail
+ignores `status: 1` for a contact that unsubscribed unless `subscribe-bulk`
+also gets `resubscribe: true` (verified), so the signal sends it when a status
+changes to subscribed in BIS — and only then, since a bulk push of a stale 1
+would undo an unsubscribe the nightly pull has not seen yet.
+`Donor.subscribed_to_newsletter` is an unused leftover of the old BIS.
+
+The newsletter, `User.do_not_call`, `User.do_not_solicit` and
+`User.do_not_send_after_event_email` are the person's communication
+preferences: the frontend `UserSerializer` returns and accepts them only for
+the signed-in user themself (the profile's "Komunikace" section), so an
+organizer editing a participant cannot change them. Staff change them in the
+admin; telesales sets the call and solicitation refusals from a call.
+`do_not_solicit` reaches Ecomail as the `Nežádat o dar` tag, with the nightly
+push, and only a campaign that excludes that tag honours it.
+
 A per-email overview (trigger, recipients, variables, code reference) lives in
 the "přehled emailů" tab of the Automatické emaily spreadsheet.
 
@@ -398,13 +426,27 @@ same volume; its access log is off, since it was never rotated.
 twice, and the default silently disables every logger created in between.
 Tests drop the file handler (`backend/conftest.py`).
 
-### Fundraising campaigns
-Campaign membership is a `DonorEvent` and the telesales views are keyed by donor
-id, so only a `Donor` can be in a campaign. The `change_fundraising_campaign`
-admin action (in `bis/admin.py`, shared by `UserAdmin` and `DonorAdmin`) creates
-the missing `Donor` profiles when run on users. A donor profile therefore does
-not mean the person ever gave: the Ecomail `Dárce` tag (`ecomail/tags.py`) needs
-a donation or a pledge, except for profiles from before
+### Donors and fundraising campaigns
+A `Donor` is a one-to-one profile of a `User`, edited as a section of the user
+admin form (`DonorAdminInline` with its companies, variable symbols, pledges and
+donations). There is no donor list: the user list has a "Dárce" column preset,
+donor and campaign filters, and the donor actions (confirmations, donor xlsx
+export). `DonorAdmin` stays registered, hidden from the menu, only because
+`DonationAdmin`'s donor autocomplete needs it; its pages redirect to the user.
+
+Board members see only the donors supporting their units, read-only, and those
+users join their backend user list (`User.filter_queryset`). A filter on donor data must
+therefore never match a donor the viewer cannot see, or it is an oracle for
+their gifts: wrap donor filters in `on_visible_donors` and campaign filters in
+`on_visible_campaign_history` (`bis/admin_filters.py`). A related filter with
+fewer than two choices hides itself, and the changelist then applies its
+parameter as a plain lookup — which is why the campaign wrapper forces
+`has_output`.
+
+Campaign membership is a `DonorEvent` on the user (`campaign_events`, shown as
+"Historie kampaní"), and the telesales views are keyed by user. A donor profile
+does not mean the person ever gave: the Ecomail `Dárce` tag (`ecomail/tags.py`)
+needs a donation or a pledge, except for profiles from before
 `GIFTLESS_DONOR_CUTOFF` — those are legacy donors whose gifts predate the
 donation records. The tag definitions are mirrored for the office in the
 "Tagy pro ecomail.xlsm" file on Drive; keep it in step.
@@ -620,6 +662,14 @@ handling, form internals). In short:
 
 When review feedback names a convention the docs don't have yet, add it to
 `style-guide.md` or `forms.md`.
+
+Reading `frontend/docs/style-guide.md` and `frontend/docs/forms.md` first is not
+enough: before reporting frontend work as done, check the whole diff against
+them rule by rule. Prettier and ESLint do not enforce naming, absolute imports
+or dead imports, so passing hooks proves nothing here. A line you moved or
+rewrote counts as new code, so don't keep an old habit from the surrounding file
+(`au =>`, a relative import) when it breaks a rule. Remove imports your change
+leaves unused, and look at an existing test before writing a new one.
 
 ### Comments
 - Default: no comments. Code with well-named identifiers should explain itself, rather rewrite the code to be more readable.

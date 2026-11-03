@@ -78,9 +78,9 @@ def make_donor(user):
     return Donor.objects.create(user=user)
 
 
-def add_to_campaign(donor, campaign, categories, created_at=None):
+def add_to_campaign(user, campaign, categories, created_at=None):
     event = DonorEvent.objects.create(
-        donor=donor,
+        user=user,
         event_type=categories["added_to_campaign"],
         campaign=campaign,
     )
@@ -89,9 +89,9 @@ def add_to_campaign(donor, campaign, categories, created_at=None):
     return event
 
 
-def log_call(donor, campaign, categories, slug, created_at=None, reminder=None):
+def log_call(user, campaign, categories, slug, created_at=None, reminder=None):
     event = DonorEvent.objects.create(
-        donor=donor,
+        user=user,
         event_type=categories[slug],
         campaign=campaign,
         reminder=reminder,
@@ -103,38 +103,38 @@ def log_call(donor, campaign, categories, slug, created_at=None, reminder=None):
 
 @pytest.mark.django_db
 def test_worklist_excludes_donors_with_4_calls(categories, campaign):
-    donor = make_donor(make_user("donor4@example.com"))
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor4@example.com")
+    add_to_campaign(person, campaign, categories)
 
     now = timezone.now()
     for _ in range(4):
-        log_call(donor, campaign, categories, "call_no_answer", created_at=now)
+        log_call(person, campaign, categories, "call_no_answer", created_at=now)
 
-    assert donor not in list(get_worklist(campaign))
+    assert person not in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
 def test_worklist_includes_donor_with_3_calls(categories, campaign):
-    donor = make_donor(make_user("donor3@example.com"))
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor3@example.com")
+    add_to_campaign(person, campaign, categories)
 
     now = timezone.now()
     for _ in range(3):
-        log_call(donor, campaign, categories, "call_no_answer", created_at=now)
+        log_call(person, campaign, categories, "call_no_answer", created_at=now)
 
-    assert donor in list(get_worklist(campaign))
+    assert person in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
 def test_postponed_reminder_resets_window(categories, campaign):
-    donor = make_donor(make_user("donor_postponed@example.com"))
+    person = make_user("donor_postponed@example.com")
 
     base_time = timezone.now() - timedelta(days=10)
-    add_to_campaign(donor, campaign, categories, created_at=base_time)
+    add_to_campaign(person, campaign, categories, created_at=base_time)
 
     for i in range(4):
         log_call(
-            donor,
+            person,
             campaign,
             categories,
             "call_no_answer",
@@ -142,13 +142,13 @@ def test_postponed_reminder_resets_window(categories, campaign):
         )
 
     now = timezone.now()
-    assert donor not in list(get_worklist(campaign))
+    assert person not in list(get_worklist(campaign))
 
     # Log postponement after the 4 old calls — window resets
     reminder_event_time = base_time + timedelta(days=5)
     reminder_due = now - timedelta(hours=1)
     log_call(
-        donor,
+        person,
         campaign,
         categories,
         "call_postponed",
@@ -157,23 +157,23 @@ def test_postponed_reminder_resets_window(categories, campaign):
     )
 
     reminders = list(get_reminders_due(campaign))
-    assert donor in reminders
+    assert person in reminders
 
-    # Making a call after the postponement moves donor out of reminders into worklist
-    log_call(donor, campaign, categories, "call_no_answer", created_at=now)
-    assert donor not in list(get_reminders_due(campaign))
-    assert donor in list(get_worklist(campaign))
+    # Making a call after the postponement moves person out of reminders into worklist
+    log_call(person, campaign, categories, "call_no_answer", created_at=now)
+    assert person not in list(get_reminders_due(campaign))
+    assert person in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
 def test_reminders_due_surfaces_overdue_reminders(categories, campaign):
-    donor = make_donor(make_user("donor_reminder@example.com"))
+    person = make_user("donor_reminder@example.com")
 
     past = timezone.now() - timedelta(days=5)
-    add_to_campaign(donor, campaign, categories, created_at=past)
+    add_to_campaign(person, campaign, categories, created_at=past)
     reminder_due = timezone.now() - timedelta(hours=1)
     log_call(
-        donor,
+        person,
         campaign,
         categories,
         "call_postponed",
@@ -181,18 +181,18 @@ def test_reminders_due_surfaces_overdue_reminders(categories, campaign):
         reminder=reminder_due,
     )
 
-    assert donor in list(get_reminders_due(campaign))
+    assert person in list(get_reminders_due(campaign))
 
 
 @pytest.mark.django_db
 def test_future_reminder_appears_in_reminders_not_worklist(categories, campaign):
-    donor = make_donor(make_user("donor_future_reminder@example.com"))
+    person = make_user("donor_future_reminder@example.com")
 
     past = timezone.now() - timedelta(days=2)
-    add_to_campaign(donor, campaign, categories, created_at=past)
+    add_to_campaign(person, campaign, categories, created_at=past)
     future_reminder = timezone.now() + timedelta(days=1)
     log_call(
-        donor,
+        person,
         campaign,
         categories,
         "call_postponed",
@@ -200,19 +200,19 @@ def test_future_reminder_appears_in_reminders_not_worklist(categories, campaign)
         reminder=future_reminder,
     )
 
-    assert donor in list(get_reminders_due(campaign))
-    assert donor not in list(get_worklist(campaign))
+    assert person in list(get_reminders_due(campaign))
+    assert person not in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
 def test_donor_with_reminder_goes_to_reminders_not_worklist(categories, campaign):
-    donor = make_donor(make_user("donor_reminder2@example.com"))
+    person = make_user("donor_reminder2@example.com")
 
     past = timezone.now() - timedelta(days=2)
-    add_to_campaign(donor, campaign, categories, created_at=past)
+    add_to_campaign(person, campaign, categories, created_at=past)
     future_reminder = timezone.now() + timedelta(days=1)
     log_call(
-        donor,
+        person,
         campaign,
         categories,
         "call_postponed",
@@ -220,8 +220,8 @@ def test_donor_with_reminder_goes_to_reminders_not_worklist(categories, campaign
         reminder=future_reminder,
     )
 
-    assert donor in list(get_reminders_due(campaign))
-    assert donor not in list(get_worklist(campaign))
+    assert person in list(get_reminders_due(campaign))
+    assert person not in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
@@ -229,13 +229,13 @@ def test_call_form_accepts_postponed_without_reminder(
     categories, campaign, fundraiser_role
 ):
     caller = make_fundraiser("fr1@example.com", fundraiser_role)
-    donor = make_donor(make_user("donor_form@example.com"))
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor_form@example.com")
+    add_to_campaign(person, campaign, categories)
 
     client = Client()
     client.force_login(caller)
 
-    url = reverse("admin:donations_telesales_call", args=[campaign.id, donor.id])
+    url = reverse("admin:donations_telesales_call", args=[campaign.id, person.id])
     response = client.post(
         url,
         {"outcome": "call_postponed", "fundraisers_note": "", "pledge": ""},
@@ -243,8 +243,70 @@ def test_call_form_accepts_postponed_without_reminder(
 
     assert response.status_code == 302
     assert DonorEvent.objects.filter(
-        donor=donor, event_type__slug="call_postponed"
+        user=person, event_type__slug="call_postponed"
     ).exists()
+
+
+@pytest.mark.django_db
+def test_call_page_works_for_someone_without_donor_profile(
+    categories, campaign, fundraiser_role
+):
+    caller = make_fundraiser("fr4@example.com", fundraiser_role)
+    prospect = make_user("prospect_call@example.com", first_name="Prospekt")
+    add_to_campaign(prospect, campaign, categories)
+
+    client = Client()
+    client.force_login(caller)
+
+    url = reverse("admin:donations_telesales_call", args=[campaign.id, prospect.id])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Prospekt" in content
+    assert "Profil dárce" not in content
+
+
+@pytest.mark.django_db
+def test_user_page_shows_the_campaign_history(categories, campaign, fundraiser_role):
+    caller = make_fundraiser("fr5@example.com", fundraiser_role)
+    prospect = make_user("prospect_history@example.com")
+    add_to_campaign(prospect, campaign, categories)
+
+    client = Client()
+    client.force_login(caller)
+
+    response = client.get(reverse("admin:bis_user_change", args=[prospect.id]))
+
+    assert response.status_code == 200
+    assert "campaign_events-group" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_call_form_stores_contact_preferences_on_the_user(
+    categories, campaign, fundraiser_role
+):
+    caller = make_fundraiser("fr3@example.com", fundraiser_role)
+    person = make_user("donor_form3@example.com")
+    add_to_campaign(person, campaign, categories)
+
+    client = Client()
+    client.force_login(caller)
+
+    url = reverse("admin:donations_telesales_call", args=[campaign.id, person.id])
+    client.post(
+        url,
+        {
+            "outcome": "call_reached",
+            "fundraisers_note": "",
+            "pledge": "",
+            "do_not_call": "on",
+        },
+    )
+
+    person.refresh_from_db()
+    assert person.do_not_call
+    assert not person.do_not_solicit
 
 
 @pytest.mark.django_db
@@ -252,13 +314,13 @@ def test_call_form_rejects_postponed_with_past_reminder(
     categories, campaign, fundraiser_role
 ):
     caller = make_fundraiser("fr2@example.com", fundraiser_role)
-    donor = make_donor(make_user("donor_form2@example.com"))
+    person = make_user("donor_form2@example.com")
 
     client = Client()
     client.force_login(caller)
 
     past = (timezone.now() - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
-    url = reverse("admin:donations_telesales_call", args=[campaign.id, donor.id])
+    url = reverse("admin:donations_telesales_call", args=[campaign.id, person.id])
     response = client.post(
         url,
         {
@@ -285,7 +347,9 @@ def test_non_fundraiser_gets_403(categories, campaign, board_member_role):
     response = client.get(url)
     assert response.status_code == 403
 
-    url_call = reverse("admin:donations_telesales_call", args=[campaign.id, 99999])
+    url_call = reverse(
+        "admin:donations_telesales_call", args=[campaign.id, non_fundraiser.pk]
+    )
     response_call = client.get(url_call)
     assert response_call.status_code == 403
 
@@ -297,44 +361,44 @@ def test_non_fundraiser_gets_403(categories, campaign, board_member_role):
 
 @pytest.mark.django_db
 def test_fundraiser_can_see_donors_in_worklist(categories, campaign):
-    donor = make_donor(make_user("donor_vis@example.com"))
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor_vis@example.com")
+    add_to_campaign(person, campaign, categories)
 
-    assert donor in list(get_worklist(campaign))
+    assert person in list(get_worklist(campaign))
 
 
 @pytest.mark.django_db
 def test_donor_without_phone_goes_to_finished(categories, campaign):
-    donor = make_donor(make_user("donor_nophone@example.com", phone=""))
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor_nophone@example.com", phone="")
+    add_to_campaign(person, campaign, categories)
 
-    assert donor not in list(get_worklist(campaign))
-    assert donor not in list(get_reminders_due(campaign))
-    assert donor in list(get_finished(campaign))
+    assert person not in list(get_worklist(campaign))
+    assert person not in list(get_reminders_due(campaign))
+    assert person in list(get_finished(campaign))
 
 
 @pytest.mark.django_db
 def test_do_not_call_donor_goes_to_finished(categories, campaign):
-    donor = make_donor(make_user("donor_dnc@example.com"))
-    donor.do_not_call = True
-    donor.save()
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor_dnc@example.com")
+    person.do_not_call = True
+    person.save()
+    add_to_campaign(person, campaign, categories)
 
-    assert donor not in list(get_worklist(campaign))
-    assert donor not in list(get_reminders_due(campaign))
-    assert donor in list(get_finished(campaign))
+    assert person not in list(get_worklist(campaign))
+    assert person not in list(get_reminders_due(campaign))
+    assert person in list(get_finished(campaign))
 
 
 @pytest.mark.django_db
 def test_do_not_solicit_donor_goes_to_finished(categories, campaign):
-    donor = make_donor(make_user("donor_dns@example.com"))
-    donor.do_not_solicit = True
-    donor.save()
-    add_to_campaign(donor, campaign, categories)
+    person = make_user("donor_dns@example.com")
+    person.do_not_solicit = True
+    person.save()
+    add_to_campaign(person, campaign, categories)
 
-    assert donor not in list(get_worklist(campaign))
-    assert donor not in list(get_reminders_due(campaign))
-    assert donor in list(get_finished(campaign))
+    assert person not in list(get_worklist(campaign))
+    assert person not in list(get_reminders_due(campaign))
+    assert person in list(get_finished(campaign))
 
 
 def post_campaign_action(client, url, target_ids, operation, campaign):
@@ -351,7 +415,7 @@ def post_campaign_action(client, url, target_ids, operation, campaign):
 
 
 @pytest.mark.django_db
-def test_user_action_adds_users_to_campaign_as_donors(
+def test_user_action_adds_users_to_campaign_without_donor_profiles(
     categories, campaign, fundraiser_role
 ):
     caller = make_fundraiser("fr_action@example.com", fundraiser_role)
@@ -366,11 +430,12 @@ def test_user_action_adds_users_to_campaign_as_donors(
         client, url, [prospect.pk, donor.user.pk], "added_to_campaign", campaign
     )
 
-    assert set(get_worklist(campaign)) == {Donor.objects.get(user=prospect), donor}
+    assert set(get_worklist(campaign)) == {prospect, donor.user}
+    assert not Donor.objects.filter(user=prospect).exists()
 
     post_campaign_action(client, url, [prospect.pk], "remove", campaign)
 
-    assert list(get_worklist(campaign)) == [donor]
+    assert list(get_worklist(campaign)) == [donor.user]
 
 
 @pytest.mark.django_db
@@ -392,7 +457,7 @@ def test_user_action_hidden_without_donor_add_permission(
         campaign,
     )
 
-    assert not Donor.objects.filter(user=prospect).exists()
+    assert not DonorEvent.objects.filter(user=prospect).exists()
 
 
 @pytest.mark.django_db
