@@ -87,8 +87,11 @@ class Permissions:
     def is_cookbook(self):
         return self.model._meta.app_label in ["cookbook", "cookbook_categories"]
 
+    def is_nest_boxes(self):
+        return self.model._meta.app_label == "nest_boxes"
+
     def is_superuser_only(self):
-        return self.is_game_book() or self.is_cookbook()
+        return self.is_game_book() or self.is_cookbook() or self.is_nest_boxes()
 
     def filter_queryset(self, queryset):
         if self.can_view_all_objs():

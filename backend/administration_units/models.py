@@ -222,6 +222,7 @@ class BrontosaurusMovement(SingletonModel):
     executive_committee = m.ManyToManyField("bis.User", related_name="+", blank=True)
     education_members = m.ManyToManyField("bis.User", related_name="+", blank=True)
     fundraisers = m.ManyToManyField("bis.User", related_name="+", blank=True)
+    nest_box_managers = m.ManyToManyField("bis.User", related_name="+", blank=True)
     _history = m.JSONField(default=dict)
 
     @update_roles("director", "finance_director")
@@ -256,5 +257,7 @@ class BrontosaurusMovement(SingletonModel):
             record_history(self._history, date, user, "EDU")
         for user in self.fundraisers.all():
             record_history(self._history, date, user, "Fundraiser")
+        for user in self.nest_box_managers.all():
+            record_history(self._history, date, user, "Budkař")
 
         self.save()

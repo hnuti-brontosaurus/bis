@@ -307,3 +307,71 @@ class DonorEventCategory(m.Model):
 
     def __str__(self):
         return self.description
+
+
+@translate_model
+class NestBoxType(m.Model):
+    class HoleShape(m.TextChoices):
+        ROUND = "round", "kulatý"
+        OVAL = "oval", "oválný"
+        SLIT = "slit", "štěrbina"
+        OPEN_FRONT = "open_front", "otevřená přední stěna"
+        OTHER = "other", "jiný"
+
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
+    needs_cleaning = m.BooleanField(default=True)
+    # The range the type is suggested for; empty shape means chosen by hand
+    hole_shape = m.CharField(max_length=15, choices=HoleShape.choices, blank=True)
+    hole_min = m.PositiveSmallIntegerField(null=True, blank=True)
+    hole_max = m.PositiveSmallIntegerField(null=True, blank=True)
+    official_hole_min = m.PositiveSmallIntegerField(null=True, blank=True)
+    official_hole_max = m.PositiveSmallIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ("order",)
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
+class NestBoxOccupant(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
+    is_bird = m.BooleanField()
+
+    class Meta:
+        ordering = ("order",)
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
+class NestBoxEndReason(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
+    spot_reusable = m.BooleanField()
+
+    class Meta:
+        ordering = ("order",)
+
+    def __str__(self):
+        return self.name
+
+
+@translate_model
+class NestBoxNotCleanedReason(m.Model):
+    name = m.CharField(max_length=63)
+    slug = m.SlugField(unique=True)
+    order = m.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ("order",)
+
+    def __str__(self):
+        return self.name

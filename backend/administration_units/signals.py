@@ -65,6 +65,11 @@ def invalidate_administration_units_cache(**kwargs):
 )
 @receiver(
     m2m_changed,
+    sender=BrontosaurusMovement.nest_box_managers.through,
+    dispatch_uid="update_roles_cache9",
+)
+@receiver(
+    m2m_changed,
     sender=Event.other_organizers.through,
     dispatch_uid="update_roles_cache7",
 )

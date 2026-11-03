@@ -178,6 +178,9 @@ BrontosaurusMovement:
     fundraisers:
       - Fundraiseři
       - Mají přístup k telesales a vidí dárce
+    nest_box_managers:
+      - Budkaři
+      - Spravují všechny lokality databáze budek
 
 
 Membership:
@@ -1025,3 +1028,135 @@ Allergen:
 IngredientCategory:
   name: Kategorie přísad
   name_plural: Kategorie přísad
+
+NestBoxType:
+  name: Typ budky
+  name_plural: Typy budek
+  fields:
+    needs_cleaning: Čistí se?
+    hole_shape: Tvar otvoru
+    hole_min: Navrhovat od (mm)
+    hole_max: Navrhovat do (mm)
+    official_hole_min: Podle metodiky od (mm)
+    official_hole_max: Podle metodiky do (mm)
+
+NestBoxOccupant:
+  name: Obyvatel budky
+  name_plural: Obyvatelé budek
+  fields:
+    is_bird: Pták?
+
+NestBoxEndReason:
+  name: Důvod zániku budky
+  name_plural: Důvody zániku budek
+  fields:
+    spot_reusable: Místo lze znovu použít?
+
+NestBoxNotCleanedReason:
+  name: Důvod nevyčištění budky
+  name_plural: Důvody nevyčištění budek
+
+Area:
+  name: Lokalita budek
+  name_plural: Lokality budek
+  fields:
+    administration_unit: Organizační jednotka
+
+NestBox:
+  name: Budka
+  name_plural: Budky
+  fields:
+    area: Lokalita
+    name: Označení
+    previous_names: Dřívější označení
+    status: Stav
+    condition: Technický stav
+    location: Poloha
+    planned_radius: Poloměr plánovaného místa (m)
+    elevation: Nadmořská výška (m)
+    elevation_source: Zdroj nadmořské výšky
+    type: Typ
+    hole_shape: Tvar otvoru
+    hole_size:
+      - Velikost otvoru (mm)
+      - Nejužší šířka
+    opening: Otevírání
+    material: Materiál
+    predator_guard: Antipredační zábrana
+    access_note: Přístup
+    owner_note: Vlastník nebo jméno
+    installed_on: Vyvěšena
+    ended_on: Zanikla
+    end_reason: Důvod zániku
+    is_verified: Ověřena?
+    is_confirmed: Potvrzena?
+    closest_distance: Nejbližší budka (m)
+    closest_same_type_distance: Nejbližší budka stejného typu (m)
+    old: ID ve staré databázi
+    batch: Dávka
+
+NestBoxHistory:
+  name: Změna budky
+  name_plural: Historie budky
+  fields:
+    box: Budka
+    box_check: Kontrola
+    changes: Změny
+
+Batch:
+  name: Dávka kontrol
+  name_plural: Dávky kontrol
+  fields:
+    area: Lokalita
+    token: Odkaz
+    boxes: Budky
+    cleaned_by: Čistila jednotka
+    closed_at: Uzavřena
+    confirmed_at: Potvrzena
+    confirmed_by: Potvrdil(a)
+
+Check:
+  name: Kontrola budky
+  name_plural: Kontroly budek
+  fields:
+    box: Budka
+    season: Sezóna
+    made_at: Zadáno v telefonu
+    batch: Dávka
+    entered_by: Zadal(a)
+    volunteer_nickname: Přezdívka dobrovolníka
+    volunteer_email: E-mail dobrovolníka
+    is_confirmed: Potvrzena?
+    confirmed_at: Potvrzena
+    confirmed_by: Potvrdil(a)
+    cleaned_by: Čistila jednotka
+    found: Nalezena
+    cleaning: Čištění
+    not_cleaned_reason: Důvod nevyčištění
+    contents: Obsah
+    occupants: Obyvatelé
+    eggs_left: Zůstala vejce
+    dead_birds: Mrtví ptáci
+    breeding_note: Poznámka k hnízdění
+    box_left: Budka zůstala
+    box_changes: Změny budky
+    is_historical: Ze staré databáze?
+
+CheckPhoto:
+  name: Fotka kontroly
+  name_plural: Fotky kontroly
+  fields:
+    box_check: Kontrola
+
+HelpArticle:
+  name: Nápověda budek
+  name_plural: Nápovědy budek
+  fields:
+    title: Nadpis
+    content: Obsah
+
+HelpImage:
+  name: Obrázek nápovědy
+  name_plural: Obrázky nápovědy
+  fields:
+    article: Nápověda

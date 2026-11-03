@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     "old_bis",
     "cookbook",
     "cookbook_categories",
+    "nest_boxes",
     "django_bootstrap5",
     "django_cleanup.apps.CleanupConfig",  # needs to be last
 ]

@@ -18,6 +18,10 @@ from categories.models import (
     LocationAccessibilityCategory,
     LocationProgramCategory,
     MembershipCategory,
+    NestBoxEndReason,
+    NestBoxNotCleanedReason,
+    NestBoxOccupant,
+    NestBoxType,
     OpportunityCategory,
     OpportunityPriority,
     OrganizerRoleCategory,
@@ -90,7 +94,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--group",
-            choices=["bis", "game_book", "cookbook"],
+            choices=["bis", "game_book", "cookbook", "nest_boxes"],
             help="Single category group to create. Default: all. "
             "`testing_db cookbook` passes --group cookbook to keep the "
             "e2e seed fast.",
@@ -105,6 +109,8 @@ class Command(BaseCommand):
         if group is None or group == "cookbook":
             self.create_cookbook_categories()
             invalidate_cache("cookbook_categories")
+        if group is None or group == "nest_boxes":
+            self.create_nest_box_categories()
 
     def create_bis_categories(self):
         self.update_categories(
@@ -429,6 +435,7 @@ class Command(BaseCommand):
                 "organizer": dict(name="Organizátor"),
                 "qualified_organizer": dict(name="Organizátor s kvalifikací"),
                 "fundraiser": dict(name="Fundraiser"),
+                "nest_box_manager": dict(name="Budkař"),
             },
         )
 
@@ -543,6 +550,102 @@ class Command(BaseCommand):
         FundraisingCampaign.objects.update_or_create(
             slug="automatic_emails",
             defaults=dict(name="Automatické e-maily"),
+        )
+
+    def create_nest_box_categories(self):
+        round_types = [
+            ("maly_sykornik", "malý sýkorník", 27, 31, 27, 28),
+            ("velky_sykornik", "velký sýkorník", 32, 44, 33, 34),
+            ("spackovnik", "špačkovník", 45, 59, 45, 50),
+            ("kavkovnik", "kavkovník", 60, 79, 60, 70),
+            ("doupnak", "doupňák", 80, 120, 80, 120),
+            ("sovinec", "sovinec", 121, None, None, None),
+        ]
+        types = {
+            slug: dict(
+                name=name,
+                hole_shape=NestBoxType.HoleShape.ROUND,
+                hole_min=hole_min,
+                hole_max=hole_max,
+                official_hole_min=official_min,
+                official_hole_max=official_max,
+            )
+            for slug, name, hole_min, hole_max, official_min, official_max in round_types
+        }
+        types |= {
+            "lejskovnik": dict(
+                name="lejskovník", hole_shape=NestBoxType.HoleShape.OVAL
+            ),
+            "polobudka": dict(
+                name="polobudka", hole_shape=NestBoxType.HoleShape.OPEN_FRONT
+            ),
+            "soupalkovnik": dict(name="šoupálkovník"),
+            "rorysovnik": dict(name="rorýsovník"),
+            "netopyrnik": dict(name="netopýrník", needs_cleaning=False),
+            "special": dict(name="jiná, speciální"),
+        }
+        self.update_categories(NestBoxType, types)
+
+        birds = [
+            ("sykora", "sýkora (nevím která)"),
+            ("konadra", "sýkora koňadra"),
+            ("modrinka", "sýkora modřinka"),
+            ("uhelnicek", "sýkora uhelníček"),
+            ("parukarka", "sýkora parukářka"),
+            ("luzni", "sýkora lužní"),
+            ("lejsek", "lejsek"),
+            ("rehek", "rehek"),
+            ("brhlik", "brhlík"),
+            ("vrabec", "vrabec"),
+            ("spacek", "špaček"),
+            ("krutihlav", "krutihlav"),
+            ("soupalek", "šoupálek"),
+            ("strakapoud", "strakapoud"),
+            ("sova", "sova"),
+            ("jiny_ptak", "jiný pták"),
+            ("ptak", "pták (nevím jaký)"),
+        ]
+        animals = [
+            ("vosy", "vosy"),
+            ("srsni", "sršni"),
+            ("cmelaci", "čmeláci"),
+            ("mravenci", "mravenci"),
+            ("mysi", "myši"),
+            ("plsi", "plši"),
+            ("netopyri", "netopýři"),
+            ("veverka", "veverka"),
+            ("jine", "jiné zvíře"),
+            ("nevim", "nevím"),
+        ]
+        self.update_categories(
+            NestBoxOccupant,
+            {slug: dict(name=name, is_bird=True) for slug, name in birds}
+            | {slug: dict(name=name, is_bird=False) for slug, name in animals},
+        )
+
+        self.update_categories(
+            NestBoxEndReason,
+            {
+                "worn_out": dict(name="dosloužila nebo je zničená", spot_reusable=True),
+                "lost": dict(name="ztracená, nenalezena natrvalo", spot_reusable=True),
+                "replaced": dict(name="nahrazena novou budkou", spot_reusable=True),
+                "tree_gone": dict(name="chybí strom", spot_reusable=False),
+                "unsuitable": dict(name="nevhodné místo", spot_reusable=False),
+                "not_allowed": dict(
+                    name="nepovoleno nebo se nebude nahrazovat", spot_reusable=False
+                ),
+            },
+        )
+
+        self.update_categories(
+            NestBoxNotCleanedReason,
+            {
+                "hornets": dict(name="sršni"),
+                "bird_inside": dict(name="v budce je pták"),
+                "too_high": dict(name="moc vysoko"),
+                "no_time": dict(name="nestihlo se"),
+                "other": dict(name="jiné"),
+            },
         )
 
     def create_game_book_categories(self):

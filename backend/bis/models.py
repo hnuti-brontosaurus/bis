@@ -387,6 +387,10 @@ class User(SearchMixin, AbstractBaseUser):
         return "fundraiser" in self._role_slugs
 
     @cached_property
+    def is_nest_box_manager(self):
+        return "nest_box_manager" in self._role_slugs
+
+    @cached_property
     def is_member_only(self):
         return not self._role_slugs
 
@@ -771,6 +775,8 @@ class User(SearchMixin, AbstractBaseUser):
             roles += ["education_member"]
         if self in brontosaurus_movement.fundraisers.all():
             roles += ["fundraiser"]
+        if self in brontosaurus_movement.nest_box_managers.all():
+            roles += ["nest_box_manager"]
         if self.chairman_of.exists():
             roles += ["chairman"]
         if self.vice_chairman_of.exists():

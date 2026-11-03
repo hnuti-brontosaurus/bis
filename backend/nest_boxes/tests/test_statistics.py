@@ -1,0 +1,73 @@
+from datetime import date
+
+import pytest
+from nest_boxes.models import Check, NestBox
+from nest_boxes.statistics import season_statistics
+from nest_boxes.tests.conftest import made_at, near
+
+Content = Check.Content
+
+
+def check(box, contents, season=2025, **kwargs):
+    return Check.objects.create(
+        box=box,
+        date=date(season, 11, 1),
+        made_at=made_at(8),
+        found=kwargs.pop("found", Check.Found.FOUND),
+        cleaning=kwargs.pop("cleaning", Check.Cleaning.CLEANED),
+        contents=contents,
+        is_confirmed=kwargs.pop("is_confirmed", True),
+        **kwargs,
+    )
+
+
+@pytest.fixture
+def boxes(make_box, types):
+    def box(name, **kwargs):
+        return make_box(name, location=near(east=len(name) * 100), **kwargs)
+
+    return {
+        "bird": box("bird"),
+        "wasps": box("wasps", condition=NestBox.Condition.NEEDS_REPAIR),
+        "empty": box("empty"),
+        "unknown": box("unknown"),
+        "closed": box("closed"),
+        "lost": box("lost"),
+        "pending": box("pending"),
+        "unchecked": box("unchecked"),
+        "bats": box("bats", type=types["netopyrnik"]),
+        "new": box("new", installed_on=date(2026, 7, 1)),
+        "ended": box("ended", status=NestBox.Status.ENDED, ended_on=date(2025, 6, 30)),
+        "ended_later": box(
+            "ended later", status=NestBox.Status.ENDED, ended_on=date(2025, 12, 1)
+        ),
+        "planned": box("planned", status=NestBox.Status.PLANNED, installed_on=None),
+    }
+
+
+def test_season_statistics(area, boxes):
+    check(boxes["bird"], [Content.BIRD_NEST])
+    check(boxes["wasps"], [Content.OTHER_ANIMAL], cleaning=Check.Cleaning.NOT_CLEANED)
+    check(boxes["empty"], [Content.NOTHING])
+    check(boxes["unknown"], [Content.UNKNOWN])
+    check(boxes["closed"], [], cleaning=Check.Cleaning.COULD_NOT_OPEN)
+    check(boxes["lost"], [], found=Check.Found.NOT_FOUND, cleaning="")
+    check(boxes["pending"], [Content.BIRD_NEST], is_confirmed=False)
+    check(boxes["bats"], [Content.OTHER_ANIMAL])
+    check(boxes["bird"], [Content.BIRD_NEST], season=2024)
+    check(boxes["empty"], [Content.NOTHING], season=2024)
+
+    statistics = season_statistics(2025)
+
+    expected = {
+        "boxes": 9,
+        "cleaned": 3,
+        "inspected": 3,
+        "occupied": 2,
+        "bird_occupied": 1,
+        "previous_inspected": 2,
+        "previous_occupied": 1,
+        "to_repair": 1,
+    }
+    assert statistics["areas"] == [{"area": area, **expected}]
+    assert statistics["total"] == expected

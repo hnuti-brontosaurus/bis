@@ -14,6 +14,10 @@ from categories.models import (
     LocationAccessibilityCategory,
     LocationProgramCategory,
     MembershipCategory,
+    NestBoxEndReason,
+    NestBoxNotCleanedReason,
+    NestBoxOccupant,
+    NestBoxType,
     OpportunityCategory,
     OpportunityPriority,
     OrganizerRoleCategory,
@@ -131,4 +135,24 @@ class PronounCategoryAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(DonorEventCategory)
 class DonorEventCategoryAdmin(PermissionMixin, admin.ModelAdmin):
+    pass
+
+
+@admin.register(NestBoxType)
+class NestBoxTypeAdmin(PermissionMixin, admin.ModelAdmin):
+    list_display = "name", "hole_shape", "hole_min", "hole_max", "needs_cleaning"
+
+
+@admin.register(NestBoxOccupant)
+class NestBoxOccupantAdmin(PermissionMixin, admin.ModelAdmin):
+    list_display = "name", "is_bird"
+
+
+@admin.register(NestBoxEndReason)
+class NestBoxEndReasonAdmin(PermissionMixin, admin.ModelAdmin):
+    list_display = "name", "spot_reusable"
+
+
+@admin.register(NestBoxNotCleanedReason)
+class NestBoxNotCleanedReasonAdmin(PermissionMixin, admin.ModelAdmin):
     pass

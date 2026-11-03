@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 4eb7c9d39d04118d
+// source-hash: c77d4b4b64ffaea7
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -197,6 +197,7 @@ export const brontosaurusMovement = {
     'Vidí pouze uživatele a mohou editovat pouze jejich kvalifikaci',
   ],
   fundraisers: ['Fundraiseři', 'Mají přístup k telesales a vidí dárce'],
+  nest_box_managers: ['Budkaři', 'Spravují všechny lokality databáze budek'],
 } as const
 
 export const membership = {
@@ -1161,6 +1162,137 @@ export const allergen = { _name: 'Alergen', _name_plural: 'Alergen' } as const
 export const ingredientCategory = {
   _name: 'Kategorie přísad',
   _name_plural: 'Kategorie přísad',
+} as const
+
+export const nestBoxType = {
+  _name: 'Typ budky',
+  _name_plural: 'Typ budky',
+  needs_cleaning: 'Čistí se?',
+  hole_shape: 'Tvar otvoru',
+  hole_min: 'Navrhovat od (mm)',
+  hole_max: 'Navrhovat do (mm)',
+  official_hole_min: 'Podle metodiky od (mm)',
+  official_hole_max: 'Podle metodiky do (mm)',
+} as const
+
+export const nestBoxOccupant = {
+  _name: 'Obyvatel budky',
+  _name_plural: 'Obyvatel budky',
+  is_bird: 'Pták?',
+} as const
+
+export const nestBoxEndReason = {
+  _name: 'Důvod zániku budky',
+  _name_plural: 'Důvod zániku budky',
+  spot_reusable: 'Místo lze znovu použít?',
+} as const
+
+export const nestBoxNotCleanedReason = {
+  _name: 'Důvod nevyčištění budky',
+  _name_plural: 'Důvod nevyčištění budky',
+} as const
+
+export const area = {
+  _name: 'Lokalita budek',
+  _name_plural: 'Lokalita budek',
+  administration_unit: 'Organizační jednotka',
+} as const
+
+export const nestBox = {
+  _name: 'Budka',
+  _name_plural: 'Budka',
+  area: 'Lokalita',
+  name: 'Označení',
+  previous_names: 'Dřívější označení',
+  status: 'Stav',
+  condition: 'Technický stav',
+  location: 'Poloha',
+  planned_radius: 'Poloměr plánovaného místa (m)',
+  elevation: 'Nadmořská výška (m)',
+  elevation_source: 'Zdroj nadmořské výšky',
+  type: 'Typ',
+  hole_shape: 'Tvar otvoru',
+  hole_size: ['Velikost otvoru (mm)', 'Nejužší šířka'],
+  opening: 'Otevírání',
+  material: 'Materiál',
+  predator_guard: 'Antipredační zábrana',
+  access_note: 'Přístup',
+  owner_note: 'Vlastník nebo jméno',
+  installed_on: 'Vyvěšena',
+  ended_on: 'Zanikla',
+  end_reason: 'Důvod zániku',
+  is_verified: 'Ověřena?',
+  is_confirmed: 'Potvrzena?',
+  closest_distance: 'Nejbližší budka (m)',
+  closest_same_type_distance: 'Nejbližší budka stejného typu (m)',
+  old: 'ID ve staré databázi',
+  batch: 'Dávka',
+} as const
+
+export const nestBoxHistory = {
+  _name: 'Změna budky',
+  _name_plural: 'Změna budky',
+  box: 'Budka',
+  box_check: 'Kontrola',
+  changes: 'Změny',
+} as const
+
+export const batch = {
+  _name: 'Dávka kontrol',
+  _name_plural: 'Dávka kontrol',
+  area: 'Lokalita',
+  token: 'Odkaz',
+  boxes: 'Budky',
+  cleaned_by: 'Čistila jednotka',
+  closed_at: 'Uzavřena',
+  confirmed_at: 'Potvrzena',
+  confirmed_by: 'Potvrdil(a)',
+} as const
+
+export const check = {
+  _name: 'Kontrola budky',
+  _name_plural: 'Kontrola budky',
+  box: 'Budka',
+  season: 'Sezóna',
+  made_at: 'Zadáno v telefonu',
+  batch: 'Dávka',
+  entered_by: 'Zadal(a)',
+  volunteer_nickname: 'Přezdívka dobrovolníka',
+  volunteer_email: 'E-mail dobrovolníka',
+  is_confirmed: 'Potvrzena?',
+  confirmed_at: 'Potvrzena',
+  confirmed_by: 'Potvrdil(a)',
+  cleaned_by: 'Čistila jednotka',
+  found: 'Nalezena',
+  cleaning: 'Čištění',
+  not_cleaned_reason: 'Důvod nevyčištění',
+  contents: 'Obsah',
+  occupants: 'Obyvatelé',
+  eggs_left: 'Zůstala vejce',
+  dead_birds: 'Mrtví ptáci',
+  breeding_note: 'Poznámka k hnízdění',
+  box_left: 'Budka zůstala',
+  box_changes: 'Změny budky',
+  is_historical: 'Ze staré databáze?',
+} as const
+
+export const checkPhoto = {
+  _name: 'Fotka kontroly',
+  _name_plural: 'Fotka kontroly',
+  box_check: 'Kontrola',
+} as const
+
+export const helpArticle = {
+  _name: 'Nápověda budek',
+  _name_plural: 'Nápověda budek',
+  title: 'Nadpis',
+  content: 'Obsah',
+} as const
+
+export const helpImage = {
+  _name: 'Obrázek nápovědy',
+  _name_plural: 'Obrázek nápovědy',
+  article: 'Nápověda',
 } as const
 
 export const generic = {
