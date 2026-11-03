@@ -1,12 +1,15 @@
 import { FormInputError, InlineSection, Label } from 'components'
 import { subscriptionStatus } from 'config/subscriptionStatus'
+import { FC } from 'react'
 import { Controller } from 'react-hook-form'
 import { ConsentCheckbox } from './ConsentCheckbox'
 
-export const CommunicationSubform = ({
-  isHardBounce,
-}: {
+interface CommunicationSubformProps {
   isHardBounce: boolean
+}
+
+export const CommunicationSubform: FC<CommunicationSubformProps> = ({
+  isHardBounce,
 }) => (
   <>
     {isHardBounce ? (
