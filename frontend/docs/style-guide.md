@@ -36,6 +36,12 @@ In this project, some object properties are named by `snake_case`. We do that to
 
 ## Components
 
+### Props
+
+Always define props as an interface. Use the naming convention `ComponentNameProps`
+(e.g. `FileGridProps` for the `FileGrid` component). If possible, use `FC<ComponentNameProps>`
+as the component type (it might not be possible e.g. when using `forwardRef`).
+
 ### Share markup, don't copy it
 
 When two components look the same but keep their data differently (in a form,
