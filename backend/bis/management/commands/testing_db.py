@@ -26,6 +26,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from event.models import Event, EventPropagation, EventPropagationImage, EventRecord
+from nest_boxes.e2e_seed import seed as seed_nest_boxes
 from PIL import Image
 from project.settings import BASE_DIR
 from rest_framework.authtoken.models import Token
@@ -48,12 +49,13 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "target",
-            choices=["dev", "cookbook"],
+            choices=["dev", "cookbook", "nest_boxes"],
             help=(
                 "dev: full demo seed for dev.bis.brontosaurus.cz "
                 "(flush + categories + regions + zip codes + ~80 demo entities). "
                 "cookbook: minimal idempotent seed for the cookbook e2e specs "
-                "(categories + chef). No flush — safe to re-run."
+                "(categories + chef). No flush — safe to re-run. "
+                "nest_boxes: the nest box e2e fixture set, see nest_boxes/e2e_seed.py."
             ),
         )
 
@@ -71,6 +73,8 @@ class Command(BaseCommand):
             # the BIS + game book taxonomies the e2e specs never touch.
             call_command("create_categories", group="cookbook")
             self.create_cookbook_chef()
+        elif target == "nest_boxes":
+            seed_nest_boxes()
 
     def create_user(
         self,

@@ -115,14 +115,7 @@ class ChefSerializer(serializers.ModelSerializer):
         fields = ("id", "user_id", "name", "email", "photo", "is_editor")
 
 
-class ArticleSerializer(serializers.ModelSerializer):
-    content = ArticleHTMLField(allow_blank=True)
-
-    class Meta:
-        model = Article
-        fields = ("slug", "content")
-        read_only_fields = ("slug",)
-
+class KeepsContentImages:
     def update(self, instance, validated_data):
         """An image is uploaded on its own the moment it is inserted, see
         `ArticleImageSerializer`. The content is what decides which of them
@@ -142,6 +135,15 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.images.exclude(id__in=kept).delete()
         return instance
+
+
+class ArticleSerializer(KeepsContentImages, serializers.ModelSerializer):
+    content = ArticleHTMLField(allow_blank=True)
+
+    class Meta:
+        model = Article
+        fields = ("slug", "content")
+        read_only_fields = ("slug",)
 
 
 class ArticleImageSerializer(serializers.ModelSerializer):

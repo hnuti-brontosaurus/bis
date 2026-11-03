@@ -38,6 +38,7 @@ class Command(BaseCommand):
         try_to_run(call_command, "repair_emails")
         try_to_run(call_command, "sync_ecomail")
         try_to_run(call_command, "classify_questions")
+        try_to_run(call_command, "fill_nest_box_elevations")
 
         today = date.today()
 

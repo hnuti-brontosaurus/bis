@@ -102,6 +102,45 @@ def confirm_check(check, user):
     update_box(check.box, _box_values(check), user, check.date, check)
 
 
+def _ensure_alone_in_season(check):
+    rival = (
+        Check.objects.filter(box=check.box, season=Check.season_of(check.date))
+        .exclude(pk=check.pk)
+        .first()
+    )
+    if rival:
+        raise ValidationError(
+            {"date": f"Budka už má v této sezóně kontrolu {rival.pk}, uprav tu."}
+        )
+
+
+@transaction.atomic
+def enter_check(check, occupants, user):
+    """A manager's own check: confirmed at once, unless it is entered into a batch."""
+    _ensure_alone_in_season(check)
+    check.entered_by = user
+    check.save()
+    check.occupants.set(occupants)
+    if check.batch is None:
+        confirm_check(check, user)
+    else:
+        check.batch.boxes.add(check.box)
+    return check
+
+
+@transaction.atomic
+def edit_check(check, occupants, user):
+    """A manager's edit. A confirmed check is applied to its box again when it is
+    the box's latest, so correcting a mistake corrects the box too."""
+    _ensure_alone_in_season(check)
+    check.save()
+    check.occupants.set(occupants)
+    latest = Check.objects.filter(box=check.box).order_by("-date", "-made_at").first()
+    if check.is_confirmed and latest == check:
+        update_box(check.box, _box_values(check), user, check.date, check)
+    return check
+
+
 @transaction.atomic
 def upsert_check(check, occupants):
     """Stores `check` unless it loses to the season's check already there.
@@ -128,14 +167,14 @@ def upsert_check(check, occupants):
     return check
 
 
-def _ensure_open(batch):
+def ensure_open(batch):
     if batch.closed_at is not None:
         raise BatchClosed
 
 
 def submit_check(batch, check, occupants):
     """A volunteer's check through a batch link, left pending."""
-    _ensure_open(batch)
+    ensure_open(batch)
     if not batch.boxes.filter(pk=check.box_id).exists():
         raise PermissionDenied
     check.batch = batch
@@ -148,7 +187,7 @@ def submit_check(batch, check, occupants):
 @transaction.atomic
 def submit_box(batch, box):
     """A box a volunteer adds through a batch link, unconfirmed and unverified."""
-    _ensure_open(batch)
+    ensure_open(batch)
     stored = NestBox.objects.filter(pk=box.pk).first()
     if stored and (stored.is_confirmed or stored.batch_id != batch.pk):
         raise PermissionDenied

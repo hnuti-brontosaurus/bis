@@ -57,6 +57,13 @@ def _to_json(value):
 @transaction.atomic
 def update_box(box, values, user, date, box_check=None):
     """The one way to change a box: saves it and records the change in its history."""
+    if (
+        "location" in values
+        and values["location"] != box.location
+        and "elevation" not in values
+    ):
+        # The old elevation belongs to the old spot; fill_nest_box_elevations refills it
+        values = {**values, "elevation": None, "elevation_source": ""}
     changes = {}
     for field, value in values.items():
         old = getattr(box, field)
@@ -69,6 +76,24 @@ def update_box(box, values, user, date, box_check=None):
             box=box, date=date, user=user, box_check=box_check, changes=changes
         )
     return changes
+
+
+@transaction.atomic
+def create_box(values, user, date):
+    """A new box, with its starting values as the first history entry."""
+    box = NestBox(**values, created_by=user)
+    box.save()
+    NestBoxHistory.objects.create(
+        box=box,
+        date=date,
+        user=user,
+        changes={
+            field: [None, _to_json(value)]
+            for field, value in values.items()
+            if field != "id"
+        },
+    )
+    return box
 
 
 def missing_for_new_box(box):

@@ -14,11 +14,13 @@ from event.models import (
     VIPEventPropagation,
 )
 from feedback.models import EventFeedback, Inquiry
+from nest_boxes.models import NestBox
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
 from rest_framework.fields import (
     CharField,
     DateField,
+    FloatField,
     IntegerField,
     ListField,
     ReadOnlyField,
@@ -738,4 +740,61 @@ class LocationExportSerializer(ModelSerializer):
             "region",
             "contact_person",
             "patron",
+        )
+
+
+def nest_box_label(name):
+    return NestBox._meta.get_field(name).verbose_name
+
+
+def nest_box_display(name):
+    return CharField(source=f"get_{name}_display", label=nest_box_label(name))
+
+
+class NestBoxExportSerializer(ModelSerializer):
+    area = StringRelatedField(label=nest_box_label("area"))
+    type = StringRelatedField(label=nest_box_label("type"))
+    end_reason = StringRelatedField(label=nest_box_label("end_reason"))
+    status = nest_box_display("status")
+    condition = nest_box_display("condition")
+    hole_shape = nest_box_display("hole_shape")
+    opening = nest_box_display("opening")
+    material = nest_box_display("material")
+    latitude = FloatField(source="location.y", label="Zeměpisná šířka")
+    longitude = FloatField(source="location.x", label="Zeměpisná délka")
+    last_checked_on = DateField(label="Poslední potvrzená kontrola")
+
+    @staticmethod
+    def get_related(queryset):
+        return queryset.select_related("area", "type", "end_reason")
+
+    class Meta:
+        model = NestBox
+        fields = (
+            "id",
+            "area",
+            "name",
+            "previous_names",
+            "status",
+            "condition",
+            "latitude",
+            "longitude",
+            "elevation",
+            "type",
+            "hole_shape",
+            "hole_size",
+            "opening",
+            "material",
+            "predator_guard",
+            "access_note",
+            "owner_note",
+            "note",
+            "installed_on",
+            "ended_on",
+            "end_reason",
+            "is_verified",
+            "is_confirmed",
+            "closest_distance",
+            "closest_same_type_distance",
+            "last_checked_on",
         )

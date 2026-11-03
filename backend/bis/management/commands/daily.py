@@ -4,6 +4,8 @@ from bis import emails
 from bis.helpers import try_to_run
 from django.core.management.base import BaseCommand
 
+from nest_boxes import emails as nest_box_emails
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -24,6 +26,7 @@ class Command(BaseCommand):
             try_to_run(emails.events_summary)
             try_to_run(emails.opportunities_created_summary)
             try_to_run(emails.expressed_engagement_in_feedback)
+            try_to_run(nest_box_emails.open_batches_reminder)
 
         day_of_year = (today.day, today.month)
 

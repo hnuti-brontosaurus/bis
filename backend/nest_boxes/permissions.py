@@ -16,3 +16,8 @@ def manageable_areas(user):
 
 def can_manage(user, area):
     return manageable_areas(user).filter(pk=area.pk).exists()
+
+
+def is_manager(user):
+    """Manages any area; a budkař does so even before the first area exists."""
+    return can_manage_all(user) or manageable_areas(user).exists()

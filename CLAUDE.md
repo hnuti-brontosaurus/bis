@@ -665,6 +665,61 @@ permissions, spacing, check upserts, confirming and statistics live in
   `nest_box_manager`, `User.is_nest_box_manager`). It is deliberately not
   part of `is_staff`, and the admin shows the app to superusers only.
 
+The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
+
+- **Sign-in is the Django session**, not the token. The BIS login
+  (`/api/auth/login/`) calls `django.contrib.auth.login`, so the session cookie
+  is set for the whole origin; the token in `persist:auth` is the React app's
+  own and its format belongs to redux-persist. Every nest box view therefore
+  sets `authentication_classes = [SessionAuthentication]` (`NestBoxAPIMixin`),
+  `whoami/` sets the `csrftoken` cookie (`ensure_csrf_cookie`), and the SPA
+  sends it back as `X-CSRFToken` on writes — without it a signed-in write is a
+  403. Anonymous requests (public pages, batch links) need no CSRF. The SPA
+  signs in through `/logout?next=/login?next=/budky/…`: a stale BIS token with
+  no session would make `/login` bounce straight back, logged out.
+- `NestBoxAPIMixin.handle_exception` turns the domain's Django
+  `ValidationError` into a 400, `BatchClosed` into a 410 and `ProtectedError`
+  into a 400, so views call the domain functions without try blocks.
+- Managers' querysets are filtered by `manageable_areas`, so another unit's
+  rows are 404s; `IsManager` (`permissions.is_manager`) makes everything a 403
+  for non-managers. A budkař without any area is still a manager.
+- A batch link (`links/<token>/…`) shows only that batch's boxes and never
+  `owner_note`, `note` or volunteers' emails.
+- `POST /api/nest_boxes/testing/seed/` (TESTING only, 404 elsewhere) resets the
+  e2e fixture set from `nest_boxes/e2e_seed.py` and returns its ids: budkař
+  `budkar@budky.nope` and the rightless `clen@budky.nope`, both with password
+  `nest-boxes-e2e`, area "E2E Cibulka" with boxes 1, 2, 3 (unverified) and
+  planned P1, an open batch with token `…0001` (boxes 1, 2, P1) and a closed one
+  with `…0002`. Box ids are fixed, area and batch ids are not. Specs sign in by
+  POSTing to `/api/auth/login/`, which sets the session cookie. The same seed
+  is `testing_db nest_boxes`.
+- `update_box` clears `elevation` when the location changes;
+  `fill_nest_box_elevations` (in `nightly`) fills empty ones from OpenTopoData
+  `eudem25m`, 100 points a request, one request a second.
+- `daily` sends `emails.open_batches_reminder` on Mondays: batches open over a
+  week, to the area unit's board and the batch's author.
+
+`import_old_nest_boxes <dump.sql>` replaces **all** nest box data (areas,
+batches and photos included) with the old database. It reads the Adminer dump
+in Python (`old_import/dump.py`) and never runs it; `old_import/plan.py`
+applies the cleanup rules without the database, `old_import/load.py` writes.
+The cleanup rules come from the private `old_budky/docs/` (implementation.md
+lists them), so no note text or name from the dump may go into the code; rules
+are regexes over note vocabulary and dates. Non-obvious parts:
+
+- One old record can become several boxes: each replacement note ends a box
+  (`replaced`) and starts a new one with the same name and place. `old_id` is
+  unique, so only the box hanging now carries it.
+- The 16 November 2025 Mikulčický batch is found by its date and a per-area
+  occupied share under 25 %, not by area names; its blanks there are dropped.
+- Area units are guessed from BIS activity (events organized since 2022, board
+  membership) of the old users who entered the area's data, matched by email.
+  Headquarters events are left out of that measure, since they are national
+  and would win every area; headquarters is only the fallback.
+- It writes with `bulk_create`, so no `NestBoxHistory` rows: a box's history
+  before the import is its checks. Regions and distances are set afterwards.
+- Output names old users by id only.
+
 ### Deploys and open tabs
 Both SPAs are Vite builds whose `assets/` file names are content-hashed, and a
 deploy replaces the whole static directory. The production nginx

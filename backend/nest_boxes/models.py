@@ -9,7 +9,8 @@ from categories.models import (
     NestBoxOccupant,
     NestBoxType,
 )
-from common.thumbnails import ThumbnailImageField
+from common.thumbnails import ThumbnailImageField, get_thumbnail_path
+from django.conf import settings
 from django.contrib.gis.db import models as m
 from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.db.models.functions import Centroid
@@ -451,3 +452,7 @@ class HelpArticle(m.Model):
 class HelpImage(m.Model):
     article = m.ForeignKey(HelpArticle, related_name="images", on_delete=CASCADE)
     image = ThumbnailImageField(upload_to="nest_box_help")
+
+    @property
+    def src(self):
+        return settings.MEDIA_URL + get_thumbnail_path(self.image.name, "large")
