@@ -20,5 +20,33 @@ export const unitsOf = areas =>
     ).values(),
   ].sort((a, b) => a.name.localeCompare(b.name, "cs"))
 
-export const recentSeasons = (season, count) =>
-  Array.from({ length: count }, (_, index) => season - index)
+const withMarkers = (items, areas) => {
+  const byId = new Map(areas.map(area => [area.id, area]))
+  return items
+    .map(item => ({ ...item, area: byId.get(item.area.id) }))
+    .filter(item => item.area?.marker && item.count)
+}
+
+/** AreaBubbles' items from public/statistics/ rows: the season's boxes and their pie. */
+export const statisticsBubbles = (rows, areas) =>
+  withMarkers(
+    rows.map(row => ({
+      area: row.area,
+      count: row.boxes,
+      done: row.done,
+      attention: row.attention,
+    })),
+    areas,
+  )
+
+/** AreaBubbles' items from areas/season_states/ rows, with the planned boxes too. */
+export const stateBubbles = (rows, areas) =>
+  withMarkers(
+    rows.map(row => ({
+      area: { id: row.area_id },
+      count: row.planned + row.to_check + row.attention + row.done,
+      done: row.done,
+      attention: row.attention,
+    })),
+    areas,
+  )

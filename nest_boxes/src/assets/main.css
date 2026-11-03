@@ -472,3 +472,40 @@ a {
     margin: 0 0 0.8em !important;
   }
 }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--r-chip);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: 600 13px var(--font);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.chip.on {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.chip.dim {
+  border-style: dashed;
+  color: var(--muted);
+}

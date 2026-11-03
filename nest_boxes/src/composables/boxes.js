@@ -56,10 +56,20 @@ export const checkResult = (check, occupantsById) => {
     .join(" · ")
 }
 
-/** The marker state of a box given its check this season, see map/markers.js. */
-export const checkState = check => {
-  if (!check || check.found === "not_reached") return "todo"
-  return check.found === "not_found" ? "not_found" : "done"
+const ATTENTION_CLEANING = ["not_cleaned", "could_not_open"]
+const ATTENTION_BOX_LEFT = ["needs_repair", "needs_replacing", "taken_down"]
+
+/**
+ * The season state a check leaves its box in, as `with_season_state` in
+ * nest_boxes/models.py counts it; null when it was not reached and changes nothing.
+ */
+export const reportedState = check => {
+  if (check.found === "not_reached") return null
+  return check.found === "not_found" ||
+    ATTENTION_CLEANING.includes(check.cleaning) ||
+    ATTENTION_BOX_LEFT.includes(check.box_left)
+    ? "attention"
+    : "done"
 }
 
 export const lastCheckedLabel = box =>

@@ -1,13 +1,17 @@
 <script setup>
-import { computed, nextTick, ref, shallowRef } from "vue"
+import { computed, nextTick, ref, shallowRef, watch } from "vue"
 import { RouterLink, useRouter } from "vue-router"
-import { NButton, NSelect } from "naive-ui"
+import { NButton, NPopselect, NSelect } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
+import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
+import BoxMarkers from "@/components/map/BoxMarkers.vue"
+import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
+import { ACTIVE_STATUSES } from "@/composables/areaBoxes.js"
 import {
   areaCountLabel,
   boxCountLabel,
@@ -15,11 +19,35 @@ import {
   formatNumber,
   seasonLabel,
 } from "@/composables/czech.js"
-import { describeFigures, recentSeasons, unitsOf } from "@/composables/statistics.js"
+import {
+  categoryOptions,
+  SEASON_STATE_LABELS,
+  SEASON_STATE_OPTIONS,
+} from "@/composables/labels.js"
+import {
+  describeFigures,
+  stateBubbles,
+  statisticsBubbles,
+  unitsOf,
+} from "@/composables/statistics.js"
 import { usePublicData } from "@/composables/usePublicData.js"
 import { useAuthStore } from "@/data/auth.js"
+import { reportError } from "@/data/errors.js"
+import { getCategories, getSeasonStates, listBoxes } from "@/data/manage.js"
 
-const SEASONS_SHOWN = 5
+// From here in, a manager sees the boxes instead of the areas' bubbles
+const BOXES_ZOOM = 12
+const VIEWS = [
+  { value: "states", label: "Stav budek" },
+  { value: "statistics", label: "Statistiky" },
+]
+const STATE_COLUMNS = ["to_check", "attention", "done", "planned"]
+const COLUMN_LABELS = {
+  to_check: "Zbývá",
+  attention: "Pozor",
+  done: "Hotovo",
+  planned: "Plán",
+}
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -29,31 +57,134 @@ const unitId = ref(null)
 const selectedId = ref(null)
 const map = shallowRef(null)
 const creatingArea = ref(false)
+const view = ref("states")
+const filters = ref({ state: [], type: [], unverified: false })
+const types = shallowRef([])
+const stateRows = shallowRef(null)
+const viewport = shallowRef(null)
+const boxes = shallowRef([])
+
+// Season states are live, so they belong to the current season only
+const showsStates = computed(() => auth.isManager && view.value === "states")
 
 const unitOptions = computed(() =>
   unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
 )
-const seasonOptions = recentSeasons(currentSeason(), SEASONS_SHOWN).map(value => ({
-  label: `Sezóna ${seasonLabel(value)}`,
-  value,
-}))
+const seasonOptions = computed(() =>
+  (statistics.value?.seasons ?? [currentSeason()]).map(value => ({
+    label: `Sezóna ${seasonLabel(value)}`,
+    value,
+  })),
+)
+const typeOptions = computed(() => categoryOptions(types.value))
 
 const inUnit = area =>
   unitId.value === null || area.administration_unit.id === unitId.value
 
-const shownAreas = computed(() => (areas.value ?? []).filter(inUnit))
-const mappedAreas = computed(() => shownAreas.value.filter(area => area.marker))
-const rows = computed(() =>
+const areasById = computed(
+  () => new Map((areas.value ?? []).map(area => [area.id, area])),
+)
+
+const statisticsRows = computed(() =>
   (statistics.value?.areas ?? [])
     .filter(row => inUnit(row.area))
     .map(row => ({ ...row, ...describeFigures(row) })),
 )
+// The server filters by unit already
+const statesRows = computed(() =>
+  areas.value && stateRows.value
+    ? stateRows.value
+        .map(row => ({ ...row, area: areasById.value.get(row.area_id) }))
+        .sort((a, b) => a.area.name.localeCompare(b.area.name, "cs"))
+    : [],
+)
+
+const bubbles = computed(() => {
+  if (!areas.value) return []
+  return showsStates.value
+    ? stateBubbles(statesRows.value, areas.value)
+    : statisticsBubbles(statisticsRows.value, areas.value)
+})
+const showsBoxes = computed(
+  () => showsStates.value && viewport.value?.zoom >= BOXES_ZOOM,
+)
+
+const stateTotals = computed(() =>
+  Object.fromEntries(
+    STATE_COLUMNS.map(state => [
+      state,
+      statesRows.value.reduce((total, row) => total + row[state], 0),
+    ]),
+  ),
+)
+const heading = computed(() => {
+  const rows = showsStates.value ? statesRows.value : statisticsRows.value
+  const boxTotal = showsStates.value
+    ? Object.values(stateTotals.value).reduce((total, count) => total + count, 0)
+    : rows.reduce((total, row) => total + row.boxes, 0)
+  return `${areaCountLabel(rows.length)}, ${boxCountLabel(boxTotal)}`
+})
 const totalFigures = computed(
   () => statistics.value && describeFigures(statistics.value.total),
 )
-const boxTotal = computed(() =>
-  shownAreas.value.reduce((total, area) => total + area.box_count, 0),
+
+const filterParams = computed(() => ({
+  season_state: filters.value.state,
+  type: filters.value.type,
+  administration_unit: unitId.value ?? undefined,
+  is_verified: filters.value.unverified ? false : undefined,
+}))
+
+watch(
+  [showsStates, filterParams],
+  () => {
+    if (!showsStates.value) return
+    getSeasonStates(filterParams.value).then(
+      result => (stateRows.value = result),
+      reportError,
+    )
+  },
+  { immediate: true },
 )
+
+watch(
+  () => auth.isManager,
+  isManager =>
+    isManager && getCategories().then(result => (types.value = result.types)),
+  { immediate: true },
+)
+
+let boxRequest = 0
+watch([showsBoxes, viewport, filterParams], async () => {
+  if (!showsBoxes.value) return
+  const request = ++boxRequest
+  try {
+    const result = await listBoxes({
+      ...filterParams.value,
+      status: ACTIVE_STATUSES,
+      bbox: viewport.value.bbox,
+    })
+    // A later pan or filter may have answered first
+    if (request === boxRequest) boxes.value = result
+  } catch (error) {
+    reportError(error)
+  }
+})
+
+const markerBoxes = computed(() =>
+  showsBoxes.value ? boxes.value.map(box => ({ ...box, state: box.season_state })) : [],
+)
+
+const onMapReady = value => {
+  map.value = value
+  const update = () =>
+    (viewport.value = {
+      zoom: value.getZoom(),
+      bbox: value.getBounds().toArray().flat().join(","),
+    })
+  value.on("moveend", update)
+  update()
+}
 
 const canManage = auth.canManage
 
@@ -63,6 +194,8 @@ const onBubble = area => {
   if (canManage(area.id)) router.push({ name: "area", params: { id: area.id } })
   else selectArea(area.id)
 }
+
+const onBox = id => router.push({ name: "box", params: { id } })
 
 const selectArea = async areaId => {
   selectedId.value = areaId
@@ -74,7 +207,7 @@ const selectArea = async areaId => {
 
 const focusArea = areaId => {
   selectedId.value = areaId
-  const area = areas.value.find(item => item.id === areaId)
+  const area = areasById.value.get(areaId)
   if (area.marker) map.value.flyTo({ center: area.marker.coordinates, zoom: 11 })
 }
 </script>
@@ -82,24 +215,38 @@ const focusArea = areaId => {
 <template>
   <MapPanelLayout>
     <template #map="{ bottomInset }">
-      <BaseMap :bottom-inset="bottomInset" @ready="map = $event">
+      <BaseMap :bottom-inset="bottomInset" @ready="onMapReady">
         <AreaBubbles
-          :areas="mappedAreas"
+          v-if="!showsBoxes"
+          :areas="bubbles"
           :selected-id="selectedId"
           @select="onBubble"
         />
+        <BoxMarkers :boxes="markerBoxes" @select="onBox" />
       </BaseMap>
     </template>
     <template #summary>
       <div class="summary">
-        <p class="eyebrow">Sezóna {{ seasonLabel(season) }}</p>
-        <h2 data-testid="areas-summary">
-          {{ areaCountLabel(shownAreas.length) }}, {{ boxCountLabel(boxTotal) }}
-        </h2>
+        <p class="eyebrow">
+          Sezóna {{ seasonLabel(showsStates ? currentSeason() : season) }}
+        </p>
+        <h2 data-testid="areas-summary">{{ heading }}</h2>
       </div>
     </template>
     <div class="head">
-      <div v-if="totalFigures" class="totals">
+      <SegmentedControl
+        v-if="auth.isManager"
+        v-model="view"
+        :options="VIEWS"
+        size="sm"
+      />
+      <div v-if="showsStates" class="totals" data-testid="state-totals">
+        <div v-for="state in STATE_COLUMNS" :key="state">
+          <b class="num">{{ formatNumber(stateTotals[state]) }}</b>
+          <span>{{ SEASON_STATE_LABELS[state].toLowerCase() }}</span>
+        </div>
+      </div>
+      <div v-else-if="totalFigures" class="totals">
         <div>
           <b class="num">{{ formatNumber(statistics.total.cleaned) }}</b>
           <span>vyčištěno</span>
@@ -122,7 +269,7 @@ const focusArea = areaId => {
         Nová oblast
       </n-button>
       <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
-      <div class="filters">
+      <div class="filters" :class="{ single: showsStates }">
         <n-select
           v-model:value="unitId"
           :options="unitOptions"
@@ -131,11 +278,97 @@ const focusArea = areaId => {
           filterable
           clearable
         />
-        <n-select v-model:value="season" :options="seasonOptions" size="small" />
+        <n-select
+          v-if="!showsStates"
+          v-model:value="season"
+          :options="seasonOptions"
+          :consistent-menu-width="false"
+          size="small"
+        />
       </div>
+      <div v-if="showsStates" class="chips">
+        <n-popselect
+          v-model:value="filters.state"
+          :options="SEASON_STATE_OPTIONS"
+          multiple
+          trigger="click"
+        >
+          <button type="button" class="chip" :class="{ on: filters.state.length }">
+            <AppIcon name="filter" />{{
+              filters.state.length === 1
+                ? SEASON_STATE_LABELS[filters.state[0]]
+                : `Stav${filters.state.length ? ` ${filters.state.length}` : ""}`
+            }}
+          </button>
+        </n-popselect>
+        <n-popselect
+          v-model:value="filters.type"
+          :options="typeOptions"
+          multiple
+          trigger="click"
+          scrollable
+        >
+          <button type="button" class="chip" :class="{ on: filters.type.length }">
+            <AppIcon name="filter" />Typ<template v-if="filters.type.length">
+              {{ filters.type.length }}</template
+            >
+          </button>
+        </n-popselect>
+        <button
+          type="button"
+          class="chip"
+          :class="{ on: filters.unverified }"
+          @click="filters.unverified = !filters.unverified"
+        >
+          Neověřené
+        </button>
+      </div>
+      <MapLegend v-if="showsStates" />
+      <p v-if="showsStates" class="small muted">
+        Od přiblížení {{ BOXES_ZOOM }} ukazuje mapa jednotlivé budky.
+      </p>
     </div>
     <div class="scroll-x">
-      <table class="tbl" data-testid="statistics">
+      <table v-if="showsStates" class="tbl" data-testid="season-states">
+        <thead>
+          <tr>
+            <th class="first">Oblast</th>
+            <th v-for="state in STATE_COLUMNS" :key="state" class="r">
+              {{ COLUMN_LABELS[state] }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="row in statesRows"
+            :key="row.area_id"
+            :data-area-row="row.area_id"
+            :class="{ selected: row.area_id === selectedId }"
+            @click="focusArea(row.area_id)"
+          >
+            <td class="first">
+              <RouterLink
+                :to="{ name: 'area', params: { id: row.area_id } }"
+                @click.stop
+              >
+                <b>{{ row.area.name }}</b>
+              </RouterLink>
+              <div class="small muted">
+                {{ row.area.administration_unit.abbreviation }}
+              </div>
+            </td>
+            <td
+              v-for="state in STATE_COLUMNS"
+              :key="state"
+              class="r num"
+              :class="[state, { muted: !row[state] }]"
+            >
+              {{ formatNumber(row[state]) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table v-else class="tbl" data-testid="statistics">
         <thead>
           <tr>
             <th class="first">Oblast</th>
@@ -147,7 +380,7 @@ const focusArea = areaId => {
         </thead>
         <tbody>
           <tr
-            v-for="row in rows"
+            v-for="row in statisticsRows"
             :key="row.area.id"
             :data-area-row="row.area.id"
             :class="{ selected: row.area.id === selectedId }"
@@ -179,9 +412,14 @@ const focusArea = areaId => {
         </tbody>
       </table>
     </div>
-    <p class="small muted footnote">
+    <p v-if="showsStates" class="small muted footnote">
+      Letošní stav včetně kontrol, které čekají na potvrzení. Pozornost potřebují
+      nenalezené, poškozené, nevyčištěné a příliš blízko visící budky.
+    </p>
+    <p v-else class="small muted footnote">
       Jen potvrzené kontroly. Obsazenost se počítá z budek, do kterých někdo opravdu
-      nahlédl. Sezóna začíná 1. července.
+      nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch,
+      které potřebují pozornost, letos i s kontrolami čekajícími na potvrzení.
     </p>
   </MapPanelLayout>
 </template>
@@ -230,6 +468,10 @@ const focusArea = areaId => {
   gap: 8px;
 }
 
+.filters.single {
+  grid-template-columns: 1fr;
+}
+
 .tbl .first {
   padding-left: 20px;
 }
@@ -240,6 +482,11 @@ const focusArea = areaId => {
 
 .tbl tr.selected td {
   background: var(--primary-soft);
+}
+
+.tbl td.attention:not(.muted) {
+  color: var(--warn);
+  font-weight: 800;
 }
 
 .bar {

@@ -4,7 +4,7 @@ import { computed } from "vue"
 import { glyphMarkup } from "@/components/map/markers.js"
 
 const props = defineProps({
-  // one of BOX_STATES, or "planned"
+  // one of BOX_STATES
   state: { type: String, required: true },
 })
 

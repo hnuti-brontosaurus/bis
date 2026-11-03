@@ -12,6 +12,16 @@ export const STATUS_LABELS = {
   cancelled: "zrušená",
 }
 
+// `season_state` of a box, see NestBoxQuerySet.with_season_state
+export const SEASON_STATE_LABELS = {
+  to_check: "Ke kontrole",
+  attention: "Pozornost",
+  done: "Hotovo",
+  planned: "Plánovaná",
+}
+
+export const SEASON_STATE_OPTIONS = options(SEASON_STATE_LABELS)
+
 // Ending and cancelling are actions of their own, never a plain edit.
 export const EDITABLE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
 

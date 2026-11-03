@@ -9,7 +9,7 @@ import BatchProgress from "@/components/batch/BatchProgress.vue"
 import CheckForm from "@/components/check/CheckForm.vue"
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import { batchHighlights, batchTiles } from "@/composables/batchSummary.js"
-import { boxChangesLabel, checkResult, checkState } from "@/composables/boxes.js"
+import { boxChangesLabel, checkResult, reportedState } from "@/composables/boxes.js"
 import {
   checkCountLabel,
   formatDate,
@@ -182,7 +182,9 @@ const confirm = async () => {
       <h2 class="section-heading">Na co se podívat</h2>
       <div class="highlights">
         <div v-for="item in highlights" :key="item.key" class="highlight">
-          <MarkerGlyph :state="item.check ? checkState(item.check) : 'todo'" />
+          <MarkerGlyph
+            :state="(item.check && reportedState(item.check)) ?? 'to_check'"
+          />
           <RouterLink class="name" :to="{ name: 'box', params: { id: item.box.id } }">
             {{ item.box.name }}
           </RouterLink>

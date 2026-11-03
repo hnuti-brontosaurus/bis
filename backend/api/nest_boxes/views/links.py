@@ -13,7 +13,6 @@ from api.nest_boxes.serializers import (
 from api.nest_boxes.views.base import NestBoxAPIMixin, help_articles
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
-from django.utils.timezone import localdate
 from nest_boxes.checks import ensure_open, submit_box, submit_check
 from nest_boxes.models import Batch, Check, NestBox
 from rest_framework.response import Response
@@ -34,11 +33,11 @@ class LinkView(NestBoxAPIMixin, APIView):
     def get(self, request, token):
         """Everything the phone stores for offline use when the link is opened."""
         batch = open_batch(token)
-        season = Check.season_of(localdate())
-        boxes = batch.boxes.all()
-        checks = Check.objects.filter(box__in=boxes, season=season).prefetch_related(
-            "occupants", "photos"
-        )
+        season = Check.current_season()
+        boxes = NestBox.objects.with_season_state().filter(batches=batch)
+        checks = Check.objects.filter(
+            box__in=batch.boxes.all(), season=season
+        ).prefetch_related("occupants", "photos")
         return Response(
             {
                 "batch": LinkBatchSerializer(batch).data,
@@ -61,8 +60,13 @@ class LinkChecksView(NestBoxAPIMixin, APIView):
         check, occupants = serializer.build()
         stored = submit_check(batch, check, occupants)
         accepted = stored is check
+        box = NestBox.objects.with_season_state().get(pk=stored.box_id)
         return Response(
-            {"accepted": accepted, "check": LinkCheckSerializer(stored).data},
+            {
+                "accepted": accepted,
+                "check": LinkCheckSerializer(stored).data,
+                "season_state": box.season_state,
+            },
             status=HTTP_201_CREATED if accepted else HTTP_200_OK,
         )
 
@@ -78,6 +82,7 @@ class LinkBoxesView(NestBoxAPIMixin, APIView):
         for name, value in serializer.validated_data.items():
             setattr(box, name, value)
         submit_box(batch, box)
+        box = NestBox.objects.with_season_state().get(pk=box.pk)
         return Response(
             LinkBoxSerializer(box).data | {"warnings": box_warnings_data(box)},
             status=HTTP_201_CREATED,

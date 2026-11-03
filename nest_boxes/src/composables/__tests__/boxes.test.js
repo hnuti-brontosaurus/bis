@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { boxChangesLabel, checkResult, describeChange } from "@/composables/boxes.js"
+import {
+  boxChangesLabel,
+  checkResult,
+  describeChange,
+  reportedState,
+} from "@/composables/boxes.js"
 
 const typesById = new Map([[2, { name: "velký sýkorník" }]])
 
@@ -75,5 +80,29 @@ describe("boxChangesLabel", () => {
         typesById,
       ),
     ).toBe("ověření údajů")
+  })
+})
+
+describe("reportedState", () => {
+  const check = overrides => ({
+    found: "found",
+    cleaning: "cleaned",
+    box_left: "fine",
+    ...overrides,
+  })
+
+  it("is done for a cleaned box left fine", () => {
+    expect(reportedState(check({}))).toBe("done")
+    expect(reportedState(check({ cleaning: "", box_left: "" }))).toBe("done")
+  })
+
+  it("needs attention for what the box needs next", () => {
+    expect(reportedState(check({ found: "not_found", cleaning: "" }))).toBe("attention")
+    expect(reportedState(check({ cleaning: "could_not_open" }))).toBe("attention")
+    expect(reportedState(check({ box_left: "taken_down" }))).toBe("attention")
+  })
+
+  it("changes nothing when the box was not reached", () => {
+    expect(reportedState(check({ found: "not_reached" }))).toBeNull()
   })
 })

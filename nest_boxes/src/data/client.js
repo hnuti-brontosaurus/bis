@@ -6,6 +6,8 @@ export const client = axios.create({
   baseURL: "/api/nest_boxes",
   xsrfCookieName: "csrftoken",
   xsrfHeaderName: "X-CSRFToken",
+  // django-filter reads a list as the key repeated, without brackets
+  paramsSerializer: { indexes: null },
 })
 
 const relative = url =>

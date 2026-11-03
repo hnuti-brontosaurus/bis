@@ -54,8 +54,8 @@
   box-shadow: 0 1px 4px var(--shadow-c);
 }
 
-.box-marker.todo .dot,
-.marker-glyph.todo {
+.box-marker.to_check .dot,
+.marker-glyph.to_check {
   border-width: 4px;
 }
 
@@ -64,11 +64,12 @@
   background: var(--primary);
 }
 
-.box-marker.not_found .dot,
-.marker-glyph.not_found {
-  background: var(--mk-nf);
-  border-color: var(--mk-nf);
-  color: var(--mk-nf-ink);
+.box-marker.attention .dot,
+.marker-glyph.attention {
+  background: var(--mk-attn);
+  border-color: var(--mk-attn-ink);
+  border-width: 2px;
+  color: var(--mk-attn-ink);
 }
 
 .box-marker.out .dot,
@@ -80,6 +81,7 @@
   box-shadow: none;
 }
 
+.box-marker.planned .dot,
 .marker-glyph.planned {
   border: 2.5px dashed var(--primary);
   background: var(--plan-bg);
@@ -124,24 +126,40 @@
 }
 
 .area-bubble .bubble {
+  --ring: clamp(5px, calc(var(--d) * 0.16), 9px);
   position: absolute;
   transform: translate(-50%, -50%);
-  min-width: var(--d);
+  width: var(--d);
   height: var(--d);
-  padding: 0 6px;
-  border-radius: var(--r-chip);
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--primary);
-  color: var(--primary-ink);
-  font: 800 14px var(--font);
-  border: 3px solid var(--surface);
+  background: conic-gradient(
+    var(--primary) 0 var(--done),
+    var(--mk-attn) 0 var(--attention),
+    var(--surface-2) 0
+  );
+  border: 2px solid var(--primary-strong);
   box-shadow: 0 2px 6px var(--shadow-c);
 }
 
+.area-bubble .bubble b {
+  width: calc(100% - 2 * var(--ring));
+  height: calc(100% - 2 * var(--ring));
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  box-shadow: 0 0 0 1.5px var(--primary-strong);
+  color: var(--text);
+  font: 800 13px var(--font);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
 .area-bubble.merged .bubble {
-  background: var(--primary-strong);
-  color: var(--surface);
+  border-style: double;
+  border-width: 4px;
 }
 
 .area-bubble.selected .bubble {

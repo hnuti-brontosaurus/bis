@@ -74,7 +74,9 @@ const neighbours = computed(() =>
     .map(other => ({ ...other, state: "out" })),
 )
 const marker = computed(() =>
-  box.value.status === "planned" ? [] : [{ ...box.value, state: "todo" }],
+  box.value.status === "planned"
+    ? []
+    : [{ ...box.value, state: box.value.season_state ?? "out" }],
 )
 
 const facts = computed(() => [

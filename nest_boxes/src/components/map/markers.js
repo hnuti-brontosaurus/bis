@@ -1,8 +1,10 @@
 import { icons } from "@/assets/icons.js"
+import { formatNumber } from "@/composables/czech.js"
 
-export const BOX_STATES = ["todo", "done", "not_found", "out"]
+// The season states of nest_boxes/models.py, and "out" for a box outside the batch
+export const BOX_STATES = ["planned", "to_check", "attention", "done", "out"]
 
-const GLYPH_ICONS = { done: "check", not_found: "q" }
+const GLYPH_ICONS = { done: "check", attention: "bang" }
 
 export const glyphMarkup = state =>
   GLYPH_ICONS[state]
@@ -31,8 +33,11 @@ export const planLabelElement = name => {
   return node
 }
 
+/** A donut of the area's season states around its box count. */
 export const areaBubbleElement = ({
   count,
+  done,
+  attention,
   diameter,
   name,
   extra,
@@ -43,8 +48,13 @@ export const areaBubbleElement = ({
     `area-bubble${merged ? " merged" : ""}${selected ? " selected" : ""}`,
   )
   node.style.setProperty("--d", `${diameter}px`)
+  const share = value => `${count ? (value / count) * 100 : 0}%`
+  node.style.setProperty("--done", share(done))
+  node.style.setProperty("--attention", share(done + attention))
   const bubble = element("bubble")
-  bubble.textContent = count
+  const number = document.createElement("b")
+  number.textContent = formatNumber(count)
+  bubble.append(number)
   const label = element("label")
   label.textContent = name
   if (extra) {

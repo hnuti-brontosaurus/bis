@@ -167,3 +167,36 @@ test("the header leads to the open batches", async ({ page, api, area }) => {
       .filter({ hasText: area.name }),
   ).toBeVisible()
 })
+
+test.describe("the map of areas", () => {
+  desktopOnly()
+
+  test("counts the season states per area and filters them", async ({
+    page,
+    api,
+    area,
+  }) => {
+    const check = (box, values) =>
+      api.post("/checks/", {
+        box_id: box.id,
+        date: new Date().toISOString().slice(0, 10),
+        found: "found",
+        cleaning: "cleaned",
+        contents: ["nothing"],
+        ...values,
+      })
+    await check(area.boxes["1"], {})
+    await check(area.boxes["2"], { found: "not_found", cleaning: "", contents: [] })
+
+    await page.goto("/budky/mapa/")
+    const states = page.getByTestId("season-states")
+    const areaRow = states.locator("tr", { hasText: area.name })
+    await expect(areaRow.locator("td.num")).toHaveText(["1", "1", "1", "0"])
+
+    await choose(page, page.getByRole("button", { name: "Stav" }), "Pozornost")
+    await expect(areaRow.locator("td.num")).toHaveText(["0", "1", "0", "0"])
+
+    await page.getByRole("radio", { name: "Statistiky" }).click()
+    await expect(page.getByTestId("statistics")).toBeVisible()
+  })
+})

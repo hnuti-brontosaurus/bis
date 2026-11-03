@@ -1,12 +1,11 @@
 <script setup>
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
+import { SEASON_STATE_LABELS } from "@/composables/labels.js"
 
-const ENTRIES = [
-  { state: "todo", label: "Ke kontrole" },
-  { state: "done", label: "Hotovo" },
-  { state: "not_found", label: "Nenalezena" },
-  { state: "planned", label: "Plánovaná" },
-]
+const ENTRIES = ["to_check", "attention", "done", "planned"].map(state => ({
+  state,
+  label: SEASON_STATE_LABELS[state],
+}))
 </script>
 
 <template>

@@ -40,6 +40,12 @@ export const exportUrl = (areaId, format, params) => {
 export const importGpx = (areaId, payload) =>
   client.post(`/areas/${areaId}/import_gpx/`, payload).then(data)
 
+/** [{ area_id, planned, to_check, attention, done }] of the boxes the filters pick. */
+export const getSeasonStates = params =>
+  client.get("/areas/season_states/", { params }).then(data)
+
+export const listBoxes = params =>
+  fetchAll("/boxes/", { params: { ...params, page_size: MAX_PAGE_SIZE } })
 export const getBox = id => client.get(`/boxes/${id}/`).then(data)
 export const createBox = values => client.post("/boxes/", values).then(data)
 export const updateBox = (id, values) =>

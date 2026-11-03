@@ -56,7 +56,14 @@ def test_public_areas_never_show_box_coordinates(anonymous, make_box, area):
 
 @pytest.mark.parametrize(
     "url",
-    ["areas/", "boxes/", "checks/", "batches/", "batches/open/"],
+    [
+        "areas/",
+        "areas/season_states/",
+        "boxes/",
+        "checks/",
+        "batches/",
+        "batches/open/",
+    ],
 )
 def test_non_managers_are_refused(anonymous, client_for, stranger, area, url):
     assert anonymous.get(f"{API}/{url}").status_code == 403
@@ -468,3 +475,61 @@ def test_e2e_seed(anonymous, movement):
 @override_settings(TESTING=False)
 def test_seed_is_off_outside_tests(anonymous):
     assert anonymous.post(f"{API}/testing/seed/").status_code == 404
+
+
+@pytest.fixture
+def season_2025(monkeypatch):
+    monkeypatch.setattr(Check, "current_season", staticmethod(lambda: 2025))
+
+
+def test_season_states_per_area(board_client, area, unit, make_box, types):
+    make_box("1")
+    make_box("2", location=near(east=100), condition=NestBox.Condition.NEEDS_REPAIR)
+    make_box("3", location=near(east=200), type=types["netopyrnik"])
+    make_box("4", location=near(east=300), is_verified=True)
+    with paused_validation():
+        other_unit = AdministrationUnit.objects.create(
+            name="Jiný", abbreviation="J", is_for_kids=False, category=unit.category
+        )
+    other = Area.objects.create(name="Cizí", administration_unit=other_unit)
+    NestBox.objects.create(
+        area=other, name="X", location=near(), status=NestBox.Status.IN_USE
+    )
+    url = f"{API}/areas/season_states/"
+
+    counts = {"area_id": area.pk, "planned": 0, "to_check": 2, "attention": 1}
+    assert board_client.get(url).json() == [counts | {"done": 1}]
+    assert board_client.get(
+        url, {"type": types["velky_sykornik"].pk, "is_verified": False}
+    ).json() == [counts | {"to_check": 1, "done": 0}]
+    assert board_client.get(url, {"season_state": "attention"}).json() == [
+        counts | {"to_check": 0, "done": 0}
+    ]
+    assert board_client.get(url, {"administration_unit": other_unit.pk}).json() == []
+    assert board_client.get(url, {"season_state": "nonsense"}).status_code == 400
+
+
+def test_boxes_in_a_bounding_box(board_client, make_box):
+    make_box("1")
+    make_box("2", location=near(east=5000))
+    west, south = near(east=-100, north=-100).coords
+    east, north = near(east=100, north=100).coords
+
+    boxes = board_client.get(
+        f"{API}/boxes/", {"bbox": f"{west},{south},{east},{north}"}
+    ).json()["results"]
+
+    assert [(box["name"], box["season_state"]) for box in boxes] == [("1", "to_check")]
+    assert board_client.get(f"{API}/boxes/", {"bbox": "1,2"}).status_code == 400
+
+
+def test_volunteer_gets_the_season_state(anonymous, batch, season_2025):
+    url = f"{API}/links/{batch.token}/"
+    assert anonymous.get(url).json()["boxes"][0]["season_state"] == "to_check"
+
+    sent = anonymous.post(
+        f"{url}checks/", link_check(batch.boxes.get(), found="not_found"), format="json"
+    )
+
+    assert sent.json()["season_state"] == "attention"
+    assert anonymous.get(url).json()["boxes"][0]["season_state"] == "attention"

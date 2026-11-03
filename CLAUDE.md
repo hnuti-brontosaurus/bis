@@ -600,6 +600,9 @@ mockups in `mockups/`). It shares no code with the cookbook.
   own per test (`area` fixture in `e2e/support/manager.js`), and they look the
   seeded unit up through `public/areas/`: reseeding recomputes the budkař's
   roles, so a manager-only request can 403 for a moment.
+- **Query lists:** the axios client sends arrays as the key repeated
+  (`paramsSerializer: { indexes: null }`), which is what django-filter reads;
+  the default `type[]=` is silently ignored.
 - **Labels and inputs:** naive-ui's `n-input`, `n-input-number` and
   `n-date-picker` put a plain `id` on their wrapper; a `<label for>` needs
   `:input-props="{ id }"` to reach the input.
@@ -682,6 +685,15 @@ permissions, spacing, check upserts, confirming and statistics live in
   `closest_distance` / `closest_same_type_distance` for the whole area in one
   SQL `UPDATE`. `bulk_create`, `bulk_update` and `QuerySet.update` skip that, so
   call `NestBox.recompute_distances(area_id)` after them.
+- A box's state this season (planned / to check / attention / done) is
+  defined once, `NestBox.objects.with_season_state()`; the SPA shows the
+  API's `season_state` and only lays checks still in a phone's outbox over it
+  (`reportedState` in `composables/boxes.js`). A pending check counts as
+  confirmed, judged by what confirming it would leave on the box, so that
+  annotation mirrors `checks._box_values`: change them together. Past seasons
+  have no states (a box's past status is not kept); their map pie comes from
+  the checks, see `statistics._states_per_area`. Tests pin the season by
+  monkeypatching `Check.current_season`, there is no freezegun.
 - Change a box through `boxes.update_box`, which writes `NestBoxHistory`;
   `box.save()` alone records nothing.
 - `NestBox` and `Check` have client-generated UUID pks for offline use.

@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils.timezone import localdate, now
 from nest_boxes.boxes import confirm_box, update_box
-from nest_boxes.models import Check, NestBox
+from nest_boxes.models import RETURNABLE_STATUSES, Check, NestBox
 
 # Keys of Check.box_changes. `location` is a GeoJSON point, `type` a
 # NestBoxType id, `installed_on` an ISO date; `hung` marks a planned box hung.
@@ -21,11 +21,6 @@ BOX_CHANGE_FIELDS = (
 )
 HUNG = "hung"
 VERIFICATION_FIELDS = {"name", "location", "hole_shape", "hole_size", "type", "opening"}
-RETURNABLE_STATUSES = (
-    NestBox.Status.IN_USE,
-    NestBox.Status.MISSING,
-    NestBox.Status.TAKEN_DOWN,
-)
 
 
 class BatchClosed(Exception):

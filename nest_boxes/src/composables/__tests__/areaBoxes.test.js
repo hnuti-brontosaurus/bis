@@ -23,10 +23,14 @@ const box = (name, overrides = {}) => ({
 })
 
 const boxes = [
-  box("N10", { last_checked_on: "2026-10-01" }),
-  box("N2", { last_checked_on: "2025-10-01", is_verified: false }),
-  box("Kuba", { status: "ended" }),
-  box("P1", { status: "planned", type_id: 7 }),
+  box("N10", { last_checked_on: "2026-10-01", season_state: "done" }),
+  box("N2", {
+    last_checked_on: "2025-10-01",
+    is_verified: false,
+    season_state: "to_check",
+  }),
+  box("Kuba", { status: "ended", season_state: null }),
+  box("P1", { status: "planned", type_id: 7, season_state: "planned" }),
 ]
 const names = list => list.map(item => item.name)
 const filtered = overrides =>
@@ -37,7 +41,8 @@ describe("filterBoxes", () => {
     expect(filtered({})).toEqual(["N10", "N2", "P1"])
   })
 
-  it("filters by type, verification and the last check", () => {
+  it("filters by type, season state, verification and the last check", () => {
+    expect(filtered({ state: ["done", "planned"] })).toEqual(["N10", "P1"])
     expect(filtered({ type: [7] })).toEqual(["P1"])
     expect(filtered({ unverified: true })).toEqual(["N2"])
     expect(filtered({ checked: "this_season" })).toEqual(["N10"])
@@ -59,6 +64,7 @@ describe("filterParams", () => {
       ),
     ).toEqual({
       status: ["planned", "in_use", "taken_down", "missing"],
+      season_state: [],
       type: [2],
       is_verified: false,
       never_checked: true,
@@ -86,14 +92,13 @@ describe("splitByBatch", () => {
 describe("markerState", () => {
   const batch = { box_ids: ["N10"] }
   it("shows boxes outside the batch as such", () => {
-    expect(markerState(boxes[1], null, batch)).toBe("out")
+    expect(markerState(boxes[1], batch)).toBe("out")
   })
 
-  it("shows the season's check", () => {
-    expect(markerState(boxes[0], null, batch)).toBe("todo")
-    expect(markerState(boxes[0], { found: "found" }, batch)).toBe("done")
-    expect(markerState(boxes[0], { found: "not_found" }, null)).toBe("not_found")
-    expect(markerState(boxes[0], { found: "not_reached" }, null)).toBe("todo")
+  it("shows the season state of the rest", () => {
+    expect(markerState(boxes[0], batch)).toBe("done")
+    expect(markerState(boxes[1], null)).toBe("to_check")
+    expect(markerState(boxes[2], null)).toBe("out")
   })
 })
 

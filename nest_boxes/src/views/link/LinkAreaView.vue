@@ -40,17 +40,24 @@ const typesById = computed(() => byId(link.payload.categories.types))
 const occupantsById = computed(() => byId(link.payload.categories.occupants))
 
 const isNew = row => !row.is_confirmed
+const known = computed(() => link.rows.filter(row => !isNew(row)))
+const inState = states => known.value.filter(row => states.includes(row.state))
 const toCheck = computed(() =>
   sortBoxes(
-    link.rows.filter(row => !isNew(row) && ["todo", "planned"].includes(row.state)),
+    inState(["to_check", "planned"]),
     sort.value === "distance" ? position.value : null,
   ),
 )
-const done = computed(() =>
-  sortBoxes(link.rows.filter(row => !isNew(row) && !toCheck.value.includes(row))),
+const finished = computed(() =>
+  [
+    { state: "attention", title: "Potřebuje pozornost" },
+    { state: "done", title: "Hotovo" },
+  ]
+    .map(group => ({ ...group, rows: sortBoxes(inState([group.state])) }))
+    .filter(group => group.rows.length),
 )
 const added = computed(() => sortBoxes(link.rows.filter(isNew)))
-const total = computed(() => toCheck.value.length + done.value.length)
+const total = computed(() => known.value.length)
 
 const markers = computed(() => link.rows.filter(row => row.state !== "planned"))
 const planned = computed(() => link.rows.filter(row => row.state === "planned"))
@@ -126,7 +133,11 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
           </span>
         </div>
         <div class="prog">
-          <i :style="{ width: `${total ? (done.length / total) * 100 : 0}%` }" />
+          <i
+            :style="{
+              width: `${total ? ((total - toCheck.length) / total) * 100 : 0}%`,
+            }"
+          />
         </div>
       </div>
     </template>
@@ -175,10 +186,10 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
           </n-button>
         </RouterLink>
       </div>
-      <template v-if="done.length">
-        <div class="group">Hotovo · {{ done.length }}</div>
+      <template v-for="group in finished" :key="group.state">
+        <div class="group">{{ group.title }} · {{ group.rows.length }}</div>
         <div
-          v-for="row in done"
+          v-for="row in group.rows"
           :key="row.id"
           class="item"
           :class="{ selected: row.id === selectedId }"
@@ -188,15 +199,23 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
           <MarkerGlyph :state="row.state" />
           <div class="text">
             <div class="name">{{ row.name }}</div>
-            <div class="sub">{{ checkResult(row.check, occupantsById) }}</div>
+            <div class="sub">
+              {{ row.check ? checkResult(row.check, occupantsById) : subtitle(row) }}
+            </div>
           </div>
           <RouterLink
+            v-if="row.check"
             class="icon-button"
             :to="checkRoute(row)"
             :aria-label="`Upravit kontrolu budky ${row.name}`"
             @click.stop
           >
             <AppIcon name="edit" />
+          </RouterLink>
+          <RouterLink v-else v-slot="{ navigate }" :to="checkRoute(row)" custom>
+            <n-button size="small" secondary @click.stop="navigate">
+              Zkontrolovat
+            </n-button>
           </RouterLink>
         </div>
       </template>
@@ -210,7 +229,7 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
           :data-box-row="row.id"
           @click="focus(row)"
         >
-          <MarkerGlyph state="todo" />
+          <MarkerGlyph :state="row.state" />
           <div class="text">
             <div class="name">{{ row.name }}</div>
             <div class="sub">{{ subtitle(row) }} · čeká na potvrzení správcem</div>

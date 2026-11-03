@@ -43,8 +43,8 @@ describe("palettes", () => {
         "--plan-bg",
         "--map-forest-line",
         "--map-road-case",
-        "--mk-nf",
-        "--mk-nf-ink",
+        "--mk-attn",
+        "--mk-attn-ink",
         "--mk-out",
       ]),
     )

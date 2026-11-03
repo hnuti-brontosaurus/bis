@@ -22,7 +22,8 @@ export const listPublicAreas = () => fetchAll("/public/areas/")
  * @property {number} bird_occupied
  * @property {number} previous_inspected the season before
  * @property {number} previous_occupied
- * @property {number} to_repair
+ * @property {number} done this season's live season states, a past one's checks
+ * @property {number} attention
  *
  * @typedef {SeasonFigures & { area: { id: number, name: string,
  *   administration_unit: { id: number, name: string } } }} AreaSeasonFigures
@@ -30,6 +31,7 @@ export const listPublicAreas = () => fetchAll("/public/areas/")
  * Mirrors `season_statistics` in backend/nest_boxes/statistics.py.
  * @typedef {Object} Statistics
  * @property {number} season
+ * @property {number[]} seasons every season since the first check, newest first
  * @property {AreaSeasonFigures[]} areas
  * @property {SeasonFigures} total
  */

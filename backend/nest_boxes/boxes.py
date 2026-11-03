@@ -7,7 +7,7 @@ from django.contrib.gis.measure import D
 from django.core.exceptions import ValidationError
 from django.db import models as m
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef, Q
 from nest_boxes.models import (
     EXISTING_ANY_TYPE_LIMIT,
     EXISTING_SAME_TYPE_LIMIT,
@@ -17,6 +17,7 @@ from nest_boxes.models import (
     Check,
     NestBox,
     NestBoxHistory,
+    SeasonState,
 )
 
 NEW_BOX_REQUIRED_FIELDS = (
@@ -188,4 +189,20 @@ def suggested_batch_boxes(area, season):
             )
         )
         .exclude(Exists(Batch.objects.filter(boxes=OuterRef("pk"), closed_at=None)))
+    )
+
+
+def season_state_counts(boxes):
+    """[{area_id, planned, to_check, attention, done}] of the areas with any of
+    `boxes`, a queryset `with_season_state()`; one aggregate query."""
+    return list(
+        boxes.exclude(season_state=None)
+        .order_by()
+        .values("area_id")
+        .annotate(
+            **{
+                state: Count("pk", filter=Q(season_state=state))
+                for state in SeasonState.values
+            }
+        )
     )

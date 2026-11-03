@@ -1,9 +1,4 @@
-import {
-  checkResult,
-  checkState,
-  lastCheckedLabel,
-  typeName,
-} from "@/composables/boxes.js"
+import { checkResult, lastCheckedLabel, typeName } from "@/composables/boxes.js"
 import { seasonStart } from "@/composables/czech.js"
 import { CONDITION_LABELS, STATUS_LABELS } from "@/composables/labels.js"
 import { compareNames } from "@/composables/linkBoxes.js"
@@ -19,6 +14,7 @@ export const CHECKED_OPTIONS = [
 
 export const defaultFilters = () => ({
   status: [...ACTIVE_STATUSES],
+  state: [],
   type: [],
   unverified: false,
   checked: null,
@@ -34,6 +30,7 @@ export const filterBoxes = (boxes, filters, season) => {
   return boxes.filter(
     box =>
       (!filters.status.length || filters.status.includes(box.status)) &&
+      (!filters.state.length || filters.state.includes(box.season_state)) &&
       (!filters.type.length || filters.type.includes(box.type_id)) &&
       (!filters.unverified || !box.is_verified) &&
       (filters.checked !== "this_season" ||
@@ -50,6 +47,7 @@ export const filterParams = (filters, season) => {
   const start = seasonStart(season)
   return {
     status: filters.status,
+    season_state: filters.state,
     type: filters.type,
     ...(filters.unverified && { is_verified: false }),
     ...(filters.checked === "this_season" && { last_checked_after: start }),
@@ -67,9 +65,11 @@ export const splitByBatch = (boxes, batch) => {
   }
 }
 
-/** The state a box's marker shows, see map/markers.js. */
-export const markerState = (box, check, batch) =>
-  batch && !batch.box_ids.includes(box.id) ? "out" : checkState(check)
+/** The state a box's marker shows, see map/markers.js; an ended box has none. */
+export const markerState = (box, batch) =>
+  (!batch || batch.box_ids.includes(box.id)) && box.season_state
+    ? box.season_state
+    : "out"
 
 /**
  * The second line of a box row: its type and what the season's check found,
@@ -92,6 +92,7 @@ export const boxRowDetail = (
     return { text: `${type} · nečistí se`, tone: "info" }
   if (box.condition !== "fine")
     return { text: `${type} · ${CONDITION_LABELS[box.condition]}`, tone: "bad" }
+  if (box.should_be_moved) return { text: `${type} · přemístit`, tone: "warn" }
   const other = otherBatches.find(batch => batch.box_ids.includes(box.id))
   if (other) return { text: `${type} · v dávce ${other.name}` }
   if (!box.is_verified) return { text: `${type} · neověřená`, tone: "warn" }

@@ -24,7 +24,7 @@ const share = computed(() =>
       <span>Nápověda k čištění a obyvatelům</span>
     </div>
     <div class="row">
-      <MarkerGlyph :state="link.prefetch.state === 'running' ? 'todo' : 'done'" />
+      <MarkerGlyph :state="link.prefetch.state === 'running' ? 'to_check' : 'done'" />
       <span class="spacer">Mapa oblasti</span>
       <span v-if="link.prefetch.state === 'partial'" class="small warn-text">
         stažená jen zčásti

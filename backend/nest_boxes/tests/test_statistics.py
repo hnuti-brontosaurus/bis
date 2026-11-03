@@ -67,7 +67,10 @@ def test_season_statistics(area, boxes):
         "bird_occupied": 1,
         "previous_inspected": 2,
         "previous_occupied": 1,
-        "to_repair": 1,
+        # Past seasons take attention from what the checks reported
+        "done": 3,
+        "attention": 3,
     }
     assert statistics["areas"] == [{"area": area, **expected}]
     assert statistics["total"] == expected
+    assert statistics["seasons"][-1] == 2024

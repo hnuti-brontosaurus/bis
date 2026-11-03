@@ -25,9 +25,8 @@ const share = computed(() =>
       <span v-if="batch.pending_count" class="muted">
         · {{ pendingLabel(batch.pending_count) }} na potvrzení
       </span>
-      <span class="spacer" />
-      <span v-if="batch.closed_at" class="tag">uzavřená</span>
-      <span v-else class="tag" :class="{ warn: age > REMINDED_AFTER_DAYS }">
+      <span v-if="batch.closed_at" class="tag age">uzavřená</span>
+      <span v-else class="tag age" :class="{ warn: age > REMINDED_AFTER_DAYS }">
         otevřená {{ age ? dayCountLabel(age) : "dnes" }}
       </span>
     </div>
@@ -39,5 +38,9 @@ const share = computed(() =>
 .batch-progress {
   display: grid;
   gap: 8px;
+}
+
+.age {
+  margin-left: auto;
 }
 </style>

@@ -1,4 +1,5 @@
 export const icons = {
+  bang: '<path d="M12 5v9M12 19v.01"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
   bird: '<path d="M16 7.5h.01M3 20c4 0 7-1.5 9-4M12 16c4.5 0 8-3 8-7.5L22 7l-2-.5A4 4 0 0 0 12.5 7L9 13c-1.4 2.2-3.6 3.5-6 3.5"/>',
   book: '<path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2zM4 19a2 2 0 0 0 2 2h13v-3"/>',
@@ -28,7 +29,6 @@ export const icons = {
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   print: '<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/>',
-  q: '<path d="M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9v.6M12 18v.01"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   tool: '<path d="M14.5 5.5a4 4 0 0 0 5 5L12 18a2.1 2.1 0 1 1-3-3l7.5-7.5a4 4 0 0 0-2-2zM5 21l3-3"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',

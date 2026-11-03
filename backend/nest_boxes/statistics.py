@@ -1,7 +1,7 @@
 """Season figures as defined in the requirements, from confirmed checks only."""
 
-from django.db.models import Count, Q
-from nest_boxes.models import Area, Check, NestBox
+from django.db.models import Count, Min, Q
+from nest_boxes.models import Area, Check, NestBox, SeasonState
 
 Content = Check.Content
 FIGURES = (
@@ -12,7 +12,9 @@ FIGURES = (
     "bird_occupied",
     "previous_inspected",
     "previous_occupied",
-    "to_repair",
+    # The pie of the map of areas; what is left of `boxes` is still to check
+    "done",
+    "attention",
 )
 
 
@@ -45,6 +47,46 @@ def _per_area(queryset, area_field):
     return dict(queryset.values_list(area_field).annotate(count=Count("pk")).order_by())
 
 
+def _states_per_area(season):
+    """This season's from the live season states, pending checks included; a past
+    one's from its confirmed checks, since a past box's status and condition are
+    gone, so there attention is what its check reported.
+    """
+    if season == Check.current_season():
+        boxes = boxes_in_season(season).with_season_state()
+        return {
+            state: _per_area(boxes.filter(season_state=state), "area")
+            for state in (SeasonState.DONE, SeasonState.ATTENTION)
+        }
+    checks = Check.objects.filter(
+        season=season, is_confirmed=True, box__in=boxes_in_season(season)
+    )
+    attention = (
+        Q(found=Check.Found.NOT_FOUND)
+        | Q(cleaning__in=[Check.Cleaning.NOT_CLEANED, Check.Cleaning.COULD_NOT_OPEN])
+        | Q(
+            box_left__in=[
+                Check.BoxLeft.NEEDS_REPAIR,
+                Check.BoxLeft.NEEDS_REPLACING,
+                Check.BoxLeft.TAKEN_DOWN,
+            ]
+        )
+    )
+    return {
+        SeasonState.DONE: _per_area(
+            checks.filter(found=Check.Found.FOUND).exclude(attention), "box__area"
+        ),
+        SeasonState.ATTENTION: _per_area(checks.filter(attention), "box__area"),
+    }
+
+
+def _seasons():
+    """The newest first, from the first season anything was checked in."""
+    current = Check.current_season()
+    first = Check.objects.aggregate(first=Min("season"))["first"] or current
+    return list(range(current, first - 1, -1))
+
+
 def season_statistics(season):
     """Per area (rows with anything to show) and in total; raw counts, ratios are left to the reader."""
     occupied = [Content.BIRD_NEST, Content.OTHER_ANIMAL]
@@ -72,15 +114,7 @@ def season_statistics(season):
             inspected_checks(season - 1).filter(contents__overlap=occupied),
             "box__area",
         ),
-        "to_repair": _per_area(
-            NestBox.objects.in_use().filter(
-                condition__in=[
-                    NestBox.Condition.NEEDS_REPAIR,
-                    NestBox.Condition.NEEDS_REPLACING,
-                ]
-            ),
-            "area",
-        ),
+        **_states_per_area(season),
     }
     area_ids = set().union(*counts.values())
     areas = [
@@ -91,6 +125,7 @@ def season_statistics(season):
     ]
     return {
         "season": season,
+        "seasons": _seasons(),
         "areas": areas,
         "total": {figure: sum(counts[figure].values()) for figure in FIGURES},
     }

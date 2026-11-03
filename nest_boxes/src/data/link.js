@@ -3,7 +3,7 @@ import { computed, reactive, ref, shallowRef } from "vue"
 import { useLocalStorage } from "@vueuse/core"
 
 import { fetchAll, PARALLEL_REQUESTS, prefetchMap } from "@/components/map/prefetch.js"
-import { checkState } from "@/composables/boxes.js"
+import { reportedState } from "@/composables/boxes.js"
 import { boxLocation, latestChecks } from "@/composables/linkBoxes.js"
 import { client } from "@/data/client.js"
 import { reportError, reportRejected } from "@/data/errors.js"
@@ -21,6 +21,11 @@ const withSent = (payload, item, result) => {
   if (item.kind === "check")
     return {
       ...payload,
+      boxes: payload.boxes.map(box =>
+        box.id === result.check.box_id
+          ? { ...box, season_state: result.season_state }
+          : box,
+      ),
       checks: [
         ...payload.checks.filter(check => check.box_id !== result.check.box_id),
         result.check,
@@ -79,6 +84,7 @@ export const useLinkStore = defineStore("link", () => {
       if (item.kind === "box")
         byId.set(item.id, {
           status: "in_use",
+          season_state: "to_check",
           is_confirmed: false,
           is_verified: false,
           ...item.payload,
@@ -86,21 +92,24 @@ export const useLinkStore = defineStore("link", () => {
     return [...byId.values()]
   })
 
-  const checks = computed(() =>
-    latestChecks([
-      ...payload.value.checks,
-      ...queued.value.filter(item => item.kind === "check").map(item => item.payload),
-    ]),
+  const queuedChecks = computed(() =>
+    queued.value.filter(item => item.kind === "check").map(item => item.payload),
   )
 
-  // The boxes as the map and the list show them: where they hang now and how far along
-  const rows = computed(() =>
-    boxes.value.map(box => {
-      const check = checks.value.get(box.id)
-      const state = box.status === "planned" && !check ? "planned" : checkState(check)
-      return { ...box, location: boxLocation(box, check), check, state }
-    }),
+  const checks = computed(() =>
+    latestChecks([...payload.value.checks, ...queuedChecks.value]),
   )
+
+  // The boxes as the map and the list show them: where they hang now and how far
+  // along. The server's season state does not know the checks still on the phone.
+  const rows = computed(() => {
+    const unsent = new Set(queuedChecks.value)
+    return boxes.value.map(box => {
+      const check = checks.value.get(box.id)
+      const state = (unsent.has(check) && reportedState(check)) || box.season_state
+      return { ...box, location: boxLocation(box, check), check, state }
+    })
+  })
 
   const queuedPhotos = checkId =>
     queued.value.filter(

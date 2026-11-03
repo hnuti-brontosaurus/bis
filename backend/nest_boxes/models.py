@@ -16,7 +16,19 @@ from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.db.models.functions import Centroid
 from django.contrib.postgres.fields import ArrayField
 from django.db import connection
-from django.db.models import CASCADE, PROTECT, SET_NULL, Count, Q
+from django.db.models import (
+    CASCADE,
+    PROTECT,
+    SET_NULL,
+    Case,
+    Count,
+    F,
+    FilteredRelation,
+    Q,
+    Value,
+    When,
+)
+from django.utils.timezone import localdate
 from regions.models import Region
 from tinymce.models import HTMLField
 from translation.translate import translate_model
@@ -63,6 +75,13 @@ class Area(m.Model):
         return self.name
 
 
+class SeasonState(m.TextChoices):
+    PLANNED = "planned", "plánovaná"
+    TO_CHECK = "to_check", "ke kontrole"
+    ATTENTION = "attention", "pozornost"
+    DONE = "done", "hotovo"
+
+
 class NestBoxQuerySet(m.QuerySet):
     def in_use(self):
         return self.filter(in_use())
@@ -78,6 +97,78 @@ class NestBoxQuerySet(m.QuerySet):
                     | Q(closest_same_type_distance__lt=EXISTING_SAME_TYPE_LIMIT)
                 ),
                 output_field=m.BooleanField(),
+            )
+        )
+
+    def with_season_state(self):
+        """`season_state`, one of SeasonState, or null for an ended or cancelled box.
+
+        A pending check counts as if it were confirmed: its status and condition
+        are what confirming it would leave on the box, see `checks._box_values`.
+        """
+        Status, Found, BoxLeft = NestBox.Status, Check.Found, Check.BoxLeft
+        repairs = (NestBox.Condition.NEEDS_REPAIR, NestBox.Condition.NEEDS_REPLACING)
+        pending = Q(season_check__is_confirmed=False)
+        returnable = pending & Q(status__in=RETURNABLE_STATUSES)
+        found = Q(season_check__found=Found.FOUND)
+        return (
+            self.with_should_be_moved()
+            .annotate(
+                season_check=FilteredRelation(
+                    "checks", condition=Q(checks__season=Check.current_season())
+                ),
+                season_status=Case(
+                    When(
+                        returnable & Q(season_check__found=Found.NOT_FOUND),
+                        then=Value(Status.MISSING),
+                    ),
+                    When(
+                        returnable
+                        & found
+                        & Q(season_check__box_left=BoxLeft.TAKEN_DOWN),
+                        then=Value(Status.TAKEN_DOWN),
+                    ),
+                    When(returnable & found, then=Value(Status.IN_USE)),
+                    When(
+                        pending
+                        & Q(
+                            status=Status.PLANNED, season_check__box_changes__hung=True
+                        ),
+                        then=Value(Status.IN_USE),
+                    ),
+                    default=F("status"),
+                ),
+                season_condition=Case(
+                    When(
+                        returnable
+                        & found
+                        & Q(season_check__box_left__in=(BoxLeft.FINE, *repairs)),
+                        then=F("season_check__box_left"),
+                    ),
+                    default=F("condition"),
+                ),
+            )
+            .annotate(
+                season_state=Case(
+                    When(status__in=(Status.ENDED, Status.CANCELLED), then=None),
+                    When(season_status=Status.PLANNED, then=Value(SeasonState.PLANNED)),
+                    When(
+                        Q(season_status__in=(Status.MISSING, Status.TAKEN_DOWN))
+                        | Q(season_condition__in=repairs)
+                        | Q(
+                            season_check__cleaning__in=(
+                                Check.Cleaning.NOT_CLEANED,
+                                Check.Cleaning.COULD_NOT_OPEN,
+                            )
+                        )
+                        | Q(should_be_moved=True),
+                        then=Value(SeasonState.ATTENTION),
+                    ),
+                    When(found, then=Value(SeasonState.DONE)),
+                    When(type__needs_cleaning=False, then=Value(SeasonState.DONE)),
+                    default=Value(SeasonState.TO_CHECK),
+                    output_field=m.CharField(),
+                )
             )
         )
 
@@ -240,6 +331,14 @@ class NestBox(m.Model):
             )
 
 
+# A check can move a box between these, see `checks._box_values`
+RETURNABLE_STATUSES = (
+    NestBox.Status.IN_USE,
+    NestBox.Status.MISSING,
+    NestBox.Status.TAKEN_DOWN,
+)
+
+
 @translate_model
 class Batch(m.Model):
     area = m.ForeignKey(Area, related_name="batches", on_delete=CASCADE)
@@ -371,6 +470,10 @@ class Check(m.Model):
     def season_of(day):
         """A season runs July to June and is named after the year it starts in."""
         return day.year if day.month >= 7 else day.year - 1
+
+    @staticmethod
+    def current_season():
+        return Check.season_of(localdate())
 
     @staticmethod
     def season_start(season):

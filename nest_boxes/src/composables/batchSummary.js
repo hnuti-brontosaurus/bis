@@ -1,5 +1,5 @@
 import { distance } from "@/components/map/geometry.js"
-import { isVerification } from "@/composables/boxes.js"
+import { isVerification, reportedState } from "@/composables/boxes.js"
 import { BOX_LEFT_LABELS } from "@/composables/labels.js"
 
 // A position moved by less is GPS noise, not a moved box.
@@ -22,6 +22,11 @@ export const batchTiles = (batch, checks, newBoxes) => {
   const count = filter => checks.filter(filter).length
   return [
     { value: checks.length, label: `z ${batch.box_count} zkontrolováno` },
+    {
+      value: count(check => reportedState(check) === "attention"),
+      label: "potřebuje pozornost",
+      tone: "warn",
+    },
     { value: count(check => check.found === "found"), label: "nalezeno" },
     { value: count(check => check.cleaning === "cleaned"), label: "vyčištěno" },
     {

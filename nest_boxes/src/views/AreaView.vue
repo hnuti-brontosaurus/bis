@@ -28,7 +28,13 @@ import {
   splitByBatch,
 } from "@/composables/areaBoxes.js"
 import { boxCountLabel, currentSeason } from "@/composables/czech.js"
-import { byId, categoryOptions, STATUS_OPTIONS } from "@/composables/labels.js"
+import {
+  byId,
+  categoryOptions,
+  SEASON_STATE_LABELS,
+  SEASON_STATE_OPTIONS,
+  STATUS_OPTIONS,
+} from "@/composables/labels.js"
 import { latestChecks } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { CZECHIA_BOUNDS } from "@/config.js"
@@ -98,7 +104,7 @@ const detail = box =>
 const markerBoxes = computed(() =>
   shown.value
     .filter(box => box.status !== "planned")
-    .map(box => ({ ...box, state: markerState(box, checkOf(box), batch.value) })),
+    .map(box => ({ ...box, state: markerState(box, batch.value) })),
 )
 const plannedBoxes = computed(() =>
   shown.value.filter(
@@ -265,24 +271,30 @@ watch(batchId, () => (selectedId.value = null))
             Uzavřít dávku bez potvrzení? Odkaz přestane přijímat kontroly, ty čekající
             zůstanou nepotvrzené.
           </n-popconfirm>
-          <span class="spacer" />
+          <n-button
+            class="push-end"
+            size="small"
+            quaternary
+            @click="dialogs.plan = true"
+          >
+            <template #icon><AppIcon name="plus" /></template>
+            Naplánovat budku
+          </n-button>
+        </div>
+      </template>
+      <template v-else>
+        <p class="muted">Žádná otevřená dávka kontrol.</p>
+        <div class="row">
+          <n-button type="primary" size="small" @click="dialogs.batch = true">
+            <template #icon><AppIcon name="plus" /></template>
+            Vytvořit dávku
+          </n-button>
           <n-button size="small" quaternary @click="dialogs.plan = true">
             <template #icon><AppIcon name="plus" /></template>
             Naplánovat budku
           </n-button>
         </div>
       </template>
-      <div v-else class="row">
-        <span class="muted grow">Žádná otevřená dávka kontrol.</span>
-        <n-button type="primary" size="small" @click="dialogs.batch = true">
-          <template #icon><AppIcon name="plus" /></template>
-          Vytvořit dávku
-        </n-button>
-        <n-button size="small" quaternary @click="dialogs.plan = true">
-          <template #icon><AppIcon name="plus" /></template>
-          Naplánovat budku
-        </n-button>
-      </div>
     </section>
 
     <section class="section filters">
@@ -298,6 +310,21 @@ watch(batchId, () => (selectedId.value = null))
             <AppIcon name="filter" />Typ<template v-if="filters.type.length">
               {{ filters.type.length }}</template
             >
+          </button>
+        </n-popselect>
+        <n-popselect
+          v-model:value="filters.state"
+          :options="SEASON_STATE_OPTIONS"
+          multiple
+          trigger="click"
+        >
+          <button type="button" class="chip" :class="{ on: filters.state.length }">
+            {{
+              filters.state.length === 1
+                ? SEASON_STATE_LABELS[filters.state[0]]
+                : `Letošní stav${filters.state.length ? ` ${filters.state.length}` : ""}`
+            }}
+            <AppIcon name="chevd" />
           </button>
         </n-popselect>
         <n-popselect
@@ -391,13 +418,7 @@ watch(batchId, () => (selectedId.value = null))
           :data-box-row="box.id"
           @click="focusBox(box)"
         >
-          <MarkerGlyph
-            :state="
-              box.status === 'planned'
-                ? 'planned'
-                : markerState(box, checkOf(box), batch)
-            "
-          />
+          <MarkerGlyph :state="markerState(box, batch)" />
           <div class="box-text">
             <RouterLink
               class="box-name"
@@ -489,46 +510,13 @@ watch(batchId, () => (selectedId.value = null))
   border-top: 1px solid var(--line);
 }
 
+.push-end {
+  margin-left: auto;
+}
+
 .batch-name {
   flex: 1;
   font-size: 16px;
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: var(--r-chip);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--text);
-  font: 600 13px var(--font);
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.chip .icon {
-  width: 15px;
-  height: 15px;
-}
-
-.chip.on {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-  color: var(--primary-text);
-}
-
-.chip.dim {
-  border-style: dashed;
-  color: var(--muted);
 }
 
 .list {

@@ -7,7 +7,7 @@ import AppIcon from "@/components/app/AppIcon.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import { formatNumber, seasonLabel } from "@/composables/czech.js"
-import { describeFigures } from "@/composables/statistics.js"
+import { describeFigures, statisticsBubbles } from "@/composables/statistics.js"
 import { usePublicData } from "@/composables/usePublicData.js"
 import { loginUrl, useAuthStore } from "@/data/auth.js"
 
@@ -49,7 +49,11 @@ const { season, areas, statistics } = usePublicData()
 const boxCount = computed(() =>
   areas.value?.reduce((sum, area) => sum + area.box_count, 0),
 )
-const mappedAreas = computed(() => areas.value?.filter(area => area.marker) ?? [])
+const bubbles = computed(() =>
+  areas.value && statistics.value
+    ? statisticsBubbles(statistics.value.areas, areas.value)
+    : [],
+)
 const total = computed(() => statistics.value?.total)
 const figures = computed(() => total.value && describeFigures(total.value))
 </script>
@@ -84,7 +88,7 @@ const figures = computed(() => total.value && describeFigures(total.value))
       </div>
       <div class="hero-map">
         <BaseMap :interactive="false">
-          <AreaBubbles :areas="mappedAreas" />
+          <AreaBubbles :areas="bubbles" />
         </BaseMap>
       </div>
     </section>

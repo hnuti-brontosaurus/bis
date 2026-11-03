@@ -212,6 +212,7 @@ BOX_FIELDS = (
     "closest_distance",
     "closest_same_type_distance",
     "should_be_moved",
+    "season_state",
     "last_checked_on",
     "old_id",
     "created_at",
@@ -229,6 +230,7 @@ class BoxSerializer(ModelSerializer):
     batch_id = optional_related(Batch, "batch")
     created_by = PersonSerializer(read_only=True)
     should_be_moved = BooleanField(read_only=True)
+    season_state = CharField(read_only=True, allow_null=True)
     last_checked_on = DateField(read_only=True)
 
     class Meta:
@@ -285,6 +287,7 @@ class LinkBoxSerializer(ModelSerializer):
 
     id = UUIDField()
     type_id = optional_related(NestBoxType, "type")
+    season_state = CharField(read_only=True)
 
     class Meta:
         model = NestBox
@@ -292,6 +295,7 @@ class LinkBoxSerializer(ModelSerializer):
             "id",
             "name",
             "status",
+            "season_state",
             "condition",
             "location",
             "planned_radius",

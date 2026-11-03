@@ -36,7 +36,11 @@ const placeMarker = () => {
   if (!map.value || !location.value) return
   if (!marker) {
     marker = new Marker({
-      element: boxMarkerElement({ name: props.name, state: "todo", selected: true }),
+      element: boxMarkerElement({
+        name: props.name,
+        state: "to_check",
+        selected: true,
+      }),
       anchor: "center",
       draggable: true,
     })

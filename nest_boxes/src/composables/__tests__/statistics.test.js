@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { describeFigures, recentSeasons, unitsOf } from "@/composables/statistics.js"
+import {
+  describeFigures,
+  stateBubbles,
+  statisticsBubbles,
+  unitsOf,
+} from "@/composables/statistics.js"
 
 const figures = {
   boxes: 20,
@@ -10,7 +15,8 @@ const figures = {
   bird_occupied: 6,
   previous_inspected: 0,
   previous_occupied: 0,
-  to_repair: 1,
+  done: 10,
+  attention: 3,
 }
 
 describe("statistics", () => {
@@ -34,7 +40,24 @@ describe("statistics", () => {
     ])
   })
 
-  it("lists seasons newest first", () => {
-    expect(recentSeasons(2026, 3)).toEqual([2026, 2025, 2024])
+  it("makes bubbles of the areas with a marker and any boxes", () => {
+    const marker = { type: "Point", coordinates: [14, 50] }
+    const areas = [
+      { id: 1, name: "A", marker },
+      { id: 2, name: "B", marker: null },
+      { id: 3, name: "C", marker },
+    ]
+    const rows = [1, 2, 3].map(id => ({ ...figures, area: { id } }))
+    rows[2].boxes = 0
+
+    expect(statisticsBubbles(rows, areas)).toEqual([
+      { area: areas[0], count: 20, done: 10, attention: 3 },
+    ])
+    expect(
+      stateBubbles(
+        [{ area_id: 3, planned: 1, to_check: 2, attention: 3, done: 4 }],
+        areas,
+      ),
+    ).toEqual([{ area: areas[2], count: 10, done: 4, attention: 3 }])
   })
 })

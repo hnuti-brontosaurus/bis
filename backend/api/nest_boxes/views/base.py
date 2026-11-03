@@ -48,7 +48,7 @@ def require_manage(user, area):
 
 def box_queryset():
     return (
-        NestBox.objects.with_should_be_moved()
+        NestBox.objects.with_season_state()
         .annotate(
             last_checked_on=Max("checks__date", filter=Q(checks__is_confirmed=True))
         )

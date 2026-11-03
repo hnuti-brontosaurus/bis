@@ -1,4 +1,9 @@
-from api.nest_boxes.filters import BatchFilter, CheckFilter, NestBoxFilter
+from api.nest_boxes.filters import (
+    BatchFilter,
+    CheckFilter,
+    NestBoxFilter,
+    SeasonStateFilter,
+)
 from api.nest_boxes.serializers import (
     AreaDetailSerializer,
     AreaSerializer,
@@ -32,6 +37,7 @@ from nest_boxes.boxes import (
     confirm_box,
     create_box,
     end_box,
+    season_state_counts,
     suggested_batch_boxes,
     update_box,
 )
@@ -51,10 +57,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 from xlsx_export.export import XLSXWriter, download
 from xlsx_export.serializers import NestBoxExportSerializer
-
-
-def current_season():
-    return Check.season_of(localdate())
 
 
 class ManagerViewSet(NestBoxAPIMixin, viewsets.ModelViewSet):
@@ -97,6 +99,17 @@ class AreaViewSet(ManagerViewSet):
     def perform_destroy(self, instance):
         self.require_manage_all()
         instance.delete()
+
+    @action(detail=False)
+    def season_states(self, request):
+        """Per area, how many of the boxes the filters pick are in each season state."""
+        boxes = SeasonStateFilter(
+            request.query_params,
+            NestBox.objects.with_season_state().filter(area__in=self.areas()),
+        )
+        if not boxes.is_valid():
+            raise ValidationError(boxes.errors)
+        return Response(season_state_counts(boxes.qs))
 
     def filtered_boxes(self, area):
         return NestBoxFilter(
@@ -310,7 +323,9 @@ class CheckPhotoViewSet(
 def batch_queryset():
     """With the progress counts the batch page and the open batches badge show."""
     checked_boxes = (
-        NestBox.objects.filter(batches=OuterRef("pk"), checks__season=current_season())
+        NestBox.objects.filter(
+            batches=OuterRef("pk"), checks__season=Check.current_season()
+        )
         .order_by()
         .values("batches")
         .annotate(count=Count("pk", distinct=True))
@@ -350,7 +365,7 @@ class BatchViewSet(ManagerViewSet):
         boxes = serializer.validated_data.get("boxes")
         if boxes is None:
             serializer.validated_data["boxes"] = list(
-                suggested_batch_boxes(area, current_season())
+                suggested_batch_boxes(area, Check.current_season())
             )
         batch = serializer.save(created_by=request.user)
         return self.respond(batch, HTTP_201_CREATED)
@@ -370,7 +385,7 @@ class BatchViewSet(ManagerViewSet):
         area = self.areas().filter(pk=request.query_params.get("area")).first()
         if area is None:
             raise ValidationError({"area": "Neznámá lokalita."})
-        boxes = suggested_batch_boxes(area, current_season())
+        boxes = suggested_batch_boxes(area, Check.current_season())
         return Response({"box_ids": list(boxes.values_list("pk", flat=True))})
 
     @action(detail=True, methods=["post"])

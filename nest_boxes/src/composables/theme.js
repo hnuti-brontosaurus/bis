@@ -50,8 +50,8 @@ export const palettes = {
       city: "#3f5a4c",
     },
     mk: {
-      nf: "#87938c",
-      nfInk: "#ffffff",
+      attn: "#e9b824",
+      attnInk: "#3a2c00",
       out: "#a2ada6",
     },
   },
@@ -103,8 +103,8 @@ export const palettes = {
       city: "#d8e3dc",
     },
     mk: {
-      nf: "#7f8d85",
-      nfInk: "#ffffff",
+      attn: "#e6c143",
+      attnInk: "#241b00",
       out: "#64736b",
     },
   },
