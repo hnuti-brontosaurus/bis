@@ -88,7 +88,7 @@ const figures = computed(() => total.value && describeFigures(total.value))
       </div>
       <div class="hero-map">
         <BaseMap :interactive="false">
-          <AreaBubbles :areas="bubbles" />
+          <AreaBubbles :areas="bubbles" plain />
         </BaseMap>
       </div>
     </section>

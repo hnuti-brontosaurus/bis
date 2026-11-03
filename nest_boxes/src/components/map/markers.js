@@ -33,8 +33,9 @@ export const planLabelElement = name => {
   return node
 }
 
-/** A donut of the area's season states around its box count. */
+/** A donut of the area's season states around its box count, or just the count when `plain`. */
 export const areaBubbleElement = ({
+  plain,
   count,
   done,
   attention,
@@ -45,7 +46,7 @@ export const areaBubbleElement = ({
   selected,
 }) => {
   const node = element(
-    `area-bubble${merged ? " merged" : ""}${selected ? " selected" : ""}`,
+    `area-bubble${plain ? " plain" : ""}${merged ? " merged" : ""}${selected ? " selected" : ""}`,
   )
   node.style.setProperty("--d", `${diameter}px`)
   const share = value => `${count ? (value / count) * 100 : 0}%`

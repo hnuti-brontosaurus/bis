@@ -157,6 +157,24 @@
   white-space: nowrap;
 }
 
+.area-bubble.plain {
+  cursor: default;
+}
+
+.area-bubble.plain .bubble {
+  background: var(--primary);
+  border: 3px solid var(--surface);
+}
+
+.area-bubble.plain .bubble b {
+  width: auto;
+  height: auto;
+  background: none;
+  box-shadow: none;
+  color: var(--primary-ink);
+  font-size: 14px;
+}
+
 .area-bubble.merged .bubble {
   border-style: double;
   border-width: 4px;

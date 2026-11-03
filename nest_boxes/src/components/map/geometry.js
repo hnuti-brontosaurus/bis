@@ -23,14 +23,18 @@ export const circlePolygon = ([lng, lat], radius, steps = 48) => {
 }
 
 /**
- * Greedy merge of screen points closer than `distance` px, biggest first, so
- * the biggest item names the group. Each cluster sits at its items' centroid.
+ * Greedy merge of bubbles whose edges are closer than `gap` px, biggest first,
+ * so the biggest item names the group. Each cluster sits at its items'
+ * centroid. Edges rather than centres, because a big bubble covers the label
+ * of a small one next to it.
  */
-export const clusterByDistance = (items, distance) => {
+export const clusterByDistance = (items, gap) => {
   const clusters = []
   for (const item of [...items].sort((a, b) => b.weight - a.weight)) {
     const near = clusters.find(
-      cluster => Math.hypot(cluster.x - item.x, cluster.y - item.y) < distance,
+      cluster =>
+        Math.hypot(cluster.x - item.x, cluster.y - item.y) <
+        gap + (bubbleDiameter(cluster.weight) + bubbleDiameter(item.weight)) / 2,
     )
     if (near) {
       near.items.push(item)

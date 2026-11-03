@@ -29,14 +29,14 @@ describe("circlePolygon", () => {
 describe("clusterByDistance", () => {
   const point = (name, x, y, weight) => ({ name, x, y, weight })
 
-  it("merges points closer than the distance, named by the biggest", () => {
+  it("merges bubbles closer than the gap, named by the biggest", () => {
     const clusters = clusterByDistance(
       [
         point("Kostelisko", 30, 0, 142),
         point("Těšický les", 0, 0, 186),
         point("Praha", 500, 0, 96),
       ],
-      50,
+      24,
     )
     expect(clusters).toHaveLength(2)
     const [merged, single] = clusters
@@ -46,10 +46,16 @@ describe("clusterByDistance", () => {
     expect(single.items.map(item => item.name)).toEqual(["Praha"])
   })
 
-  it("keeps points at the distance apart", () => {
+  it("keeps bubbles whose edges are the gap apart", () => {
     expect(
-      clusterByDistance([point("a", 0, 0, 1), point("b", 50, 0, 1)], 50),
+      clusterByDistance([point("a", 0, 0, 0), point("b", 50, 0, 0)], 24),
     ).toHaveLength(2)
+  })
+
+  it("merges a small bubble that a big one covers", () => {
+    expect(
+      clusterByDistance([point("big", 0, 0, 641), point("small", 45, 0, 180)], 24),
+    ).toHaveLength(1)
   })
 })
 
