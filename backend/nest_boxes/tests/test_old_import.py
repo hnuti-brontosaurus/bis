@@ -10,6 +10,7 @@ from django.core.management import call_command
 from nest_boxes.models import Area, Check, NestBox
 from nest_boxes.old_import.dump import parse_dump
 from nest_boxes.old_import.notes import is_recorded
+from nest_boxes.old_import.plan import read_check
 from nest_boxes.old_import.values import parse_hole, parse_name
 
 DUMP = r"""-- Adminer 4.8.1 MySQL dump
@@ -138,6 +139,14 @@ def test_parse_name_moves_old_numbers_aside():
 )
 def test_box_notes_left_out_are_only_those_the_fields_hold(note, recorded):
     assert is_recorded(note) == recorded
+
+
+def test_a_box_that_would_not_open_was_not_cleaned():
+    reading = read_check(None, "nejde otevřít", "0")
+    assert (reading.cleaning, reading.not_cleaned_reason) == (
+        Check.Cleaning.NOT_CLEANED,
+        "could_not_open",
+    )
 
 
 def test_import(run_import):

@@ -64,7 +64,14 @@ export const FOUND_LABELS = {
 export const CLEANING_LABELS = {
   cleaned: "vyčištěno",
   not_cleaned: "nevyčištěno",
-  could_not_open: "nešla otevřít",
+}
+
+// What the box held this season, see Check.Content
+export const CONTENT_LABELS = {
+  nothing: "prázdná",
+  bird_nest: "hnízdo nebo zbytky po ptácích",
+  other_animal: "jiné zvíře",
+  unknown: "obsah nevím",
 }
 
 export const BOX_LEFT_LABELS = {

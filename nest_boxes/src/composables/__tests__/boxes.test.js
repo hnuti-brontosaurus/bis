@@ -98,7 +98,6 @@ describe("reportedState", () => {
 
   it("needs attention for what the box needs next", () => {
     expect(reportedState(check({ found: "not_found", cleaning: "" }))).toBe("attention")
-    expect(reportedState(check({ cleaning: "could_not_open" }))).toBe("attention")
     expect(reportedState(check({ box_left: "taken_down" }))).toBe("attention")
   })
 

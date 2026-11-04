@@ -165,12 +165,7 @@ class NestBoxQuerySet(m.QuerySet):
                     When(
                         Q(season_status__in=(Status.MISSING, Status.TAKEN_DOWN))
                         | Q(season_condition__in=repairs)
-                        | Q(
-                            season_check__cleaning__in=(
-                                Check.Cleaning.NOT_CLEANED,
-                                Check.Cleaning.COULD_NOT_OPEN,
-                            )
-                        )
+                        | Q(season_check__cleaning=Check.Cleaning.NOT_CLEANED)
                         | Q(should_be_moved=True),
                         then=Value(SeasonState.ATTENTION),
                     ),
@@ -389,11 +384,12 @@ class Check(m.Model):
     class Cleaning(m.TextChoices):
         CLEANED = "cleaned", "vyčištěna"
         NOT_CLEANED = "not_cleaned", "nevyčištěna"
-        COULD_NOT_OPEN = "could_not_open", "nešla otevřít"
 
     class Content(m.TextChoices):
-        NOTHING = "nothing", "nic"
-        BIRD_NEST = "bird_nest", "ptačí hnízdo"
+        """What the box held this season: a nest or remains count, not only an animal there now."""
+
+        NOTHING = "nothing", "prázdná"
+        BIRD_NEST = "bird_nest", "hnízdo nebo zbytky po ptácích"
         OTHER_ANIMAL = "other_animal", "jiné zvíře"
         UNKNOWN = "unknown", "nevím"
 
@@ -445,7 +441,7 @@ class Check(m.Model):
         blank=True,
     )
     contents = ArrayField(
-        m.CharField(max_length=15, choices=Content.choices), blank=True
+        m.CharField(max_length=15, choices=Content.choices), default=list, blank=True
     )
     occupants = m.ManyToManyField(NestBoxOccupant, related_name="checks", blank=True)
     eggs_left = m.BooleanField(null=True, blank=True)
@@ -453,6 +449,7 @@ class Check(m.Model):
     breeding_note = m.TextField(blank=True)
     box_left = m.CharField(max_length=15, choices=BoxLeft.choices, blank=True)
     box_changes = m.JSONField(default=dict, blank=True)
+    # Required when the box was not found or not reached: it says why
     note = m.TextField(blank=True)
     is_historical = m.BooleanField(default=False)
 

@@ -73,7 +73,6 @@ def test_status_and_condition(box, types):
 def test_confirmed_checks(box):
     check(box("cleaned"))
     check(box("not cleaned"), cleaning=Cleaning.NOT_CLEANED)
-    check(box("could not open"), cleaning=Cleaning.COULD_NOT_OPEN)
     check(box("not reached"), found=Found.NOT_REACHED, cleaning="")
     # Confirming applied the check; the box has been repaired since
     check(box("repaired"), box_left=BoxLeft.NEEDS_REPAIR)
@@ -81,7 +80,6 @@ def test_confirmed_checks(box):
     assert states() == {
         "cleaned": SeasonState.DONE,
         "not cleaned": SeasonState.ATTENTION,
-        "could not open": SeasonState.ATTENTION,
         "not reached": SeasonState.TO_CHECK,
         "repaired": SeasonState.DONE,
     }

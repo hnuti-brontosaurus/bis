@@ -369,6 +369,15 @@ class NestBoxNotCleanedReason(m.Model):
     name = m.CharField(max_length=63)
     slug = m.SlugField(unique=True)
     order = m.PositiveSmallIntegerField(default=0)
+    # Whether the check form still asks what was inside, prefilled with the occupant
+    contents_known = m.BooleanField(default=False)
+    occupant = m.ForeignKey(
+        NestBoxOccupant,
+        related_name="not_cleaned_reasons",
+        on_delete=m.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         ordering = ("order",)

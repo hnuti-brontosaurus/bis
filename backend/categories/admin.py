@@ -155,4 +155,4 @@ class NestBoxEndReasonAdmin(PermissionMixin, admin.ModelAdmin):
 
 @admin.register(NestBoxNotCleanedReason)
 class NestBoxNotCleanedReasonAdmin(PermissionMixin, admin.ModelAdmin):
-    pass
+    list_display = "name", "contents_known", "occupant"

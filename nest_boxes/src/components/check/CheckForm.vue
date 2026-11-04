@@ -21,6 +21,7 @@ import PhotoPicker from "@/components/check/PhotoPicker.vue"
 import {
   asksContents,
   buildPayload,
+  chooseReason,
   initialState,
   validate,
 } from "@/components/check/checkForm.js"
@@ -67,10 +68,10 @@ const removedPhotos = ref([])
 const attempted = ref(false)
 const saving = ref(false)
 
-const planned = computed(() => props.box.status === "planned")
+const hanging = computed(() => state.value.hanging)
 const found = computed(() => state.value.found === "found")
 const errors = computed(() =>
-  attempted.value ? validate(state.value, props.box, props.initial) : {},
+  attempted.value ? validate(state.value, props.categories, props.initial) : {},
 )
 
 const FOUND_OPTIONS = [
@@ -80,48 +81,54 @@ const FOUND_OPTIONS = [
 const CLEANING_OPTIONS = [
   { value: "cleaned", label: "Ano" },
   { value: "not_cleaned", label: "Ne" },
-  { value: "could_not_open", label: "Nešla otevřít" },
 ]
 const CONTENTS_OPTIONS = [
   { value: "nothing", label: "Prázdná" },
-  { value: "occupied", label: "Obsazená" },
+  { value: "bird_nest", label: "Hnízdo nebo zbytky po ptácích" },
+  { value: "other_animal", label: "Jiné zvíře" },
   { value: "unknown", label: "Nevím" },
 ]
+const WHY_NOT = {
+  not_found: {
+    label: "Proč se nenašla?",
+    placeholder: "Třeba: hledali jsme kolem souřadnic, strom je pokácený",
+  },
+  not_reached: {
+    label: "Proč jste se k ní nedostali?",
+    placeholder: "Třeba: oplocený pozemek, nestihli jsme to",
+  },
+}
+const NOT_HUNG = {
+  label: "Proč se nepověsila?",
+  placeholder: "Třeba: nebyl tam vhodný strom",
+}
 const BREEDING_OPTIONS = [
   { value: "eggs_left", label: "V hnízdě zůstala vejce" },
   { value: "dead_birds", label: "Mrtvá mláďata nebo ptáci" },
 ]
 
-const birdOptions = computed(() =>
-  categoryOptions(props.categories.occupants.filter(occupant => occupant.is_bird)),
-)
-const otherOptions = computed(() =>
-  categoryOptions(props.categories.occupants.filter(occupant => !occupant.is_bird)),
+const occupantOptions = computed(() =>
+  categoryOptions(
+    props.categories.occupants.filter(
+      occupant => occupant.is_bird === (state.value.contents === "bird_nest"),
+    ),
+  ),
 )
 const reasonOptions = computed(() =>
   categoryOptions(props.categories.not_cleaned_reasons),
 )
-const birdChosen = computed(() =>
-  props.categories.occupants.some(
-    occupant => occupant.is_bird && state.value.occupant_ids.includes(occupant.id),
-  ),
-)
+const whyNot = computed(() => (hanging.value ? NOT_HUNG : WHY_NOT[state.value.found]))
+const noteId = `check-note-${state.value.id}`
 
 const isFound = computed({
-  get: () => (planned.value ? state.value.hung : found.value),
+  get: () => (hanging.value ? state.value.hung : found.value),
   set: value => {
-    if (planned.value) state.value.hung = value
-    state.value.found = value ? "found" : planned.value ? "not_reached" : "not_found"
+    if (hanging.value) state.value.hung = value
+    state.value.found = value ? "found" : hanging.value ? "not_reached" : "not_found"
   },
 })
 
-const changesTitle = computed(() => {
-  if (planned.value) return "Kde a jak budka visí"
-  if (!props.box.is_verified) return "Ověřit nebo opravit údaje budky"
-  return "Něco se na budce změnilo"
-})
-
-const helpTopic = ref(planned.value ? "hanging" : "contents")
+const helpTopic = ref(hanging.value ? "hanging" : "contents")
 const helpOpen = ref(false)
 const helpArticle = computed(
   () =>
@@ -146,10 +153,10 @@ const save = async () => {
   }
   saving.value = true
   try {
-    await props.submit(
-      buildPayload(state.value, props.box, props.categories, props.initial),
-      { added: addedPhotos.value, removed: removedPhotos.value },
-    )
+    await props.submit(buildPayload(state.value, props.box, props.categories), {
+      added: addedPhotos.value,
+      removed: removedPhotos.value,
+    })
   } catch (error) {
     reportError(error)
   } finally {
@@ -180,7 +187,7 @@ const save = async () => {
           <span v-if="box.installed_on" class="tag">
             vyvěšena {{ box.installed_on.slice(0, 4) }}
           </span>
-          <span v-if="!box.is_verified && !planned" class="tag warn">neověřená</span>
+          <span v-if="!box.is_verified && !hanging" class="tag warn">neověřená</span>
           <span class="spacer" />
           <a class="mapy small" :href="mapyLink(box.location)" target="_blank">
             <AppIcon name="ext" />Mapy.com
@@ -192,22 +199,33 @@ const save = async () => {
           <div class="question">
             <div class="row">
               <span class="label grow">
-                {{ planned ? "Budka pověšena" : "Budka nalezena" }}
-                <HelpBadge @open="openHelp(planned ? 'hanging' : 'found')" />
+                {{ hanging ? "Budka pověšena" : "Budka nalezena" }}
+                <HelpBadge @open="openHelp(hanging ? 'hanging' : 'found')" />
               </span>
               <n-switch
                 v-model:value="isFound"
-                :aria-label="planned ? 'Budka pověšena' : 'Budka nalezena'"
+                :aria-label="hanging ? 'Budka pověšena' : 'Budka nalezena'"
               />
             </div>
             <SegmentedControl
-              v-if="!isFound && !planned"
+              v-if="!isFound && !hanging"
               v-model="state.found"
               :options="FOUND_OPTIONS"
             />
+            <div v-if="!found" class="reveal">
+              <label class="label" :for="noteId">{{ whyNot.label }}</label>
+              <n-input
+                v-model:value="state.note"
+                type="textarea"
+                :autosize="{ minRows: 2 }"
+                :input-props="{ id: noteId }"
+                :placeholder="whyNot.placeholder"
+              />
+              <span v-if="errors.note" class="error">{{ errors.note }}</span>
+            </div>
           </div>
 
-          <template v-if="found && !planned">
+          <template v-if="found && !hanging">
             <div class="question">
               <span class="label">
                 Vyčištěno <HelpBadge @open="openHelp('cleaning')" />
@@ -216,8 +234,9 @@ const save = async () => {
               <div v-if="state.cleaning === 'not_cleaned'" class="reveal">
                 <span class="label">Proč ne?</span>
                 <ChoiceChips
-                  v-model="state.not_cleaned_reason_id"
+                  :model-value="state.not_cleaned_reason_id"
                   :options="reasonOptions"
+                  @update:model-value="chooseReason(state, $event, categories)"
                 />
                 <span v-if="errors.not_cleaned_reason_id" class="error">
                   {{ errors.not_cleaned_reason_id }}
@@ -225,29 +244,30 @@ const save = async () => {
               </div>
             </div>
 
-            <div v-if="asksContents(state, box)" class="question">
+            <div v-if="asksContents(state, categories)" class="question">
               <span class="label">
-                Co bylo uvnitř? <HelpBadge @open="openHelp('contents')" />
+                Co v budce bylo? <HelpBadge @open="openHelp('contents')" />
               </span>
-              <SegmentedControl v-model="state.contents" :options="CONTENTS_OPTIONS" />
+              <span class="small muted">
+                Hnízdo nebo zbytky po zvířatech se počítají, i když už tam nikdo není.
+              </span>
+              <ChoiceChips v-model="state.contents" :options="CONTENTS_OPTIONS" />
               <span v-if="errors.contents" class="error">{{ errors.contents }}</span>
-              <div v-if="state.contents === 'occupied'" class="reveal">
+              <div
+                v-if="['bird_nest', 'other_animal'].includes(state.contents)"
+                class="reveal"
+              >
                 <span class="label">
-                  Kdo tam bydlel?
+                  {{
+                    state.contents === "bird_nest" ? "Kdo tu hnízdil?" : "Jaké zvíře?"
+                  }}
                   <span class="small muted light">
                     Můžeš vybrat víc. „Nevím“ je lepší než tip.
                   </span>
                 </span>
-                <span class="group-label">Ptáci</span>
                 <ChoiceChips
                   v-model="state.occupant_ids"
-                  :options="birdOptions"
-                  multiple
-                />
-                <span class="group-label">Jiní</span>
-                <ChoiceChips
-                  v-model="state.occupant_ids"
-                  :options="otherOptions"
+                  :options="occupantOptions"
                   multiple
                 />
                 <span v-if="errors.occupant_ids" class="error">
@@ -260,7 +280,7 @@ const save = async () => {
                 >
                   <AppIcon name="help" /> Jak poznat, kdo tu bydlel
                 </button>
-                <template v-if="birdChosen">
+                <template v-if="state.contents === 'bird_nest'">
                   <ChoiceChips
                     v-model="state.breeding"
                     :options="BREEDING_OPTIONS"
@@ -283,8 +303,20 @@ const save = async () => {
           </template>
 
           <div v-if="found" class="question">
+            <template v-if="state.verify">
+              <span class="label">
+                Prosím ověř údaje budky <HelpBadge @open="openHelp('hanging')" />
+              </span>
+              <span class="small muted">
+                {{
+                  hanging
+                    ? "Zadej, kde budka visí, a zkontroluj otvor, typ a otevírání."
+                    : "Údaje budky nejsou ověřené nebo úplné. Zkontroluj je a doplň, co chybí."
+                }}
+              </span>
+            </template>
             <button
-              v-if="!planned && !state.verify"
+              v-else
               class="collapse"
               type="button"
               :aria-expanded="state.changes_open"
@@ -292,21 +324,18 @@ const save = async () => {
             >
               <AppIcon name="edit" />
               <span class="grow">
-                <b>{{ changesTitle }}</b>
+                <b>Něco se na budce změnilo</b>
                 <span class="small muted">Otvor, typ, otevírání, poloha, označení</span>
               </span>
               <AppIcon :name="state.changes_open ? 'minus' : 'chevd'" />
             </button>
-            <span v-else class="label">
-              {{ changesTitle }} <HelpBadge @open="openHelp('hanging')" />
-            </span>
             <div v-if="state.changes_open" class="reveal">
               <BoxFields
                 v-model="state.changes"
                 :types="categories.types"
                 :center="box.location"
                 :errors="errors"
-                :locate-on-open="planned && !initial"
+                :locate-on-open="hanging && !initial"
                 @help="openHelp"
               />
             </div>
@@ -324,13 +353,13 @@ const save = async () => {
             />
           </div>
 
-          <div class="question">
-            <label class="label" for="check-note">Poznámka</label>
+          <div v-if="found" class="question">
+            <label class="label" :for="noteId">Poznámka</label>
             <n-input
               v-model:value="state.note"
               type="textarea"
               :autosize="{ minRows: 2 }"
-              :input-props="{ id: 'check-note' }"
+              :input-props="{ id: noteId }"
               placeholder="Cokoli dalšího, co by měl správce vědět"
             />
           </div>

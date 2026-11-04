@@ -26,6 +26,68 @@ class BatchClosed(Exception):
     pass
 
 
+# Unset values of the answers a check form may leave out
+UNANSWERED = {
+    "cleaning": "",
+    "not_cleaned_reason": None,
+    "contents": [],
+    "occupants": [],
+    "eggs_left": None,
+    "dead_birds": None,
+    "breeding_note": "",
+    "box_left": "",
+    "box_changes": {},
+}
+AFTER_CLEANING = ("contents", "occupants", "eggs_left", "dead_birds", "breeding_note")
+OCCUPIED = {Check.Content.BIRD_NEST, Check.Content.OTHER_ANIMAL}
+
+
+def validate_check(check, occupants):
+    """Raises ValidationError unless the check answers what the check form asks,
+    and nothing it skips. A box hung by the check gets no cleaning questions.
+    """
+    errors = {}
+    values = {
+        name: list(occupants) if name == "occupants" else getattr(check, name)
+        for name in UNANSWERED
+    }
+    if check.found != Check.Found.FOUND:
+        if not check.note.strip():
+            errors["note"] = "Napiš, proč."
+        skipped = list(UNANSWERED)
+    elif check.box.status == NestBox.Status.PLANNED or check.box_changes.get(HUNG):
+        skipped = [name for name in UNANSWERED if name != "box_changes"]
+    else:
+        skipped = []
+        reason = check.not_cleaned_reason
+        if check.cleaning == Check.Cleaning.NOT_CLEANED:
+            if reason is None:
+                errors["not_cleaned_reason"] = "Vyber, proč se nevyčistila."
+        else:
+            skipped.append("not_cleaned_reason")
+        contents = set(check.contents)
+        if check.cleaning != Check.Cleaning.NOT_CLEANED or (
+            reason and reason.contents_known
+        ):
+            if not contents:
+                errors["contents"] = "Vyber, co bylo uvnitř."
+            elif len(contents) > 1 and not contents <= OCCUPIED:
+                errors["contents"] = "Prázdná a nevím nejdou s ničím dalším."
+        elif reason:
+            skipped += AFTER_CLEANING
+        if not contents & OCCUPIED:
+            skipped.append("occupants")
+        if Check.Content.BIRD_NEST not in contents:
+            skipped += ["eggs_left", "dead_birds", "breeding_note"]
+        if not check.box_left:
+            errors["box_left"] = "Vyber, v jakém stavu budka je."
+    for name in skipped:
+        if values[name] != UNANSWERED[name] and name not in errors:
+            errors[name] = "Tady se nic nevyplňuje."
+    if errors:
+        raise ValidationError(errors)
+
+
 def _point(geojson):
     point = GEOSGeometry(json.dumps(geojson), srid=4326)
     if not isinstance(point, Point):
@@ -106,6 +168,7 @@ def _ensure_alone_in_season(check):
 @transaction.atomic
 def enter_check(check, occupants, user):
     """A manager's own check: confirmed at once, unless it is entered into a batch."""
+    validate_check(check, occupants)
     _ensure_alone_in_season(check)
     check.entered_by = user
     check.save()
@@ -121,6 +184,7 @@ def enter_check(check, occupants, user):
 def edit_check(check, occupants, user):
     """A manager's edit. A confirmed check is applied to its box again when it is
     the box's latest, so correcting a mistake corrects the box too."""
+    validate_check(check, occupants)
     _ensure_alone_in_season(check)
     check.save()
     check.occupants.set(occupants)
@@ -166,6 +230,7 @@ def submit_check(batch, check, occupants):
     ensure_open(batch)
     if not batch.boxes.filter(pk=check.box_id).exists():
         raise PermissionDenied
+    validate_check(check, occupants)
     check.batch = batch
     check.is_confirmed = False
     check.confirmed_at = None
@@ -188,7 +253,7 @@ def _hung_changes(box):
 @transaction.atomic
 def submit_box(batch, values, check):
     """A box a volunteer hung: a planned box and a pending check that hangs it,
-    found, cleaned and empty. Confirming the check hangs the box, deleting it
+    as the check form hangs a planned box. Confirming the check hangs the box, deleting it
     deletes the box. A resend with the same ids updates both."""
     ensure_open(batch)
     box = NestBox.objects.select_for_update().filter(pk=values["id"]).first()
@@ -204,8 +269,6 @@ def submit_box(batch, values, check):
     batch.boxes.add(box)
     check.box = box
     check.found = Check.Found.FOUND
-    check.cleaning = Check.Cleaning.CLEANED
-    check.contents = [Check.Content.NOTHING]
     check.box_changes = _hung_changes(box)
     return box, submit_check(batch, check, [])
 

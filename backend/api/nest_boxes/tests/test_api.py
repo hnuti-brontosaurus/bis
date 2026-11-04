@@ -32,9 +32,15 @@ def link_check(box, hour=10, **kwargs):
         "found": "found",
         "cleaning": "cleaned",
         "contents": ["nothing"],
+        "box_left": "fine",
         "volunteer_nickname": "Sýkorka",
         "volunteer_email": "sykorka@example.com",
     } | kwargs
+
+
+NOT_FOUND = dict(
+    found="not_found", cleaning="", contents=[], box_left="", note="není na stromě"
+)
 
 
 def contains_coordinates(data, point):
@@ -269,6 +275,21 @@ def test_invalid_box_changes_are_rejected(anonymous, batch):
     assert "box_changes" in response.json()
 
 
+def test_a_check_answers_what_the_form_asks(anonymous, batch):
+    url = f"{API}/links/{batch.token}/checks/"
+    box = batch.boxes.get()
+
+    response = anonymous.post(
+        url, link_check(box, cleaning="not_cleaned"), format="json"
+    )
+    assert response.status_code == 400
+    assert set(response.json()) == {"not_cleaned_reason"}
+
+    lost = link_check(box, **NOT_FOUND | {"note": "", "contents": ["nothing"]})
+    response = anonymous.post(url, lost, format="json")
+    assert set(response.json()) == {"note", "contents"}
+
+
 def test_managers_single_check_is_confirmed_at_once(board_client, make_box, manager):
     box = make_box()
     response = board_client.post(
@@ -278,6 +299,7 @@ def test_managers_single_check_is_confirmed_at_once(board_client, make_box, mana
             "date": "2025-11-02",
             "found": "not_found",
             "contents": [],
+            "note": "strom je pokácený",
         },
         format="json",
     )
@@ -297,7 +319,12 @@ def test_managers_single_check_is_confirmed_at_once(board_client, make_box, mana
 
     fixed = board_client.patch(
         f"{API}/checks/{response.json()['id']}/",
-        {"found": "found", "contents": ["nothing"]},
+        {
+            "found": "found",
+            "cleaning": "cleaned",
+            "contents": ["nothing"],
+            "box_left": "fine",
+        },
         format="json",
     )
     assert fixed.status_code == 200
@@ -314,7 +341,9 @@ def test_managers_check_into_a_batch_stays_pending(board_client, batch, make_box
             "batch_id": batch.pk,
             "date": "2025-11-02",
             "found": "found",
+            "cleaning": "cleaned",
             "contents": ["bird_nest"],
+            "box_left": "fine",
         },
         format="json",
     )
@@ -541,7 +570,7 @@ def test_volunteer_gets_the_season_state(anonymous, batch, season_2025):
     assert anonymous.get(url).json()["boxes"][0]["season_state"] == "to_check"
 
     sent = anonymous.post(
-        f"{url}checks/", link_check(batch.boxes.get(), found="not_found"), format="json"
+        f"{url}checks/", link_check(batch.boxes.get(), **NOT_FOUND), format="json"
     )
 
     assert sent.json()["season_state"] == "attention"

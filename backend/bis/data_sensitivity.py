@@ -235,7 +235,9 @@ SENSITIVITY = {
     },
     "categories.NestBoxOccupant": {PUBLIC: ["name", "slug", "order", "is_bird"]},
     "categories.NestBoxEndReason": {PUBLIC: ["name", "slug", "order", "spot_reusable"]},
-    "categories.NestBoxNotCleanedReason": {PUBLIC: ["name", "slug", "order"]},
+    "categories.NestBoxNotCleanedReason": {
+        PUBLIC: ["name", "slug", "order", "contents_known", "occupant"]
+    },
     "questionnaire.EventApplication": {
         INTERNAL: [
             "event_registration",

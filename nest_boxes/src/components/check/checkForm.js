@@ -76,22 +76,29 @@ export const typeHint = (type, holeShape, holeSize) => {
   return { tone: "ok", text: `podle otvoru ${range(type.hole_min, type.hole_max)}` }
 }
 
-const CONTENT_CHOICES = { nothing: "nothing", unknown: "unknown" }
+const CONTENT_CHOICES = ["bird_nest", "other_animal", "nothing", "unknown"]
 
-const contentsChoice = contents => {
-  if (!contents?.length) return null
-  if (contents.includes("bird_nest") || contents.includes("other_animal"))
-    return "occupied"
-  return CONTENT_CHOICES[contents[0]] ?? null
-}
+const contentsChoice = contents =>
+  CONTENT_CHOICES.find(choice => contents?.includes(choice)) ?? null
 
 const defaultCleaning = (box, types) =>
   types.find(type => type.id === box.type_id)?.needs_cleaning === false ? "" : "cleaned"
 
+/** The box's required data it lacks, which a check asks for as if to verify it. */
+export const missingBoxFields = box => {
+  const values = boxValues(box)
+  return VERIFICATION_FIELDS.filter(key =>
+    key === "hole_size"
+      ? MEASURED_HOLE_SHAPES.includes(box.hole_shape) && !box.hole_size
+      : !values[key],
+  )
+}
+
 /** The form's state for a new check of `box`, or for editing `initial`. */
 export const initialState = (box, initial, types, date = isoDate()) => {
-  const planned = box.status === "planned"
-  const verify = !planned && !box.is_verified
+  // A check that hangs a box asks nothing about cleaning, see validate_check
+  const hanging = box.status === "planned" || Boolean(initial?.box_changes?.hung)
+  const verify = !box.is_verified || missingBoxFields(box).length > 0
   const changes = { ...boxValues(box), ...(initial?.box_changes ?? {}) }
   delete changes.hung
   if (!initial)
@@ -100,15 +107,16 @@ export const initialState = (box, initial, types, date = isoDate()) => {
       date,
       made_at: null,
       found: "found",
-      hung: planned,
-      cleaning: planned ? "" : defaultCleaning(box, types),
+      hanging,
+      hung: hanging,
+      cleaning: hanging ? "" : defaultCleaning(box, types),
       not_cleaned_reason_id: null,
       contents: null,
       occupant_ids: [],
       breeding: [],
       breeding_note: "",
       box_left: "fine",
-      changes_open: planned || verify,
+      changes_open: verify,
       verify,
       changes,
       note: "",
@@ -121,6 +129,7 @@ export const initialState = (box, initial, types, date = isoDate()) => {
     date: initial.date,
     made_at: initial.made_at,
     found: initial.found,
+    hanging,
     hung: Boolean(initial.box_changes?.hung),
     cleaning: initial.cleaning,
     not_cleaned_reason_id: initial.not_cleaned_reason_id,
@@ -132,7 +141,7 @@ export const initialState = (box, initial, types, date = isoDate()) => {
     ],
     breeding_note: initial.breeding_note,
     box_left: initial.box_left || "fine",
-    changes_open: planned || verify || changedKeys.length > 0,
+    changes_open: verify || changedKeys.length > 0,
     verify,
     changes,
     note: initial.note,
@@ -165,34 +174,41 @@ export const boxChanges = (state, box) => {
   return changes
 }
 
-const isOccupied = state => state.contents === "occupied"
+const reasonOf = (state, reasons) =>
+  reasons.find(reason => reason.id === state.not_cleaned_reason_id)
 
-const occupiedContents = (state, occupants) => {
-  const chosen = occupants.filter(occupant => state.occupant_ids.includes(occupant.id))
-  return [
-    ...(chosen.some(occupant => occupant.is_bird) ? ["bird_nest"] : []),
-    ...(chosen.some(occupant => !occupant.is_bird) ? ["other_animal"] : []),
-  ]
+/** Picks why the box wasn't cleaned; a reason that tells who is inside says so. */
+export const chooseReason = (state, reasonId, { not_cleaned_reasons, occupants }) => {
+  state.not_cleaned_reason_id = reasonId
+  const reason = not_cleaned_reasons.find(item => item.id === reasonId)
+  const occupant = occupants.find(item => item.id === reason?.occupant_id)
+  if (!occupant) return
+  state.contents = occupant.is_bird ? "bird_nest" : "other_animal"
+  state.occupant_ids = [occupant.id]
 }
 
-/** Whether the form asks what was inside: not for a box hung now, or one that would not open. */
-export const asksContents = (state, box) =>
+/**
+ * Whether the form asks what was inside: of a found box that isn't hung now,
+ * unless it wasn't cleaned for a reason that leaves the inside unknown.
+ */
+export const asksContents = (state, { not_cleaned_reasons }) =>
   state.found === "found" &&
-  box.status !== "planned" &&
-  state.cleaning !== "could_not_open"
+  !state.hanging &&
+  (state.cleaning !== "not_cleaned" ||
+    Boolean(reasonOf(state, not_cleaned_reasons)?.contents_known))
 
-const contentsOf = (state, occupants, initial) => {
-  if (state.cleaning === "could_not_open") return ["unknown"]
-  if (!isOccupied(state)) return [state.contents]
-  const contents = occupiedContents(state, occupants)
-  // An imported check may say "occupied" without saying by whom
-  return contents.length ? contents : initial.contents
-}
+/** The chosen occupants of the kind the contents say: birds for a nest. */
+export const chosenOccupants = (state, occupants) =>
+  occupants
+    .filter(occupant => state.occupant_ids.includes(occupant.id))
+    .filter(occupant =>
+      state.contents === "bird_nest" ? occupant.is_bird : !occupant.is_bird,
+    )
+
+const OCCUPIED = ["bird_nest", "other_animal"]
 
 /** The check exactly as the API takes it. */
-export const buildPayload = (state, box, { occupants }, initial = null) => {
-  const found = state.found === "found"
-  const planned = box.status === "planned"
+export const buildPayload = (state, box, categories) => {
   const payload = {
     id: state.id,
     box_id: box.id,
@@ -210,50 +226,58 @@ export const buildPayload = (state, box, { occupants }, initial = null) => {
     box_changes: boxChanges(state, box),
     note: state.note,
   }
-  if (!found || planned) return payload
+  if (state.found !== "found" || state.hanging) return payload
   payload.cleaning = state.cleaning
+  payload.box_left = state.box_left
   if (state.cleaning === "not_cleaned")
     payload.not_cleaned_reason_id = state.not_cleaned_reason_id
-  payload.contents = contentsOf(state, occupants, initial)
-  if (isOccupied(state) && state.cleaning !== "could_not_open") {
-    payload.occupant_ids = [...state.occupant_ids]
-    if (payload.contents.includes("bird_nest")) {
-      payload.eggs_left = state.breeding.includes("eggs_left")
-      payload.dead_birds = state.breeding.includes("dead_birds")
-      payload.breeding_note = state.breeding_note
-    }
+  if (!asksContents(state, categories)) return payload
+  payload.contents = [state.contents]
+  if (OCCUPIED.includes(state.contents))
+    payload.occupant_ids = chosenOccupants(state, categories.occupants).map(
+      occupant => occupant.id,
+    )
+  if (state.contents === "bird_nest") {
+    payload.eggs_left = state.breeding.includes("eggs_left")
+    payload.dead_birds = state.breeding.includes("dead_birds")
+    payload.breeding_note = state.breeding_note
   }
-  payload.box_left = state.box_left
   return payload
 }
 
-const hasInitialOccupants = initial =>
-  ["bird_nest", "other_animal"].some(content => initial?.contents.includes(content))
+const OCCUPANT_ERRORS = {
+  bird_nest: "Vyber, který pták tu hnízdil. Když nevíš, vyber „pták (nevím jaký)“.",
+  other_animal: "Vyber, jaké zvíře tu bylo. Když nevíš, vyber „nevím“.",
+}
 
-/** Messages per field; empty when the check can be saved. */
-export const validate = (state, box, initial = null) => {
+/** Messages per field; empty when the check can be saved. Mirrors validate_check. */
+export const validate = (state, categories, initial = null) => {
   const errors = {}
   if (!state.date) errors.date = "Zadej datum kontroly."
-  if (state.found !== "found") return errors
-  if (box.status === "planned") {
+  if (state.found !== "found") {
+    if (!state.note.trim()) errors.note = "Napiš proč, správci to pomůže."
+    return errors
+  }
+  if (state.hanging) {
     if (!state.changes.location) errors.location = "Zadej, kde budka visí."
   } else {
     if (state.cleaning === "not_cleaned" && !state.not_cleaned_reason_id)
       errors.not_cleaned_reason_id = "Vyber, proč se nevyčistila."
-    if (asksContents(state, box)) {
+    if (asksContents(state, categories)) {
       if (!state.contents) errors.contents = "Vyber, co bylo uvnitř."
       else if (
-        isOccupied(state) &&
-        !state.occupant_ids.length &&
-        !hasInitialOccupants(initial)
+        OCCUPIED.includes(state.contents) &&
+        !chosenOccupants(state, categories.occupants).length &&
+        // An imported check may say what was inside without saying who
+        !initial?.contents.includes(state.contents)
       )
-        errors.occupant_ids = "Vyber, kdo tam bydlel. Když nevíš, vyber „nevím“."
+        errors.occupant_ids = OCCUPANT_ERRORS[state.contents]
     }
   }
   if (state.changes_open && state.verify) {
     const { changes } = state
     if (!changes.name) errors.name = "Bez označení budku neověříš."
-    if (!changes.location) errors.location = "Bez polohy budku neověříš."
+    if (!changes.location) errors.location ??= "Bez polohy budku neověříš."
     if (!changes.hole_shape) errors.hole_shape = "Vyber tvar otvoru."
     if (MEASURED_HOLE_SHAPES.includes(changes.hole_shape) && !changes.hole_size)
       errors.hole_size = "Změř šířku otvoru."

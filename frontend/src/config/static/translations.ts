@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 3c1d83b585723f28
+// source-hash: 11411ee30e09de39
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1190,6 +1190,8 @@ export const nestBoxEndReason = {
 export const nestBoxNotCleanedReason = {
   _name: 'Důvod nevyčištění budky',
   _name_plural: 'Důvod nevyčištění budky',
+  contents_known: 'Dá se zjistit, co je uvnitř?',
+  occupant: 'Kdo je uvnitř',
 } as const
 
 export const area = {

@@ -101,7 +101,7 @@ class NestBoxEndReasonSerializer(ModelSerializer):
 class NestBoxNotCleanedReasonSerializer(ModelSerializer):
     class Meta:
         model = NestBoxNotCleanedReason
-        fields = ("id", "slug", "name", "order")
+        fields = ("id", "slug", "name", "order", "contents_known", "occupant_id")
 
 
 def categories_data():

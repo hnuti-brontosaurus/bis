@@ -1055,6 +1055,9 @@ NestBoxEndReason:
 NestBoxNotCleanedReason:
   name: Důvod nevyčištění budky
   name_plural: Důvody nevyčištění budek
+  fields:
+    contents_known: Dá se zjistit, co je uvnitř?
+    occupant: Kdo je uvnitř
 
 Area:
   name: Oblast budek

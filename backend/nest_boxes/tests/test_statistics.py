@@ -56,7 +56,7 @@ def test_season_statistics(area, boxes):
     check(boxes["wasps"], [Content.OTHER_ANIMAL], cleaning=Check.Cleaning.NOT_CLEANED)
     check(boxes["empty"], [Content.NOTHING])
     check(boxes["unknown"], [Content.UNKNOWN])
-    check(boxes["closed"], [], cleaning=Check.Cleaning.COULD_NOT_OPEN)
+    check(boxes["closed"], [], cleaning=Check.Cleaning.NOT_CLEANED)
     check(boxes["lost"], [], found=Check.Found.NOT_FOUND, cleaning="")
     check(boxes["pending"], [Content.BIRD_NEST], is_confirmed=False)
     check(boxes["bats"], [Content.OTHER_ANIMAL])

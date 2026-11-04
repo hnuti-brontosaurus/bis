@@ -176,7 +176,8 @@ def read_check(occupancy, note, repair_flag, unseen_default=False):
         reading.contents = [Content.NOTHING]
 
     if "could_not_open" in labels:
-        reading.cleaning = Cleaning.COULD_NOT_OPEN
+        reading.cleaning = Cleaning.NOT_CLEANED
+        reading.not_cleaned_reason = "could_not_open"
     elif labels & {"not_inspected", "not_cleaned"} or occupancy == "nelze čistit":
         reading.cleaning = Cleaning.NOT_CLEANED
         reading.not_cleaned_reason = notes.not_cleaned_reason(note)

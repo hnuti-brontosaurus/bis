@@ -89,7 +89,7 @@ test.describe("a manager's check", () => {
     await expect(
       page.getByRole("heading", { name: "Úprava kontroly budky 1" }),
     ).toBeVisible()
-    await page.getByRole("radio", { name: "Obsazená" }).click()
+    await page.getByRole("radio", { name: "Hnízdo nebo zbytky po ptácích" }).click()
     await page.getByRole("checkbox", { name: "sýkora koňadra" }).click()
     await page.getByRole("button", { name: "Uložit kontrolu" }).click()
     await expect(history).toContainText("vyčištěno · sýkora koňadra")
@@ -126,6 +126,9 @@ test.describe("the batch page", () => {
     await choose(page, add.getByLabel("Budka nové kontroly"), "2")
     await add.getByRole("switch", { name: "Budka nalezena" }).click()
     await add.getByRole("button", { name: "Zapsat kontrolu" }).click()
+    await expect(add.getByText("Napiš proč, správci to pomůže.")).toBeVisible()
+    await add.getByLabel("Proč se nenašla?").fill("Strom je pokácený")
+    await add.getByRole("button", { name: "Zapsat kontrolu" }).click()
 
     const checks = page.getByTestId("batch-checks")
     await expect(checks.locator("[data-check-row]")).toHaveCount(2)
@@ -134,7 +137,7 @@ test.describe("the batch page", () => {
 
     await checks.getByRole("button", { name: "Upravit kontrolu 1" }).click()
     const form = checks.getByTestId("check-form")
-    await form.getByRole("radio", { name: "Obsazená" }).click()
+    await form.getByRole("radio", { name: "Jiné zvíře" }).click()
     await form.getByRole("checkbox", { name: "vosy" }).click()
     await form.getByRole("button", { name: "Uložit úpravu" }).click()
     await expect(checks.locator('[data-check-row="1"]')).toContainText("vosy")
@@ -194,10 +197,17 @@ test.describe("the map of areas", () => {
         found: "found",
         cleaning: "cleaned",
         contents: ["nothing"],
+        box_left: "fine",
         ...values,
       })
     await check(area.boxes["1"], {})
-    await check(area.boxes["2"], { found: "not_found", cleaning: "", contents: [] })
+    await check(area.boxes["2"], {
+      found: "not_found",
+      cleaning: "",
+      contents: [],
+      box_left: "",
+      note: "Strom je pokácený",
+    })
 
     await page.goto("/budky/mapa/")
     const states = page.getByTestId("season-states")

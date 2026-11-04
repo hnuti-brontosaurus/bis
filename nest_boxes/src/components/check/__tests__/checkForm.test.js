@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  asksContents,
   buildPayload,
+  chooseReason,
   initialState,
+  missingBoxFields,
   suggestType,
   typeHint,
   validate,
@@ -53,10 +56,18 @@ const types = [
 ]
 const occupants = [
   { id: 1, name: "sýkora", is_bird: true },
+  { id: 17, name: "pták (nevím jaký)", is_bird: true },
   { id: 18, name: "vosy", is_bird: false },
+  { id: 19, name: "sršni", is_bird: false },
   { id: 27, name: "nevím", is_bird: false },
 ]
-const categories = { types, occupants, not_cleaned_reasons: [] }
+const not_cleaned_reasons = [
+  { id: 1, name: "v budce je pták", contents_known: true, occupant_id: 17 },
+  { id: 2, name: "sršni", contents_known: true, occupant_id: 19 },
+  { id: 3, name: "nešla otevřít", contents_known: false, occupant_id: null },
+  { id: 6, name: "jiné", contents_known: true, occupant_id: null },
+]
+const categories = { types, occupants, not_cleaned_reasons }
 const location = { type: "Point", coordinates: [14.36, 50.07] }
 const box = {
   id: "box-1",
@@ -127,11 +138,46 @@ describe("initialState", () => {
     expect(fresh({}, { ...box, type_id: 11 }).cleaning).toBe("")
   })
 
-  it("hangs a planned box", () => {
+  it("hangs a planned box and verifies it", () => {
     expect(fresh({}, planned)).toMatchObject({
+      hanging: true,
       hung: true,
+      verify: true,
       changes_open: true,
       cleaning: "",
+    })
+  })
+
+  it("asks to verify a box that lacks required data", () => {
+    const unmeasured = { ...box, hole_size: null }
+    expect(missingBoxFields(unmeasured)).toEqual(["hole_size"])
+    expect(missingBoxFields({ ...box, hole_shape: "slit", hole_size: null })).toEqual(
+      [],
+    )
+    expect(fresh({}, unmeasured)).toMatchObject({ verify: true, changes_open: true })
+  })
+
+  it("keeps the edit of a check that hung a box a hanging", () => {
+    const initial = {
+      id: "check-1",
+      date: "2026-10-24",
+      made_at: "2026-10-24T10:00:00Z",
+      found: "found",
+      cleaning: "",
+      not_cleaned_reason_id: null,
+      contents: [],
+      occupant_ids: [],
+      eggs_left: null,
+      dead_birds: null,
+      breeding_note: "",
+      box_left: "",
+      box_changes: { hung: true, location },
+      note: "",
+      photos: [],
+    }
+    expect(initialState(box, initial, types)).toMatchObject({
+      hanging: true,
+      hung: true,
     })
   })
 
@@ -155,7 +201,7 @@ describe("initialState", () => {
     }
     expect(initialState(box, initial, types)).toMatchObject({
       id: "check-1",
-      contents: "occupied",
+      contents: "bird_nest",
       breeding: ["eggs_left"],
       box_left: "needs_repair",
       changes_open: true,
@@ -182,9 +228,9 @@ describe("buildPayload", () => {
     expect(Date.parse(payload.made_at)).not.toBeNaN()
   })
 
-  it("derives the contents from the occupants", () => {
+  it("sends the occupants of the kind the contents say", () => {
     const birds = buildPayload(
-      fresh({ contents: "occupied", occupant_ids: [1], breeding: ["dead_birds"] }),
+      fresh({ contents: "bird_nest", occupant_ids: [1, 18], breeding: ["dead_birds"] }),
       box,
       categories,
     )
@@ -194,17 +240,30 @@ describe("buildPayload", () => {
       eggs_left: false,
       dead_birds: true,
     })
-    const unknown = buildPayload(
-      fresh({ contents: "occupied", occupant_ids: [18, 27] }),
+    const animals = buildPayload(
+      fresh({
+        contents: "other_animal",
+        occupant_ids: [1, 18, 27],
+        breeding: ["eggs_left"],
+      }),
       box,
       categories,
     )
-    expect(unknown).toMatchObject({ contents: ["other_animal"], eggs_left: null })
+    expect(animals).toMatchObject({
+      contents: ["other_animal"],
+      occupant_ids: [18, 27],
+      eggs_left: null,
+    })
   })
 
   it("asks nothing more of a box not found", () => {
     const payload = buildPayload(
-      fresh({ found: "not_found", contents: "nothing", changes_open: true }),
+      fresh({
+        found: "not_found",
+        contents: "nothing",
+        changes_open: true,
+        note: "pryč",
+      }),
       box,
       categories,
     )
@@ -214,12 +273,31 @@ describe("buildPayload", () => {
       contents: [],
       box_left: "",
       box_changes: {},
+      note: "pryč",
     })
   })
 
-  it("can't see inside a box that wouldn't open", () => {
-    const payload = buildPayload(fresh({ cleaning: "could_not_open" }), box, categories)
-    expect(payload.contents).toEqual(["unknown"])
+  it("doesn't ask what was inside a box that wouldn't open", () => {
+    const state = fresh({
+      cleaning: "not_cleaned",
+      not_cleaned_reason_id: 3,
+      contents: "nothing",
+    })
+    expect(asksContents(state, categories)).toBe(false)
+    expect(buildPayload(state, box, categories)).toMatchObject({
+      cleaning: "not_cleaned",
+      not_cleaned_reason_id: 3,
+      contents: [],
+      box_left: "fine",
+    })
+  })
+
+  it("asks what was inside when the reason lets one see it", () => {
+    const state = fresh({ cleaning: "not_cleaned", not_cleaned_reason_id: 6 })
+    expect(asksContents(state, categories)).toBe(true)
+    expect(asksContents({ ...state, not_cleaned_reason_id: null }, categories)).toBe(
+      false,
+    )
   })
 
   it("sends only what changed on the box", () => {
@@ -250,31 +328,79 @@ describe("buildPayload", () => {
   })
 })
 
-describe("validate", () => {
-  it("wants to know what was inside", () => {
-    expect(validate(fresh(), box)).toHaveProperty("contents")
-    expect(validate(fresh({ contents: "nothing" }), box)).toEqual({})
+describe("chooseReason", () => {
+  it("prefills who is inside", () => {
+    const state = fresh({ cleaning: "not_cleaned" })
+    chooseReason(state, 2, categories)
+    expect(state).toMatchObject({
+      not_cleaned_reason_id: 2,
+      contents: "other_animal",
+      occupant_ids: [19],
+    })
+    chooseReason(state, 1, categories)
+    expect(state).toMatchObject({ contents: "bird_nest", occupant_ids: [17] })
   })
 
-  it("wants the occupants of an occupied box", () => {
-    expect(validate(fresh({ contents: "occupied" }), box)).toHaveProperty(
+  it("leaves the contents of a reason that doesn't tell them", () => {
+    const state = fresh({ cleaning: "not_cleaned", contents: "nothing" })
+    chooseReason(state, 6, categories)
+    expect(state).toMatchObject({ contents: "nothing", occupant_ids: [] })
+  })
+})
+
+describe("validate", () => {
+  it("wants to know what was inside", () => {
+    expect(validate(fresh(), categories)).toHaveProperty("contents")
+    expect(validate(fresh({ contents: "nothing" }), categories)).toEqual({})
+  })
+
+  it("wants the occupants of the kind chosen", () => {
+    expect(validate(fresh({ contents: "bird_nest" }), categories)).toHaveProperty(
       "occupant_ids",
+    )
+    expect(
+      validate(fresh({ contents: "bird_nest", occupant_ids: [18] }), categories),
+    ).toHaveProperty("occupant_ids")
+    expect(
+      validate(fresh({ contents: "other_animal", occupant_ids: [18] }), categories),
+    ).toEqual({})
+  })
+
+  it("lets an imported check keep contents without occupants", () => {
+    const initial = { contents: ["bird_nest"], occupant_ids: [] }
+    expect(validate(fresh({ contents: "bird_nest" }), categories, initial)).toEqual({})
+  })
+
+  it("wants the reason a box wasn't cleaned, and no contents for an unseen one", () => {
+    expect(validate(fresh({ cleaning: "not_cleaned" }), categories)).toEqual({
+      not_cleaned_reason_id: "Vyber, proč se nevyčistila.",
+    })
+    expect(
+      validate(
+        fresh({ cleaning: "not_cleaned", not_cleaned_reason_id: 3 }),
+        categories,
+      ),
+    ).toEqual({})
+  })
+
+  it("wants to know why a box wasn't found, and nothing else", () => {
+    expect(validate(fresh({ found: "not_found" }), categories)).toHaveProperty("note")
+    expect(validate(fresh({ found: "not_reached", note: "plot" }), categories)).toEqual(
+      {},
     )
   })
 
-  it("wants the reason a box wasn't cleaned", () => {
-    expect(
-      validate(fresh({ contents: "nothing", cleaning: "not_cleaned" }), box),
-    ).toHaveProperty("not_cleaned_reason_id")
-  })
-
-  it("asks nothing of a box not found", () => {
-    expect(validate(fresh({ found: "not_found" }), box)).toEqual({})
+  it("wants where a planned box hangs", () => {
+    const state = fresh({}, planned)
+    state.changes = { ...state.changes, location: null }
+    expect(validate(state, categories)).toEqual({ location: "Zadej, kde budka visí." })
   })
 
   it("wants every verification field", () => {
     const state = fresh({ contents: "nothing", changes_open: true, verify: true })
     state.changes = { ...state.changes, opening: "" }
-    expect(validate(state, box)).toEqual({ opening: "Vyber, jak se budka otevírá." })
+    expect(validate(state, categories)).toEqual({
+      opening: "Vyber, jak se budka otevírá.",
+    })
   })
 })

@@ -2,7 +2,7 @@ from datetime import date
 from uuid import uuid4
 
 import pytest
-from categories.models import NestBoxOccupant
+from categories.models import NestBoxNotCleanedReason, NestBoxOccupant
 from django.core.exceptions import PermissionDenied, ValidationError
 from nest_boxes.checks import (
     BatchClosed,
@@ -14,6 +14,7 @@ from nest_boxes.checks import (
     submit_box,
     submit_check,
     upsert_check,
+    validate_check,
 )
 from nest_boxes.models import Check, NestBox
 from nest_boxes.tests.conftest import ORIGIN, made_at, near
@@ -25,8 +26,14 @@ def new_check(box, hour, **kwargs):
         found=Check.Found.FOUND,
         cleaning=Check.Cleaning.CLEANED,
         contents=[Check.Content.BIRD_NEST],
+        box_left=Check.BoxLeft.FINE,
     )
     return Check(box=box, made_at=made_at(hour), **(defaults | kwargs))
+
+
+NOT_FOUND = dict(
+    found=Check.Found.NOT_FOUND, cleaning="", contents=[], box_left="", note="pryč"
+)
 
 
 def geojson(point):
@@ -216,7 +223,7 @@ def test_a_volunteer_hangs_a_new_box(batch, make_box, new_box):
     assert batch.boxes.filter(pk=box.pk).exists()
     assert (stored.box, stored.batch, stored.is_confirmed) == (box, batch, False)
     assert stored.box_changes["hung"] and stored.box_changes["name"] == "new"
-    assert stored.contents == [Check.Content.NOTHING]
+    assert (stored.cleaning, stored.contents) == ("", [])
 
     resend = hung_check(11)
     resend.pk = check.pk
@@ -233,7 +240,7 @@ def test_a_volunteer_hangs_a_new_box(batch, make_box, new_box):
 
 def test_confirming_the_check_hangs_the_new_box(batch, box, manager, new_box):
     new, _ = submit_box(batch, new_box(), hung_check())
-    submit_check(batch, new_check(box, 10, found=Check.Found.NOT_FOUND), [])
+    submit_check(batch, new_check(box, 10, **NOT_FOUND), [])
 
     confirm_batch(batch, manager)
 
@@ -253,5 +260,78 @@ def test_deleting_the_check_deletes_the_new_box(batch, make_box, manager, new_bo
 
     planned = make_box("P", status=NestBox.Status.PLANNED, created_by=manager)
     batch.boxes.add(planned)
-    delete_check(submit_check(batch, new_check(planned, 10), []))
+    hanging = new_check(planned, 10, cleaning="", contents=[], box_left="")
+    delete_check(submit_check(batch, hanging, []))
     assert NestBox.objects.filter(pk=planned.pk).exists()
+
+
+def reason(slug):
+    return NestBoxNotCleanedReason.objects.get(slug=slug)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        {},
+        NOT_FOUND,
+        dict(cleaning="", contents=[Check.Content.UNKNOWN]),
+        dict(
+            cleaning=Check.Cleaning.NOT_CLEANED,
+            not_cleaned_reason="too_high",
+            contents=[],
+        ),
+        dict(
+            cleaning=Check.Cleaning.NOT_CLEANED,
+            not_cleaned_reason="hornets",
+            contents=[Check.Content.OTHER_ANIMAL],
+        ),
+        dict(contents=[Check.Content.BIRD_NEST, Check.Content.OTHER_ANIMAL]),
+    ],
+)
+def test_valid_checks(box, values):
+    if "not_cleaned_reason" in values:
+        values = values | {"not_cleaned_reason": reason(values["not_cleaned_reason"])}
+    validate_check(new_check(box, 10, **values), [])
+
+
+@pytest.mark.parametrize(
+    "values, errors",
+    [
+        (NOT_FOUND | {"note": " "}, {"note"}),
+        (
+            NOT_FOUND | {"contents": [Check.Content.NOTHING], "box_left": "fine"},
+            {"contents", "box_left"},
+        ),
+        (dict(contents=[]), {"contents"}),
+        (dict(contents=[Check.Content.NOTHING, Check.Content.BIRD_NEST]), {"contents"}),
+        (dict(box_left=""), {"box_left"}),
+        (dict(cleaning=Check.Cleaning.NOT_CLEANED), {"not_cleaned_reason"}),
+        (dict(not_cleaned_reason="too_high"), {"not_cleaned_reason"}),
+        (
+            dict(
+                cleaning=Check.Cleaning.NOT_CLEANED, not_cleaned_reason="could_not_open"
+            ),
+            {"contents"},
+        ),
+        (dict(contents=[Check.Content.NOTHING], eggs_left=True), {"eggs_left"}),
+    ],
+)
+def test_invalid_checks(box, values, errors):
+    if "not_cleaned_reason" in values:
+        values = values | {"not_cleaned_reason": reason(values["not_cleaned_reason"])}
+    with pytest.raises(ValidationError) as raised:
+        validate_check(new_check(box, 10, **values), [])
+    assert set(raised.value.message_dict) == errors
+
+
+def test_occupants_only_of_an_occupied_box(box, occupants):
+    validate_check(new_check(box, 10), occupants)
+    with pytest.raises(ValidationError):
+        validate_check(new_check(box, 10, contents=[Check.Content.NOTHING]), occupants)
+
+
+def test_hanging_a_box_asks_nothing_about_cleaning(make_box):
+    planned = make_box(status=NestBox.Status.PLANNED, installed_on=None)
+    validate_check(new_check(planned, 10, cleaning="", contents=[], box_left=""), [])
+    with pytest.raises(ValidationError):
+        validate_check(new_check(planned, 10), [])

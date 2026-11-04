@@ -32,14 +32,14 @@ def boxes_in_season(season):
 
 
 def inspected_checks(season):
-    """Checks that saw inside the box: not found, couldn't open and unknown stay out."""
+    """Checks that tell what was inside: not found, unknown and unseen stay out."""
     return Check.objects.filter(
         season=season,
         is_confirmed=True,
         found=Check.Found.FOUND,
         box__in=boxes_in_season(season),
         contents__overlap=[Content.NOTHING, Content.BIRD_NEST, Content.OTHER_ANIMAL],
-    ).exclude(cleaning=Check.Cleaning.COULD_NOT_OPEN)
+    )
 
 
 def _per_area(queryset, area_field):
@@ -62,7 +62,7 @@ def _states_per_area(season):
     )
     attention = (
         Q(found=Check.Found.NOT_FOUND)
-        | Q(cleaning__in=[Check.Cleaning.NOT_CLEANED, Check.Cleaning.COULD_NOT_OPEN])
+        | Q(cleaning=Check.Cleaning.NOT_CLEANED)
         | Q(
             box_left__in=[
                 Check.BoxLeft.NEEDS_REPAIR,

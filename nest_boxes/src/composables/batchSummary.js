@@ -12,9 +12,7 @@ const INSPECTED = ["nothing", ...OCCUPIED]
 const changedKeys = check => Object.keys(check.box_changes)
 
 const isInspected = check =>
-  check.found === "found" &&
-  check.cleaning !== "could_not_open" &&
-  check.contents.some(content => INSPECTED.includes(content))
+  check.found === "found" && check.contents.some(content => INSPECTED.includes(content))
 
 const isNewBox = (check, boxesById) => boxesById.get(check.box_id).is_new
 

@@ -708,8 +708,14 @@ permissions, spacing, check upserts, confirming and statistics live in
 - "Verified" is not stored: a box is verified once it has a confirmed check that
   is not historical (`NestBox.objects.with_is_verified()`, which
   `with_season_state()` includes). The API keeps `is_verified` as a field and
-  a filter on that annotation; the check form of an unverified box asks for its
-  data and sends all of it.
+  a filter on that annotation; the check form of an unverified box, or one
+  missing a required field, asks for its data and sends all of it.
+- `checks.validate_check` is the check form's flow on the server (not found →
+  only a note saying why; a check hanging a box → no cleaning questions; not
+  cleaned → a reason, and contents only if `NestBoxNotCleanedReason.contents_known`).
+  `checkForm.js` `validate` / `buildPayload` mirror it: change them together.
+  "Nešla otevřít" is a not-cleaned reason, not a cleaning value. `contents` says
+  what the box held this season (a nest or remains), not what is in it now.
 - A box has one note, `note`, shown to managers and on batch links as
   "Poznámka pro dobrovolníky". `Area.note` and `Check.note` are internal.
 - `NestBox.save()` sets `region` from the location and recomputes the stored

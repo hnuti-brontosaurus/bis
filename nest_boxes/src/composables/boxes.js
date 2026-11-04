@@ -5,6 +5,7 @@ import {
   BOX_LEFT_LABELS,
   CLEANING_LABELS,
   CONDITION_LABELS,
+  CONTENT_LABELS,
   FOUND_LABELS,
   HOLE_SHAPE_LABELS,
   MATERIAL_LABELS,
@@ -38,15 +39,9 @@ export const checkResult = (check, occupantsById) => {
   if (check.found !== "found") return FOUND_LABELS[check.found]
   if (check.box_changes?.hung) return "pověšena"
   const occupants = check.occupant_ids.map(id => occupantsById.get(id)?.name)
-  const contents = check.contents.includes("nothing")
-    ? ["prázdná"]
-    : occupants.length
-      ? occupants
-      : check.contents.includes("unknown")
-        ? ["obsah nevím"]
-        : check.contents.length
-          ? ["obsazená"]
-          : []
+  const contents = occupants.length
+    ? occupants
+    : check.contents.map(content => CONTENT_LABELS[content])
   return [
     CLEANING_LABELS[check.cleaning],
     ...contents,
@@ -56,7 +51,6 @@ export const checkResult = (check, occupantsById) => {
     .join(" · ")
 }
 
-const ATTENTION_CLEANING = ["not_cleaned", "could_not_open"]
 const ATTENTION_BOX_LEFT = ["needs_repair", "needs_replacing", "taken_down"]
 
 /**
@@ -66,7 +60,7 @@ const ATTENTION_BOX_LEFT = ["needs_repair", "needs_replacing", "taken_down"]
 export const reportedState = check => {
   if (check.found === "not_reached") return null
   return check.found === "not_found" ||
-    ATTENTION_CLEANING.includes(check.cleaning) ||
+    check.cleaning === "not_cleaned" ||
     ATTENTION_BOX_LEFT.includes(check.box_left)
     ? "attention"
     : "done"

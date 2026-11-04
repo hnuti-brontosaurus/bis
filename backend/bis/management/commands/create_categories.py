@@ -633,14 +633,22 @@ class Command(BaseCommand):
             },
         )
 
+        occupant = NestBoxOccupant.objects.get
         self.update_categories(
             NestBoxNotCleanedReason,
             {
-                "hornets": dict(name="sršni"),
-                "bird_inside": dict(name="v budce je pták"),
+                "bird_inside": dict(
+                    name="v budce je pták",
+                    contents_known=True,
+                    occupant=occupant(slug="ptak"),
+                ),
+                "hornets": dict(
+                    name="sršni", contents_known=True, occupant=occupant(slug="srsni")
+                ),
+                "could_not_open": dict(name="nešla otevřít"),
                 "too_high": dict(name="moc vysoko"),
                 "no_time": dict(name="nestihlo se"),
-                "other": dict(name="jiné"),
+                "other": dict(name="jiné", contents_known=True),
             },
         )
 
