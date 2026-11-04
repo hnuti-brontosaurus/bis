@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue"
 import { RouterLink, useRoute } from "vue-router"
-import { NDrawer, NDrawerContent } from "naive-ui"
+import { NDrawer, NDrawerContent, NDropdown } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import BrandLogo from "@/components/app/BrandLogo.vue"
@@ -26,6 +26,9 @@ const NAVIGATION = [
 const route = useRoute()
 const auth = useAuthStore()
 const menuOpen = ref(false)
+
+const USER_MENU = [{ key: "logout", label: "Odhlásit se" }]
+const logout = () => (globalThis.location.href = logoutUrl(route.fullPath))
 </script>
 
 <template>
@@ -58,14 +61,17 @@ const menuOpen = ref(false)
         <span class="hide-sm">Otevřené obchůzky</span>
         <b>{{ auth.openBatchCount }}</b>
       </RouterLink>
-      <a
+      <n-dropdown
         v-if="auth.isAuthenticated"
-        class="avatar hide-sm"
-        :href="logoutUrl(route.fullPath)"
-        title="Odhlásit se"
+        trigger="click"
+        placement="bottom-end"
+        :options="USER_MENU"
+        @select="logout"
       >
-        {{ auth.initials }}
-      </a>
+        <button class="avatar hide-sm" type="button" aria-label="Uživatel">
+          {{ auth.initials }}
+        </button>
+      </n-dropdown>
       <a v-else class="login hide-sm" :href="loginUrl(route.fullPath)">
         <AppIcon name="user" />
         Přihlásit
@@ -204,8 +210,9 @@ const menuOpen = ref(false)
   background: var(--primary-soft);
   color: var(--primary-text);
   font-weight: 700;
-  font-size: 14px;
-  text-decoration: none;
+  font: 700 14px var(--font);
+  border: 0;
+  cursor: pointer;
 }
 
 .drawer-nav {

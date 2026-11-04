@@ -57,10 +57,10 @@ const VIEWS = [
 // Planned boxes are too rare for a column of their own
 const STATE_COLUMNS = [
   { key: "remaining", label: "Zbývá" },
-  { key: "attention", label: "Pozor" },
+  { key: "attention", label: "K opravě" },
   { key: "done", label: "Hotovo" },
 ]
-const TOTAL_LABELS = { remaining: "zbývá", attention: "pozornost", done: "hotovo" }
+const TOTAL_LABELS = { remaining: "zbývá", attention: "k opravě", done: "hotovo" }
 
 const route = useRoute()
 const router = useRouter()
@@ -102,12 +102,10 @@ const types = computed(() => categories.value?.types ?? [])
 const unitOptions = computed(() =>
   unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
 )
-const seasonOptions = computed(() =>
-  (statistics.value?.seasons ?? []).map(value => ({
-    label: `Sezóna ${seasonLabel(value)}`,
-    value,
-  })),
-)
+// Newest first, so an older season is further down the list
+const seasons = computed(() => statistics.value?.seasons ?? [])
+const seasonIndex = computed(() => seasons.value.indexOf(season.value))
+const stepSeason = step => (season.value = seasons.value[seasonIndex.value + step])
 const typeOptions = computed(() => categoryOptions(types.value))
 
 const inUnit = area =>
@@ -366,13 +364,27 @@ const focusBox = box => {
             filterable
             clearable
           />
-          <n-select
-            v-if="!showsStates"
-            v-model:value="season"
-            :options="seasonOptions"
-            :consistent-menu-width="false"
-            size="small"
-          />
+          <div v-if="!showsStates" class="season-stepper">
+            <n-button
+              size="small"
+              quaternary
+              aria-label="Starší sezóna"
+              :disabled="seasonIndex === seasons.length - 1"
+              @click="stepSeason(1)"
+            >
+              <template #icon><AppIcon name="chevl" /></template>
+            </n-button>
+            <span>Sezóna {{ seasonLabel(season) }}</span>
+            <n-button
+              size="small"
+              quaternary
+              aria-label="Novější sezóna"
+              :disabled="seasonIndex <= 0"
+              @click="stepSeason(-1)"
+            >
+              <template #icon><AppIcon name="chev" /></template>
+            </n-button>
+          </div>
         </div>
         <div v-if="showsStates" class="chips">
           <n-popselect
@@ -509,14 +521,14 @@ const focusBox = box => {
         </table>
       </div>
       <p v-if="showsStates" class="small muted footnote">
-        Letošní stav včetně kontrol, které čekají na potvrzení. Pozornost potřebují
+        Letošní stav včetně kontrol, které čekají na potvrzení. K opravě jsou
         nenalezené, poškozené, nevyčištěné a příliš blízko visící budky. Zbývají i
         plánované budky.
       </p>
       <p v-else class="small muted footnote">
         Jen potvrzené kontroly. Obsazenost se počítá z budek, do kterých někdo opravdu
-        nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch,
-        které potřebují pozornost, letos i s kontrolami čekajícími na potvrzení.
+        nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch
+        k opravě, letos i s kontrolami čekajícími na potvrzení.
       </p>
     </template>
     <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
@@ -573,6 +585,15 @@ const focusBox = box => {
 
 .filters.single {
   grid-template-columns: 1fr;
+}
+
+.season-stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .tbl .first {

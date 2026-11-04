@@ -214,7 +214,7 @@ test.describe("the map of areas", () => {
     const areaRow = states.locator("tr", { hasText: area.name })
     await expect(areaRow.locator("td.num")).toHaveText(["1", "1", "1"])
 
-    await choose(page, page.getByRole("button", { name: "Stav" }), "Pozornost")
+    await choose(page, page.getByRole("button", { name: "Stav" }), "K opravě")
     await expect(areaRow.locator("td.num")).toHaveText(["0", "1", "0"])
 
     await page.getByRole("radio", { name: "Statistiky" }).click()

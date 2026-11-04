@@ -46,7 +46,11 @@ const close = async batch => {
       >
         <div class="stack info">
           <div>
-            <h3>{{ batch.name }}</h3>
+            <h3>
+              <RouterLink :to="{ name: 'link', params: { token: batch.token } }">{{
+                batch.name
+              }}</RouterLink>
+            </h3>
             <RouterLink
               class="small"
               :to="{

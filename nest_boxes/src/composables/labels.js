@@ -14,7 +14,7 @@ export const STATUS_LABELS = {
 // `season_state` of a box, see NestBoxQuerySet.with_season_state
 export const SEASON_STATE_LABELS = {
   to_check: "Ke kontrole",
-  attention: "Pozornost",
+  attention: "K opravě",
   done: "Hotovo",
   planned: "Plánovaná",
 }

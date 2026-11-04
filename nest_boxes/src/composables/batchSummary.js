@@ -24,7 +24,7 @@ export const batchTiles = (batch, checks, boxesById) => {
     { value: checks.length, label: `z ${batch.box_count} zkontrolováno` },
     {
       value: count(check => reportedState(check) === "attention"),
-      label: "potřebuje pozornost",
+      label: "k opravě",
       tone: "warn",
     },
     { value: count(check => check.found === "found"), label: "nalezeno" },

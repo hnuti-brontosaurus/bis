@@ -77,7 +77,7 @@ class Area(m.Model):
 class SeasonState(m.TextChoices):
     PLANNED = "planned", "plánovaná"
     TO_CHECK = "to_check", "ke kontrole"
-    ATTENTION = "attention", "pozornost"
+    ATTENTION = "attention", "k opravě"
     DONE = "done", "hotovo"
 
 

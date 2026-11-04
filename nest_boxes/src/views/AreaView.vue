@@ -239,7 +239,12 @@ watch(batchId, () => (selectedId.value = null))
             class="grow"
             @update:value="selectBatch"
           />
-          <b v-else class="batch-name">{{ batch.name }}</b>
+          <RouterLink
+            v-else
+            class="batch-name"
+            :to="{ name: 'link', params: { token: batch.token } }"
+            >{{ batch.name }}</RouterLink
+          >
           <n-button size="small" quaternary @click="dialogs.batch = true">
             <template #icon><AppIcon name="plus" /></template>
             Nová obchůzka
@@ -404,6 +409,7 @@ watch(batchId, () => (selectedId.value = null))
 .batch-name {
   flex: 1;
   font-size: 16px;
+  font-weight: 700;
 }
 
 .move {

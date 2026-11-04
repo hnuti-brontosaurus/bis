@@ -50,7 +50,7 @@ const toCheck = computed(() =>
 )
 const finished = computed(() =>
   [
-    { state: "attention", title: "Potřebuje pozornost" },
+    { state: "attention", title: "K opravě" },
     { state: "done", title: "Hotovo" },
   ]
     .map(group => ({ ...group, rows: sortBoxes(inState([group.state])) }))

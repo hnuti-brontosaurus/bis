@@ -146,7 +146,13 @@ const confirm = async () => {
     <div class="row head">
       <div>
         <p class="eyebrow">Obchůzka · {{ data.area.name }}</p>
-        <h1>{{ batch.name }}</h1>
+        <h1>
+          <RouterLink
+            class="batch-name"
+            :to="{ name: 'link', params: { token: batch.token } }"
+            >{{ batch.name }}</RouterLink
+          >
+        </h1>
         <p class="muted small">
           Vytvořena {{ formatDate(batch.created_at) }}
           <template v-if="batch.created_by">
@@ -360,6 +366,10 @@ const confirm = async () => {
 </template>
 
 <style scoped>
+.batch-name {
+  color: inherit;
+}
+
 .batch-page {
   max-width: 1180px;
   gap: 20px;
