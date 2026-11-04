@@ -1093,7 +1093,7 @@ NestBox:
     closest_distance: Nejbližší budka (m)
     closest_same_type_distance: Nejbližší budka stejného typu (m)
     old: ID ve staré databázi
-    batch: Dávka
+    batch: Obchůzka
 
 NestBoxHistory:
   name: Změna budky
@@ -1104,8 +1104,8 @@ NestBoxHistory:
     changes: Změny
 
 Batch:
-  name: Dávka kontrol
-  name_plural: Dávky kontrol
+  name: Obchůzka
+  name_plural: Obchůzky
   fields:
     area: Lokalita
     token: Odkaz
@@ -1122,7 +1122,7 @@ Check:
     box: Budka
     season: Sezóna
     made_at: Zadáno v telefonu
-    batch: Dávka
+    batch: Obchůzka
     entered_by: Zadal(a)
     volunteer_nickname: Přezdívka dobrovolníka
     volunteer_email: E-mail dobrovolníka

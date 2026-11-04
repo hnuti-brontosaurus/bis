@@ -8,7 +8,7 @@ vi.mock("@/data/errors.js", () => ({ reportError: vi.fn() }))
 const { loginUrl, logoutUrl } = await import("@/data/auth.js")
 const { requireLogin } = await import("@/router.js")
 
-const managerPage = { fullPath: "/davky/?a=1", meta: { requiresLogin: true } }
+const managerPage = { fullPath: "/obchuzky/?a=1", meta: { requiresLogin: true } }
 
 describe("login", () => {
   beforeEach(() => {
@@ -18,18 +18,18 @@ describe("login", () => {
   })
 
   it("goes through the BIS logout and login, back to the same page", () => {
-    const url = new URL(loginUrl("/davky/?a=1"), "http://localhost")
+    const url = new URL(loginUrl("/obchuzky/?a=1"), "http://localhost")
     expect(url.pathname).toBe("/logout")
     const login = new URL(url.searchParams.get("next"), "http://localhost")
     expect(login.pathname).toBe("/login")
-    expect(login.searchParams.get("next")).toBe("/budky/davky/?a=1")
+    expect(login.searchParams.get("next")).toBe("/budky/obchuzky/?a=1")
     expect(logoutUrl("/")).toBe("/logout?next=%2Fbudky%2F")
   })
 
   it("sends an anonymous visitor of a manager page to the login", async () => {
     whoami.mockResolvedValue({ data: { is_authenticated: false } })
     expect(await requireLogin(managerPage)).toBe(false)
-    expect(window.location.assign).toHaveBeenCalledWith(loginUrl("/davky/?a=1"))
+    expect(window.location.assign).toHaveBeenCalledWith(loginUrl("/obchuzky/?a=1"))
   })
 
   it("lets a signed-in user through", async () => {

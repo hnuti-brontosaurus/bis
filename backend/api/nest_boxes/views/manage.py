@@ -185,7 +185,7 @@ class BoxViewSet(ManagerViewSet):
         require_manage(request.user, values["area"])
         batch = values.get("batch")
         if batch and batch.area != values["area"]:
-            raise ValidationError({"batch_id": "Dávka patří k jiné lokalitě."})
+            raise ValidationError({"batch_id": "Obchůzka patří k jiné lokalitě."})
         box = create_box(values, request.user, localdate())
         if batch:
             batch.boxes.add(box)
@@ -273,7 +273,7 @@ class CheckViewSet(ManagerViewSet):
         check, occupants = serializer.build()
         require_manage(request.user, check.box.area)
         if check.batch and check.batch.area_id != check.box.area_id:
-            raise ValidationError({"batch_id": "Dávka patří k jiné lokalitě."})
+            raise ValidationError({"batch_id": "Obchůzka patří k jiné lokalitě."})
         if check.made_at is None:
             check.made_at = now()
         enter_check(check, occupants, request.user)

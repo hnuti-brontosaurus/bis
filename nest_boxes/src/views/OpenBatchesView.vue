@@ -16,7 +16,7 @@ const { data: batches, reload } = useLoad(listOpenBatches)
 const close = async batch => {
   try {
     await closeBatch(batch.id)
-    message.success(`Dávka ${batch.name} je uzavřená.`)
+    message.success(`Obchůzka ${batch.name} je uzavřená.`)
     await reload()
     auth.refresh()
   } catch (error) {
@@ -29,14 +29,14 @@ const close = async batch => {
   <main class="page batches-page">
     <div>
       <p class="eyebrow">Moje oblasti</p>
-      <h1>Otevřené dávky</h1>
+      <h1>Otevřené obchůzky</h1>
       <p class="muted lead">
-        Dávky otevřené déle než týden ti každé pondělí připomeneme e-mailem. Samy se
+        Obchůzky otevřené déle než týden ti každé pondělí připomeneme e-mailem. Samy se
         nezavírají.
       </p>
     </div>
     <p v-if="!batches" class="muted">Načítám…</p>
-    <p v-else-if="!batches.length" class="muted">Žádná dávka není otevřená.</p>
+    <p v-else-if="!batches.length" class="muted">Žádná obchůzka není otevřená.</p>
     <div v-else class="stack">
       <article
         v-for="batch in batches"

@@ -67,7 +67,7 @@ export const batchHighlights = (checks, newBoxes, { boxesById, typesById }) => [
     box,
     tone: "info",
     title: "Nová budka",
-    detail: "přidal ji dobrovolník, potvrdí se s dávkou",
+    detail: "přidal ji dobrovolník, potvrdí se s obchůzkou",
   })),
   ...checks.flatMap(check => {
     const box = boxesById.get(check.box_id)

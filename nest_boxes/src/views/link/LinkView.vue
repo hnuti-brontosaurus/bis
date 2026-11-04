@@ -12,8 +12,8 @@ import { useLinkStore } from "@/data/link.js"
 const STATUSES = {
   loading: { title: "Načítám odkaz…", text: "" },
   closed: {
-    title: "Dávka je uzavřená",
-    text: "Správce oblasti už tuhle dávku kontrol uzavřel, takže odkaz nic dalšího nepřijme. Díky za pomoc!",
+    title: "Obchůzka je uzavřená",
+    text: "Správce oblasti už tuhle obchůzku uzavřel, takže odkaz nic dalšího nepřijme. Díky za pomoc!",
   },
   missing: {
     title: "Odkaz neexistuje",

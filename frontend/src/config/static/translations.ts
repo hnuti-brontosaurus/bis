@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: c77d4b4b64ffaea7
+// source-hash: 19fe787d089bb6d6
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1226,7 +1226,7 @@ export const nestBox = {
   closest_distance: 'Nejbližší budka (m)',
   closest_same_type_distance: 'Nejbližší budka stejného typu (m)',
   old: 'ID ve staré databázi',
-  batch: 'Dávka',
+  batch: 'Obchůzka',
 } as const
 
 export const nestBoxHistory = {
@@ -1238,8 +1238,8 @@ export const nestBoxHistory = {
 } as const
 
 export const batch = {
-  _name: 'Dávka kontrol',
-  _name_plural: 'Dávka kontrol',
+  _name: 'Obchůzka',
+  _name_plural: 'Obchůzka',
   area: 'Lokalita',
   token: 'Odkaz',
   boxes: 'Budky',
@@ -1255,7 +1255,7 @@ export const check = {
   box: 'Budka',
   season: 'Sezóna',
   made_at: 'Zadáno v telefonu',
-  batch: 'Dávka',
+  batch: 'Obchůzka',
   entered_by: 'Zadal(a)',
   volunteer_nickname: 'Přezdívka dobrovolníka',
   volunteer_email: 'E-mail dobrovolníka',

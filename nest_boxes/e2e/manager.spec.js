@@ -15,24 +15,24 @@ test.describe("the area page", () => {
   }) => {
     await page.goto(`/budky/oblast/${area.id}/`)
     await expect(page.getByRole("heading", { name: area.name })).toBeVisible()
-    await expect(page.getByText("Žádná otevřená dávka kontrol.")).toBeVisible()
+    await expect(page.getByText("Žádná otevřená obchůzka.")).toBeVisible()
 
-    await page.getByRole("button", { name: "Vytvořit dávku" }).click()
+    await page.getByRole("button", { name: "Vytvořit obchůzku" }).click()
     await expect(page.getByText("Navržených budek: 3")).toBeVisible()
     await page.getByLabel("Název").fill("Podzim E2E manažer")
     await page
       .getByRole("dialog")
-      .getByRole("button", { name: "Vytvořit dávku" })
+      .getByRole("button", { name: "Vytvořit obchůzku" })
       .click()
 
     const batch = page.getByTestId("batch-section")
     await expect(batch.getByText("0 z 3")).toBeVisible()
     await expect(batch.getByTestId("batch-link")).toContainText("/budky/d/")
-    await expect(page.getByText("V této dávce · 3")).toBeVisible()
+    await expect(page.getByText("V této obchůzce · 3")).toBeVisible()
 
-    await page.getByRole("button", { name: "Vyřadit z dávky 3" }).click()
-    await expect(page.getByText("V této dávce · 2")).toBeVisible()
-    await expect(page.getByText("Mimo dávku · 1")).toBeVisible()
+    await page.getByRole("button", { name: "Vyřadit z obchůzky 3" }).click()
+    await expect(page.getByText("V této obchůzce · 2")).toBeVisible()
+    await expect(page.getByText("Mimo obchůzku · 1")).toBeVisible()
     await expect(batch.getByText("0 z 2")).toBeVisible()
   })
 
@@ -103,7 +103,7 @@ test.describe("the batch page", () => {
       name: "Papír E2E",
       box_ids: [area.boxes["1"].id, area.boxes["2"].id],
     })
-    await page.goto(`/budky/davka/${batch.id}/`)
+    await page.goto(`/budky/obchuzka/${batch.id}/`)
     await expect(page.getByRole("heading", { name: "Papír E2E" })).toBeVisible()
 
     const add = page.getByTestId("add-check")
@@ -159,7 +159,7 @@ test("the header leads to the open batches", async ({ page, api, area }) => {
   await page.goto("/budky/")
   await expect(page.getByTestId("open-batches").locator("b")).toHaveText(/^[1-9]\d*$/)
   await page.getByTestId("open-batches").click()
-  await expect(page.getByRole("heading", { name: "Otevřené dávky" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Otevřené obchůzky" })).toBeVisible()
   await expect(
     page
       .getByTestId("open-batch")

@@ -46,7 +46,7 @@ def want_to_hang(data):
 
 
 def batch_url(batch):
-    return f"{settings.FULL_HOSTNAME}/budky/davka/{batch.pk}/"
+    return f"{settings.FULL_HOSTNAME}/budky/obchuzka/{batch.pk}/"
 
 
 def open_batches_reminder():
@@ -79,8 +79,8 @@ def open_batches_reminder():
         )
         text(
             [recipient.email],
-            "Otevřené dávky kontrol budek",
-            "Tyto dávky kontrol budek jsou otevřené déle než týden. "
+            "Otevřené obchůzky budek",
+            "Tyto obchůzky budek jsou otevřené déle než týden. "
             "Pokud už jsou hotové, potvrď je, nebo je zavři.\n"
             + format_html("<ul>{}</ul>", items),
         )

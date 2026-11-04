@@ -94,7 +94,7 @@ export const boxRowDetail = (
     return { text: `${type} · ${CONDITION_LABELS[box.condition]}`, tone: "bad" }
   if (box.should_be_moved) return { text: `${type} · přemístit`, tone: "warn" }
   const other = otherBatches.find(batch => batch.box_ids.includes(box.id))
-  if (other) return { text: `${type} · v dávce ${other.name}` }
+  if (other) return { text: `${type} · v obchůzce ${other.name}` }
   if (!box.is_verified) return { text: `${type} · neověřená`, tone: "warn" }
   return { text: `${type} · ${lastCheckedLabel(box)}` }
 }

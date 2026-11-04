@@ -52,7 +52,7 @@ const create = async () => {
   <n-modal
     v-model:show="show"
     preset="card"
-    title="Nová dávka kontrol"
+    title="Nová obchůzka"
     :style="{ width: 'min(480px, calc(100vw - 24px))' }"
   >
     <div class="stack">
@@ -72,14 +72,14 @@ const create = async () => {
         <template v-else>
           Navržených budek: <b>{{ suggested }}</b
           >. Jsou to vyvěšené budky, které letos nikdo nezkontroloval a nejsou v jiné
-          otevřené dávce. Další můžeš přidat nebo odebrat.
+          otevřené obchůzce. Další můžeš přidat nebo odebrat.
         </template>
       </p>
     </div>
     <template #footer>
       <div class="row">
         <n-button type="primary" :loading="saving" :disabled="!name" @click="create">
-          Vytvořit dávku
+          Vytvořit obchůzku
         </n-button>
         <n-button @click="show = false">Zrušit</n-button>
       </div>

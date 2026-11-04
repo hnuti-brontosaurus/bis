@@ -60,13 +60,13 @@ export const routes = [
     component: () => import("@/views/CheckView.vue"),
   },
   {
-    path: "/davka/:id/",
+    path: "/obchuzka/:id/",
     name: "batch",
     meta: { requiresLogin: true },
     component: () => import("@/views/BatchView.vue"),
   },
   {
-    path: "/davky/",
+    path: "/obchuzky/",
     name: "open_batches",
     meta: { requiresLogin: true },
     component: () => import("@/views/OpenBatchesView.vue"),

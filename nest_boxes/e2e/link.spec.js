@@ -62,6 +62,8 @@ test.describe("a volunteer's batch link", () => {
 
   test("says when the batch is closed", async ({ page }) => {
     await page.goto(CLOSED_LINK)
-    await expect(page.getByRole("heading", { name: "Dávka je uzavřená" })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Obchůzka je uzavřená" }),
+    ).toBeVisible()
   })
 })

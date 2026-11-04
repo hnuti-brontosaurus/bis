@@ -85,7 +85,7 @@ const addOptions = computed(() => {
     .sort((a, b) => inBatch.has(b.id) - inBatch.has(a.id) || compareNames(a, b))
     .map(box => ({
       value: box.id,
-      label: inBatch.has(box.id) ? box.name : `${box.name} (mimo dávku)`,
+      label: inBatch.has(box.id) ? box.name : `${box.name} (mimo obchůzku)`,
     }))
 })
 const addingBox = computed(() => boxesById.value.get(adding.value.boxId))
@@ -126,7 +126,7 @@ const remove = async check => {
 const confirm = async () => {
   try {
     await confirmBatch(batch.value.id)
-    message.success("Dávka je potvrzená a uzavřená.")
+    message.success("Obchůzka je potvrzená a uzavřená.")
     await reload()
     auth.refresh()
   } catch (error) {
@@ -144,11 +144,11 @@ const confirm = async () => {
         {{ data.area.name }}
       </RouterLink>
       <AppIcon name="chev" />
-      <RouterLink :to="{ name: 'open_batches' }">Dávky</RouterLink>
+      <RouterLink :to="{ name: 'open_batches' }">Obchůzky</RouterLink>
     </div>
     <div class="row head">
       <div>
-        <p class="eyebrow">Dávka kontrol · {{ data.area.name }}</p>
+        <p class="eyebrow">Obchůzka · {{ data.area.name }}</p>
         <h1>{{ batch.name }}</h1>
         <p class="muted small">
           Vytvořena {{ formatDate(batch.created_at) }}
@@ -353,8 +353,8 @@ const confirm = async () => {
             Potvrdit a uzavřít
           </n-button>
         </template>
-        Potvrdit všechny čekající kontroly a nové budky? Zapíšou se do budek a dávka se
-        uzavře.
+        Potvrdit všechny čekající kontroly a nové budky? Zapíšou se do budek a obchůzka
+        se uzavře.
       </n-popconfirm>
       <span v-else class="tag ok">potvrzená {{ formatDate(batch.confirmed_at) }}</span>
     </div>

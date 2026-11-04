@@ -179,7 +179,7 @@ const move = async (box, into) => {
 const close = async () => {
   try {
     await closeBatch(batch.value.id)
-    message.success("Dávka je uzavřená, odkaz už nic nepřijímá.")
+    message.success("Obchůzka je uzavřená, odkaz už nic nepřijímá.")
     await router.replace({ query: {} })
     await reload()
     auth.refresh()
@@ -249,7 +249,7 @@ watch(batchId, () => (selectedId.value = null))
           <b v-else class="batch-name">{{ batch.name }}</b>
           <n-button size="small" quaternary @click="dialogs.batch = true">
             <template #icon><AppIcon name="plus" /></template>
-            Nová dávka
+            Nová obchůzka
           </n-button>
         </div>
         <BatchProgress :batch="batch" />
@@ -268,8 +268,8 @@ watch(batchId, () => (selectedId.value = null))
             <template #trigger>
               <n-button size="small">Uzavřít</n-button>
             </template>
-            Uzavřít dávku bez potvrzení? Odkaz přestane přijímat kontroly, ty čekající
-            zůstanou nepotvrzené.
+            Uzavřít obchůzku bez potvrzení? Odkaz přestane přijímat kontroly, ty
+            čekající zůstanou nepotvrzené.
           </n-popconfirm>
           <n-button
             class="push-end"
@@ -283,11 +283,11 @@ watch(batchId, () => (selectedId.value = null))
         </div>
       </template>
       <template v-else>
-        <p class="muted">Žádná otevřená dávka kontrol.</p>
+        <p class="muted">Žádná otevřená obchůzka.</p>
         <div class="row">
           <n-button type="primary" size="small" @click="dialogs.batch = true">
             <template #icon><AppIcon name="plus" /></template>
-            Vytvořit dávku
+            Vytvořit obchůzku
           </n-button>
           <n-button size="small" quaternary @click="dialogs.plan = true">
             <template #icon><AppIcon name="plus" /></template>
@@ -403,8 +403,8 @@ watch(batchId, () => (selectedId.value = null))
       <template
         v-for="group in batch
           ? [
-              { key: 'in', title: 'V této dávce', boxes: groups.inBatch },
-              { key: 'out', title: 'Mimo dávku', boxes: groups.outside },
+              { key: 'in', title: 'V této obchůzce', boxes: groups.inBatch },
+              { key: 'out', title: 'Mimo obchůzku', boxes: groups.outside },
             ]
           : [{ key: 'all', title: 'Budky', boxes: groups.outside }]"
         :key="group.key"
@@ -449,8 +449,8 @@ watch(batchId, () => (selectedId.value = null))
             v-if="batch"
             type="button"
             class="move"
-            :title="group.key === 'in' ? 'Vyřadit z dávky' : 'Přidat do dávky'"
-            :aria-label="`${group.key === 'in' ? 'Vyřadit z dávky' : 'Přidat do dávky'} ${box.name}`"
+            :title="group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'"
+            :aria-label="`${group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'} ${box.name}`"
             @click.stop="move(box, group.key !== 'in')"
           >
             <AppIcon :name="group.key === 'in' ? 'minus' : 'plus'" />

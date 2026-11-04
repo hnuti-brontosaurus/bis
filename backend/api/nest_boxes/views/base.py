@@ -12,7 +12,7 @@ from rest_framework.serializers import as_serializer_error
 
 class Gone(APIException):
     status_code = 410
-    default_detail = "Dávka je uzavřená a nic dalšího nepřijímá."
+    default_detail = "Obchůzka je uzavřená a nic dalšího nepřijímá."
     default_code = "batch_closed"
 
 

@@ -55,7 +55,7 @@ const menuOpen = ref(false)
         data-testid="open-batches"
       >
         <AppIcon name="link" />
-        <span class="hide-sm">Otevřené dávky</span>
+        <span class="hide-sm">Otevřené obchůzky</span>
         <b>{{ auth.openBatchCount }}</b>
       </RouterLink>
       <a

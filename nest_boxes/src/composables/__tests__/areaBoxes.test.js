@@ -133,7 +133,7 @@ describe("boxRowDetail", () => {
       tone: "info",
     })
     expect(boxRowDetail(box("N5"), null, context).text).toBe(
-      "velký sýkorník · v dávce Podzim B",
+      "velký sýkorník · v obchůzce Podzim B",
     )
     expect(
       boxRowDetail(box("N6", { condition: "needs_replacing" }), null, context).tone,
