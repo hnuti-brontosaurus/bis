@@ -22,6 +22,7 @@ router.register("help_images", public.HelpImageViewSet, "help_images")
 urlpatterns = [
     path("", include(router.urls)),
     path("whoami/", public.WhoAmIView.as_view()),
+    path("public/regions/", public.PublicRegionsView.as_view()),
     path("public/statistics/", public.StatisticsView.as_view()),
     path("public/want_to_hang/", public.WantToHangView.as_view()),
     path("categories/", public.CategoriesView.as_view()),

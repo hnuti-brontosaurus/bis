@@ -2,7 +2,8 @@
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import { SEASON_STATE_LABELS } from "@/composables/labels.js"
 
-const ENTRIES = ["to_check", "attention", "done", "planned"].map(state => ({
+// Planned boxes are too rare to explain here
+const ENTRIES = ["to_check", "attention", "done"].map(state => ({
   state,
   label: SEASON_STATE_LABELS[state],
 }))

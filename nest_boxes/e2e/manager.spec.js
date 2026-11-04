@@ -36,6 +36,18 @@ test.describe("the area page", () => {
     await expect(batch.getByText("0 z 2")).toBeVisible()
   })
 
+  test("edits the area", async ({ page, area }) => {
+    await page.goto(`/budky/oblast/${area.id}/`)
+    await page.getByRole("button", { name: "Upravit" }).click()
+    const dialog = page.getByRole("dialog")
+    await expect(dialog.getByText("Úprava oblasti")).toBeVisible()
+    await dialog.getByLabel("Název").fill(`${area.name} upravená`)
+    await dialog.getByRole("button", { name: "Uložit" }).click()
+    await expect(
+      page.getByRole("heading", { name: `${area.name} upravená` }),
+    ).toBeVisible()
+  })
+
   test("filters the boxes and plans a new one", async ({ page, area }) => {
     await page.goto(`/budky/oblast/${area.id}/`)
     await page.getByPlaceholder("Hledat označení").fill("2")
@@ -191,12 +203,27 @@ test.describe("the map of areas", () => {
     await page.goto("/budky/mapa/")
     const states = page.getByTestId("season-states")
     const areaRow = states.locator("tr", { hasText: area.name })
-    await expect(areaRow.locator("td.num")).toHaveText(["1", "1", "1", "0"])
+    await expect(areaRow.locator("td.num")).toHaveText(["1", "1", "1"])
 
     await choose(page, page.getByRole("button", { name: "Stav" }), "Pozornost")
-    await expect(areaRow.locator("td.num")).toHaveText(["0", "1", "0", "0"])
+    await expect(areaRow.locator("td.num")).toHaveText(["0", "1", "0"])
 
     await page.getByRole("radio", { name: "Statistiky" }).click()
     await expect(page.getByTestId("statistics")).toBeVisible()
+  })
+
+  test("lists every box of the manager's areas", async ({ page, area }) => {
+    await page.goto("/budky/mapa/")
+    await page.getByRole("radio", { name: "Budky" }).click()
+    await expect(page).toHaveURL(/mode=boxes/)
+
+    await page.getByPlaceholder("Hledat označení").fill("2")
+    const list = page.getByTestId("box-list")
+    await expect(list.getByText(`${area.name} · 1`)).toBeVisible()
+    await row(page, area.boxes["2"]).getByRole("link", { name: "2" }).click()
+    await expect(page.getByRole("heading", { name: "2", exact: true })).toBeVisible()
+
+    await page.goBack()
+    await expect(page.getByRole("radio", { name: "Budky" })).toBeChecked()
   })
 })

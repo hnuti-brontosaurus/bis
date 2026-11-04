@@ -46,6 +46,8 @@ export const getSeasonStates = params =>
 
 export const listBoxes = params =>
   fetchAll("/boxes/", { params: { ...params, page_size: MAX_PAGE_SIZE } })
+/** Every box of the manager's areas with just what the map and its list need. */
+export const listMapBoxes = () => client.get("/boxes/map/").then(data)
 export const getBox = id => client.get(`/boxes/${id}/`).then(data)
 export const createBox = values => client.post("/boxes/", values).then(data)
 export const updateBox = (id, values) =>

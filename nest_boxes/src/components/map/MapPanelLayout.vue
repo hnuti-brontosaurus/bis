@@ -28,7 +28,9 @@ const bottomInset = computed(() => (isPhone.value ? heights.value[stop.value] : 
 
 let drag = null
 
+// The capture would retarget the click of a button in the summary to the zone
 const onPointerDown = event => {
+  if (event.target.closest("button, a, input")) return
   drag = { startY: event.clientY, startHeight: sheetHeight.value, moved: false }
   event.currentTarget.setPointerCapture(event.pointerId)
 }
@@ -42,6 +44,7 @@ const onPointerMove = event => {
 }
 
 const onPointerUp = () => {
+  if (!drag) return
   stop.value = drag.moved
     ? nearestStop(heights.value, dragHeight.value)
     : nextStopOnTap(stop.value)

@@ -17,6 +17,7 @@ from api.nest_boxes.serializers import (
     GpxImportSerializer,
     HistorySerializer,
     ImportRowSerializer,
+    MapBoxSerializer,
     box_warnings_data,
     warnings_data,
 )
@@ -202,6 +203,12 @@ class BoxViewSet(ManagerViewSet):
             serializer.instance, serializer.validated_data, request.user, localdate()
         )
         return self.respond(serializer.instance)
+
+    @action(detail=False)
+    def map(self, request):
+        """Every box of the manager's areas, unpaginated and with the map's fields only."""
+        boxes = self.get_queryset().select_related(None)
+        return Response(MapBoxSerializer(boxes, many=True).data)
 
     @action(detail=True)
     def history(self, request, pk):

@@ -69,6 +69,10 @@ export const boundsOf = points => {
   ]
 }
 
+/** Bounds of a GeoJSON polygon's outer ring. */
+export const polygonBounds = polygon =>
+  boundsOf(polygon.coordinates[0].map(coordinates => ({ coordinates })))
+
 /** Haversine distance in metres between two GeoJSON points. */
 export const distance = (from, to) => {
   const [lng1, lat1] = from.coordinates.map(value => (value * Math.PI) / 180)

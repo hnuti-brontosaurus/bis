@@ -14,6 +14,21 @@ import { client, fetchAll } from "@/data/client.js"
 export const listPublicAreas = () => fetchAll("/public/areas/")
 
 /**
+ * @typedef {Object} PublicRegion
+ * @property {number} id
+ * @property {string} name
+ * @property {{ type: "Point", coordinates: [number, number] }} marker
+ *   a point inside the region, never one of its boxes
+ * @property {{ type: "Polygon", coordinates: number[][][] }} outline simplified
+ * @property {number} box_count boxes in use
+ */
+
+let regions = null
+/** @returns {Promise<PublicRegion[]>} fetched once: the outlines never change */
+export const listPublicRegions = () =>
+  (regions ??= client.get("/public/regions/").then(({ data }) => data))
+
+/**
  * @typedef {Object} SeasonFigures
  * @property {number} boxes boxes in the season
  * @property {number} cleaned

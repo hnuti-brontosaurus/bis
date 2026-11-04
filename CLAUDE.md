@@ -606,6 +606,17 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Labels and inputs:** naive-ui's `n-input`, `n-input-number` and
   `n-date-picker` put a plain `id` on their wrapper; a `<label for>` needs
   `:input-props="{ id }"` to reach the input.
+- **Wording:** a `Batch` is an "obchůzka" in every user-facing text, URLs
+  included (`/obchuzka/<id>/`, `/obchuzky/`); code and the API keep `batch`.
+- **Bottom sheet:** `MapPanelLayout`'s drag zone (handle + `#summary` slot)
+  takes pointer capture, and a captured pointer's click lands on the zone, not
+  on a button inside it; so a drag never starts on a button, link or input.
+- **Map of areas** (`AreasMapView`, `/mapa/`) has two modes, `?mode=boxes` for
+  managers only: area bubbles from the public endpoints, or every manageable box
+  from `boxes/map/` (an unpaginated light serializer; the box page loads the
+  rest). It reuses the area page's `BoxFilters` / `BoxList`. The landing map
+  groups by region instead (`public/regions/`: outline, a point inside, box
+  count), so the public never gets a box's coordinates.
 - **Built static** goes to `nest_boxes/dist`, which CI copies to
   `backend/nest_boxes_static/`; production nginx serves it like the
   cookbook's (`deployments/base`).

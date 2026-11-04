@@ -1,15 +1,17 @@
 <script setup>
-import { computed } from "vue"
-import { RouterLink, useRoute } from "vue-router"
+import { computed, shallowRef } from "vue"
+import { RouterLink, useRoute, useRouter } from "vue-router"
 import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
-import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
+import RegionBubbles from "@/components/map/RegionBubbles.vue"
 import { formatNumber, seasonLabel } from "@/composables/czech.js"
-import { describeFigures, statisticsBubbles } from "@/composables/statistics.js"
+import { describeFigures } from "@/composables/statistics.js"
 import { usePublicData } from "@/composables/usePublicData.js"
 import { loginUrl, useAuthStore } from "@/data/auth.js"
+import { reportError } from "@/data/errors.js"
+import { listPublicRegions } from "@/data/public.js"
 
 const MATERIALS = [
   {
@@ -43,16 +45,15 @@ const MATERIALS = [
 ]
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const { season, areas, statistics } = usePublicData()
+const regions = shallowRef([])
+
+listPublicRegions().then(result => (regions.value = result), reportError)
 
 const boxCount = computed(() =>
   areas.value?.reduce((sum, area) => sum + area.box_count, 0),
-)
-const bubbles = computed(() =>
-  areas.value && statistics.value
-    ? statisticsBubbles(statistics.value.areas, areas.value)
-    : [],
 )
 const total = computed(() => statistics.value?.total)
 const figures = computed(() => total.value && describeFigures(total.value))
@@ -88,7 +89,10 @@ const figures = computed(() => total.value && describeFigures(total.value))
       </div>
       <div class="hero-map">
         <BaseMap :interactive="false">
-          <AreaBubbles :areas="bubbles" plain />
+          <RegionBubbles
+            :regions="regions"
+            @select="router.push({ name: 'areas', query: { region: $event.id } })"
+          />
         </BaseMap>
       </div>
     </section>

@@ -5,6 +5,7 @@ import {
   defaultFilters,
   filterBoxes,
   filterParams,
+  groupByArea,
   markerState,
   splitByBatch,
 } from "@/composables/areaBoxes.js"
@@ -138,5 +139,24 @@ describe("boxRowDetail", () => {
     expect(
       boxRowDetail(box("N6", { condition: "needs_replacing" }), null, context).tone,
     ).toBe("bad")
+  })
+})
+
+describe("groupByArea", () => {
+  it("groups by area, both by name", () => {
+    const areasById = new Map([
+      [1, { id: 1, name: "Žabovřesky" }],
+      [2, { id: 2, name: "Cibulka" }],
+    ])
+    const groups = groupByArea(
+      [box("10", { area_id: 1 }), box("2", { area_id: 2 }), box("9", { area_id: 1 })],
+      areasById,
+    )
+    expect(
+      groups.map(group => [group.title, group.boxes.map(item => item.name)]),
+    ).toEqual([
+      ["Cibulka", ["2"]],
+      ["Žabovřesky", ["9", "10"]],
+    ])
   })
 })

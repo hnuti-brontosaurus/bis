@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
-import { NButton, NInput, NPopconfirm, NPopselect, NSelect, useMessage } from "naive-ui"
+import { NButton, NPopconfirm, NSelect, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
@@ -9,18 +9,18 @@ import GpxImportDialog from "@/components/area/GpxImportDialog.vue"
 import NewBatchDialog from "@/components/area/NewBatchDialog.vue"
 import BatchLink from "@/components/batch/BatchLink.vue"
 import BatchProgress from "@/components/batch/BatchProgress.vue"
+import BoxFilters from "@/components/box/BoxFilters.vue"
 import BoxFormDialog from "@/components/box/BoxFormDialog.vue"
+import BoxList from "@/components/box/BoxList.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
-import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import { boundsOf } from "@/components/map/geometry.js"
 import {
   ACTIVE_STATUSES,
   boxRowDetail,
-  CHECKED_OPTIONS,
   defaultFilters,
   filterBoxes,
   filterParams,
@@ -28,13 +28,7 @@ import {
   splitByBatch,
 } from "@/composables/areaBoxes.js"
 import { boxCountLabel, currentSeason } from "@/composables/czech.js"
-import {
-  byId,
-  categoryOptions,
-  SEASON_STATE_LABELS,
-  SEASON_STATE_OPTIONS,
-  STATUS_OPTIONS,
-} from "@/composables/labels.js"
+import { byId } from "@/composables/labels.js"
 import { latestChecks } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { CZECHIA_BOUNDS } from "@/config.js"
@@ -133,7 +127,6 @@ const summary = computed(() =>
     : boxCountLabel(shown.value.length),
 )
 
-const typeOptions = computed(() => categoryOptions(data.value.categories.types))
 const unverifiedCount = computed(
   () =>
     area.value.boxes.filter(
@@ -298,82 +291,10 @@ watch(batchId, () => (selectedId.value = null))
     </section>
 
     <section class="section filters">
-      <div class="chips">
-        <n-popselect
-          v-model:value="filters.type"
-          :options="typeOptions"
-          multiple
-          trigger="click"
-          scrollable
-        >
-          <button type="button" class="chip" :class="{ on: filters.type.length }">
-            <AppIcon name="filter" />Typ<template v-if="filters.type.length">
-              {{ filters.type.length }}</template
-            >
-          </button>
-        </n-popselect>
-        <n-popselect
-          v-model:value="filters.state"
-          :options="SEASON_STATE_OPTIONS"
-          multiple
-          trigger="click"
-        >
-          <button type="button" class="chip" :class="{ on: filters.state.length }">
-            {{
-              filters.state.length === 1
-                ? SEASON_STATE_LABELS[filters.state[0]]
-                : `Letošní stav${filters.state.length ? ` ${filters.state.length}` : ""}`
-            }}
-            <AppIcon name="chevd" />
-          </button>
-        </n-popselect>
-        <n-popselect
-          v-model:value="filters.status"
-          :options="STATUS_OPTIONS"
-          multiple
-          trigger="click"
-        >
-          <button type="button" class="chip">
-            Stav {{ filters.status.length }}
-            <AppIcon name="chevd" />
-          </button>
-        </n-popselect>
-        <button
-          type="button"
-          class="chip"
-          :class="{ on: filters.unverified }"
-          @click="filters.unverified = !filters.unverified"
-        >
-          Neověřené {{ unverifiedCount }}
-        </button>
-        <n-popselect
-          v-model:value="filters.checked"
-          :options="CHECKED_OPTIONS"
-          trigger="click"
-        >
-          <button type="button" class="chip" :class="{ on: filters.checked }">
-            {{
-              CHECKED_OPTIONS.find(option => option.value === filters.checked)?.label ??
-              "Kontrola"
-            }}
-            <AppIcon name="chevd" />
-          </button>
-        </n-popselect>
-        <button
-          v-if="filters.checked"
-          type="button"
-          class="chip dim"
-          aria-label="Zrušit filtr kontroly"
-          @click="filters.checked = null"
-        >
-          <AppIcon name="x" />
-        </button>
-      </div>
-      <n-input
-        v-model:value="filters.search"
-        size="small"
-        clearable
-        placeholder="Hledat označení"
+      <BoxFilters
+        v-model="filters"
+        :types="data.categories.types"
+        :unverified-count="unverifiedCount"
       />
       <div class="chips tools">
         <a class="chip dim" :href="exportUrl(area.id, 'gpx', exportParams)" download>
@@ -399,65 +320,32 @@ watch(batchId, () => (selectedId.value = null))
       <MapLegend class="hide-sm" />
     </section>
 
-    <div class="list" data-testid="box-list">
-      <template
-        v-for="group in batch
+    <BoxList
+      :groups="
+        batch
           ? [
               { key: 'in', title: 'V této obchůzce', boxes: groups.inBatch },
               { key: 'out', title: 'Mimo obchůzku', boxes: groups.outside },
             ]
-          : [{ key: 'all', title: 'Budky', boxes: groups.outside }]"
-        :key="group.key"
-      >
-        <div class="group-head">{{ group.title }} · {{ group.boxes.length }}</div>
-        <div
-          v-for="box in group.boxes"
-          :key="box.id"
-          class="box-row"
-          :class="{ selected: box.id === selectedId }"
-          :data-box-row="box.id"
-          @click="focusBox(box)"
+          : [{ key: 'all', title: 'Budky', boxes: groups.outside }]
+      "
+      :selected-id="selectedId"
+      :detail="detail"
+      :state-of="box => markerState(box, batch)"
+      @focus="focusBox"
+    >
+      <template v-if="batch" #action="{ box, group }">
+        <button
+          type="button"
+          class="move"
+          :title="group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'"
+          :aria-label="`${group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'} ${box.name}`"
+          @click.stop="move(box, group.key !== 'in')"
         >
-          <MarkerGlyph :state="markerState(box, batch)" />
-          <div class="box-text">
-            <RouterLink
-              class="box-name"
-              :to="{ name: 'box', params: { id: box.id } }"
-              @click.stop
-            >
-              {{ box.name }}
-            </RouterLink>
-            <div class="box-detail">
-              <span v-if="detail(box).tone" class="tag" :class="detail(box).tone">
-                {{ detail(box).text }}
-              </span>
-              <template v-else>{{ detail(box).text }}</template>
-              <span v-if="!box.is_confirmed" class="tag warn">nepotvrzená</span>
-            </div>
-          </div>
-          <RouterLink
-            v-if="box.status !== 'planned'"
-            v-slot="{ navigate }"
-            :to="{ name: 'check', params: { id: box.id } }"
-            custom
-          >
-            <n-button size="small" secondary @click.stop="navigate"
-              >Zkontrolovat</n-button
-            >
-          </RouterLink>
-          <button
-            v-if="batch"
-            type="button"
-            class="move"
-            :title="group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'"
-            :aria-label="`${group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'} ${box.name}`"
-            @click.stop="move(box, group.key !== 'in')"
-          >
-            <AppIcon :name="group.key === 'in' ? 'minus' : 'plus'" />
-          </button>
-        </div>
+          <AppIcon :name="group.key === 'in' ? 'minus' : 'plus'" />
+        </button>
       </template>
-    </div>
+    </BoxList>
 
     <AreaFormDialog v-model:show="dialogs.area" :area="area" @saved="reload" />
     <NewBatchDialog
@@ -519,62 +407,6 @@ watch(batchId, () => (selectedId.value = null))
   font-size: 16px;
 }
 
-.list {
-  border-top: 1px solid var(--line);
-  padding-bottom: 20px;
-}
-
-.group-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: 10px 20px 6px;
-  background: var(--surface);
-  font: 700 12px var(--font);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  border-bottom: 1px solid var(--line);
-}
-
-.box-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--line);
-  cursor: pointer;
-}
-
-.box-row.selected {
-  background: var(--primary-soft);
-  box-shadow: inset 3px 0 0 var(--accent);
-}
-
-.box-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.box-name {
-  font-weight: 800;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.box-name:hover {
-  text-decoration: underline;
-}
-
-.box-detail {
-  font-size: 13px;
-  color: var(--muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
-  align-items: center;
-}
-
 .move {
   width: 32px;
   height: 32px;
@@ -598,9 +430,7 @@ watch(batchId, () => (selectedId.value = null))
     padding: 0 16px 10px;
   }
 
-  .section,
-  .box-row,
-  .group-head {
+  .section {
     padding-left: 16px;
     padding-right: 16px;
   }

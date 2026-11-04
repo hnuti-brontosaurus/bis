@@ -98,3 +98,19 @@ export const boxRowDetail = (
   if (!box.is_verified) return { text: `${type} · neověřená`, tone: "warn" }
   return { text: `${type} · ${lastCheckedLabel(box)}` }
 }
+
+/** BoxList's groups of the map of all boxes: one per area, both by name. */
+export const groupByArea = (boxes, areasById) => {
+  const byArea = new Map()
+  for (const box of boxes) {
+    if (!byArea.has(box.area_id)) byArea.set(box.area_id, [])
+    byArea.get(box.area_id).push(box)
+  }
+  return [...byArea]
+    .map(([areaId, areaBoxes]) => ({
+      key: areaId,
+      title: areasById.get(areaId).name,
+      boxes: areaBoxes.sort(compareNames),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title, "cs"))
+}

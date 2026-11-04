@@ -9,7 +9,9 @@ import pytest
 from administration_units.models import AdministrationUnit
 from api.nest_boxes.tests.conftest import API
 from bis.helpers import paused_validation
+from django.db import connection
 from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now
 from nest_boxes.checks import close_batch
 from nest_boxes.models import Area, Batch, Check, HelpArticle, NestBox
@@ -60,6 +62,7 @@ def test_public_areas_never_show_box_coordinates(anonymous, make_box, area):
         "areas/",
         "areas/season_states/",
         "boxes/",
+        "boxes/map/",
         "checks/",
         "batches/",
         "batches/open/",
@@ -533,3 +536,58 @@ def test_volunteer_gets_the_season_state(anonymous, batch, season_2025):
 
     assert sent.json()["season_state"] == "attention"
     assert anonymous.get(url).json()["boxes"][0]["season_state"] == "attention"
+
+
+def test_map_of_boxes_has_constant_queries(
+    board_client, area, unit, make_box, django_assert_num_queries
+):
+    make_box("1")
+    with paused_validation():
+        other_unit = AdministrationUnit.objects.create(
+            name="Jiný", abbreviation="J", is_for_kids=False, category=unit.category
+        )
+    other = Area.objects.create(name="Cizí", administration_unit=other_unit)
+    NestBox.objects.create(
+        area=other, name="X", location=near(), status=NestBox.Status.IN_USE
+    )
+    url = f"{API}/boxes/map/"
+    # The first request caches the movement and the roles
+    board_client.get(url)
+    with CaptureQueriesContext(connection) as one_box:
+        board_client.get(url)
+    make_box("2", location=near(east=100))
+    make_box("3", location=near(east=200))
+
+    with django_assert_num_queries(len(one_box)):
+        boxes = board_client.get(url).json()
+
+    assert sorted(box["name"] for box in boxes) == ["1", "2", "3"]
+    assert set(boxes[0]) == {
+        "id",
+        "name",
+        "previous_names",
+        "area_id",
+        "location",
+        "planned_radius",
+        "type_id",
+        "status",
+        "condition",
+        "is_verified",
+        "is_confirmed",
+        "should_be_moved",
+        "season_state",
+        "last_checked_on",
+    }
+    assert boxes[0]["season_state"] == "to_check"
+
+
+def test_public_regions_never_show_box_coordinates(anonymous, region, make_box):
+    box = make_box(location=near(east=123, north=45))
+    make_box("2", location=near(east=-200, north=-80), status=NestBox.Status.ENDED)
+
+    regions = anonymous.get(f"{API}/public/regions/").json()
+
+    assert [(r["name"], r["box_count"]) for r in regions] == [("Praha", 1)]
+    assert regions[0]["outline"]["type"] == "Polygon"
+    assert regions[0]["marker"]["type"] == "Point"
+    assert not contains_coordinates(regions, box.location)

@@ -1,17 +1,28 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue"
-import { RouterLink, useRouter } from "vue-router"
+import { RouterLink, useRoute, useRouter } from "vue-router"
 import { NButton, NPopselect, NSelect } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
+import BoxFilters from "@/components/box/BoxFilters.vue"
+import BoxList from "@/components/box/BoxList.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
-import { ACTIVE_STATUSES } from "@/composables/areaBoxes.js"
+import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
+import { polygonBounds } from "@/components/map/geometry.js"
+import {
+  ACTIVE_STATUSES,
+  boxRowDetail,
+  defaultFilters,
+  filterBoxes,
+  groupByArea,
+  markerState,
+} from "@/composables/areaBoxes.js"
 import {
   areaCountLabel,
   boxCountLabel,
@@ -20,6 +31,7 @@ import {
   seasonLabel,
 } from "@/composables/czech.js"
 import {
+  byId,
   categoryOptions,
   SEASON_STATE_LABELS,
   SEASON_STATE_OPTIONS,
@@ -33,40 +45,59 @@ import {
 import { usePublicData } from "@/composables/usePublicData.js"
 import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
-import { getCategories, getSeasonStates, listBoxes } from "@/data/manage.js"
+import { getCategories, getSeasonStates, listMapBoxes } from "@/data/manage.js"
+import { listPublicRegions } from "@/data/public.js"
 
-// From here in, a manager sees the boxes instead of the areas' bubbles
-const BOXES_ZOOM = 12
+// Names of a whole region's boxes would cover each other below this zoom
+const LABELS_ZOOM = 13
+const MODES = [
+  { value: "areas", label: "Oblasti" },
+  { value: "boxes", label: "Budky" },
+]
 const VIEWS = [
   { value: "states", label: "Stav budek" },
   { value: "statistics", label: "Statistiky" },
 ]
-const STATE_COLUMNS = ["to_check", "attention", "done", "planned"]
-const COLUMN_LABELS = {
-  to_check: "Zbývá",
-  attention: "Pozor",
-  done: "Hotovo",
-  planned: "Plán",
-}
+// Planned boxes are too rare for a column of their own
+const STATE_COLUMNS = [
+  { key: "remaining", label: "Zbývá" },
+  { key: "attention", label: "Pozor" },
+  { key: "done", label: "Hotovo" },
+]
+const TOTAL_LABELS = { remaining: "zbývá", attention: "pozornost", done: "hotovo" }
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const { season, areas, statistics } = usePublicData()
 
 const unitId = ref(null)
 const selectedId = ref(null)
+const selectedBoxId = ref(null)
 const map = shallowRef(null)
 const creatingArea = ref(false)
 const view = ref("states")
 const filters = ref({ state: [], type: [], unverified: false })
-const types = shallowRef([])
+const boxFilters = ref(defaultFilters())
+const categories = shallowRef(null)
 const stateRows = shallowRef(null)
-const viewport = shallowRef(null)
-const boxes = shallowRef([])
+const mapBoxes = shallowRef(null)
 
+// Box coordinates are for managers only
+const mode = computed({
+  get: () => (auth.isManager && route.query.mode === "boxes" ? "boxes" : "areas"),
+  set: value =>
+    router.replace({
+      query: { ...route.query, mode: value === "boxes" ? value : undefined },
+    }),
+})
+const showsBoxes = computed(() => mode.value === "boxes")
 // Season states are live, so they belong to the current season only
-const showsStates = computed(() => auth.isManager && view.value === "states")
+const showsStates = computed(
+  () => auth.isManager && !showsBoxes.value && view.value === "states",
+)
 
+const types = computed(() => categories.value?.types ?? [])
 const unitOptions = computed(() =>
   unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
 )
@@ -94,7 +125,11 @@ const statisticsRows = computed(() =>
 const statesRows = computed(() =>
   areas.value && stateRows.value
     ? stateRows.value
-        .map(row => ({ ...row, area: areasById.value.get(row.area_id) }))
+        .map(row => ({
+          ...row,
+          remaining: row.to_check + row.planned,
+          area: areasById.value.get(row.area_id),
+        }))
         .sort((a, b) => a.area.name.localeCompare(b.area.name, "cs"))
     : [],
 )
@@ -105,19 +140,43 @@ const bubbles = computed(() => {
     ? stateBubbles(statesRows.value, areas.value)
     : statisticsBubbles(statisticsRows.value, areas.value)
 })
-const showsBoxes = computed(
-  () => showsStates.value && viewport.value?.zoom >= BOXES_ZOOM,
-)
 
 const stateTotals = computed(() =>
   Object.fromEntries(
-    STATE_COLUMNS.map(state => [
-      state,
-      statesRows.value.reduce((total, row) => total + row[state], 0),
+    STATE_COLUMNS.map(({ key }) => [
+      key,
+      statesRows.value.reduce((total, row) => total + row[key], 0),
     ]),
   ),
 )
+const unitBoxes = computed(() =>
+  areas.value && mapBoxes.value
+    ? mapBoxes.value.filter(box => inUnit(areasById.value.get(box.area_id)))
+    : [],
+)
+const shownBoxes = computed(() =>
+  filterBoxes(unitBoxes.value, boxFilters.value, currentSeason()),
+)
+const boxGroups = computed(() => groupByArea(shownBoxes.value, areasById.value))
+const unverifiedCount = computed(
+  () =>
+    unitBoxes.value.filter(
+      box => !box.is_verified && ACTIVE_STATUSES.includes(box.status),
+    ).length,
+)
+const markerBoxes = computed(() =>
+  showsBoxes.value
+    ? shownBoxes.value
+        .filter(box => box.status !== "planned")
+        .map(box => ({ ...box, state: markerState(box, null) }))
+    : [],
+)
+const plannedBoxes = computed(() =>
+  showsBoxes.value ? shownBoxes.value.filter(box => box.status === "planned") : [],
+)
+
 const heading = computed(() => {
+  if (showsBoxes.value) return boxCountLabel(shownBoxes.value.length)
   const rows = showsStates.value ? statesRows.value : statisticsRows.value
   const boxTotal = showsStates.value
     ? Object.values(stateTotals.value).reduce((total, count) => total + count, 0)
@@ -149,41 +208,33 @@ watch(
 
 watch(
   () => auth.isManager,
-  isManager =>
-    isManager && getCategories().then(result => (types.value = result.types)),
+  isManager => isManager && getCategories().then(result => (categories.value = result)),
   { immediate: true },
 )
 
-let boxRequest = 0
-watch([showsBoxes, viewport, filterParams], async () => {
-  if (!showsBoxes.value) return
-  const request = ++boxRequest
-  try {
-    const result = await listBoxes({
-      ...filterParams.value,
-      status: ACTIVE_STATUSES,
-      bbox: viewport.value.bbox,
-    })
-    // A later pan or filter may have answered first
-    if (request === boxRequest) boxes.value = result
-  } catch (error) {
-    reportError(error)
-  }
-})
-
-const markerBoxes = computed(() =>
-  showsBoxes.value ? boxes.value.map(box => ({ ...box, state: box.season_state })) : [],
+watch(
+  showsBoxes,
+  shows =>
+    shows &&
+    !mapBoxes.value &&
+    listMapBoxes().then(result => (mapBoxes.value = result), reportError),
+  { immediate: true },
 )
 
-const onMapReady = value => {
+const detail = box =>
+  boxRowDetail(box, null, {
+    typesById: byId(types.value),
+    occupantsById: byId(categories.value?.occupants ?? []),
+    otherBatches: [],
+  })
+
+const onMapReady = async value => {
   map.value = value
-  const update = () =>
-    (viewport.value = {
-      zoom: value.getZoom(),
-      bbox: value.getBounds().toArray().flat().join(","),
-    })
-  value.on("moveend", update)
-  update()
+  if (!route.query.region) return
+  const region = (await listPublicRegions()).find(
+    item => item.id === Number(route.query.region),
+  )
+  if (region) value.fitBounds(polygonBounds(region.outline), { padding: 40 })
 }
 
 const canManage = auth.canManage
@@ -195,20 +246,33 @@ const onBubble = area => {
   else selectArea(area.id)
 }
 
-const onBox = id => router.push({ name: "box", params: { id } })
-
-const selectArea = async areaId => {
-  selectedId.value = areaId
+const scrollToRow = async selector => {
   await nextTick()
-  document
-    .querySelector(`[data-area-row="${areaId}"]`)
-    ?.scrollIntoView({ block: "nearest" })
+  document.querySelector(selector)?.scrollIntoView({ block: "nearest" })
+}
+
+const selectArea = areaId => {
+  selectedId.value = areaId
+  scrollToRow(`[data-area-row="${areaId}"]`)
+}
+
+const selectBox = id => {
+  selectedBoxId.value = id
+  scrollToRow(`[data-box-row="${id}"]`)
 }
 
 const focusArea = areaId => {
   selectedId.value = areaId
   const area = areasById.value.get(areaId)
   if (area.marker) map.value.flyTo({ center: area.marker.coordinates, zoom: 11 })
+}
+
+const focusBox = box => {
+  selectedBoxId.value = box.id
+  map.value.easeTo({
+    center: box.location.coordinates,
+    zoom: Math.max(map.value.getZoom(), 16),
+  })
 }
 </script>
 
@@ -222,54 +286,28 @@ const focusArea = areaId => {
           :selected-id="selectedId"
           @select="onBubble"
         />
-        <BoxMarkers :boxes="markerBoxes" @select="onBox" />
+        <template v-else>
+          <PlannedBoxes :boxes="plannedBoxes" />
+          <BoxMarkers
+            :boxes="markerBoxes"
+            :selected-id="selectedBoxId"
+            :labels-zoom="LABELS_ZOOM"
+            @select="selectBox"
+          />
+        </template>
       </BaseMap>
     </template>
     <template #summary>
       <div class="summary">
         <p class="eyebrow">
-          Sezóna {{ seasonLabel(showsStates ? currentSeason() : season) }}
+          Sezóna {{ seasonLabel(showsStates || showsBoxes ? currentSeason() : season) }}
         </p>
         <h2 data-testid="areas-summary">{{ heading }}</h2>
       </div>
     </template>
     <div class="head">
-      <SegmentedControl
-        v-if="auth.isManager"
-        v-model="view"
-        :options="VIEWS"
-        size="sm"
-      />
-      <div v-if="showsStates" class="totals" data-testid="state-totals">
-        <div v-for="state in STATE_COLUMNS" :key="state">
-          <b class="num">{{ formatNumber(stateTotals[state]) }}</b>
-          <span>{{ SEASON_STATE_LABELS[state].toLowerCase() }}</span>
-        </div>
-      </div>
-      <div v-else-if="totalFigures" class="totals">
-        <div>
-          <b class="num">{{ formatNumber(statistics.total.cleaned) }}</b>
-          <span>vyčištěno</span>
-        </div>
-        <div>
-          <b class="num">{{ totalFigures.coverageLabel }}</b>
-          <span>z budek</span>
-        </div>
-        <div>
-          <b class="num">{{ totalFigures.occupancyLabel }}</b>
-          <span>obsazeno</span>
-        </div>
-        <div>
-          <b class="num">{{ totalFigures.previousOccupancyLabel }}</b>
-          <span>obsazeno loni</span>
-        </div>
-      </div>
-      <n-button v-if="auth.me?.is_budkar" size="small" @click="creatingArea = true">
-        <template #icon><AppIcon name="plus" /></template>
-        Nová oblast
-      </n-button>
-      <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
-      <div class="filters" :class="{ single: showsStates }">
+      <SegmentedControl v-if="auth.isManager" v-model="mode" :options="MODES" />
+      <template v-if="showsBoxes">
         <n-select
           v-model:value="unitId"
           :options="unitOptions"
@@ -278,149 +316,212 @@ const focusArea = areaId => {
           filterable
           clearable
         />
-        <n-select
-          v-if="!showsStates"
-          v-model:value="season"
-          :options="seasonOptions"
-          :consistent-menu-width="false"
-          size="small"
+        <BoxFilters
+          v-model="boxFilters"
+          :types="types"
+          :unverified-count="unverifiedCount"
         />
-      </div>
-      <div v-if="showsStates" class="chips">
-        <n-popselect
-          v-model:value="filters.state"
-          :options="SEASON_STATE_OPTIONS"
-          multiple
-          trigger="click"
-        >
-          <button type="button" class="chip" :class="{ on: filters.state.length }">
-            <AppIcon name="filter" />{{
-              filters.state.length === 1
-                ? SEASON_STATE_LABELS[filters.state[0]]
-                : `Stav${filters.state.length ? ` ${filters.state.length}` : ""}`
-            }}
+        <MapLegend />
+      </template>
+      <template v-else>
+        <SegmentedControl
+          v-if="auth.isManager"
+          v-model="view"
+          :options="VIEWS"
+          size="sm"
+        />
+        <div v-if="showsStates" class="totals three" data-testid="state-totals">
+          <div v-for="column in STATE_COLUMNS" :key="column.key">
+            <b class="num">{{ formatNumber(stateTotals[column.key]) }}</b>
+            <span>{{ TOTAL_LABELS[column.key] }}</span>
+          </div>
+        </div>
+        <div v-else-if="totalFigures" class="totals">
+          <div>
+            <b class="num">{{ formatNumber(statistics.total.cleaned) }}</b>
+            <span>vyčištěno</span>
+          </div>
+          <div>
+            <b class="num">{{ totalFigures.coverageLabel }}</b>
+            <span>z budek</span>
+          </div>
+          <div>
+            <b class="num">{{ totalFigures.occupancyLabel }}</b>
+            <span>obsazeno</span>
+          </div>
+          <div>
+            <b class="num">{{ totalFigures.previousOccupancyLabel }}</b>
+            <span>obsazeno loni</span>
+          </div>
+        </div>
+        <div class="filters" :class="{ single: showsStates }">
+          <n-select
+            v-model:value="unitId"
+            :options="unitOptions"
+            size="small"
+            placeholder="Všechny jednotky"
+            filterable
+            clearable
+          />
+          <n-select
+            v-if="!showsStates"
+            v-model:value="season"
+            :options="seasonOptions"
+            :consistent-menu-width="false"
+            size="small"
+          />
+        </div>
+        <div v-if="showsStates" class="chips">
+          <n-popselect
+            v-model:value="filters.state"
+            :options="SEASON_STATE_OPTIONS"
+            multiple
+            trigger="click"
+          >
+            <button type="button" class="chip" :class="{ on: filters.state.length }">
+              <AppIcon name="filter" />{{
+                filters.state.length === 1
+                  ? SEASON_STATE_LABELS[filters.state[0]]
+                  : `Stav${filters.state.length ? ` ${filters.state.length}` : ""}`
+              }}
+            </button>
+          </n-popselect>
+          <n-popselect
+            v-model:value="filters.type"
+            :options="typeOptions"
+            multiple
+            trigger="click"
+            scrollable
+          >
+            <button type="button" class="chip" :class="{ on: filters.type.length }">
+              <AppIcon name="filter" />Typ<template v-if="filters.type.length">
+                {{ filters.type.length }}</template
+              >
+            </button>
+          </n-popselect>
+          <button
+            type="button"
+            class="chip"
+            :class="{ on: filters.unverified }"
+            @click="filters.unverified = !filters.unverified"
+          >
+            Neověřené
           </button>
-        </n-popselect>
-        <n-popselect
-          v-model:value="filters.type"
-          :options="typeOptions"
-          multiple
-          trigger="click"
-          scrollable
-        >
-          <button type="button" class="chip" :class="{ on: filters.type.length }">
-            <AppIcon name="filter" />Typ<template v-if="filters.type.length">
-              {{ filters.type.length }}</template
+        </div>
+        <MapLegend v-if="showsStates" />
+      </template>
+    </div>
+    <BoxList
+      v-if="showsBoxes"
+      :groups="boxGroups"
+      :selected-id="selectedBoxId"
+      :detail="detail"
+      :state-of="box => markerState(box, null)"
+      @focus="focusBox"
+    />
+    <template v-else>
+      <div class="scroll-x">
+        <table v-if="showsStates" class="tbl" data-testid="season-states">
+          <thead>
+            <tr>
+              <th class="first">Oblast</th>
+              <th v-for="column in STATE_COLUMNS" :key="column.key" class="r">
+                {{ column.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in statesRows"
+              :key="row.area_id"
+              :data-area-row="row.area_id"
+              :class="{ selected: row.area_id === selectedId }"
+              @click="focusArea(row.area_id)"
             >
-          </button>
-        </n-popselect>
-        <button
-          type="button"
-          class="chip"
-          :class="{ on: filters.unverified }"
-          @click="filters.unverified = !filters.unverified"
-        >
-          Neověřené
-        </button>
+              <td class="first">
+                <RouterLink
+                  :to="{ name: 'area', params: { id: row.area_id } }"
+                  @click.stop
+                >
+                  <b>{{ row.area.name }}</b>
+                </RouterLink>
+                <div class="small muted">
+                  {{ row.area.administration_unit.abbreviation }}
+                </div>
+              </td>
+              <td
+                v-for="column in STATE_COLUMNS"
+                :key="column.key"
+                class="r num"
+                :class="[column.key, { muted: !row[column.key] }]"
+              >
+                {{ formatNumber(row[column.key]) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table v-else class="tbl" data-testid="statistics">
+          <thead>
+            <tr>
+              <th class="first">Oblast</th>
+              <th class="r">Budek</th>
+              <th class="r">Vyčištěno</th>
+              <th class="r">Obsaz.</th>
+              <th class="r">Loni</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in statisticsRows"
+              :key="row.area.id"
+              :data-area-row="row.area.id"
+              :class="{ selected: row.area.id === selectedId }"
+              @click="focusArea(row.area.id)"
+            >
+              <td class="first">
+                <RouterLink
+                  v-if="canManage(row.area.id)"
+                  :to="{ name: 'area', params: { id: row.area.id } }"
+                  @click.stop
+                >
+                  <b>{{ row.area.name }}</b>
+                </RouterLink>
+                <b v-else>{{ row.area.name }}</b>
+                <div class="small muted">
+                  {{ row.area.administration_unit.abbreviation }}
+                </div>
+              </td>
+              <td class="r num">{{ formatNumber(row.boxes) }}</td>
+              <td class="r num">
+                {{ row.coverageLabel }}
+                <span class="bar"
+                  ><i :style="{ width: `${(row.coverage ?? 0) * 100}%` }"
+                /></span>
+              </td>
+              <td class="r num">{{ row.occupancyLabel }}</td>
+              <td class="r num muted">{{ row.previousOccupancyLabel }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <MapLegend v-if="showsStates" />
-      <p v-if="showsStates" class="small muted">
-        Od přiblížení {{ BOXES_ZOOM }} ukazuje mapa jednotlivé budky.
+      <p v-if="showsStates" class="small muted footnote">
+        Letošní stav včetně kontrol, které čekají na potvrzení. Pozornost potřebují
+        nenalezené, poškozené, nevyčištěné a příliš blízko visící budky. Zbývají i
+        plánované budky.
       </p>
-    </div>
-    <div class="scroll-x">
-      <table v-if="showsStates" class="tbl" data-testid="season-states">
-        <thead>
-          <tr>
-            <th class="first">Oblast</th>
-            <th v-for="state in STATE_COLUMNS" :key="state" class="r">
-              {{ COLUMN_LABELS[state] }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in statesRows"
-            :key="row.area_id"
-            :data-area-row="row.area_id"
-            :class="{ selected: row.area_id === selectedId }"
-            @click="focusArea(row.area_id)"
-          >
-            <td class="first">
-              <RouterLink
-                :to="{ name: 'area', params: { id: row.area_id } }"
-                @click.stop
-              >
-                <b>{{ row.area.name }}</b>
-              </RouterLink>
-              <div class="small muted">
-                {{ row.area.administration_unit.abbreviation }}
-              </div>
-            </td>
-            <td
-              v-for="state in STATE_COLUMNS"
-              :key="state"
-              class="r num"
-              :class="[state, { muted: !row[state] }]"
-            >
-              {{ formatNumber(row[state]) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table v-else class="tbl" data-testid="statistics">
-        <thead>
-          <tr>
-            <th class="first">Oblast</th>
-            <th class="r">Budek</th>
-            <th class="r">Vyčištěno</th>
-            <th class="r">Obsaz.</th>
-            <th class="r">Loni</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in statisticsRows"
-            :key="row.area.id"
-            :data-area-row="row.area.id"
-            :class="{ selected: row.area.id === selectedId }"
-            @click="focusArea(row.area.id)"
-          >
-            <td class="first">
-              <RouterLink
-                v-if="canManage(row.area.id)"
-                :to="{ name: 'area', params: { id: row.area.id } }"
-                @click.stop
-              >
-                <b>{{ row.area.name }}</b>
-              </RouterLink>
-              <b v-else>{{ row.area.name }}</b>
-              <div class="small muted">
-                {{ row.area.administration_unit.abbreviation }}
-              </div>
-            </td>
-            <td class="r num">{{ formatNumber(row.boxes) }}</td>
-            <td class="r num">
-              {{ row.coverageLabel }}
-              <span class="bar"
-                ><i :style="{ width: `${(row.coverage ?? 0) * 100}%` }"
-              /></span>
-            </td>
-            <td class="r num">{{ row.occupancyLabel }}</td>
-            <td class="r num muted">{{ row.previousOccupancyLabel }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p v-if="showsStates" class="small muted footnote">
-      Letošní stav včetně kontrol, které čekají na potvrzení. Pozornost potřebují
-      nenalezené, poškozené, nevyčištěné a příliš blízko visící budky.
-    </p>
-    <p v-else class="small muted footnote">
-      Jen potvrzené kontroly. Obsazenost se počítá z budek, do kterých někdo opravdu
-      nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch,
-      které potřebují pozornost, letos i s kontrolami čekajícími na potvrzení.
-    </p>
+      <p v-else class="small muted footnote">
+        Jen potvrzené kontroly. Obsazenost se počítá z budek, do kterých někdo opravdu
+        nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch,
+        které potřebují pozornost, letos i s kontrolami čekajícími na potvrzení.
+      </p>
+      <div v-if="auth.me?.is_budkar" class="new-area">
+        <n-button size="small" @click="creatingArea = true">
+          <template #icon><AppIcon name="plus" /></template>
+          Nová oblast
+        </n-button>
+        <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
+      </div>
+    </template>
   </MapPanelLayout>
 </template>
 
@@ -444,6 +545,10 @@ const focusArea = areaId => {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+}
+
+.totals.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .totals div {
@@ -509,6 +614,10 @@ const focusArea = areaId => {
   padding: 12px 20px;
 }
 
+.new-area {
+  padding: 0 20px 20px;
+}
+
 @media (max-width: 720px) {
   .summary {
     padding: 0 16px 10px;
@@ -516,6 +625,10 @@ const focusArea = areaId => {
 
   .head {
     padding: 0 16px 12px;
+  }
+
+  .new-area {
+    padding: 0 16px 16px;
   }
 
   .tbl .first {

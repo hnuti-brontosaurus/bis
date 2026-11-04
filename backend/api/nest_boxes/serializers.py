@@ -22,6 +22,7 @@ from nest_boxes.models import (
     NestBox,
     NestBoxHistory,
 )
+from regions.models import Region
 from rest_framework import serializers
 from rest_framework.fields import (
     BooleanField,
@@ -36,8 +37,16 @@ from rest_framework.fields import (
     UUIDField,
 )
 from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
-from rest_framework.serializers import ModelSerializer, Serializer, as_serializer_error
+from rest_framework.serializers import (
+    ModelSerializer,
+    Serializer,
+    SerializerMethodField,
+    as_serializer_error,
+)
 from rest_framework_gis.fields import GeometryField
+
+# Degrees, about 400 m: a region's outline is only drawn on a map of the country
+OUTLINE_TOLERANCE = 0.004
 
 
 def related(model, source, **kwargs):
@@ -118,6 +127,20 @@ class PublicAreaSerializer(ModelSerializer):
     class Meta:
         model = Area
         fields = ("id", "name", "administration_unit", "marker", "box_count")
+
+
+class PublicRegionSerializer(ModelSerializer):
+    marker = GeometryField(precision=4)
+    outline = SerializerMethodField()
+    box_count = IntegerField()
+
+    class Meta:
+        model = Region
+        fields = ("id", "name", "marker", "outline", "box_count")
+
+    def get_outline(self, region):
+        outline = region.area.simplify(OUTLINE_TOLERANCE, preserve_topology=True)
+        return GeometryField(precision=4).to_representation(outline)
 
 
 class StatisticsAreaSerializer(ModelSerializer):
@@ -499,6 +522,34 @@ class LinkAreaSerializer(ModelSerializer):
     class Meta:
         model = Area
         fields = ("id", "name", "administration_unit")
+
+
+class MapBoxSerializer(ModelSerializer):
+    """What the map of all boxes draws, filters and lists; a box's page loads the rest."""
+
+    should_be_moved = BooleanField()
+    season_state = CharField(allow_null=True)
+    last_checked_on = DateField()
+
+    class Meta:
+        model = NestBox
+        fields = (
+            "id",
+            "name",
+            "previous_names",
+            "area_id",
+            "location",
+            "planned_radius",
+            "type_id",
+            "status",
+            "condition",
+            "is_verified",
+            "is_confirmed",
+            "should_be_moved",
+            "season_state",
+            "last_checked_on",
+        )
+        read_only_fields = fields
 
 
 class AreaSerializer(ModelSerializer):

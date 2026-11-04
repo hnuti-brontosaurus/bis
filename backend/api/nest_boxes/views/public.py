@@ -3,6 +3,7 @@ from api.nest_boxes.serializers import (
     HelpImageSerializer,
     PersonSerializer,
     PublicAreaSerializer,
+    PublicRegionSerializer,
     StatisticsAreaSerializer,
     WantToHangSerializer,
     categories_data,
@@ -12,12 +13,15 @@ from api.nest_boxes.views.base import (
     NestBoxAPIMixin,
     help_articles,
 )
+from django.contrib.gis.db.models.functions import PointOnSurface
+from django.db.models import Count
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from nest_boxes.models import Area, Batch, Check, HelpArticle, HelpImage
+from nest_boxes.models import Area, Batch, Check, HelpArticle, HelpImage, in_use
 from nest_boxes.permissions import can_manage_all, manageable_areas
 from nest_boxes.statistics import season_statistics
+from regions.models import Region
 from rest_framework import mixins, viewsets
 from rest_framework.fields import IntegerField
 from rest_framework.response import Response
@@ -63,6 +67,17 @@ class PublicAreaViewSet(
         .order_by("name")
     )
     filterset_fields = ("administration_unit",)
+
+
+class PublicRegionsView(NestBoxAPIMixin, APIView):
+    """Every region with its outline and boxes in use, for the landing map."""
+
+    def get(self, request):
+        regions = Region.objects.annotate(
+            marker=PointOnSurface("area"),
+            box_count=Count("nest_boxes", filter=in_use("nest_boxes__")),
+        )
+        return Response(PublicRegionSerializer(regions, many=True).data)
 
 
 class StatisticsView(NestBoxAPIMixin, APIView):

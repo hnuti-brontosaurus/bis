@@ -13,7 +13,6 @@ const props = defineProps({
   // composables/statistics.js; the rest of `count` is still to check
   areas: { type: Array, required: true },
   selectedId: { type: Number, default: null },
-  plain: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(["select"])
@@ -47,7 +46,6 @@ const render = () => {
     const merged = cluster.items.length > 1
     const sum = key => cluster.items.reduce((total, item) => total + item[key], 0)
     const element = areaBubbleElement({
-      plain: props.plain,
       count: cluster.weight,
       done: sum("done"),
       attention: sum("attention"),
@@ -57,12 +55,11 @@ const render = () => {
       merged,
       selected: cluster.items.some(item => item.area.id === props.selectedId),
     })
-    if (!props.plain)
-      element.addEventListener("click", () => {
-        if (merged)
-          map.value.fitBounds(clusterBounds(cluster), { padding: 120, maxZoom: 13 })
-        else emit("select", biggest.area)
-      })
+    element.addEventListener("click", () => {
+      if (merged)
+        map.value.fitBounds(clusterBounds(cluster), { padding: 120, maxZoom: 13 })
+      else emit("select", biggest.area)
+    })
     return new Marker({ element, anchor: "center" })
       .setLngLat(map.value.unproject([cluster.x, cluster.y]))
       .addTo(map.value)

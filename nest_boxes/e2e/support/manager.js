@@ -38,10 +38,12 @@ export const test = base.extend({
   },
 
   area: async ({ api }, use) => {
-    // The public list: the budkař's own roles flicker while another spec reseeds
+    // The public list: the budkař's own roles flicker while another spec
+    // reseeds, and the area is missing for a moment while it is recreated.
+    // One page, since the list shrinks under a reseed.
     let seeded
-    for (let page = 1; !seeded; page++) {
-      const { results } = await api.get(`/public/areas/?page=${page}`)
+    while (!seeded) {
+      const { results } = await api.get("/public/areas/?page_size=200")
       seeded = results.find(area => area.name === SEEDED_AREA)
     }
     const area = await api.post("/areas/", {

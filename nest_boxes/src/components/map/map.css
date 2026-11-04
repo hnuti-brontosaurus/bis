@@ -157,10 +157,6 @@
   white-space: nowrap;
 }
 
-.area-bubble.plain {
-  cursor: default;
-}
-
 .area-bubble.plain .bubble {
   background: var(--primary);
   border: 3px solid var(--surface);
@@ -176,7 +172,6 @@
 }
 
 .area-bubble.merged .bubble {
-  border-style: double;
   border-width: 4px;
 }
 
@@ -213,4 +208,8 @@
   border: 3px solid var(--surface);
   box-shadow: 0 0 0 8px var(--loc-ring);
   pointer-events: none;
+}
+
+.box-labels-hidden .box-marker .label {
+  display: none;
 }
