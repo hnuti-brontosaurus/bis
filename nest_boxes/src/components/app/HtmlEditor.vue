@@ -3,6 +3,7 @@ import { ref, watch } from "vue"
 import { EditorContent, useEditor } from "@tiptap/vue-3"
 import { BubbleMenu } from "@tiptap/vue-3/menus"
 import Image from "@tiptap/extension-image"
+import { TableKit } from "@tiptap/extension-table"
 import StarterKit from "@tiptap/starter-kit"
 import { NButton, NInput, NInputGroup, NPopover } from "naive-ui"
 
@@ -17,8 +18,8 @@ const props = defineProps({
 })
 
 // The backend keeps exactly the markup these extensions produce
-// (ArticleHTMLField in api/cookbook/serializers.py, shared with the cookbook's
-// articles), so the two have to change together.
+// (HelpHTMLField in api/nest_boxes/serializers.py), so the two have to change
+// together. Cells can't be merged: the sanitizer drops colspan and rowspan.
 const IMAGE_SIZES = [
   { size: "small-left", label: "Malý vlevo" },
   { size: "small-right", label: "Malý vpravo" },
@@ -57,6 +58,7 @@ const editor = useEditor({
       },
     }),
     SizedImage,
+    TableKit,
   ],
   onUpdate: ({ editor }) => (value.value = editor.isEmpty ? "" : editor.getHTML()),
 })
@@ -115,6 +117,14 @@ const FORMATS = [
   },
 ]
 
+const TABLE_ACTIONS = [
+  { label: "+ řádek", run: chain => chain.addRowAfter() },
+  { label: "+ sloupec", run: chain => chain.addColumnAfter() },
+  { label: "− řádek", run: chain => chain.deleteRow() },
+  { label: "− sloupec", run: chain => chain.deleteColumn() },
+  { label: "Smazat tabulku", run: chain => chain.deleteTable() },
+]
+
 const imageInput = ref(null)
 const uploadingImage = ref(false)
 const insertImage = async event => {
@@ -140,7 +150,8 @@ const openLinkInput = () => {
 const insertLink = () => {
   const chain = editor.value.chain().focus().extendMarkRange("link")
   const url = linkUrl.value.trim()
-  const href = /^[a-z]+:/i.test(url) ? url : `https://${url}`
+  // A path stays relative: links between help articles are followed in the app
+  const href = /^([a-z]+:|\/)/i.test(url) ? url : `https://${url}`
   if (url) chain.setLink({ href }).run()
   else chain.unsetLink().run()
   showLinkInput.value = false
@@ -201,6 +212,21 @@ const insertLink = () => {
       >
         <AppIcon name="camera" />
       </n-button>
+      <n-button
+        size="small"
+        quaternary
+        title="Tabulka"
+        aria-label="Tabulka"
+        @click="
+          editor
+            .chain()
+            .focus()
+            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+            .run()
+        "
+      >
+        <AppIcon name="table" />
+      </n-button>
       <input
         ref="imageInput"
         type="file"
@@ -214,7 +240,7 @@ const insertLink = () => {
       plugin-key="imageSize"
       :should-show="({ editor }) => editor.isActive('image')"
     >
-      <div class="image-menu">
+      <div class="bubble-menu">
         <n-button
           v-for="option in IMAGE_SIZES"
           :key="option.size"
@@ -232,6 +258,23 @@ const insertLink = () => {
           "
         >
           {{ option.label }}
+        </n-button>
+      </div>
+    </BubbleMenu>
+    <BubbleMenu
+      :editor="editor"
+      plugin-key="table"
+      :should-show="({ editor }) => editor.isActive('table')"
+    >
+      <div class="bubble-menu">
+        <n-button
+          v-for="action in TABLE_ACTIONS"
+          :key="action.label"
+          size="tiny"
+          quaternary
+          @click="action.run(editor.chain().focus()).run()"
+        >
+          {{ action.label }}
         </n-button>
       </div>
     </BubbleMenu>
@@ -265,7 +308,7 @@ const insertLink = () => {
   height: 17px;
 }
 
-.image-menu {
+.bubble-menu {
   display: flex;
   gap: 2px;
   padding: 3px 4px;
@@ -283,5 +326,9 @@ const insertLink = () => {
 
 .content :deep(.ProseMirror-selectednode) {
   outline: 2px solid var(--primary);
+}
+
+.content :deep(.selectedCell) {
+  background: var(--primary-soft);
 }
 </style>

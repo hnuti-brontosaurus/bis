@@ -11,13 +11,19 @@ defineProps({
   // Off for the volunteer's offline pages, where the help page isn't cached
   linked: { type: Boolean, default: true },
 })
+defineEmits(["help"])
 </script>
 
 <template>
   <div class="help-panel" data-testid="help-panel">
     <p class="eyebrow">Nápověda</p>
     <h3>{{ helpTitle(article) }}</h3>
-    <HtmlText v-if="article.content" class="small" :html="article.content" />
+    <HtmlText
+      v-if="article.content"
+      class="small"
+      :html="article.content"
+      @help="$emit('help', $event)"
+    />
     <p v-else class="small muted">Tahle nápověda se teprve píše.</p>
     <RouterLink
       v-if="linked"
@@ -35,6 +41,15 @@ defineProps({
   display: grid;
   gap: 10px;
   align-content: start;
+}
+
+/* The article's headings sit under the panel's own h3 */
+.help-panel :deep(.html-text h2) {
+  font-size: 17px;
+}
+
+.help-panel :deep(.html-text h3) {
+  font-size: 15px;
 }
 
 .more {

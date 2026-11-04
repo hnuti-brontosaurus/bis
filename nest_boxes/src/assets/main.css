@@ -429,6 +429,10 @@ a {
   border-radius: 0 var(--r-in) var(--r-in) 0;
 }
 
+.html-text blockquote > :last-child {
+  margin-bottom: 0;
+}
+
 .html-text hr {
   border: 0;
   border-top: 1px solid var(--line);
@@ -465,11 +469,48 @@ a {
   margin-bottom: 0.8em;
 }
 
+/* A block, so a table wider than a phone scrolls instead of the page */
+.html-text table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0 0 0.8em;
+  font-size: 0.94em;
+}
+
+.html-text th,
+.html-text td {
+  min-width: 6em;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.html-text th {
+  background: var(--surface-2);
+}
+
+.html-text th p,
+.html-text td p {
+  margin: 0;
+}
+
+/* Nothing floats beside text on a phone; a small drawing keeps half the width,
+   so a tall one does not fill the screen */
 @media (max-width: 600px) {
   .html-text img {
     float: none !important;
     width: 100% !important;
     margin: 0 0 0.8em !important;
+  }
+
+  .html-text img.size-small-left,
+  .html-text img.size-small-right {
+    display: block;
+    width: 50% !important;
+    margin: 0 auto 0.8em !important;
   }
 }
 

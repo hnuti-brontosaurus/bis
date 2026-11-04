@@ -632,8 +632,14 @@ class ImportRowSerializer(Serializer):
     close_rows = ListField(child=IntegerField())
 
 
+class HelpHTMLField(ArticleHTMLField):
+    """The help editor's markup: the cookbook articles' plus tables."""
+
+    tags = ArticleHTMLField.tags | {"table", "tbody", "tr", "th", "td"}
+
+
 class HelpArticleSerializer(KeepsContentImages, ModelSerializer):
-    content = ArticleHTMLField(allow_blank=True)
+    content = HelpHTMLField(allow_blank=True)
 
     class Meta:
         model = HelpArticle

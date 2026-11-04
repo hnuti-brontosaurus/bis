@@ -305,7 +305,8 @@ const save = async () => {
           <div v-if="found" class="question">
             <template v-if="state.verify">
               <span class="label">
-                Prosím ověř údaje budky <HelpBadge @open="openHelp('hanging')" />
+                Prosím ověř údaje budky
+                <HelpBadge @open="openHelp(hanging ? 'hanging' : 'box_changes')" />
               </span>
               <span class="small muted">
                 {{
@@ -366,7 +367,7 @@ const save = async () => {
         </div>
       </div>
       <aside v-if="sideHelp" class="side-help card">
-        <HelpPanel :article="helpArticle" :linked="helpLinked" />
+        <HelpPanel :article="helpArticle" :linked="helpLinked" @help="openHelp" />
       </aside>
     </div>
 
@@ -388,7 +389,7 @@ const save = async () => {
       :width="420"
     >
       <n-drawer-content closable>
-        <HelpPanel :article="helpArticle" :linked="helpLinked" />
+        <HelpPanel :article="helpArticle" :linked="helpLinked" @help="openHelp" />
       </n-drawer-content>
     </n-drawer>
   </div>

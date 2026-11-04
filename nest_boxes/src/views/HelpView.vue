@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from "vue"
-import { RouterLink, useRoute } from "vue-router"
+import { RouterLink, useRoute, useRouter } from "vue-router"
 import { NButton, NInput, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
@@ -16,6 +16,7 @@ const FIRST_ARTICLE = "cleaning_howto"
 const ORDER = Object.keys(HELP_TITLES)
 
 const route = useRoute()
+const router = useRouter()
 const message = useMessage()
 const auth = useAuthStore()
 
@@ -96,7 +97,11 @@ const save = async () => {
             </n-button>
           </div>
           <h1>{{ helpTitle(article) }}</h1>
-          <HtmlText v-if="article.content" :html="article.content" />
+          <HtmlText
+            v-if="article.content"
+            :html="article.content"
+            @help="router.push({ name: 'help_article', params: { slug: $event } })"
+          />
           <p v-else class="muted">Tahle nápověda se teprve píše.</p>
         </template>
       </article>

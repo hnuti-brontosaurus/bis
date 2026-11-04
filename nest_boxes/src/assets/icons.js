@@ -31,6 +31,8 @@ export const icons = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   print: '<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  table:
+    '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M3 15h18M9 9.5V20M15 9.5V20"/>',
   tool: '<path d="M14.5 5.5a4 4 0 0 0 5 5L12 18a2.1 2.1 0 1 1-3-3l7.5-7.5a4 4 0 0 0-2-2zM5 21l3-3"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   up: '<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>',

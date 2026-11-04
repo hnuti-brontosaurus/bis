@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue"
-import { RouterLink, useRoute } from "vue-router"
+import { RouterLink, useRoute, useRouter } from "vue-router"
 
 import HtmlText from "@/components/app/HtmlText.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
@@ -8,6 +8,7 @@ import { helpTitle } from "@/composables/labels.js"
 import { useLinkStore } from "@/data/link.js"
 
 const route = useRoute()
+const router = useRouter()
 const link = useLinkStore()
 
 const articles = computed(() => link.payload.help_articles)
@@ -37,7 +38,11 @@ const article = computed(
     </nav>
     <article class="stack">
       <h1>{{ helpTitle(article) }}</h1>
-      <HtmlText v-if="article.content" :html="article.content" />
+      <HtmlText
+        v-if="article.content"
+        :html="article.content"
+        @help="router.push({ name: 'link_help', params: { slug: $event } })"
+      />
       <p v-else class="muted">Tahle nápověda se teprve píše.</p>
     </article>
   </main>
