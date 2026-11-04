@@ -315,6 +315,10 @@ if ENVIRONMENT in ("dev", "prod"):
 
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Django's default, same-origin, sends no Referer to other sites, and the OSM
+# tiles of the admin's map widget refuse requests without one (tile usage policy)
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 # phonenumber_field
 PHONENUMBER_DEFAULT_REGION = "CZ"
 PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"

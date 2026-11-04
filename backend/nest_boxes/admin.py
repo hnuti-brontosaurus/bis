@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
 from nest_boxes.models import (
     Area,
-    Batch,
     Check,
     CheckPhoto,
     HelpArticle,
@@ -50,8 +49,9 @@ class NestBoxAdmin(PermissionMixin, GISModelAdmin):
     )
     list_filter = ("status", "condition", "type", "is_verified", "is_confirmed")
     search_fields = ("name", "previous_names", "area__name")
-    autocomplete_fields = ("area", "created_by", "batch")
+    autocomplete_fields = ("area", "created_by")
     readonly_fields = (
+        "batch",
         "region",
         "closest_distance",
         "closest_same_type_distance",
@@ -72,21 +72,12 @@ class CheckAdmin(PermissionMixin, admin.ModelAdmin):
     search_fields = ("box__name", "box__area__name")
     autocomplete_fields = (
         "box",
-        "batch",
         "entered_by",
         "confirmed_by",
         "cleaned_by",
     )
-    readonly_fields = ("season",)
+    readonly_fields = ("season", "batch")
     inlines = (CheckPhotoInline,)
-
-
-@admin.register(Batch)
-class BatchAdmin(PermissionMixin, admin.ModelAdmin):
-    list_display = ("name", "area", "created_at", "closed_at", "confirmed_at")
-    search_fields = ("name", "area__name")
-    autocomplete_fields = ("area", "boxes", "cleaned_by", "created_by", "confirmed_by")
-    readonly_fields = ("token", "created_at")
 
 
 class HelpImageInline(PermissionMixin, admin.TabularInline):
