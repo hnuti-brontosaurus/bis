@@ -12,8 +12,6 @@ const props = defineProps({
   regions: { type: Array, required: true },
 })
 
-const emit = defineEmits(["select"])
-
 const { map, setOverlay, removeOverlay } = inject("map")
 let markers = []
 
@@ -53,7 +51,6 @@ watchEffect(() => {
         diameter: bubbleDiameter(region.box_count),
         name: region.name,
       })
-      element.addEventListener("click", () => emit("select", region))
       return new Marker({ element, anchor: "center" })
         .setLngLat(region.marker.coordinates)
         .addTo(map.value)

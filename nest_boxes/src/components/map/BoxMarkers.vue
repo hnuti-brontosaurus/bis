@@ -8,8 +8,6 @@ const props = defineProps({
   // [{ id, name, location: GeoJSON Point, state: one of BOX_STATES }]
   boxes: { type: Array, required: true },
   selectedId: { type: [String, Number], default: null },
-  // the zoom below which the names are hidden, for a map of many areas' boxes
-  labelsZoom: { type: Number, default: 0 },
 })
 
 const emit = defineEmits(["select"])
@@ -21,13 +19,6 @@ const clear = () => {
   markers.forEach(marker => marker.remove())
   markers = new Map()
 }
-
-const showLabels = () =>
-  map.value
-    .getContainer()
-    .classList.toggle("box-labels-hidden", map.value.getZoom() < props.labelsZoom)
-map.value.on("zoomend", showLabels)
-showLabels()
 
 watch(
   () => props.boxes,
@@ -62,11 +53,7 @@ watch(
   },
 )
 
-onBeforeUnmount(() => {
-  map.value.off("zoomend", showLabels)
-  map.value.getContainer().classList.remove("box-labels-hidden")
-  clear()
-})
+onBeforeUnmount(clear)
 </script>
 
 <template>

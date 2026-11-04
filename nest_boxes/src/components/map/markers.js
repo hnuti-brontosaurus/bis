@@ -18,12 +18,15 @@ const element = (className, html = "") => {
   return node
 }
 
+/** A box's dot, with its name unless `name` is left out. */
 export const boxMarkerElement = ({ name, state, selected }) => {
   const node = element(`box-marker ${state}${selected ? " selected" : ""}`)
   node.append(element("dot", glyphMarkup(state)))
-  const label = element("label")
-  label.textContent = name
-  node.append(label)
+  if (name) {
+    const label = element("label")
+    label.textContent = name
+    node.append(label)
+  }
   return node
 }
 
@@ -56,6 +59,8 @@ export const areaBubbleElement = ({
   const number = document.createElement("b")
   number.textContent = formatNumber(count)
   bubble.append(number)
+  node.append(bubble)
+  if (!name) return node
   const label = element("label")
   label.textContent = name
   if (extra) {
@@ -63,6 +68,6 @@ export const areaBubbleElement = ({
     small.textContent = extra
     label.append(small)
   }
-  node.append(bubble, label)
+  node.append(label)
   return node
 }

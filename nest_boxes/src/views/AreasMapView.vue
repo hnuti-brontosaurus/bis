@@ -10,11 +10,10 @@ import BoxFilters from "@/components/box/BoxFilters.vue"
 import BoxList from "@/components/box/BoxList.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
-import BoxMarkers from "@/components/map/BoxMarkers.vue"
+import BoxClusters from "@/components/map/BoxClusters.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
-import { polygonBounds } from "@/components/map/geometry.js"
 import {
   ACTIVE_STATUSES,
   boxRowDetail,
@@ -46,10 +45,7 @@ import { usePublicData } from "@/composables/usePublicData.js"
 import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
 import { getCategories, getSeasonStates, listMapBoxes } from "@/data/manage.js"
-import { listPublicRegions } from "@/data/public.js"
 
-// Names of a whole region's boxes would cover each other below this zoom
-const LABELS_ZOOM = 13
 const MODES = [
   { value: "areas", label: "Oblasti" },
   { value: "boxes", label: "Budky" },
@@ -72,8 +68,9 @@ const auth = useAuthStore()
 const { season, areas, statistics } = usePublicData()
 
 const unitId = ref(null)
-const selectedId = ref(null)
-const selectedBoxId = ref(null)
+// What a click on the map picked; the panel's rows act on it
+const selectedAreaIds = ref([])
+const selectedBoxIds = ref([])
 const map = shallowRef(null)
 const creatingArea = ref(false)
 const view = ref("states")
@@ -118,6 +115,9 @@ const inUnit = area =>
 
 const areasById = computed(
   () => new Map((areas.value ?? []).map(area => [area.id, area])),
+)
+const areaNames = computed(
+  () => new Map((areas.value ?? []).map(area => [area.id, area.name])),
 )
 
 const statisticsRows = computed(() =>
@@ -232,47 +232,33 @@ const detail = box =>
     otherBatches: [],
   })
 
-const onMapReady = async value => {
-  map.value = value
-  if (!route.query.region) return
-  const region = (await listPublicRegions()).find(
-    item => item.id === Number(route.query.region),
-  )
-  if (region) value.fitBounds(polygonBounds(region.outline), { padding: 40 })
-}
-
 const canManage = auth.canManage
 
 const onAreaCreated = area => router.push({ name: "area", params: { id: area.id } })
-
-const onBubble = area => {
-  if (canManage(area.id)) router.push({ name: "area", params: { id: area.id } })
-  else selectArea(area.id)
-}
 
 const scrollToRow = async selector => {
   await nextTick()
   document.querySelector(selector)?.scrollIntoView({ block: "nearest" })
 }
 
-const selectArea = areaId => {
-  selectedId.value = areaId
-  scrollToRow(`[data-area-row="${areaId}"]`)
+const selectAreas = ids => {
+  selectedAreaIds.value = ids
+  scrollToRow(ids.map(id => `[data-area-row="${id}"]`).join(","))
 }
 
-const selectBox = id => {
-  selectedBoxId.value = id
-  scrollToRow(`[data-box-row="${id}"]`)
+const selectBoxes = ids => {
+  selectedBoxIds.value = ids
+  scrollToRow(ids.map(id => `[data-box-row="${id}"]`).join(","))
 }
 
 const focusArea = areaId => {
-  selectedId.value = areaId
+  selectedAreaIds.value = [areaId]
   const area = areasById.value.get(areaId)
   if (area.marker) map.value.flyTo({ center: area.marker.coordinates, zoom: 11 })
 }
 
 const focusBox = box => {
-  selectedBoxId.value = box.id
+  selectedBoxIds.value = [box.id]
   map.value.easeTo({
     center: box.location.coordinates,
     zoom: Math.max(map.value.getZoom(), 16),
@@ -283,28 +269,43 @@ const focusBox = box => {
 <template>
   <MapPanelLayout>
     <template #map="{ bottomInset }">
-      <BaseMap :bottom-inset="bottomInset" @ready="onMapReady">
+      <BaseMap :bottom-inset="bottomInset" @ready="map = $event">
         <AreaBubbles
           v-if="!showsBoxes"
           :areas="bubbles"
-          :selected-id="selectedId"
-          @select="onBubble"
+          :selected-ids="selectedAreaIds"
+          @select="selectAreas"
         />
         <template v-else>
           <PlannedBoxes :boxes="plannedBoxes" />
-          <BoxMarkers
+          <BoxClusters
             :boxes="markerBoxes"
-            :selected-id="selectedBoxId"
-            :labels-zoom="LABELS_ZOOM"
-            @select="selectBox"
+            :selected-ids="selectedBoxIds"
+            :area-names="areaNames"
+            @select="selectBoxes"
           />
         </template>
       </BaseMap>
     </template>
     <template #summary>
       <div class="summary">
-        <p v-if="shownSeason" class="eyebrow">Sezóna {{ seasonLabel(shownSeason) }}</p>
-        <h2 data-testid="areas-summary">{{ heading }}</h2>
+        <div class="row title-row">
+          <div class="grow">
+            <p v-if="shownSeason" class="eyebrow">
+              Sezóna {{ seasonLabel(shownSeason) }}
+            </p>
+            <h2 data-testid="areas-summary">{{ heading }}</h2>
+          </div>
+          <n-button
+            v-if="auth.me?.is_budkar"
+            size="small"
+            quaternary
+            @click="creatingArea = true"
+          >
+            <template #icon><AppIcon name="plus" /></template>
+            <span class="hide-sm">Nová oblast</span>
+          </n-button>
+        </div>
       </div>
     </template>
     <div class="head">
@@ -413,10 +414,11 @@ const focusBox = box => {
         <MapLegend v-if="showsStates" />
       </template>
     </div>
+    <p v-if="showsBoxes && !mapBoxes" class="muted loading">Načítám budky…</p>
     <BoxList
-      v-if="showsBoxes"
+      v-else-if="showsBoxes"
       :groups="boxGroups"
-      :selected-id="selectedBoxId"
+      :selected-ids="selectedBoxIds"
       :detail="detail"
       :state-of="box => markerState(box, null)"
       @focus="focusBox"
@@ -437,7 +439,7 @@ const focusBox = box => {
               v-for="row in statesRows"
               :key="row.area_id"
               :data-area-row="row.area_id"
-              :class="{ selected: row.area_id === selectedId }"
+              :class="{ selected: selectedAreaIds.includes(row.area_id) }"
               @click="focusArea(row.area_id)"
             >
               <td class="first">
@@ -477,7 +479,7 @@ const focusBox = box => {
               v-for="row in statisticsRows"
               :key="row.area.id"
               :data-area-row="row.area.id"
-              :class="{ selected: row.area.id === selectedId }"
+              :class="{ selected: selectedAreaIds.includes(row.area.id) }"
               @click="focusArea(row.area.id)"
             >
               <td class="first">
@@ -516,14 +518,8 @@ const focusBox = box => {
         nahlédl. Sezóna začíná 1. července. Bubliny ukazují podíl hotových budek a těch,
         které potřebují pozornost, letos i s kontrolami čekajícími na potvrzení.
       </p>
-      <div v-if="auth.me?.is_budkar" class="new-area">
-        <n-button size="small" @click="creatingArea = true">
-          <template #icon><AppIcon name="plus" /></template>
-          Nová oblast
-        </n-button>
-        <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
-      </div>
     </template>
+    <AreaFormDialog v-model:show="creatingArea" @saved="onAreaCreated" />
   </MapPanelLayout>
 </template>
 
@@ -616,8 +612,18 @@ const focusBox = box => {
   padding: 12px 20px;
 }
 
-.new-area {
-  padding: 0 20px 20px;
+.title-row {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.loading {
+  padding: 14px 20px;
 }
 
 @media (max-width: 720px) {
@@ -627,10 +633,6 @@ const focusBox = box => {
 
   .head {
     padding: 0 16px 12px;
-  }
-
-  .new-area {
-    padding: 0 16px 16px;
   }
 
   .tbl .first {

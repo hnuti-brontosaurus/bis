@@ -1,13 +1,18 @@
 <script setup>
+import { computed, ref, watch } from "vue"
 import { RouterLink } from "vue-router"
 import { NButton } from "naive-ui"
+import { useElementVisibility } from "@vueuse/core"
 
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 
-defineProps({
+// Rows rendered at once; a whole region's boxes would take seconds
+const PAGE = 20
+
+const props = defineProps({
   // [{ key, title, boxes }]
   groups: { type: Array, required: true },
-  selectedId: { type: String, default: null },
+  selectedIds: { type: Array, default: () => [] },
   // box => { text, tone }, see boxRowDetail in composables/areaBoxes.js
   detail: { type: Function, required: true },
   // box => one of BOX_STATES, see map/markers.js
@@ -15,17 +20,54 @@ defineProps({
 })
 
 const emit = defineEmits(["focus"])
+
+const limit = ref(PAGE)
+const more = ref(null)
+const moreVisible = useElementVisibility(more)
+
+const total = computed(() =>
+  props.groups.reduce((sum, group) => sum + group.boxes.length, 0),
+)
+const shownGroups = computed(() => {
+  let left = limit.value
+  return props.groups
+    .map(group => {
+      const shown = group.boxes.slice(0, Math.max(left, 0))
+      left -= shown.length
+      return { ...group, shown }
+    })
+    .filter(group => group.shown.length)
+})
+
+const showMore = () => (limit.value += PAGE)
+
+// Infinite scroll: more rows while the button is in sight, one page per render
+watch(
+  [moreVisible, limit],
+  () => moreVisible.value && limit.value < total.value && showMore(),
+  { flush: "post" },
+)
+
+// A row picked on the map has to be there to scroll to
+watch(
+  () => props.selectedIds,
+  ids => {
+    const order = props.groups.flatMap(group => group.boxes.map(box => box.id))
+    const index = order.findIndex(id => ids.includes(id))
+    if (index >= limit.value) limit.value = Math.ceil((index + 1) / PAGE) * PAGE
+  },
+)
 </script>
 
 <template>
   <div class="list" data-testid="box-list">
-    <template v-for="group in groups" :key="group.key">
+    <template v-for="group in shownGroups" :key="group.key">
       <div class="group-head">{{ group.title }} · {{ group.boxes.length }}</div>
       <div
-        v-for="box in group.boxes"
+        v-for="box in group.shown"
         :key="box.id"
         class="box-row"
-        :class="{ selected: box.id === selectedId }"
+        :class="{ selected: selectedIds.includes(box.id) }"
         :data-box-row="box.id"
         @click="emit('focus', box)"
       >
@@ -59,6 +101,11 @@ const emit = defineEmits(["focus"])
         <slot name="action" :box="box" :group="group" />
       </div>
     </template>
+    <div v-if="limit < total" class="more">
+      <n-button ref="more" size="small" quaternary @click="showMore">
+        Zobrazit další ({{ total - limit }})
+      </n-button>
+    </div>
   </div>
 </template>
 
@@ -117,6 +164,12 @@ const emit = defineEmits(["focus"])
   flex-wrap: wrap;
   gap: 4px 6px;
   align-items: center;
+}
+
+.more {
+  display: grid;
+  justify-items: center;
+  padding: 12px 20px;
 }
 
 @media (max-width: 720px) {

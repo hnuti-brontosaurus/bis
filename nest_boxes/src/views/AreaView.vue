@@ -64,6 +64,7 @@ const { data, reload } = useLoad(async () => {
 
 const map = shallowRef(null)
 const selectedId = ref(null)
+const selectedIds = computed(() => (selectedId.value ? [selectedId.value] : []))
 const filters = ref(defaultFilters())
 const dialogs = ref({ area: false, batch: false, plan: false, gpx: false })
 
@@ -276,7 +277,6 @@ watch(batchId, () => (selectedId.value = null))
         </div>
       </template>
       <template v-else>
-        <p class="muted">Žádná otevřená obchůzka.</p>
         <div class="row">
           <n-button type="primary" size="small" @click="dialogs.batch = true">
             <template #icon><AppIcon name="plus" /></template>
@@ -329,7 +329,7 @@ watch(batchId, () => (selectedId.value = null))
             ]
           : [{ key: 'all', title: 'Budky', boxes: groups.outside }]
       "
-      :selected-id="selectedId"
+      :selected-ids="selectedIds"
       :detail="detail"
       :state-of="box => markerState(box, batch)"
       @focus="focusBox"

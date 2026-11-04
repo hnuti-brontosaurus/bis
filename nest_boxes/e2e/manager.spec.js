@@ -15,7 +15,6 @@ test.describe("the area page", () => {
   }) => {
     await page.goto(`/budky/oblast/${area.id}/`)
     await expect(page.getByRole("heading", { name: area.name })).toBeVisible()
-    await expect(page.getByText("Žádná otevřená obchůzka.")).toBeVisible()
 
     await page.getByRole("button", { name: "Vytvořit obchůzku" }).click()
     await expect(page.getByText("Navržených budek: 3")).toBeVisible()

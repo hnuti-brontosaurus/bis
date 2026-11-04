@@ -22,6 +22,9 @@ export const circlePolygon = ([lng, lat], radius, steps = 48) => {
   return { type: "Polygon", coordinates: [ring] }
 }
 
+// How close two bubbles' edges may come before they merge into one, in px
+export const MERGE_GAP = 24
+
 /**
  * Greedy merge of bubbles whose edges are closer than `gap` px, biggest first,
  * so the biggest item names the group. Each cluster sits at its items'

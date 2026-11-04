@@ -1,20 +1,23 @@
 <script setup>
 import { inject, onBeforeUnmount, ref, watch } from "vue"
-import { LngLatBounds, Marker } from "maplibre-gl"
+import { Marker } from "maplibre-gl"
 
-import { bubbleDiameter, clusterByDistance } from "@/components/map/geometry.js"
+import {
+  bubbleDiameter,
+  clusterByDistance,
+  MERGE_GAP,
+} from "@/components/map/geometry.js"
 import { areaBubbleElement } from "@/components/map/markers.js"
 import { areaCountLabel } from "@/composables/czech.js"
-
-const MERGE_GAP = 24
 
 const props = defineProps({
   // [{ area: PublicArea with a marker, count, done, attention }], see
   // composables/statistics.js; the rest of `count` is still to check
   areas: { type: Array, required: true },
-  selectedId: { type: Number, default: null },
+  selectedIds: { type: Array, default: () => [] },
 })
 
+// The ids of the areas under the bubble; the panel acts on them
 const emit = defineEmits(["select"])
 
 const { map } = inject("map")
@@ -28,12 +31,6 @@ const clear = () => {
   markers.forEach(marker => marker.remove())
   markers = []
 }
-
-const clusterBounds = cluster =>
-  cluster.items.reduce(
-    (bounds, item) => bounds.extend(item.area.marker.coordinates),
-    new LngLatBounds(),
-  )
 
 const render = () => {
   const points = props.areas.map(item => {
@@ -53,20 +50,21 @@ const render = () => {
       name: biggest.area.name,
       extra: merged ? `· ${areaCountLabel(cluster.items.length)}` : "",
       merged,
-      selected: cluster.items.some(item => item.area.id === props.selectedId),
+      selected: cluster.items.some(item => props.selectedIds.includes(item.area.id)),
     })
-    element.addEventListener("click", () => {
-      if (merged)
-        map.value.fitBounds(clusterBounds(cluster), { padding: 120, maxZoom: 13 })
-      else emit("select", biggest.area)
-    })
+    element.addEventListener("click", () =>
+      emit(
+        "select",
+        cluster.items.map(item => item.area.id),
+      ),
+    )
     return new Marker({ element, anchor: "center" })
       .setLngLat(map.value.unproject([cluster.x, cluster.y]))
       .addTo(map.value)
   })
 }
 
-watch([() => props.areas, () => props.selectedId, zoom], render, { immediate: true })
+watch([() => props.areas, () => props.selectedIds, zoom], render, { immediate: true })
 
 onBeforeUnmount(() => {
   map.value.off("zoomend", onZoom)

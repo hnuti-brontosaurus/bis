@@ -1,6 +1,6 @@
 <script setup>
 import { computed, shallowRef } from "vue"
-import { RouterLink, useRoute, useRouter } from "vue-router"
+import { RouterLink, useRoute } from "vue-router"
 import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
@@ -45,7 +45,6 @@ const MATERIALS = [
 ]
 
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
 const { season, areas, statistics } = usePublicData()
 const regions = shallowRef([])
@@ -89,10 +88,7 @@ const figures = computed(() => total.value && describeFigures(total.value))
       </div>
       <div class="hero-map">
         <BaseMap :interactive="false">
-          <RegionBubbles
-            :regions="regions"
-            @select="router.push({ name: 'areas', query: { region: $event.id } })"
-          />
+          <RegionBubbles :regions="regions" />
         </BaseMap>
       </div>
     </section>
