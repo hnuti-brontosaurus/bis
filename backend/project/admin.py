@@ -25,6 +25,7 @@ class MyAdminSite(admin.AdminSite):
             "other",
             "categories",
             "regions",
+            "nest_boxes",
             "cookbook",
             "cookbook_categories",
             "game_book",
