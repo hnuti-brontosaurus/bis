@@ -214,7 +214,9 @@ API and the static directories keep their English names.
 A path served by Django rather than the React app has to be listed in three
 places: `nginx/dev.conf` (and `test.conf` if tests need it), the ingress in
 `deployments/{devel,production}/ingress.yml` (a separate GitLab repo, gitignored
-here), and a `ServerRedirect` route in `frontend/src/App.tsx`. The last one is
+here), and a `ServerRedirect` route in `frontend/src/App.tsx`, outside the
+authenticated routes: `/logout?next=<path>` navigates client-side too, signed
+out, and under `AuthenticatedOutlet` would end on `/login`. The last one is
 what makes `/login?next=<path>` work: after sign-in the router navigates
 client-side, and `ServerRedirect` turns that into a full page load. `/o/*` is
 listed so the MCP OAuth flow (`/o/authorize/?…` → `LOGIN_URL` `/logout?next=…`)

@@ -53,6 +53,45 @@ export const App = () => {
         />
       </Route>
       <Route path="/logout" element={<Logout />} />
+      {/* Server-rendered apps do their own sign-in. Under the authenticated
+      routes, the client-side navigation after a logout to one of them would
+      land on /login instead. */}
+      <Route
+        path="kucharka/*"
+        element={
+          <ServerRedirect notConfigured="Kuchařka není pro tuto doménu nastavená" />
+        }
+      />
+      <Route
+        path="budky/*"
+        element={
+          <ServerRedirect notConfigured="Databáze budek není pro tuto doménu nastavená" />
+        }
+      />
+      <Route
+        path="sbornik/*"
+        element={
+          <ServerRedirect notConfigured="Sborník není pro tuto doménu nastavený" />
+        }
+      />
+      <Route
+        path="stary/*"
+        element={
+          <ServerRedirect notConfigured="Starý BIS není pro tuto doménu nastavený" />
+        }
+      />
+      <Route
+        path="docs/*"
+        element={
+          <ServerRedirect notConfigured="Dokumentace není pro tuto doménu nastavená" />
+        }
+      />
+      <Route
+        path="o/*"
+        element={
+          <ServerRedirect notConfigured="Přihlašování aplikací není pro tuto doménu nastavené" />
+        }
+      />
       {/* Routes for unauthenticated users */}
       <Route element={<UnauthenticatedOutlet />}>
         <Route path="/login" element={<Login />} />
@@ -93,42 +132,6 @@ export const App = () => {
             }
           />
         </Route>
-        <Route
-          path="kucharka/*"
-          element={
-            <ServerRedirect notConfigured="Kuchařka není pro tuto doménu nastavená" />
-          }
-        />
-        <Route
-          path="budky/*"
-          element={
-            <ServerRedirect notConfigured="Databáze budek není pro tuto doménu nastavená" />
-          }
-        />
-        <Route
-          path="sbornik/*"
-          element={
-            <ServerRedirect notConfigured="Sborník není pro tuto doménu nastavený" />
-          }
-        />
-        <Route
-          path="stary/*"
-          element={
-            <ServerRedirect notConfigured="Starý BIS není pro tuto doménu nastavený" />
-          }
-        />
-        <Route
-          path="docs/*"
-          element={
-            <ServerRedirect notConfigured="Dokumentace není pro tuto doménu nastavená" />
-          }
-        />
-        <Route
-          path="o/*"
-          element={
-            <ServerRedirect notConfigured="Přihlašování aplikací není pro tuto doménu nastavené" />
-          }
-        />
         {/* Routes for organizers */}
         <Route path="org" element={<OrganizerOutlet />}>
           <Route index element={<OrgHome />} />
