@@ -375,10 +375,7 @@ schema (`personal()` ⇔ personal, other exposed fields public or internal), or
 when the public `/api/web/` serializers show an internal or secret field — so
 adding a model field means classifying it there.
 
-`/docs/budky/` publishes the requirements for the nest box database migration
-as a static template (`templates/docs/nest_box_requirements.html`), so edit them
-there. The page is public, so it carries respondents' names but no email
-addresses (a test enforces that). The private analysis of the old app is in the
+The requirements and the private analysis of the old nest box app are in the
 gitignored `old_budky/docs/`, next to a full copy of the old site that includes
 credentials and logs.
 

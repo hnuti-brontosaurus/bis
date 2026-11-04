@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from api.web.serializers import (
     AdministrationUnitSerializer,
@@ -96,11 +94,3 @@ def test_docs_page_is_public(client):
     response = client.get("/docs/")
     assert response.status_code == 200
     assert "bis.User" in response.content.decode()
-
-
-def test_nest_box_requirements_page_is_public_and_has_no_email(client):
-    response = client.get("/docs/budky/")
-    assert response.status_code == 200
-    content = response.content.decode()
-    assert "Musí mít" in content
-    assert not re.search(r"[\w.+-]+@[\w-]+\.\w+", content)
