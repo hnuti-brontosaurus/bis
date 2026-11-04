@@ -39,7 +39,10 @@ INSERT INTO `users` (`id`, `email`, `password`, `name`, `role`, `active`) VALUES
 INSERT INTO `nestboxes` (`id`, `number`, `id_area`, `gps_lat`, `gps_lng`, `diameter`, `created`, `note`, `elevation`, `id_user`, `id_nestbox_type`) VALUES
 (1,	'1',	1,	50.08000000,	14.42000000,	'3,4',	'2016-01-07 10:00:00',	'horní',	0,	1,	2),
 (2,	'N2',	1,	50.08100000,	14.42000000,	'',	'2016-01-07 10:00:00',	'u \'cesty\'\nvysoko',	300,	2,	8),
-(3,	'3',	3,	50.08000500,	14.42000000,	NULL,	'2016-01-07 10:00:00',	NULL,	NULL,	1,	NULL);
+(3,	'3',	3,	50.08000500,	14.42000000,	NULL,	'2016-01-07 10:00:00',	NULL,	NULL,	1,	NULL),
+(4,	'4',	1,	50.08200000,	14.42000000,	'',	'2016-01-07 10:00:00',	'',	NULL,	1,	2),
+(5,	'5',	1,	50.08300000,	14.42000000,	'',	'2016-01-07 10:00:00',	'',	NULL,	1,	2),
+(6,	'6',	1,	50.08400000,	14.42000000,	'',	'2016-01-07 10:00:00',	'',	NULL,	1,	2);
 
 INSERT INTO `checks` (`id`, `id_nestbox`, `date`, `id_nestbox_occupied`, `note`, `id_user`, `created`, `needs_reparation`) VALUES
 (1,	1,	'2015-04-18',	NULL,	'',	1,	'2016-01-07 10:00:00',	NULL),
@@ -50,7 +53,10 @@ INSERT INTO `checks` (`id`, `id_nestbox`, `date`, `id_nestbox_occupied`, `note`,
 (6,	1,	'2019-03-09',	NULL,	'nenalezena',	2,	'2019-03-10 10:00:00',	0),
 (7,	2,	'2016-02-27',	NULL,	'',	2,	'2016-03-01 10:00:00',	0),
 (8,	2,	'2017-03-04',	6,	'stažena na opravu',	2,	'2017-03-05 10:00:00',	1),
-(9,	3,	'2016-02-27',	1,	'',	1,	'2016-03-01 10:00:00',	0);
+(9,	3,	'2016-02-27',	1,	'',	1,	'2016-03-01 10:00:00',	0),
+(10,	4,	'2018-03-10',	6,	'stažena, nebude se nahrazovat',	1,	'2018-03-11 10:00:00',	0),
+(11,	5,	'2018-03-10',	NULL,	'spadl strom, nebude se nahrazovat',	1,	'2018-03-11 10:00:00',	0),
+(12,	6,	'2018-03-10',	1,	'nevhodné místo, zrušit',	1,	'2018-03-11 10:00:00',	0);
 
 INSERT INTO `wp_options` (`option_id`, `option_name`) VALUES
 (1,	'ignored');
@@ -189,6 +195,16 @@ def test_import(run_import):
         "worn_out",
     )
 
+    ended = {
+        box.name: (box.status, box.end_reason and box.end_reason.slug)
+        for box in NestBox.objects.filter(name__in=["4", "5", "6"])
+    }
+    assert ended == {
+        "4": (NestBox.Status.ENDED, None),
+        "5": (NestBox.Status.ENDED, "tree_gone"),
+        "6": (NestBox.Status.IN_USE, None),
+    }
+
     assert User.objects.get(pk=budkar.pk).is_nest_box_manager
     assert "no BIS account by email: 2\n" in output
     assert "@" not in output
@@ -198,5 +214,5 @@ def test_import_replaces_the_previous_import(run_import):
     run_import()
     run_import()
 
-    assert NestBox.objects.count() == 4
-    assert Check.objects.count() == 7
+    assert NestBox.objects.count() == 7
+    assert Check.objects.count() == 10

@@ -469,7 +469,7 @@ class Planner:
                 if notes.asks_to_move(labels, note):
                     self.report["boxes kept, their note asks to move them"] += 1
                 elif is_last:
-                    current.end(day, notes.end_reason(labels))
+                    current.end(day, notes.end_reason(labels, note))
                     continue
                 else:
                     self.undecided[

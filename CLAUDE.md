@@ -781,7 +781,10 @@ are regexes over note vocabulary and dates. Non-obvious parts:
 - One old record can become several boxes: each replacement note ends a box
   (`worn_out`) and starts a new one with the same name and place. `old_id` is
   unique, so only the box hanging now carries it. A note calling the spot
-  unsuitable or not allowed (`notes.asks_to_move`) leaves the box as it is.
+  unsuitable (`notes.asks_to_move`) leaves the box as it is, to be moved; one
+  saying the box won't be replaced ends it, for a missing or fallen tree or
+  destruction if the note names one, else with no end reason
+  (`notes.end_reason`).
 - `note` is read by volunteers, so a box note that only says what the fields
   now hold (material, opening, a previous name, a replacement year that split
   the box) or that it was once found or measured stays out of it

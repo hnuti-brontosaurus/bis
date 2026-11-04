@@ -29,7 +29,7 @@ class Command(BaseCommand):
         self.stdout.write("\nCounts:")
         statuses = Counter(box.get_status_display() for box in result["boxes"])
         ended = Counter(
-            box.end_reason.slug
+            box.end_reason.slug if box.end_reason else "no reason"
             for box in result["boxes"]
             if box.status == NestBox.Status.ENDED
         )

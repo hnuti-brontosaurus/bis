@@ -157,17 +157,21 @@ def not_cleaned_reason(note):
     return "other"
 
 
-MOVE = re.compile(r"nevhodn|nebude se (umísťovat|nahrazovat)")
+UNSUITABLE = re.compile(r"nevhodn")
+NOT_REPLACED = re.compile(r"nebude se (umísťovat|nahrazovat)")
 
 
 def asks_to_move(note_labels, note):
-    """An unsuitable or forbidden spot: the box is to be moved, it has not ended."""
-    return "tree_gone" not in note_labels and bool(MOVE.search(normalized(note)))
+    """An unsuitable spot: the box is to be moved, it has not ended."""
+    return "tree_gone" not in note_labels and bool(UNSUITABLE.search(normalized(note)))
 
 
-def end_reason(note_labels):
+def end_reason(note_labels, note):
+    """A box that won't be replaced ended for whatever else the note says, if anything."""
     if "tree_gone" in note_labels:
         return "tree_gone"
+    if NOT_REPLACED.search(normalized(note)):
+        return "worn_out" if "destroyed" in note_labels else None
     if "not_found" in note_labels:
         return "lost"
     return "worn_out"
