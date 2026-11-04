@@ -623,10 +623,15 @@ def test_map_of_boxes_has_constant_queries(
 def test_public_regions_never_show_box_coordinates(anonymous, region, make_box):
     box = make_box(location=near(east=123, north=45))
     make_box("2", location=near(east=-200, north=-80), status=NestBox.Status.ENDED)
+    make_box("abroad", location=near(east=200_000))
 
     regions = anonymous.get(f"{API}/public/regions/").json()
 
-    assert [(r["name"], r["box_count"]) for r in regions] == [("Praha", 1)]
+    assert [(r["name"], r["box_count"]) for r in regions] == [
+        ("Praha", 1),
+        ("V zahraničí", 1),
+    ]
+    assert regions[1]["outline"] is None
     assert regions[0]["outline"]["type"] == "Polygon"
     assert regions[0]["marker"]["type"] == "Point"
     assert not contains_coordinates(regions, box.location)

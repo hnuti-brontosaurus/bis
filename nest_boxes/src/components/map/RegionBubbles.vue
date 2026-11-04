@@ -21,11 +21,14 @@ const clear = () => {
 }
 
 watchEffect(() => {
-  const features = props.regions.map(region => ({
-    type: "Feature",
-    properties: { id: region.id },
-    geometry: region.outline,
-  }))
+  // The boxes abroad come as a region without an outline
+  const features = props.regions
+    .filter(region => region.outline)
+    .map(region => ({
+      type: "Feature",
+      properties: { id: region.id },
+      geometry: region.outline,
+    }))
   setOverlay(OVERLAY, colors => ({
     sources: {
       [OVERLAY]: { type: "geojson", data: { type: "FeatureCollection", features } },

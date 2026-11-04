@@ -16,30 +16,30 @@ import { listPublicRegions } from "@/data/public.js"
 const MATERIALS = [
   {
     title: "Ptačí budky",
-    description: "Brožura · PDF · kam a jak je věšet",
+    description: "Kam a jak je věšet",
     icon: "house",
     tone: "primary",
     href: "https://mozek.brontosaurus.cz/attachments/article/1180/ptaci-budky-Brontosaurus.pdf",
   },
   {
     title: "Výroba ptačích budek",
-    description: "Brožura · PDF · rozměry a otvory",
+    description: "Rozměry a otvory",
     icon: "tool",
     tone: "accent",
     href: "https://mozek.brontosaurus.cz/attachments/article/1180/Vy%CC%81roba-ptac%CC%8Ci%CC%81ch-budek.pdf",
   },
   {
     title: "Úkryty pro živočichy",
-    description: "Brožura · PDF · netopýři, hmyz, ježci",
+    description: "Netopýři, hmyz, ježci",
     icon: "bird",
     tone: "strong",
     href: "https://mozek.brontosaurus.cz/attachments/article/1180/HB_Ukryty-pro-zivocichy.pdf",
   },
   {
     title: "Co v budce bydlelo?",
-    description: "Nápověda · jak poznat hnízdo",
+    description: "Jak poznat hnízdo",
     icon: "help",
-    tone: "plain",
+    tone: "lime",
     to: { name: "help_article", params: { slug: "occupants" } },
   },
 ]
@@ -71,8 +71,8 @@ const figures = computed(() => total.value && describeFigures(total.value))
           ptačích budek po celém Česku
         </h1>
         <p class="lead">
-          Dobrovolníci Hnutí Brontosaurus budky vyvěšují a každý podzim je čistí.
-          Podívej se, kde visí a kolik z nich letos někdo obýval.
+          Budky věší a každý podzim čistí dobrovolníci z Hnutí Brontosaurus. Podívej se,
+          kde visí a v kolika se letos hnízdilo.
         </p>
         <div class="cta">
           <RouterLink v-slot="{ navigate }" :to="{ name: 'areas' }" custom>
@@ -86,11 +86,11 @@ const figures = computed(() => total.value && describeFigures(total.value))
           </RouterLink>
         </div>
       </div>
-      <div class="hero-map">
+      <RouterLink class="hero-map" :to="{ name: 'areas' }" aria-label="Mapa budek">
         <BaseMap :interactive="false">
           <RegionBubbles :regions="regions" />
         </BaseMap>
-      </div>
+      </RouterLink>
     </section>
 
     <section v-if="total" class="stats" data-testid="headline-stats">
@@ -124,16 +124,14 @@ const figures = computed(() => total.value && describeFigures(total.value))
           v-for="material in MATERIALS"
           :key="material.title"
           class="material"
+          :class="material.tone"
           v-bind="
             material.to
               ? { to: material.to }
               : { href: material.href, target: '_blank' }
           "
         >
-          <div class="cover" :class="material.tone">
-            <AppIcon :name="material.icon" />
-            <span>{{ material.title }}</span>
-          </div>
+          <AppIcon :name="material.icon" />
           <b>{{ material.title }}</b>
           <span>{{ material.description }}</span>
         </component>
@@ -152,8 +150,6 @@ const figures = computed(() => total.value && describeFigures(total.value))
 
     <footer class="footer">
       <span>Hnutí Brontosaurus · hnuti@brontosaurus.cz</span>
-      <span>Polohy budek nezveřejňujeme, chráníme vzácné druhy.</span>
-      <span class="spacer" />
       <a v-if="auth.isAnonymous" :href="loginUrl(route.fullPath)"
         >Přihlášení pro správce</a
       >
@@ -198,6 +194,7 @@ const figures = computed(() => total.value && describeFigures(total.value))
 }
 
 .hero-map {
+  display: block;
   height: 380px;
   border-radius: var(--r);
   overflow: hidden;
@@ -252,56 +249,53 @@ const figures = computed(() => total.value && describeFigures(total.value))
 }
 
 .material {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  text-decoration: none;
-  color: inherit;
-}
-
-.material > span {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.cover {
-  aspect-ratio: 3 / 4;
+  min-height: 150px;
+  padding: 16px;
   border-radius: calc(var(--r) * 0.6);
-  padding: 14px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.1;
-  border: 1px solid var(--line);
+  gap: 4px;
+  text-decoration: none;
   box-shadow: var(--card-shadow);
 }
 
-.cover .icon {
-  width: 44px;
-  height: 44px;
+.material .icon {
+  width: 34px;
+  height: 34px;
   stroke-width: 1.6;
+  margin-bottom: auto;
 }
 
-.cover.primary {
+.material b {
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.material span {
+  font-size: 13.5px;
+  opacity: 0.85;
+}
+
+.material.primary {
   background: var(--primary);
   color: var(--primary-ink);
 }
 
-.cover.accent {
+.material.accent {
   background: var(--accent);
   color: var(--accent-ink);
 }
 
-.cover.strong {
+.material.strong {
   background: var(--primary-strong);
   color: var(--surface);
 }
 
-.cover.plain {
-  background: var(--surface-2);
-  color: var(--text);
+.material.lime {
+  background: var(--lime);
+  color: var(--lime-ink);
 }
 
 .band {
@@ -342,6 +336,8 @@ const figures = computed(() => total.value && describeFigures(total.value))
   display: flex;
   gap: 10px 24px;
   flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
   border-top: 1px solid var(--line);
 }
 

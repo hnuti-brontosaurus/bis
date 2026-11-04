@@ -15,11 +15,12 @@ export const listPublicAreas = () => fetchAll("/public/areas/")
 
 /**
  * @typedef {Object} PublicRegion
- * @property {number} id
+ * @property {number | "abroad"} id "abroad" for the boxes outside every region
  * @property {string} name
  * @property {{ type: "Point", coordinates: [number, number] }} marker
  *   a point inside the region, never one of its boxes
- * @property {{ type: "Polygon", coordinates: number[][][] }} outline simplified
+ * @property {{ type: "Polygon", coordinates: number[][][] } | null} outline
+ *   simplified; null abroad
  * @property {number} box_count boxes in use
  */
 

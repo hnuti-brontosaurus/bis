@@ -18,7 +18,7 @@ from django.db.models import Count
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from nest_boxes.models import Area, Batch, HelpArticle, HelpImage, in_use
+from nest_boxes.models import Area, Batch, HelpArticle, HelpImage, NestBox, in_use
 from nest_boxes.permissions import can_manage_all, manageable_areas
 from nest_boxes.statistics import default_season, season_statistics
 from regions.models import Region
@@ -69,15 +69,27 @@ class PublicAreaViewSet(
     filterset_fields = ("administration_unit",)
 
 
+# Where the landing map shows the boxes outside every Czech region
+ABROAD_MARKER = {"type": "Point", "coordinates": [17.6879883, 50.9860989]}
+
+
 class PublicRegionsView(NestBoxAPIMixin, APIView):
-    """Every region with its outline and boxes in use, for the landing map."""
+    """Every region with its outline and boxes in use, for the landing map,
+    and the boxes abroad as a region without an outline."""
 
     def get(self, request):
         regions = Region.objects.annotate(
             marker=PointOnSurface("area"),
             box_count=Count("nest_boxes", filter=in_use("nest_boxes__")),
         )
-        return Response(PublicRegionSerializer(regions, many=True).data)
+        abroad = {
+            "id": "abroad",
+            "name": "V zahraničí",
+            "marker": ABROAD_MARKER,
+            "outline": None,
+            "box_count": NestBox.objects.in_use().filter(region=None).count(),
+        }
+        return Response([*PublicRegionSerializer(regions, many=True).data, abroad])
 
 
 class StatisticsView(NestBoxAPIMixin, APIView):
