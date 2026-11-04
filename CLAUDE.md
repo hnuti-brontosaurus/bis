@@ -155,6 +155,12 @@ docker exec -it bis-backend python manage.py testing_db dev      # Full demo see
 docker exec -it bis-backend python manage.py testing_db cookbook # Minimal idempotent seed for cookbook tests (categories + chef)
 ```
 
+A `RunPython` that deletes or updates rows goes in its own migration, never
+next to schema operations on the same table: Postgres defers the FK triggers
+of those writes to the end of the transaction, and an `ALTER TABLE` before then
+fails with "pending trigger events". Test stacks skip migrations (`--run-syncdb`),
+so only `make dev` against a database with rows catches it.
+
 Containers run as the host UID/GID (`user: ${UID}:${GID}` in `docker-compose.yaml`, exported by the Makefile), so files written from inside (migrations, fixtures, build output) are owned by your host user. No `-u` flag or `sudo chown` needed.
 
 If you need a running container (backend shell, management command, Python with the project's deps like `googleapiclient`/`google-auth`, DB access, etc.) and none is up, ask the user to run `make dev` (or the relevant `make` target) in a separate terminal rather than installing deps on the host or starting containers yourself. The backend has real credentials (e.g. `GOOGLE_CREDENTIALS`) wired in via env, so run Google Drive / external-service code inside `bis-backend`, not in a host venv.
