@@ -108,6 +108,7 @@ export const HELP_TITLES = {
   cleaning: "Kdy budku nečistit",
   hanging: "Věšení nové budky",
   about: "O databázi budek",
+  sources: "Zdroje",
 }
 
 export const helpTitle = article => article.title || HELP_TITLES[article.slug]

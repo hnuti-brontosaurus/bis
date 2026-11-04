@@ -777,6 +777,17 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
   with `…0002`. Box ids are fixed, area and batch ids are not. Specs sign in by
   POSTing to `/api/auth/login/`, which sets the session cookie. The same seed
   is `testing_db nest_boxes`.
+- The help articles (`HelpArticle`, one per `Slug`, edited in place by a
+  budkař) ship a first version in `nest_boxes/help_content/`: `<slug>.html`
+  plus `images/`, drawings from the Hnutí Brontosaurus brochures.
+  `load_help` fills only articles whose content is empty, uploading the images
+  as `HelpImage`s and rewriting `src="images/…"`; migration `0008_load_help`
+  runs it, and so do `load_nest_box_help` and `testing_db dev` after the
+  flush. The files must be exactly what `HelpHTMLField` stores (cookbook
+  article markup plus tables, no colspan), which `test_help_content.py`
+  checks; change the help editor's Tiptap extensions with it. Links between
+  articles are `/budky/napoveda/<slug>/`, and `HtmlText` opens them in place:
+  in the volunteer's offline help, or in the check form's help panel.
 - `update_box` clears `elevation` when the location changes;
   `fill_nest_box_elevations` (in `nightly`) fills empty ones from OpenTopoData
   `eudem25m`, 100 points a request, one request a second.

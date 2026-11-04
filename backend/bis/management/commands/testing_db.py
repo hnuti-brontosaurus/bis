@@ -63,6 +63,7 @@ class Command(BaseCommand):
         if target == "dev":
             call_command("flush", no_input=False)
             call_command("create_categories")
+            call_command("load_nest_box_help")
             call_command("import_regions")
             call_command("import_zip_codes")
             self.create_testing_db()

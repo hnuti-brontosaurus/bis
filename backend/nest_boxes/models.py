@@ -9,8 +9,7 @@ from categories.models import (
     NestBoxOccupant,
     NestBoxType,
 )
-from common.thumbnails import ThumbnailImageField, get_thumbnail_path
-from django.conf import settings
+from common.thumbnails import ThumbnailImageField
 from django.contrib.gis.db import models as m
 from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.db.models.functions import Centroid
@@ -30,6 +29,7 @@ from django.db.models import (
     When,
 )
 from django.utils.timezone import localdate
+from nest_boxes.help_content import image_src
 from regions.models import Region
 from tinymce.models import HTMLField
 from translation.translate import translate_model
@@ -537,6 +537,7 @@ class HelpArticle(m.Model):
         HANGING = "hanging"
         CLEANING_HOWTO = "cleaning_howto"
         ABOUT = "about"
+        SOURCES = "sources"
 
     slug = m.CharField(max_length=31, choices=Slug.choices, unique=True)
     title = m.CharField(max_length=127, blank=True)
@@ -556,4 +557,4 @@ class HelpImage(m.Model):
 
     @property
     def src(self):
-        return settings.MEDIA_URL + get_thumbnail_path(self.image.name, "large")
+        return image_src(self.image)
