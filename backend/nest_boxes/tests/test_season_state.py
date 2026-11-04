@@ -56,7 +56,6 @@ def test_status_and_condition(box, types):
     box("needs replacing", condition=Condition.NEEDS_REPLACING)
     box("bats", type=types["netopyrnik"])
     box("ended", status=Status.ENDED, ended_on=date(2025, 8, 1))
-    box("cancelled", status=Status.CANCELLED)
 
     assert states() == {
         "planned": SeasonState.PLANNED,
@@ -68,7 +67,6 @@ def test_status_and_condition(box, types):
         "needs replacing": SeasonState.ATTENTION,
         "bats": SeasonState.DONE,
         "ended": None,
-        "cancelled": None,
     }
 
 
@@ -129,8 +127,8 @@ def test_pending_checks_count_as_confirmed(box):
 
 
 def test_should_be_moved_needs_attention_even_when_cleaned(make_box):
-    check(make_box("1", is_verified=True))
-    make_box("2", location=near(east=3), is_verified=True)
+    check(make_box("1", verified=True))
+    make_box("2", location=near(east=3), verified=True)
 
     assert states() == {"1": SeasonState.ATTENTION, "2": SeasonState.ATTENTION}
 

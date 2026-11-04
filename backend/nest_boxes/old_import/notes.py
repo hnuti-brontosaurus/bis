@@ -157,14 +157,17 @@ def not_cleaned_reason(note):
     return "other"
 
 
-def end_reason(note_labels, note):
-    key = normalized(note)
+MOVE = re.compile(r"nevhodn|nebude se (umísťovat|nahrazovat)")
+
+
+def asks_to_move(note_labels, note):
+    """An unsuitable or forbidden spot: the box is to be moved, it has not ended."""
+    return "tree_gone" not in note_labels and bool(MOVE.search(normalized(note)))
+
+
+def end_reason(note_labels):
     if "tree_gone" in note_labels:
         return "tree_gone"
-    if re.search(r"nevhodn", key):
-        return "unsuitable"
-    if re.search(r"nebude se (umísťovat|nahrazovat)", key):
-        return "not_allowed"
     if "not_found" in note_labels:
         return "lost"
     return "worn_out"
@@ -204,15 +207,6 @@ def material(note):
         return Material.PLASTIC
     if "dřevěn" in key:
         return Material.WOOD
-    return None
-
-
-def predator_guard(note):
-    key = normalized(note)
-    if re.search(r"(bez|nemá|chybí|upadla) antipredač|neoplechovan", key):
-        return False
-    if re.search(r"(?<!ne)oplechovan|ochranný límec|antipredační zábranou", key):
-        return True
     return None
 
 

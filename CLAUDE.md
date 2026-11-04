@@ -688,10 +688,20 @@ filter, never `|safe`, because some items embed event names.
 permissions, spacing, check upserts, confirming and statistics live in
 `nest_boxes/{permissions,boxes,checks,statistics}.py`.
 
-- "In use" is `status = in_use` **and** `is_confirmed`
-  (`NestBox.objects.in_use()`). A box a volunteer adds through a batch link is
-  unconfirmed, so it stays out of distances, warnings and statistics until a
-  manager confirms it.
+- "In use" is `status = in_use` (`NestBox.objects.in_use()`). A box a
+  volunteer hangs through a batch link is a planned box with no `created_by`
+  (`NestBox.is_new`) plus a pending check in that batch that hangs it
+  (`box_changes.hung`), created together by `checks.submit_box`; confirming the
+  check hangs the box, deleting it deletes the box (`checks.delete_check`).
+- A planned box that never hangs is deleted (`boxes.delete_box`), never
+  cancelled; a box that did hang is ended.
+- "Verified" is not stored: a box is verified once it has a confirmed check that
+  is not historical (`NestBox.objects.with_is_verified()`, which
+  `with_season_state()` includes). The API keeps `is_verified` as a field and
+  a filter on that annotation; the check form of an unverified box asks for its
+  data and sends all of it.
+- A box has one note, `note`, shown to managers and on batch links as
+  "Poznámka pro dobrovolníky". `Area.note` and `Check.note` are internal.
 - `NestBox.save()` sets `region` from the location and recomputes the stored
   `closest_distance` / `closest_same_type_distance` for the whole area in one
   SQL `UPDATE`. `bulk_create`, `bulk_update` and `QuerySet.update` skip that, so
@@ -735,12 +745,12 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
   rows are 404s; `IsManager` (`permissions.is_manager`) makes everything a 403
   for non-managers. A budkař without any area is still a manager.
 - A batch link (`links/<token>/…`) shows only that batch's boxes and never
-  `owner_note`, `note` or volunteers' emails.
+  volunteers' emails.
 - `POST /api/nest_boxes/testing/seed/` (TESTING only, 404 elsewhere) resets the
   e2e fixture set from `nest_boxes/e2e_seed.py` and returns its ids: budkař
   `budkar@budky.nope` and the rightless `clen@budky.nope`, both with password
-  `nest-boxes-e2e`, area "E2E Cibulka" with boxes 1, 2, 3 (unverified) and
-  planned P1, an open batch with token `…0001` (boxes 1, 2, P1) and a closed one
+  `nest-boxes-e2e`, area "E2E Cibulka" with boxes 1, 2 (verified by a check
+  last season), 3 (unverified) and planned P1, an open batch with token `…0001` (boxes 1, 2, P1) and a closed one
   with `…0002`. Box ids are fixed, area and batch ids are not. Specs sign in by
   POSTing to `/api/auth/login/`, which sets the session cookie. The same seed
   is `testing_db nest_boxes`.
@@ -759,8 +769,9 @@ lists them), so no note text or name from the dump may go into the code; rules
 are regexes over note vocabulary and dates. Non-obvious parts:
 
 - One old record can become several boxes: each replacement note ends a box
-  (`replaced`) and starts a new one with the same name and place. `old_id` is
-  unique, so only the box hanging now carries it.
+  (`worn_out`) and starts a new one with the same name and place. `old_id` is
+  unique, so only the box hanging now carries it. A note calling the spot
+  unsuitable or not allowed (`notes.asks_to_move`) leaves the box as it is.
 - The 16 November 2025 Mikulčický batch is found by its date and a per-area
   occupied share under 25 %, not by area names; its blanks there are dropped.
 - Area units are guessed from BIS activity (events organized since 2022, board

@@ -90,15 +90,10 @@ const FIELD_LABELS = {
   hole_size: "otvor",
   opening: "otevírání",
   material: "materiál",
-  predator_guard: "ochrana proti predátorům",
-  access_note: "přístup",
-  owner_note: "poznámka k majiteli",
-  note: "poznámka",
+  note: "poznámka pro dobrovolníky",
   installed_on: "vyvěšena",
   ended_on: "ukončena",
   end_reason: "důvod ukončení",
-  is_verified: "ověřená",
-  is_confirmed: "potvrzená",
   elevation: "nadmořská výška",
 }
 

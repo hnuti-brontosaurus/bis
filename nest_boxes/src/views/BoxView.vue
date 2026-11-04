@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue"
-import { RouterLink, useRoute } from "vue-router"
+import { RouterLink, useRoute, useRouter } from "vue-router"
 import { NButton, NImage, NImageGroup, NPopconfirm, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
@@ -30,8 +30,7 @@ import {
 import { useLoad } from "@/composables/useLoad.js"
 import { reportError } from "@/data/errors.js"
 import {
-  cancelBox,
-  confirmBox,
+  deleteBox,
   getArea,
   getBox,
   getBoxHistory,
@@ -40,6 +39,7 @@ import {
 } from "@/data/manage.js"
 
 const route = useRoute()
+const router = useRouter()
 const message = useMessage()
 
 const { data, reload } = useLoad(async () => {
@@ -59,7 +59,7 @@ const box = computed(() => data.value?.box)
 const typesById = computed(() => byId(data.value?.categories.types ?? []))
 const occupantsById = computed(() => byId(data.value?.categories.occupants ?? []))
 const endReasonsById = computed(() => byId(data.value?.categories.end_reasons ?? []))
-const usable = computed(() => !["ended", "cancelled"].includes(box.value.status))
+const usable = computed(() => box.value.status !== "ended")
 
 const STATUS_TONES = {
   in_use: "ok",
@@ -96,10 +96,6 @@ const facts = computed(() => [
     "Poloha",
     `${box.value.location.coordinates[1].toFixed(5)}, ${box.value.location.coordinates[0].toFixed(5)}`,
   ],
-  [
-    "Ochrana proti predátorům",
-    box.value.predator_guard === null ? "–" : box.value.predator_guard ? "ano" : "ne",
-  ],
   ["Dřívější označení", box.value.previous_names || "–"],
   ...(box.value.status === "ended"
     ? [
@@ -108,14 +104,6 @@ const facts = computed(() => [
       ]
     : []),
 ])
-
-const notes = computed(() =>
-  [
-    ["Jak se k ní dostat", box.value.access_note],
-    ["Poznámka k majiteli", box.value.owner_note],
-    ["Poznámka", box.value.note],
-  ].filter(([, text]) => text),
-)
 
 const who = check =>
   check.volunteer_nickname ||
@@ -129,11 +117,11 @@ const historyContext = computed(() => ({
   endReasonsById: endReasonsById.value,
 }))
 
-const run = async (action, done) => {
+const remove = async () => {
   try {
-    await action(box.value.id)
-    message.success(done)
-    await reload()
+    await deleteBox(box.value.id)
+    message.success("Plánovaná budka je smazaná.")
+    await router.push({ name: "area", params: { id: data.value.area.id } })
   } catch (error) {
     reportError(error)
   }
@@ -172,7 +160,6 @@ const onSaved = async saved => {
       }}</span>
       <span v-if="box.is_verified" class="tag info">ověřená</span>
       <span v-else class="tag warn">neověřená</span>
-      <span v-if="!box.is_confirmed" class="tag warn">čeká na potvrzení</span>
       <span class="spacer" />
       <RouterLink
         v-if="usable"
@@ -195,22 +182,6 @@ const onSaved = async saved => {
       </n-button>
     </div>
 
-    <div v-if="!box.is_confirmed" class="note warn">
-      <AppIcon name="warn" />
-      <div>
-        <b>Budku přidal dobrovolník</b>
-        Do statistik a hlídání vzdáleností se započítá, až ji potvrdíš.
-        <div class="row confirm-row">
-          <n-button
-            size="small"
-            type="primary"
-            @click="run(confirmBox, 'Budka je potvrzená.')"
-          >
-            Potvrdit budku
-          </n-button>
-        </div>
-      </div>
-    </div>
     <div v-if="box.should_be_moved" class="note warn">
       <AppIcon name="warn" />
       <div>
@@ -229,8 +200,8 @@ const onSaved = async saved => {
             <dd class="num">{{ value }}</dd>
           </div>
         </dl>
-        <div v-for="[term, text] in notes" :key="term" class="small">
-          <b>{{ term }}:</b> {{ text }}
+        <div v-if="box.note" class="small">
+          <b>Poznámka pro dobrovolníky:</b> {{ box.note }}
         </div>
       </div>
       <div class="minimap">
@@ -327,14 +298,14 @@ const onSaved = async saved => {
     </template>
 
     <div v-if="box.status === 'planned'" class="row">
-      <n-popconfirm @positive-click="run(cancelBox, 'Plán je zrušený.')">
+      <n-popconfirm @positive-click="remove">
         <template #trigger>
           <n-button type="error" ghost size="small">
             <template #icon><AppIcon name="x" /></template>
-            Zrušit plán
+            Smazat
           </n-button>
         </template>
-        Budku nikdo nepověsí? Plán se zruší.
+        Budku nikdo nepověsí? Smaže se i s historií.
       </n-popconfirm>
     </div>
     <div v-else-if="usable" class="row">
@@ -380,10 +351,6 @@ const onSaved = async saved => {
   border-radius: var(--r);
   overflow: hidden;
   border: 1px solid var(--line);
-}
-
-.confirm-row {
-  margin-top: 8px;
 }
 
 .thumbs {

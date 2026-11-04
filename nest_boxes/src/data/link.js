@@ -32,10 +32,11 @@ const withSent = (payload, item, result) => {
       ],
     }
   if (item.kind === "box") {
-    const { warnings: _warnings, ...box } = result
+    const { warnings: _warnings, check, ...box } = result
     return {
       ...payload,
       boxes: [...payload.boxes.filter(({ id }) => id !== box.id), box],
+      checks: [...payload.checks.filter(({ id }) => id !== check.id), check],
     }
   }
   return {
@@ -82,10 +83,11 @@ export const useLinkStore = defineStore("link", () => {
     const byId = new Map(payload.value.boxes.map(box => [box.id, box]))
     for (const item of queued.value)
       if (item.kind === "box")
+        // As the server answers it: planned, hung by its pending check
         byId.set(item.id, {
-          status: "in_use",
-          season_state: "to_check",
-          is_confirmed: false,
+          status: "planned",
+          season_state: "done",
+          is_new: true,
           is_verified: false,
           ...item.payload,
         })

@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 19fe787d089bb6d6
+// source-hash: 3c1d83b585723f28
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -197,7 +197,7 @@ export const brontosaurusMovement = {
     'Vidí pouze uživatele a mohou editovat pouze jejich kvalifikaci',
   ],
   fundraisers: ['Fundraiseři', 'Mají přístup k telesales a vidí dárce'],
-  nest_box_managers: ['Budkaři', 'Spravují všechny lokality databáze budek'],
+  nest_box_managers: ['Budkaři', 'Spravují všechny oblasti databáze budek'],
 } as const
 
 export const membership = {
@@ -1193,15 +1193,15 @@ export const nestBoxNotCleanedReason = {
 } as const
 
 export const area = {
-  _name: 'Lokalita budek',
-  _name_plural: 'Lokalita budek',
+  _name: 'Oblast budek',
+  _name_plural: 'Oblast budek',
   administration_unit: 'Organizační jednotka',
 } as const
 
 export const nestBox = {
   _name: 'Budka',
   _name_plural: 'Budka',
-  area: 'Lokalita',
+  area: 'Oblast',
   name: 'Označení',
   previous_names: 'Dřívější označení',
   status: 'Stav',
@@ -1209,24 +1209,18 @@ export const nestBox = {
   location: 'Poloha',
   planned_radius: 'Poloměr plánovaného místa (m)',
   elevation: 'Nadmořská výška (m)',
-  elevation_source: 'Zdroj nadmořské výšky',
   type: 'Typ',
   hole_shape: 'Tvar otvoru',
   hole_size: ['Velikost otvoru (mm)', 'Nejužší šířka'],
   opening: 'Otevírání',
   material: 'Materiál',
-  predator_guard: 'Antipredační zábrana',
-  access_note: 'Přístup',
-  owner_note: 'Vlastník nebo jméno',
+  note: 'Poznámka pro dobrovolníky',
   installed_on: 'Vyvěšena',
   ended_on: 'Zanikla',
   end_reason: 'Důvod zániku',
-  is_verified: 'Ověřena?',
-  is_confirmed: 'Potvrzena?',
   closest_distance: 'Nejbližší budka (m)',
   closest_same_type_distance: 'Nejbližší budka stejného typu (m)',
   old: 'ID ve staré databázi',
-  batch: 'Obchůzka',
 } as const
 
 export const nestBoxHistory = {
@@ -1240,7 +1234,7 @@ export const nestBoxHistory = {
 export const batch = {
   _name: 'Obchůzka',
   _name_plural: 'Obchůzka',
-  area: 'Lokalita',
+  area: 'Oblast',
   token: 'Odkaz',
   boxes: 'Budky',
   cleaned_by: 'Čistila jednotka',

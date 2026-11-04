@@ -64,7 +64,7 @@ def update_box(box, values, user, date, box_check=None):
         and "elevation" not in values
     ):
         # The old elevation belongs to the old spot; fill_nest_box_elevations refills it
-        values = {**values, "elevation": None, "elevation_source": ""}
+        values = {**values, "elevation": None}
     changes = {}
     for field, value in values.items():
         old = getattr(box, field)
@@ -104,12 +104,6 @@ def missing_for_new_box(box):
     return missing
 
 
-def confirm_box(box, user, date):
-    if missing := missing_for_new_box(box):
-        raise ValidationError(dict.fromkeys(missing, "Pro potvrzení budky je povinné."))
-    update_box(box, {"is_confirmed": True}, user, date)
-
-
 def end_box(box, end_reason, ended_on, user):
     update_box(
         box,
@@ -123,10 +117,11 @@ def end_box(box, end_reason, ended_on, user):
     )
 
 
-def cancel_box(box, user, date):
+def delete_box(box):
+    """A plan that was never hung leaves no trace; a box that hung is ended instead."""
     if box.status != NestBox.Status.PLANNED:
-        raise ValidationError("Zrušit lze jen plánovanou budku.")
-    update_box(box, {"status": NestBox.Status.CANCELLED}, user, date)
+        raise ValidationError("Smazat lze jen plánovanou budku.")
+    box.delete()
 
 
 @dataclass

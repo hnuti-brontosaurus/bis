@@ -58,7 +58,7 @@ def test_distances_count_boxes_in_use_only(make_box, types):
     make_box("2", location=near(east=10))
     make_box("3", location=near(north=30), type=types["maly_sykornik"])
     make_box("4", location=near(east=1), status=NestBox.Status.ENDED)
-    make_box("5", location=near(east=2), is_confirmed=False)
+    make_box("5", location=near(east=2), status=NestBox.Status.PLANNED)
 
     result = distances()
     assert result["1"] == (pytest.approx(10, abs=0.5), pytest.approx(10, abs=0.5))
@@ -88,9 +88,9 @@ def test_distances_follow_moves_status_and_area(make_box, unit):
 
 
 def test_should_be_moved_waits_until_verified(make_box, types):
-    make_box("1", is_verified=True)
-    make_box("2", location=near(east=10), is_verified=False)
-    make_box("3", location=near(east=200), is_verified=True)
+    make_box("1", verified=True)
+    make_box("2", location=near(east=10))
+    make_box("3", location=near(east=200), verified=True)
 
     flags = dict(
         NestBox.objects.with_should_be_moved().values_list("name", "should_be_moved")

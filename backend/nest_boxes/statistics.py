@@ -22,8 +22,7 @@ def boxes_in_season(season):
     """Installed before the season ended, not retired before it started, needing cleaning."""
     start, end = Check.season_start(season), Check.season_end(season)
     return (
-        NestBox.objects.filter(is_confirmed=True)
-        .exclude(status__in=[NestBox.Status.PLANNED, NestBox.Status.CANCELLED])
+        NestBox.objects.exclude(status=NestBox.Status.PLANNED)
         .exclude(type__needs_cleaning=False)
         .filter(Q(installed_on=None) | Q(installed_on__lte=end))
         .filter(

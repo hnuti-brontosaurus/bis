@@ -3,8 +3,8 @@ import json
 from django.contrib.gis.geos import GEOSException, GEOSGeometry, Point
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.utils.timezone import localdate, now
-from nest_boxes.boxes import confirm_box, update_box
+from django.utils.timezone import now
+from nest_boxes.boxes import delete_box, missing_for_new_box, update_box
 from nest_boxes.models import RETURNABLE_STATUSES, Check, NestBox
 
 # Keys of Check.box_changes. `location` is a GeoJSON point, `type` a
@@ -20,7 +20,6 @@ BOX_CHANGE_FIELDS = (
     "installed_on",
 )
 HUNG = "hung"
-VERIFICATION_FIELDS = {"name", "location", "hole_shape", "hole_size", "type", "opening"}
 
 
 class BatchClosed(Exception):
@@ -79,11 +78,6 @@ def _box_values(check):
                 values["status"] = NestBox.Status.IN_USE
                 if check.box_left:
                     values["condition"] = check.box_left
-    if (
-        check.found == Check.Found.FOUND
-        and set(check.box_changes) >= VERIFICATION_FIELDS
-    ):
-        values["is_verified"] = True
     return values
 
 
@@ -179,29 +173,55 @@ def submit_check(batch, check, occupants):
     return upsert_check(check, occupants)
 
 
+def _hung_changes(box):
+    """A planned box's values as the box_changes of the check that hangs it."""
+    values = {name: getattr(box, name) for name in BOX_CHANGE_FIELDS}
+    values["type"] = box.type_id
+    values["location"] = {"type": "Point", "coordinates": list(box.location.coords)}
+    values["installed_on"] = box.installed_on.isoformat()
+    return {
+        HUNG: True,
+        **{name: value for name, value in values.items() if value not in (None, "")},
+    }
+
+
 @transaction.atomic
-def submit_box(batch, box):
-    """A box a volunteer adds through a batch link, unconfirmed and unverified."""
+def submit_box(batch, values, check):
+    """A box a volunteer hung: a planned box and a pending check that hangs it,
+    found, cleaned and empty. Confirming the check hangs the box, deleting it
+    deletes the box. A resend with the same ids updates both."""
     ensure_open(batch)
-    stored = NestBox.objects.filter(pk=box.pk).first()
-    if stored and (stored.is_confirmed or stored.batch_id != batch.pk):
+    box = NestBox.objects.select_for_update().filter(pk=values["id"]).first()
+    if box is None:
+        box = NestBox(area=batch.area, status=NestBox.Status.PLANNED)
+    elif not (box.is_new and box.checks.filter(pk=check.pk, batch=batch).exists()):
         raise PermissionDenied
-    box.area = batch.area
-    box.batch = batch
-    box.status = NestBox.Status.IN_USE
-    box.is_confirmed = False
-    box.is_verified = False
-    box.save(force_update=stored is not None)
+    for name, value in values.items():
+        setattr(box, name, value)
+    if missing := missing_for_new_box(box):
+        raise ValidationError(dict.fromkeys(missing, "Nová budka to potřebuje."))
+    box.save()
     batch.boxes.add(box)
-    return box
+    check.box = box
+    check.found = Check.Found.FOUND
+    check.cleaning = Check.Cleaning.CLEANED
+    check.contents = [Check.Content.NOTHING]
+    check.box_changes = _hung_changes(box)
+    return box, submit_check(batch, check, [])
+
+
+@transaction.atomic
+def delete_check(check):
+    """Deleting the check a volunteer's new box hangs with deletes the box too."""
+    box = check.box
+    check.delete()
+    if box.is_new and not box.checks.exists():
+        delete_box(box)
 
 
 @transaction.atomic
 def confirm_batch(batch, user):
-    """Confirms the batch's new boxes and pending checks, and closes it."""
-    today = localdate()
-    for box in batch.new_boxes.filter(is_confirmed=False):
-        confirm_box(box, user, today)
+    """Confirms the batch's pending checks, and closes it."""
     for check in batch.checks.filter(is_confirmed=False).order_by("date", "made_at"):
         confirm_check(check, user)
     batch.confirmed_at = now()

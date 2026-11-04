@@ -24,6 +24,7 @@ from django.db.models import (
     Count,
     F,
     FilteredRelation,
+    OuterRef,
     Q,
     Value,
     When,
@@ -35,10 +36,8 @@ from translation.translate import translate_model
 
 
 def in_use(prefix=""):
-    """Hanging and confirmed: the only boxes spacing and statistics see."""
-    return Q(
-        **{f"{prefix}status": NestBox.Status.IN_USE, f"{prefix}is_confirmed": True}
-    )
+    """Hanging: the only boxes spacing and statistics see."""
+    return Q(**{f"{prefix}status": NestBox.Status.IN_USE})
 
 
 # A verified box this close to another should be moved
@@ -86,9 +85,20 @@ class NestBoxQuerySet(m.QuerySet):
     def in_use(self):
         return self.filter(in_use())
 
+    def with_is_verified(self):
+        """Verified means checked in the field since the import: a confirmed check
+        that is not historical. Until then its imported data is not trusted."""
+        return self.annotate(
+            is_verified=m.Exists(
+                Check.objects.filter(
+                    box=OuterRef("pk"), is_confirmed=True, is_historical=False
+                )
+            )
+        )
+
     def with_should_be_moved(self):
         """Waits until verified: imported positions are too often copied."""
-        return self.annotate(
+        return self.with_is_verified().annotate(
             should_be_moved=m.ExpressionWrapper(
                 in_use()
                 & Q(is_verified=True)
@@ -101,7 +111,7 @@ class NestBoxQuerySet(m.QuerySet):
         )
 
     def with_season_state(self):
-        """`season_state`, one of SeasonState, or null for an ended or cancelled box.
+        """`season_state`, one of SeasonState, or null for an ended box.
 
         A pending check counts as if it were confirmed: its status and condition
         are what confirming it would leave on the box, see `checks._box_values`.
@@ -150,7 +160,7 @@ class NestBoxQuerySet(m.QuerySet):
             )
             .annotate(
                 season_state=Case(
-                    When(status__in=(Status.ENDED, Status.CANCELLED), then=None),
+                    When(status=Status.ENDED, then=None),
                     When(season_status=Status.PLANNED, then=Value(SeasonState.PLANNED)),
                     When(
                         Q(season_status__in=(Status.MISSING, Status.TAKEN_DOWN))
@@ -181,7 +191,6 @@ class NestBox(m.Model):
         TAKEN_DOWN = "taken_down", "sundaná na opravu"
         MISSING = "missing", "nenalezená"
         ENDED = "ended", "zaniklá"
-        CANCELLED = "cancelled", "zrušená"
 
     class Condition(m.TextChoices):
         FINE = "fine", "v pořádku"
@@ -220,7 +229,6 @@ class NestBox(m.Model):
         editable=False,
     )
     elevation = m.IntegerField(null=True, blank=True)
-    elevation_source = m.CharField(max_length=63, blank=True)
 
     type = m.ForeignKey(
         NestBoxType,
@@ -235,9 +243,7 @@ class NestBox(m.Model):
     hole_size = m.PositiveSmallIntegerField(null=True, blank=True)
     opening = m.CharField(max_length=15, choices=Opening.choices, blank=True)
     material = m.CharField(max_length=15, choices=Material.choices, blank=True)
-    predator_guard = m.BooleanField(null=True, blank=True)
-    access_note = m.TextField(blank=True)
-    owner_note = m.TextField(blank=True)
+    # The one note of a box, shown to volunteers on the batch link too
     note = m.TextField(blank=True)
 
     installed_on = m.DateField(null=True, blank=True)
@@ -249,9 +255,6 @@ class NestBox(m.Model):
         null=True,
         blank=True,
     )
-
-    is_verified = m.BooleanField(default=False)
-    is_confirmed = m.BooleanField(default=True)
 
     closest_distance = m.FloatField(null=True, blank=True, editable=False)
     closest_same_type_distance = m.FloatField(null=True, blank=True, editable=False)
@@ -265,14 +268,6 @@ class NestBox(m.Model):
         null=True,
         blank=True,
     )
-    batch = m.ForeignKey(
-        "Batch",
-        related_name="new_boxes",
-        on_delete=SET_NULL,
-        null=True,
-        blank=True,
-    )
-
     objects = NestBoxQuerySet.as_manager()
 
     class Meta:
@@ -280,6 +275,12 @@ class NestBox(m.Model):
 
     def __str__(self):
         return f"{self.area} {self.name}"
+
+    @property
+    def is_new(self):
+        """A volunteer hung it through a batch link and no check confirmed it yet:
+        planned, by nobody signed in. Its check is what hangs it."""
+        return self.status == NestBox.Status.PLANNED and self.created_by_id is None
 
     def save(self, *args, **kwargs):
         self.region = Region.objects.filter(area__contains=self.location).first()
@@ -320,8 +321,8 @@ class NestBox(m.Model):
                     LEFT JOIN {table} AS other
                         ON other.area_id = box.area_id
                         AND other.id <> box.id
-                        AND other.status = %(in_use)s AND other.is_confirmed
-                        AND box.status = %(in_use)s AND box.is_confirmed
+                        AND other.status = %(in_use)s
+                        AND box.status = %(in_use)s
                     WHERE box.area_id = %(area_id)s
                     GROUP BY box.id
                 ) AS nearest

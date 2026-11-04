@@ -129,12 +129,12 @@ def test_import(run_import):
     assert (replaced.status, replaced.ended_on, replaced.end_reason.slug) == (
         NestBox.Status.ENDED,
         date(2018, 3, 10),
-        "replaced",
+        "worn_out",
     )
     assert replaced.old_id is None
     assert (replacement.old_id, replacement.status) == (1, NestBox.Status.MISSING)
     assert replacement.installed_on == date(2018, 3, 10)
-    for box in (replaced, replacement):
+    for box in NestBox.objects.filter(name="1").with_is_verified():
         assert (box.hole_shape, box.hole_size, box.type.slug) == (
             "round",
             34,
@@ -158,7 +158,7 @@ def test_import(run_import):
 
     taken_down = NestBox.objects.get(name="N2")
     assert taken_down.status == NestBox.Status.TAKEN_DOWN
-    assert taken_down.access_note == "u 'cesty'\nvysoko"
+    assert taken_down.note == "u 'cesty'\nvysoko"
     assert taken_down.checks.count() == 2
 
     retired = NestBox.objects.get(old_id=3)

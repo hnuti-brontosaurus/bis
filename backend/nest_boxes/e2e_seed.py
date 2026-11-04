@@ -3,7 +3,7 @@
 Rerunning it resets the seeded area to the same boxes, batches and ids.
 """
 
-from datetime import date
+from datetime import date, datetime, time
 from uuid import UUID
 
 from administration_units.models import AdministrationUnit, BrontosaurusMovement
@@ -13,7 +13,8 @@ from categories.models import AdministrationUnitCategory, NestBoxType
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.core.management import call_command
-from nest_boxes.models import Area, Batch, NestBox
+from django.utils.timezone import make_aware
+from nest_boxes.models import Area, Batch, Check, NestBox
 
 PASSWORD = "nest-boxes-e2e"
 BUDKAR_EMAIL = "budkar@budky.nope"
@@ -80,6 +81,7 @@ def seed():
         opening=NestBox.Opening.FRONT,
         installed_on=date(2020, 3, 1),
         status=NestBox.Status.IN_USE,
+        created_by=budkar,
     )
     boxes = {
         "1": NestBox(location=Point(14.3600, 50.0700, srid=4326), **common),
@@ -95,9 +97,22 @@ def seed():
     for name, box in boxes.items():
         box.id = BOX_IDS[name]
         box.name = name
-        box.is_verified = name != "3"
     NestBox.objects.bulk_create(boxes.values())
     NestBox.recompute_distances(area.pk)
+    # Checked last season, so verified and still to check this one
+    checked_on = Check.season_start(Check.current_season() - 1)
+    for name in ("1", "2"):
+        Check.objects.create(
+            box=boxes[name],
+            date=checked_on,
+            made_at=make_aware(datetime.combine(checked_on, time(12))),
+            found=Check.Found.FOUND,
+            cleaning=Check.Cleaning.CLEANED,
+            contents=[Check.Content.NOTHING],
+            is_confirmed=True,
+            entered_by=budkar,
+            confirmed_by=budkar,
+        )
 
     open_batch = Batch.objects.create(
         area=area, name="Podzim E2E", token=OPEN_TOKEN, created_by=budkar

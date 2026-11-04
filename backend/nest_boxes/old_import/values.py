@@ -49,7 +49,7 @@ UNNAMED = "bez označení"
 
 
 def parse_name(raw):
-    """(name, previous name or "", owner note or "") from the old number field."""
+    """(name, previous name or "", note or "") from the old number field."""
     value = raw.strip()
     if match := ENTRY_TIME.match(value):
         return match[1], "", ""

@@ -7,6 +7,7 @@ from api.nest_boxes.serializers import (
     LinkBatchSerializer,
     LinkBoxSerializer,
     LinkCheckSerializer,
+    LinkNewBoxSerializer,
     box_warnings_data,
     categories_data,
 )
@@ -73,18 +74,20 @@ class LinkChecksView(NestBoxAPIMixin, APIView):
 
 class LinkBoxesView(NestBoxAPIMixin, APIView):
     def post(self, request, token):
-        """A new box, or a resend of one this batch added and nobody confirmed yet."""
+        """A box the volunteer hung and its check, or a resend of them."""
         batch = open_batch(token)
-        serializer = LinkBoxSerializer(data=request.data)
+        serializer = LinkNewBoxSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        box = NestBox.objects.filter(pk=serializer.validated_data["id"]).first()
-        box = box or NestBox()
-        for name, value in serializer.validated_data.items():
-            setattr(box, name, value)
-        submit_box(batch, box)
+        values = dict(serializer.validated_data)
+        check = Check(**values.pop("check"))
+        box, check = submit_box(batch, values, check)
         box = NestBox.objects.with_season_state().get(pk=box.pk)
         return Response(
-            LinkBoxSerializer(box).data | {"warnings": box_warnings_data(box)},
+            LinkBoxSerializer(box).data
+            | {
+                "check": LinkCheckSerializer(check).data,
+                "warnings": box_warnings_data(box),
+            },
             status=HTTP_201_CREATED,
         )
 

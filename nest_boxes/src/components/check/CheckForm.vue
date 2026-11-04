@@ -3,7 +3,6 @@ import { computed, ref } from "vue"
 import { useMediaQuery } from "@vueuse/core"
 import {
   NButton,
-  NCheckbox,
   NDatePicker,
   NDrawer,
   NDrawerContent,
@@ -285,7 +284,7 @@ const save = async () => {
 
           <div v-if="found" class="question">
             <button
-              v-if="!planned"
+              v-if="!planned && !state.verify"
               class="collapse"
               type="button"
               :aria-expanded="state.changes_open"
@@ -310,12 +309,6 @@ const save = async () => {
                 :locate-on-open="planned && !initial"
                 @help="openHelp"
               />
-              <n-checkbox
-                v-if="!box.is_verified && !planned"
-                v-model:checked="state.verify"
-              >
-                Údaje jsem na místě zkontroloval(a), budka je ověřená
-              </n-checkbox>
             </div>
           </div>
 

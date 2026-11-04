@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 import { watchDebounced } from "@vueuse/core"
-import { NButton, NInput, NInputNumber, NModal, NSelect, NSwitch } from "naive-ui"
+import { NButton, NInput, NInputNumber, NModal, NSelect } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
@@ -50,10 +50,7 @@ const fieldsOf = box =>
         status: box.status,
         condition: box.condition,
         planned_radius: box.planned_radius,
-        predator_guard: box.predator_guard,
         previous_names: box.previous_names,
-        access_note: box.access_note,
-        owner_note: box.owner_note,
         note: box.note,
       }
     : {
@@ -61,10 +58,7 @@ const fieldsOf = box =>
         status: "planned",
         condition: "fine",
         planned_radius: DEFAULT_PLAN_RADIUS,
-        predator_guard: null,
         previous_names: "",
-        access_note: "",
-        owner_note: "",
         note: "",
       }
 
@@ -220,48 +214,22 @@ const save = async () => {
           V oblasti už visí jiná budka {{ duplicate.name }}.
         </div>
       </div>
-      <div class="row">
-        <span class="label">Ochrana proti predátorům</span>
-        <n-switch
-          :value="values.predator_guard === true"
-          @update:value="values.predator_guard = $event"
-        />
-      </div>
       <div class="field">
-        <label for="box-access">Jak se k budce dostat</label>
+        <label for="box-previous">Dřívější označení</label>
         <n-input
-          v-model:value="values.access_note"
-          type="textarea"
-          :autosize="{ minRows: 1 }"
-          :input-props="{ id: 'box-access' }"
+          v-model:value="values.previous_names"
+          :input-props="{ id: 'box-previous' }"
         />
       </div>
-      <div class="grid-2">
-        <div class="field">
-          <label for="box-owner-note">Poznámka k majiteli</label>
-          <n-input
-            v-model:value="values.owner_note"
-            type="textarea"
-            :autosize="{ minRows: 1 }"
-            :input-props="{ id: 'box-owner-note' }"
-          />
-        </div>
-        <div class="field">
-          <label for="box-previous">Dřívější označení</label>
-          <n-input
-            v-model:value="values.previous_names"
-            :input-props="{ id: 'box-previous' }"
-          />
-        </div>
-      </div>
       <div class="field">
-        <label for="box-note">Poznámka</label>
+        <label for="box-note">Poznámka pro dobrovolníky</label>
         <n-input
           v-model:value="values.note"
           type="textarea"
           :autosize="{ minRows: 2 }"
           :input-props="{ id: 'box-note' }"
         />
+        <span class="hint">Uvidí ji i dobrovolníci v odkazu obchůzky.</span>
       </div>
     </div>
     <template #footer>

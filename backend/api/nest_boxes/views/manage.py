@@ -34,9 +34,8 @@ from django.http import HttpResponse
 from django.utils.text import get_valid_filename
 from django.utils.timezone import localdate, now
 from nest_boxes.boxes import (
-    cancel_box,
-    confirm_box,
     create_box,
+    delete_box,
     end_box,
     season_state_counts,
     suggested_batch_boxes,
@@ -46,6 +45,7 @@ from nest_boxes.checks import (
     close_batch,
     confirm_batch,
     confirm_check,
+    delete_check,
     edit_check,
     enter_check,
 )
@@ -184,9 +184,9 @@ class BoxViewSet(ManagerViewSet):
         serializer.is_valid(raise_exception=True)
         values = dict(serializer.validated_data)
         require_manage(request.user, values["area"])
-        batch = values.get("batch")
+        batch = values.pop("batch", None)
         if batch and batch.area != values["area"]:
-            raise ValidationError({"batch_id": "Obchůzka patří k jiné lokalitě."})
+            raise ValidationError({"batch_id": "Obchůzka patří k jiné oblasti."})
         box = create_box(values, request.user, localdate())
         if batch:
             batch.boxes.add(box)
@@ -203,6 +203,9 @@ class BoxViewSet(ManagerViewSet):
             serializer.instance, serializer.validated_data, request.user, localdate()
         )
         return self.respond(serializer.instance)
+
+    def perform_destroy(self, instance):
+        delete_box(instance)
 
     @action(detail=False)
     def map(self, request):
@@ -226,18 +229,6 @@ class BoxViewSet(ManagerViewSet):
             serializer.validated_data["ended_on"],
             request.user,
         )
-        return self.respond(box)
-
-    @action(detail=True, methods=["post"])
-    def cancel(self, request, pk):
-        box = self.get_object()
-        cancel_box(box, request.user, localdate())
-        return self.respond(box)
-
-    @action(detail=True, methods=["post"])
-    def confirm(self, request, pk):
-        box = self.get_object()
-        confirm_box(box, request.user, localdate())
         return self.respond(box)
 
     @action(detail=False)
@@ -274,13 +265,16 @@ class CheckViewSet(ManagerViewSet):
             status=status,
         )
 
+    def perform_destroy(self, instance):
+        delete_check(instance)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         check, occupants = serializer.build()
         require_manage(request.user, check.box.area)
         if check.batch and check.batch.area_id != check.box.area_id:
-            raise ValidationError({"batch_id": "Obchůzka patří k jiné lokalitě."})
+            raise ValidationError({"batch_id": "Obchůzka patří k jiné oblasti."})
         if check.made_at is None:
             check.made_at = now()
         enter_check(check, occupants, request.user)
@@ -391,7 +385,7 @@ class BatchViewSet(ManagerViewSet):
         """The boxes a new batch of `?area=` starts with."""
         area = self.areas().filter(pk=request.query_params.get("area")).first()
         if area is None:
-            raise ValidationError({"area": "Neznámá lokalita."})
+            raise ValidationError({"area": "Neznámá oblast."})
         boxes = suggested_batch_boxes(area, Check.current_season())
         return Response({"box_ids": list(boxes.values_list("pk", flat=True))})
 
@@ -414,7 +408,7 @@ class BatchViewSet(ManagerViewSet):
             pk__in=serializer.validated_data["box_ids"], area=batch.area
         )
         if len(boxes) != len(set(serializer.validated_data["box_ids"])):
-            raise ValidationError({"box_ids": "Některé budky nejsou v této lokalitě."})
+            raise ValidationError({"box_ids": "Některé budky nejsou v této oblasti."})
         return boxes
 
     @action(detail=True, methods=["post"])

@@ -95,15 +95,12 @@ class PlannedBox:
     old_user_id: int | None
     created_at: datetime
     previous_names: str = ""
-    owner_note: str = ""
-    access_note: str = ""
     note: str = ""
     elevation: int | None = None
     hole: tuple | None = None
     old_type: str | None = None
     opening: str = ""
     material: str = ""
-    predator_guard: bool | None = None
     status: str = Status.IN_USE
     condition: str = NestBox.Condition.FINE
     installed_on: date | None = None
@@ -213,7 +210,9 @@ def read_check(occupancy, note, repair_flag, unseen_default=False):
     }
     if "taken_down" in labels or occupancy == "stažena":
         reading.box_left = BoxLeft.TAKEN_DOWN
-    elif labels & ({"replace_needed"} | notes.ENDING):
+    elif "replace_needed" in labels or (
+        labels & notes.ENDING and not notes.asks_to_move(labels, note)
+    ):
         reading.box_left = BoxLeft.NEEDS_REPLACING
     elif repaired:
         reading.box_left = BoxLeft.FINE
@@ -333,14 +332,14 @@ class Planner:
         return int(nearest["id_area"])
 
     def _box(self, row, area_id):
-        name, previous, owner = parse_name(row["number"])
+        name, previous, name_note = parse_name(row["number"])
         elevation = _int(row["elevation"])
         box = PlannedBox(
             old_id=int(row["id"]),
             old_area_id=area_id,
             name=name,
             previous_names=previous,
-            owner_note=owner,
+            note=name_note,
             location=(float(row["gps_lat"]), float(row["gps_lng"])),
             elevation=elevation or None,
             old_user_id=_int(row["id_user"]),
@@ -350,32 +349,25 @@ class Planner:
         if hole := (row["diameter"] or "").strip():
             box.hole = parse_hole(hole)
             if box.hole is None:
-                box.note = f"otvor ve staré databázi: {hole}"
+                box.note = "\n".join(
+                    filter(None, [box.note, f"otvor ve staré databázi: {hole}"])
+                )
                 self.undecided["hole unreadable, kept in the note"].append(box.old_id)
         if box_note := (row["note"] or "").strip():
-            note_labels = notes.labels(box_note)
-            if note_labels and note_labels <= {"owner_or_name"}:
-                box.owner_note = "\n".join(filter(None, [box.owner_note, box_note]))
-            elif note_labels and note_labels <= {"access"}:
-                box.access_note = box_note
-            else:
-                box.note = "\n".join(filter(None, [box.note, box_note]))
+            box.note = "\n".join(filter(None, [box.note, box_note]))
         return box
 
     def _attributes(self, box, texts):
         """Box attributes the notes name; the latest mention wins."""
         previous = [box.previous_names] if box.previous_names else []
-        access = [box.access_note] if box.access_note else []
         for text in texts:
             box.opening = notes.opening(text) or box.opening
             box.material = notes.material(text) or box.material
-            guard = notes.predator_guard(text)
-            box.predator_guard = box.predator_guard if guard is None else guard
             previous += notes.previous_names(text)
-            if "access" in notes.labels(text) and text not in access:
-                access.append(text)
+            # How to get to the box is what the volunteers' note is for
+            if "access" in notes.labels(text) and text.strip() not in box.note:
+                box.note = "\n".join(filter(None, [box.note, text.strip()]))
         box.previous_names = ", ".join(dict.fromkeys(previous))
-        box.access_note = "\n".join(access)
 
     def _segments(self, row, area_id):
         """The old record as one box per physical box: a replacement starts a new one."""
@@ -451,7 +443,7 @@ class Planner:
                     installed_on=day,
                     checks=[],
                 )
-                current.end(day, "replaced")
+                current.end(day, "worn_out")
                 current.old_id, current.note = None, ""
                 segments.append(new)
                 self.report["replacements split into a new box"] += 1
@@ -476,12 +468,15 @@ class Planner:
             previous = planned
             is_last = index == len(rows) - 1
             if labels & notes.ENDING and reading.found != Found.NOT_REACHED:
-                if is_last:
-                    current.end(day, notes.end_reason(labels, note))
+                if notes.asks_to_move(labels, note):
+                    self.report["boxes kept, their note asks to move them"] += 1
+                elif is_last:
+                    current.end(day, notes.end_reason(labels))
                     continue
-                self.undecided["note says the box ended, checked later, kept"].append(
-                    int(row["id"])
-                )
+                else:
+                    self.undecided[
+                        "note says the box ended, checked later, kept"
+                    ].append(int(row["id"]))
             if reading.found == Found.NOT_FOUND:
                 current.status = Status.MISSING
             elif reading.found == Found.FOUND:

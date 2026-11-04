@@ -17,7 +17,10 @@ const check = overrides => ({
   ...overrides,
 })
 const context = {
-  boxesById: new Map([["b1", box]]),
+  boxesById: new Map([
+    ["b1", box],
+    ["new", { ...box, id: "new", is_new: true }],
+  ]),
   typesById: new Map([
     [1, { name: "malý sýkorník" }],
     [2, { name: "velký sýkorník" }],
@@ -34,7 +37,7 @@ describe("batchTiles", () => {
         check({ found: "not_found", cleaning: "", contents: [] }),
         check({ box_left: "needs_repair", contents: ["unknown"] }),
       ],
-      [],
+      context.boxesById,
     )
     const value = label => tiles.find(tile => tile.label.includes(label)).value
     expect(value("zkontrolováno")).toBe(4)
@@ -59,16 +62,16 @@ describe("batchHighlights", () => {
         check({ id: "2", box_left: "needs_replacing" }),
         check({ id: "3", box_changes: { type: 2, location: moved } }),
         check({ id: "4", box_changes: { type: 1 } }),
+        check({ id: "5", box_id: "new", box_changes: { hung: true, type: 1 } }),
       ],
-      [{ id: "new", name: "N9" }],
       context,
     ).map(item => item.title)
     expect(titles).toEqual([
-      "Nová budka",
       "Nenalezena",
       "potřebuje vyměnit",
       "Typ změněn",
       "Poloha posunuta o 43 m",
+      "Nová budka",
     ])
   })
 })

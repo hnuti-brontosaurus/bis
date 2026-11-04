@@ -39,7 +39,7 @@ const sort = ref("distance")
 const typesById = computed(() => byId(link.payload.categories.types))
 const occupantsById = computed(() => byId(link.payload.categories.occupants))
 
-const isNew = row => !row.is_confirmed
+const isNew = row => row.is_new
 const known = computed(() => link.rows.filter(row => !isNew(row)))
 const inState = states => known.value.filter(row => states.includes(row.state))
 const toCheck = computed(() =>

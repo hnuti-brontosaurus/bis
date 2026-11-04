@@ -30,7 +30,7 @@ export const latestChecks = checks => {
   return byBox
 }
 
-export const isInUse = box => box.status === "in_use" && box.is_confirmed
+export const isInUse = box => box.status === "in_use"
 
 /** Where a box is now: a hanging check moves a planned box to where it went up. */
 export const boxLocation = (box, check) => check?.box_changes?.location ?? box.location

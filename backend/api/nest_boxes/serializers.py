@@ -217,21 +217,17 @@ BOX_FIELDS = (
     "planned_radius",
     "region_id",
     "elevation",
-    "elevation_source",
     "type_id",
     "hole_shape",
     "hole_size",
     "opening",
     "material",
-    "predator_guard",
-    "access_note",
-    "owner_note",
     "note",
     "installed_on",
     "ended_on",
     "end_reason_id",
     "is_verified",
-    "is_confirmed",
+    "is_new",
     "closest_distance",
     "closest_same_type_distance",
     "should_be_moved",
@@ -250,8 +246,17 @@ class BoxSerializer(ModelSerializer):
     type_id = optional_related(NestBoxType, "type")
     end_reason_id = PrimaryKeyRelatedField(source="end_reason", read_only=True)
     region_id = PrimaryKeyRelatedField(source="region", read_only=True)
-    batch_id = optional_related(Batch, "batch")
+    # Plans the new box into that batch
+    batch_id = PrimaryKeyRelatedField(
+        source="batch",
+        queryset=Batch.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
     created_by = PersonSerializer(read_only=True)
+    is_verified = BooleanField(read_only=True)
+    is_new = BooleanField(read_only=True)
     should_be_moved = BooleanField(read_only=True)
     season_state = CharField(read_only=True, allow_null=True)
     last_checked_on = DateField(read_only=True)
@@ -261,8 +266,6 @@ class BoxSerializer(ModelSerializer):
         fields = BOX_FIELDS
         read_only_fields = (
             "ended_on",
-            "is_verified",
-            "is_confirmed",
             "closest_distance",
             "closest_same_type_distance",
             "old_id",
@@ -270,9 +273,9 @@ class BoxSerializer(ModelSerializer):
         )
 
     def validate_status(self, status):
-        if status in (NestBox.Status.ENDED, NestBox.Status.CANCELLED):
+        if status == NestBox.Status.ENDED:
             raise serializers.ValidationError(
-                "Budka se ukončuje a ruší vlastní akcí, ne změnou stavu."
+                "Budka se ukončuje vlastní akcí, ne změnou stavu."
             )
         return status
 
@@ -306,10 +309,11 @@ class HistorySerializer(ModelSerializer):
 
 
 class LinkBoxSerializer(ModelSerializer):
-    """What a volunteer sees of a box and sends for a new one: no owner, no notes."""
+    """What a volunteer sees of a box."""
 
-    id = UUIDField()
-    type_id = optional_related(NestBoxType, "type")
+    type_id = PrimaryKeyRelatedField(source="type", read_only=True)
+    is_verified = BooleanField(read_only=True)
+    is_new = BooleanField(read_only=True)
     season_state = CharField(read_only=True)
 
     class Meta:
@@ -328,24 +332,46 @@ class LinkBoxSerializer(ModelSerializer):
             "hole_size",
             "opening",
             "material",
-            "predator_guard",
-            "access_note",
             "note",
             "installed_on",
             "is_verified",
-            "is_confirmed",
-            "batch_id",
+            "is_new",
         )
-        read_only_fields = (
-            "status",
-            "condition",
-            "planned_radius",
-            "elevation",
-            "is_verified",
-            "is_confirmed",
-            "batch_id",
+        read_only_fields = fields
+
+
+class NewBoxCheckSerializer(Serializer):
+    id = UUIDField()
+    date = DateField()
+    made_at = DateTimeField()
+    volunteer_nickname = CharField(max_length=63, allow_blank=True)
+    volunteer_email = EmailField(allow_blank=True)
+
+
+class LinkNewBoxSerializer(ModelSerializer):
+    """A box a volunteer hung, with the ids of the box and of its check made on
+    the phone, so that a resend from the outbox updates both."""
+
+    id = UUIDField()
+    type_id = related(NestBoxType, "type")
+    check = NewBoxCheckSerializer()
+
+    class Meta:
+        model = NestBox
+        fields = (
+            "id",
+            "name",
+            "location",
+            "type_id",
+            "hole_shape",
+            "hole_size",
+            "opening",
+            "material",
+            "note",
+            "installed_on",
+            "check",
         )
-        extra_kwargs = {"note": {"write_only": True}}
+        extra_kwargs = {"note": {"required": False}}
 
 
 class CheckPhotoSerializer(ModelSerializer):
@@ -499,7 +525,7 @@ class BatchSerializer(ModelSerializer):
         area = attrs.get("area") or self.instance.area
         if any(box.area_id != area.pk for box in attrs.get("boxes", [])):
             raise serializers.ValidationError(
-                {"box_ids": "Některé budky nejsou v této lokalitě."}
+                {"box_ids": "Některé budky nejsou v této oblasti."}
             )
         return attrs
 
@@ -527,6 +553,8 @@ class LinkAreaSerializer(ModelSerializer):
 class MapBoxSerializer(ModelSerializer):
     """What the map of all boxes draws, filters and lists; a box's page loads the rest."""
 
+    is_verified = BooleanField()
+    is_new = BooleanField()
     should_be_moved = BooleanField()
     season_state = CharField(allow_null=True)
     last_checked_on = DateField()
@@ -544,7 +572,7 @@ class MapBoxSerializer(ModelSerializer):
             "status",
             "condition",
             "is_verified",
-            "is_confirmed",
+            "is_new",
             "should_be_moved",
             "season_state",
             "last_checked_on",

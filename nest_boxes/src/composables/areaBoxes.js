@@ -3,7 +3,7 @@ import { seasonStart } from "@/composables/czech.js"
 import { CONDITION_LABELS, STATUS_LABELS } from "@/composables/labels.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 
-// Ended and cancelled boxes are history; the list starts without them.
+// Ended boxes are history; the list starts without them.
 export const ACTIVE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
 
 export const CHECKED_OPTIONS = [

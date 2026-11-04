@@ -26,7 +26,6 @@ HEADQUARTERS_CATEGORY = "headquarter"
 ACTIVITY_SINCE = date(2022, 1, 1)
 # Sitting on a unit's board says more than organizing one of its events
 BOARD_MEMBER_WEIGHT = 5
-ELEVATION_SOURCE = "stará databáze"
 
 
 @dataclass
@@ -168,23 +167,17 @@ def load(plan, old_users):
                 condition=planned.condition,
                 location=Point(planned.location[1], planned.location[0], srid=4326),
                 elevation=planned.elevation,
-                elevation_source=ELEVATION_SOURCE if planned.elevation else "",
                 type=box_type,
                 hole_shape=shape,
                 hole_size=size,
                 opening=planned.opening,
                 material=planned.material,
-                predator_guard=planned.predator_guard,
-                access_note=planned.access_note,
-                owner_note=planned.owner_note,
                 note=planned.note,
                 installed_on=planned.installed_on,
                 ended_on=planned.ended_on,
                 end_reason=end_reasons[planned.end_reason]
                 if planned.end_reason
                 else None,
-                is_verified=False,
-                is_confirmed=True,
                 old_id=planned.old_id,
                 created_by=users.get(planned.old_user_id),
             )

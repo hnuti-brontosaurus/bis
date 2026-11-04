@@ -119,7 +119,6 @@ def test_volunteer_sees_only_the_batchs_boxes(anonymous, batch, make_box):
 
     assert [box["id"] for box in data["boxes"]] == [str(batch.boxes.get().pk)]
     assert not contains_coordinates(data, outside.location)
-    assert "owner_note" not in data["boxes"][0]
     assert {"types", "occupants", "end_reasons", "not_cleaned_reasons"} == set(
         data["categories"]
     )
@@ -194,8 +193,8 @@ def test_resent_photo_replaces_the_one_with_its_order(
     assert sorted(Check.objects.get().photos.values_list("order", flat=True)) == [0, 1]
 
 
-def test_volunteer_adds_a_pending_box(anonymous, batch, types):
-    box_id = uuid4()
+def test_volunteer_hangs_a_new_box(anonymous, batch, types):
+    box_id, check_id = uuid4(), uuid4()
     payload = {
         "id": str(box_id),
         "name": "1",
@@ -203,6 +202,15 @@ def test_volunteer_adds_a_pending_box(anonymous, batch, types):
         "type_id": types["velky_sykornik"].pk,
         "hole_shape": "round",
         "hole_size": 33,
+        "opening": "front",
+        "installed_on": "2025-11-01",
+        "check": {
+            "id": str(check_id),
+            "date": "2025-11-01",
+            "made_at": made_at(10).isoformat(),
+            "volunteer_nickname": "Sýkorka",
+            "volunteer_email": "sykorka@example.com",
+        },
     }
     response = anonymous.post(
         f"{API}/links/{batch.token}/boxes/", payload, format="json"
@@ -214,10 +222,12 @@ def test_volunteer_adds_a_pending_box(anonymous, batch, types):
     assert response.status_code == 201
     assert response.json()["warnings"]["duplicate_names"]
     assert response.json()["warnings"]["spacing"][0]["should_be_moved"]
+    assert response.json()["check"]["box_changes"]["hung"]
     assert resend.status_code == 201
     box = NestBox.objects.get(pk=box_id)
-    assert box.name == "1b" and not box.is_confirmed
+    assert box.name == "1b" and box.status == NestBox.Status.PLANNED
     assert batch.boxes.filter(pk=box_id).exists()
+    assert Check.objects.get().pk == check_id
 
 
 def test_confirming_the_batch_applies_box_changes(
@@ -242,7 +252,7 @@ def test_confirming_the_batch_applies_box_changes(
 
     assert response.status_code == 200
     assert response.json()["closed_at"]
-    box.refresh_from_db()
+    box = NestBox.objects.with_is_verified().get(pk=box.pk)
     assert (box.name, box.hole_size, box.opening) == ("1A", 28, "roof")
     assert box.condition == NestBox.Condition.NEEDS_REPAIR
     assert box.is_verified
@@ -412,7 +422,7 @@ def test_gpx_roundtrip(board_client, area, make_box):
     assert applied["applied"]
     new = NestBox.objects.get(name="3")
     assert new.installed_on == date(2025, 10, 1)
-    assert new.is_confirmed and not new.is_verified
+    assert not NestBox.objects.with_is_verified().get(pk=new.pk).is_verified
 
 
 def test_xlsx_export(board_client, area, make_box):
@@ -489,7 +499,7 @@ def test_season_states_per_area(board_client, area, unit, make_box, types):
     make_box("1")
     make_box("2", location=near(east=100), condition=NestBox.Condition.NEEDS_REPAIR)
     make_box("3", location=near(east=200), type=types["netopyrnik"])
-    make_box("4", location=near(east=300), is_verified=True)
+    make_box("4", location=near(east=300), verified=True)
     with paused_validation():
         other_unit = AdministrationUnit.objects.create(
             name="Jiný", abbreviation="J", is_for_kids=False, category=unit.category
@@ -573,7 +583,7 @@ def test_map_of_boxes_has_constant_queries(
         "status",
         "condition",
         "is_verified",
-        "is_confirmed",
+        "is_new",
         "should_be_moved",
         "season_state",
         "last_checked_on",
@@ -591,3 +601,12 @@ def test_public_regions_never_show_box_coordinates(anonymous, region, make_box):
     assert regions[0]["outline"]["type"] == "Polygon"
     assert regions[0]["marker"]["type"] == "Point"
     assert not contains_coordinates(regions, box.location)
+
+
+def test_only_a_planned_box_is_deleted(board_client, make_box):
+    hanging = make_box("1")
+    planned = make_box("P", location=near(east=100), status=NestBox.Status.PLANNED)
+
+    assert board_client.delete(f"{API}/boxes/{hanging.pk}/").status_code == 400
+    assert board_client.delete(f"{API}/boxes/{planned.pk}/").status_code == 204
+    assert list(NestBox.objects.all()) == [hanging]

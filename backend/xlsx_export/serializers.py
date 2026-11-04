@@ -18,6 +18,7 @@ from nest_boxes.models import NestBox
 from opportunities.models import OfferedHelp
 from questionnaire.models import EventApplication, Question
 from rest_framework.fields import (
+    BooleanField,
     CharField,
     DateField,
     FloatField,
@@ -763,6 +764,7 @@ class NestBoxExportSerializer(ModelSerializer):
     latitude = FloatField(source="location.y", label="Zeměpisná šířka")
     longitude = FloatField(source="location.x", label="Zeměpisná délka")
     last_checked_on = DateField(label="Poslední potvrzená kontrola")
+    is_verified = BooleanField(label="Ověřena?")
 
     @staticmethod
     def get_related(queryset):
@@ -785,15 +787,11 @@ class NestBoxExportSerializer(ModelSerializer):
             "hole_size",
             "opening",
             "material",
-            "predator_guard",
-            "access_note",
-            "owner_note",
             "note",
             "installed_on",
             "ended_on",
             "end_reason",
             "is_verified",
-            "is_confirmed",
             "closest_distance",
             "closest_same_type_distance",
             "last_checked_on",

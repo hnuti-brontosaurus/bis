@@ -14,7 +14,6 @@ NAMESPACE = "http://www.topografix.com/GPX/1/1"
 # A roundtrip through a GPS device rounds the coordinates; closer is the same spot
 MOVE_THRESHOLD = 1
 EARTH_RADIUS = 6_371_000
-RETIRED_STATUSES = (NestBox.Status.ENDED, NestBox.Status.CANCELLED)
 
 
 def metres_between(a, b):
@@ -109,7 +108,7 @@ class ImportRow:
 
 def import_rows(area, waypoints, box_type):
     """What importing the waypoints into the area would do, without doing it."""
-    boxes = NestBox.objects.filter(area=area).exclude(status__in=RETIRED_STATUSES)
+    boxes = NestBox.objects.filter(area=area).exclude(status=NestBox.Status.ENDED)
     by_name = {}
     for box in boxes.select_related("type"):
         by_name.setdefault(box.name.strip().lower(), []).append(box)

@@ -16,8 +16,10 @@ const isInspected = check =>
   check.cleaning !== "could_not_open" &&
   check.contents.some(content => INSPECTED.includes(content))
 
-/** The batch page's tiles, from the batch's checks and the boxes volunteers added. */
-export const batchTiles = (batch, checks, newBoxes) => {
+const isNewBox = (check, boxesById) => boxesById.get(check.box_id).is_new
+
+/** The batch page's tiles, from the batch's checks. */
+export const batchTiles = (batch, checks, boxesById) => {
   const inspected = checks.filter(isInspected)
   const count = filter => checks.filter(filter).length
   return [
@@ -45,7 +47,7 @@ export const batchTiles = (batch, checks, newBoxes) => {
       label: "nenalezeno",
       tone: "bad",
     },
-    { value: newBoxes.length, label: "nových budek" },
+    { value: count(check => isNewBox(check, boxesById)), label: "nových budek" },
     { value: count(check => isVerification(check.box_changes)), label: "ověřeno" },
     {
       value: count(
@@ -61,15 +63,8 @@ export const batchTiles = (batch, checks, newBoxes) => {
  * What a manager should look at before confirming: [{check?, box, tone, title, detail}].
  * `boxesById` holds the area's boxes as they are now, before the batch applies.
  */
-export const batchHighlights = (checks, newBoxes, { boxesById, typesById }) => [
-  ...newBoxes.map(box => ({
-    key: `box-${box.id}`,
-    box,
-    tone: "info",
-    title: "Nová budka",
-    detail: "přidal ji dobrovolník, potvrdí se s obchůzkou",
-  })),
-  ...checks.flatMap(check => {
+export const batchHighlights = (checks, { boxesById, typesById }) =>
+  checks.flatMap(check => {
     const box = boxesById.get(check.box_id)
     const items = []
     const add = (tone, title, detail) =>
@@ -93,7 +88,8 @@ export const batchHighlights = (checks, newBoxes, { boxesById, typesById }) => [
           "nová poloha z telefonu",
         )
     }
-    if (changes.hung) add("info", "Pověšena", "plánovaná budka visí")
+    if (box.is_new)
+      add("info", "Nová budka", "pověsil ji dobrovolník, potvrdí se s kontrolou")
+    else if (changes.hung) add("info", "Pověšena", "plánovaná budka visí")
     return items
-  }),
-]
+  })

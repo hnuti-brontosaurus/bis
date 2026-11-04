@@ -230,10 +230,8 @@ describe("buildPayload", () => {
 
   it("sends every verification field to verify a box", () => {
     const unverified = { ...box, is_verified: false }
-    const state = fresh(
-      { contents: "nothing", changes_open: true, verify: true },
-      unverified,
-    )
+    const state = fresh({ contents: "nothing" }, unverified)
+    expect(state).toMatchObject({ verify: true, changes_open: true })
     expect(
       Object.keys(buildPayload(state, unverified, categories).box_changes),
     ).toEqual(expect.arrayContaining(VERIFICATION_FIELDS))

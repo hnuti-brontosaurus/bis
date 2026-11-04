@@ -9,7 +9,6 @@ from nest_boxes.models import NestBox
 
 DATASET = "eudem25m"
 URL = f"https://api.opentopodata.org/v1/{DATASET}"
-SOURCE = f"OpenTopoData {DATASET}"
 # The public API's limits
 POINTS_PER_REQUEST = 100
 SECONDS_BETWEEN_REQUESTS = 1
@@ -31,11 +30,5 @@ class Command(BaseCommand):
                 # Outside the dataset's coverage, eudem25m answers null
                 if result["elevation"] is not None:
                     update_box(
-                        box,
-                        {
-                            "elevation": round(result["elevation"]),
-                            "elevation_source": SOURCE,
-                        },
-                        None,
-                        today,
+                        box, {"elevation": round(result["elevation"])}, None, today
                     )

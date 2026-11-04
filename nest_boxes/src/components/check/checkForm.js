@@ -14,7 +14,8 @@ export const BOX_CHANGE_FIELDS = [
   "installed_on",
 ]
 
-// A confirmed check carrying all of these verifies the box.
+// Any confirmed check verifies a box, so the check of an unverified one
+// confirms all of these on the spot.
 export const VERIFICATION_FIELDS = [
   "name",
   "location",
@@ -90,6 +91,7 @@ const defaultCleaning = (box, types) =>
 /** The form's state for a new check of `box`, or for editing `initial`. */
 export const initialState = (box, initial, types, date = isoDate()) => {
   const planned = box.status === "planned"
+  const verify = !planned && !box.is_verified
   const changes = { ...boxValues(box), ...(initial?.box_changes ?? {}) }
   delete changes.hung
   if (!initial)
@@ -106,8 +108,8 @@ export const initialState = (box, initial, types, date = isoDate()) => {
       breeding: [],
       breeding_note: "",
       box_left: "fine",
-      changes_open: planned,
-      verify: false,
+      changes_open: planned || verify,
+      verify,
       changes,
       note: "",
     }
@@ -130,8 +132,8 @@ export const initialState = (box, initial, types, date = isoDate()) => {
     ],
     breeding_note: initial.breeding_note,
     box_left: initial.box_left || "fine",
-    changes_open: planned || changedKeys.length > 0,
-    verify: VERIFICATION_FIELDS.every(key => changedKeys.includes(key)),
+    changes_open: planned || verify || changedKeys.length > 0,
+    verify,
     changes,
     note: initial.note,
   }

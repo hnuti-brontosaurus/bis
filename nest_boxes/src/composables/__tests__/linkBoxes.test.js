@@ -15,7 +15,6 @@ const box = (name, lngOffset, extra = {}) => ({
   name,
   location: point(14.36 + lngOffset, 50.07),
   status: "in_use",
-  is_confirmed: true,
   type_id: 1,
   ...extra,
 })
@@ -81,7 +80,7 @@ describe("spacingWarnings", () => {
     const boxes = [
       box("itself", 0),
       box("planned", 0.00001, { status: "planned" }),
-      box("unconfirmed", 0.00001, { is_confirmed: false }),
+      box("missing", 0.00001, { status: "missing" }),
     ]
     expect(spacingWarnings(boxes, here, 1, "itself")).toEqual([])
   })

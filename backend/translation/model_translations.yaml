@@ -180,7 +180,7 @@ BrontosaurusMovement:
       - Mají přístup k telesales a vidí dárce
     nest_box_managers:
       - Budkaři
-      - Spravují všechny lokality databáze budek
+      - Spravují všechny oblasti databáze budek
 
 
 Membership:
@@ -1057,8 +1057,8 @@ NestBoxNotCleanedReason:
   name_plural: Důvody nevyčištění budek
 
 Area:
-  name: Lokalita budek
-  name_plural: Lokality budek
+  name: Oblast budek
+  name_plural: Oblasti budek
   fields:
     administration_unit: Organizační jednotka
 
@@ -1066,7 +1066,7 @@ NestBox:
   name: Budka
   name_plural: Budky
   fields:
-    area: Lokalita
+    area: Oblast
     name: Označení
     previous_names: Dřívější označení
     status: Stav
@@ -1074,7 +1074,6 @@ NestBox:
     location: Poloha
     planned_radius: Poloměr plánovaného místa (m)
     elevation: Nadmořská výška (m)
-    elevation_source: Zdroj nadmořské výšky
     type: Typ
     hole_shape: Tvar otvoru
     hole_size:
@@ -1082,18 +1081,13 @@ NestBox:
       - Nejužší šířka
     opening: Otevírání
     material: Materiál
-    predator_guard: Antipredační zábrana
-    access_note: Přístup
-    owner_note: Vlastník nebo jméno
+    note: Poznámka pro dobrovolníky
     installed_on: Vyvěšena
     ended_on: Zanikla
     end_reason: Důvod zániku
-    is_verified: Ověřena?
-    is_confirmed: Potvrzena?
     closest_distance: Nejbližší budka (m)
     closest_same_type_distance: Nejbližší budka stejného typu (m)
     old: ID ve staré databázi
-    batch: Obchůzka
 
 NestBoxHistory:
   name: Změna budky
@@ -1107,7 +1101,7 @@ Batch:
   name: Obchůzka
   name_plural: Obchůzky
   fields:
-    area: Lokalita
+    area: Oblast
     token: Odkaz
     boxes: Budky
     cleaned_by: Čistila jednotka

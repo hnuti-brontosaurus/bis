@@ -63,14 +63,11 @@ const checks = computed(() =>
     compareNames(boxesById.value.get(a.box_id), boxesById.value.get(b.box_id)),
   ),
 )
-const newBoxes = computed(() =>
-  data.value.area.boxes.filter(
-    box => box.batch_id === batch.value.id && !box.is_confirmed,
-  ),
+const tiles = computed(() =>
+  batchTiles(batch.value, data.value.checks, boxesById.value),
 )
-const tiles = computed(() => batchTiles(batch.value, data.value.checks, newBoxes.value))
 const highlights = computed(() =>
-  batchHighlights(checks.value, newBoxes.value, {
+  batchHighlights(checks.value, {
     boxesById: boxesById.value,
     typesById: typesById.value,
   }),

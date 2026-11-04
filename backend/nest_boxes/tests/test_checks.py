@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import uuid4
 
 import pytest
 from categories.models import NestBoxOccupant
@@ -8,6 +9,7 @@ from nest_boxes.checks import (
     close_batch,
     confirm_batch,
     confirm_check,
+    delete_check,
     parse_box_changes,
     submit_box,
     submit_check,
@@ -105,7 +107,7 @@ def test_confirming_applies_box_changes_and_verifies(box, manager, types):
     upsert_check(check, [])
     confirm_check(check, manager)
 
-    box.refresh_from_db()
+    box = NestBox.objects.with_is_verified().get(pk=box.pk)
     assert box.is_verified
     assert box.condition == NestBox.Condition.NEEDS_REPAIR
     assert box.type == types["maly_sykornik"]
@@ -120,16 +122,19 @@ def test_confirming_applies_box_changes_and_verifies(box, manager, types):
         "hole_size",
         "type",
         "opening",
-        "is_verified",
     }
 
 
-def test_partial_changes_do_not_verify(box, manager):
-    check = upsert_check(new_check(box, 10, box_changes={"hole_size": 34}), [])
+def test_only_a_confirmed_check_from_the_field_verifies(box, manager):
+    def is_verified():
+        return NestBox.objects.with_is_verified().get(pk=box.pk).is_verified
+
+    upsert_check(new_check(box, 10, date=date(2024, 11, 1), is_historical=True), [])
+    check = upsert_check(new_check(box, 10), [])
+    assert not is_verified()
+
     confirm_check(check, manager)
-    box.refresh_from_db()
-    assert box.hole_size == 34
-    assert not box.is_verified
+    assert is_verified()
 
 
 @pytest.mark.parametrize(
@@ -182,55 +187,71 @@ def test_invalid_box_changes_are_rejected(box_changes):
         parse_box_changes(box_changes)
 
 
-def test_a_volunteer_adds_a_box(batch, manager, make_box, types):
-    box = NestBox(
-        name="new",
-        location=near(north=100),
-        type=types["polobudka"],
-        hole_shape="open_front",
-        opening="front",
-        installed_on=date(2025, 11, 1),
-    )
-    submit_box(batch, box)
+NEW_BOX = dict(
+    name="new",
+    location=near(north=100),
+    hole_shape="open_front",
+    opening="front",
+    installed_on=date(2025, 11, 1),
+)
+
+
+@pytest.fixture
+def new_box(types):
+    def make(**kwargs):
+        return {"id": uuid4(), "type": types["polobudka"], **NEW_BOX, **kwargs}
+
+    return make
+
+
+def hung_check(hour=10):
+    return Check(id=uuid4(), date=date(2025, 11, 1), made_at=made_at(hour))
+
+
+def test_a_volunteer_hangs_a_new_box(batch, make_box, new_box):
+    values, check = new_box(), hung_check()
+    box, stored = submit_box(batch, values, check)
+
+    assert box.status == NestBox.Status.PLANNED and box.area == batch.area
     assert batch.boxes.filter(pk=box.pk).exists()
-    assert box.area == batch.area
-    assert not box.is_confirmed and not box.is_verified
+    assert (stored.box, stored.batch, stored.is_confirmed) == (box, batch, False)
+    assert stored.box_changes["hung"] and stored.box_changes["name"] == "new"
+    assert stored.contents == [Check.Content.NOTHING]
 
-    box.note = "edited offline"
-    submit_box(batch, box)
+    resend = hung_check(11)
+    resend.pk = check.pk
+    submit_box(batch, values | {"note": "edited offline"}, resend)
     assert NestBox.objects.get(pk=box.pk).note == "edited offline"
+    assert Check.objects.filter(box=box).count() == 1
 
+    existing = make_box("existing", location=ORIGIN)
     with pytest.raises(PermissionDenied):
-        submit_box(batch, make_box("existing", location=ORIGIN))
+        submit_box(batch, new_box(id=existing.pk), hung_check())
+    with pytest.raises(ValidationError):
+        submit_box(batch, new_box(opening=""), hung_check())
 
 
-def test_confirming_a_batch(batch, box, manager, types):
-    new_box = submit_box(
-        batch,
-        NestBox(
-            name="new",
-            location=near(north=100),
-            type=types["polobudka"],
-            hole_shape="open_front",
-            opening="front",
-            installed_on=date(2025, 11, 1),
-        ),
-    )
+def test_confirming_the_check_hangs_the_new_box(batch, box, manager, new_box):
+    new, _ = submit_box(batch, new_box(), hung_check())
     submit_check(batch, new_check(box, 10, found=Check.Found.NOT_FOUND), [])
-    submit_check(batch, new_check(new_box, 10), [])
 
     confirm_batch(batch, manager)
 
     assert batch.closed_at and batch.confirmed_by == manager
     assert not Check.objects.filter(is_confirmed=False).exists()
-    assert NestBox.objects.get(pk=new_box.pk).is_confirmed
+    new = NestBox.objects.with_is_verified().get(pk=new.pk)
+    assert new.status == NestBox.Status.IN_USE and new.is_verified
     assert NestBox.objects.get(pk=box.pk).status == NestBox.Status.MISSING
     with pytest.raises(BatchClosed):
         submit_check(batch, new_check(box, 11), [])
 
 
-def test_a_batch_with_an_incomplete_new_box_does_not_confirm(batch, manager):
-    submit_box(batch, NestBox(name="new", location=near(north=100)))
-    with pytest.raises(ValidationError):
-        confirm_batch(batch, manager)
-    assert batch.closed_at is None
+def test_deleting_the_check_deletes_the_new_box(batch, make_box, manager, new_box):
+    new, check = submit_box(batch, new_box(), hung_check())
+    delete_check(check)
+    assert not NestBox.objects.filter(pk=new.pk).exists()
+
+    planned = make_box("P", status=NestBox.Status.PLANNED, created_by=manager)
+    batch.boxes.add(planned)
+    delete_check(submit_check(batch, new_check(planned, 10), []))
+    assert NestBox.objects.filter(pk=planned.pk).exists()

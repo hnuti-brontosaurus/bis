@@ -628,12 +628,7 @@ class Command(BaseCommand):
             {
                 "worn_out": dict(name="dosloužila nebo je zničená", spot_reusable=True),
                 "lost": dict(name="ztracená, nenalezena natrvalo", spot_reusable=True),
-                "replaced": dict(name="nahrazena novou budkou", spot_reusable=True),
                 "tree_gone": dict(name="chybí strom", spot_reusable=False),
-                "unsuitable": dict(name="nevhodné místo", spot_reusable=False),
-                "not_allowed": dict(
-                    name="nepovoleno nebo se nebude nahrazovat", spot_reusable=False
-                ),
             },
         )
 

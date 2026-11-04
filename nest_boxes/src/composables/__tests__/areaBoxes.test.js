@@ -17,7 +17,6 @@ const box = (name, overrides = {}) => ({
   status: "in_use",
   type_id: 2,
   is_verified: true,
-  is_confirmed: true,
   condition: "fine",
   last_checked_on: null,
   ...overrides,

@@ -9,7 +9,7 @@ from categories.models import AdministrationUnitCategory, NestBoxType, RoleCateg
 from django.contrib.gis.geos import Point, Polygon
 from django.core.cache import cache
 from django.core.management import call_command
-from nest_boxes.models import Area, Batch, NestBox
+from nest_boxes.models import Area, Batch, Check, NestBox
 from regions.models import Region
 
 ORIGIN = Point(14.42, 50.08, srid=4326)
@@ -83,7 +83,7 @@ def area(unit):
 
 @pytest.fixture
 def make_box(area, types):
-    def make(name="1", location=ORIGIN, **kwargs):
+    def make(name="1", location=ORIGIN, verified=False, **kwargs):
         defaults = dict(
             area=area,
             name=name,
@@ -95,7 +95,19 @@ def make_box(area, types):
             opening=NestBox.Opening.FRONT,
             installed_on=date(2020, 3, 1),
         )
-        return NestBox.objects.create(**(defaults | kwargs))
+        box = NestBox.objects.create(**(defaults | kwargs))
+        if verified:
+            # Checked in the field long ago: verified, and no season's state
+            Check.objects.create(
+                box=box,
+                date=date(2020, 10, 1),
+                made_at=datetime(2020, 10, 1, 12, tzinfo=UTC),
+                found=Check.Found.FOUND,
+                cleaning=Check.Cleaning.CLEANED,
+                contents=[Check.Content.NOTHING],
+                is_confirmed=True,
+            )
+        return box
 
     return make
 

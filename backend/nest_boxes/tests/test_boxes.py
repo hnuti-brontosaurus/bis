@@ -4,8 +4,7 @@ import pytest
 from categories.models import NestBoxType
 from django.core.exceptions import ValidationError
 from nest_boxes.boxes import (
-    cancel_box,
-    confirm_box,
+    delete_box,
     duplicate_names,
     end_box,
     spacing_warnings,
@@ -73,30 +72,18 @@ def test_update_box_without_changes_writes_no_history(make_box, manager):
     assert not box.history.exists()
 
 
-def test_confirming_a_new_box_needs_its_values(make_box, manager):
-    box = make_box(is_confirmed=False, hole_size=None, opening="")
-
-    with pytest.raises(ValidationError) as error:
-        confirm_box(box, manager, date(2025, 10, 1))
-    assert set(error.value.message_dict) == {"hole_size", "opening"}
-
-    update_box(box, {"hole_size": 33, "opening": "roof"}, manager, date(2025, 10, 1))
-    confirm_box(box, manager, date(2025, 10, 1))
-    assert NestBox.objects.get(pk=box.pk).is_confirmed
-
-
-def test_end_and_cancel(make_box, manager):
+def test_end_and_delete(make_box, manager):
     box = make_box()
     with pytest.raises(ValidationError):
-        cancel_box(box, manager, date(2025, 10, 1))
+        delete_box(box)
 
     end_box(box, None, date(2025, 10, 1), manager)
     assert box.status == NestBox.Status.ENDED
     assert box.ended_on == date(2025, 10, 1)
 
     planned = make_box("2", status=NestBox.Status.PLANNED)
-    cancel_box(planned, manager, date(2025, 10, 1))
-    assert planned.status == NestBox.Status.CANCELLED
+    delete_box(planned)
+    assert not NestBox.objects.filter(pk=planned.pk).exists()
 
 
 def test_spacing_warnings_for_placing(area, make_box, types):

@@ -43,7 +43,7 @@ const emit = defineEmits(["focus"])
               {{ detail(box).text }}
             </span>
             <template v-else>{{ detail(box).text }}</template>
-            <span v-if="!box.is_confirmed" class="tag warn">nepotvrzená</span>
+            <span v-if="box.is_new" class="tag warn">nová</span>
           </div>
         </div>
         <RouterLink

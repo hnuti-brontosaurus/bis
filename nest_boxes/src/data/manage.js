@@ -55,8 +55,8 @@ export const updateBox = (id, values) =>
 export const getBoxHistory = id => client.get(`/boxes/${id}/history/`).then(data)
 export const endBox = (id, values) =>
   client.post(`/boxes/${id}/end/`, values).then(data)
-export const cancelBox = id => client.post(`/boxes/${id}/cancel/`).then(data)
-export const confirmBox = id => client.post(`/boxes/${id}/confirm/`).then(data)
+/** Only a planned box, which never hung; a box that did is ended instead. */
+export const deleteBox = id => client.delete(`/boxes/${id}/`)
 export const getBoxWarnings = params =>
   client
     .get("/boxes/warnings/", {

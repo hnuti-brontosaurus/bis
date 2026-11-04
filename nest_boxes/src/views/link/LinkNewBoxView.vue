@@ -36,6 +36,8 @@ const link = useLinkStore()
 
 const editing = link.boxes.find(box => box.id === route.query.budka)
 const id = editing?.id ?? uuid()
+// The check that hangs the box; a resend with the same ids updates both
+const checkId = editing?.check?.id ?? link.checks.get(id)?.id ?? uuid()
 const values = ref(
   editing
     ? boxValues(editing)
@@ -96,6 +98,13 @@ const save = async () => {
     type_id: type,
     material: fields.material ?? "",
     note: note.value,
+    check: {
+      id: checkId,
+      date: fields.installed_on,
+      made_at: new Date().toISOString(),
+      volunteer_nickname: link.profile.nickname,
+      volunteer_email: link.profile.email,
+    },
   })
   message.success("Budka je uložená. Potvrdí ji správce oblasti.")
   router.push({ name: "link" })
@@ -138,7 +147,7 @@ const save = async () => {
         <div>{{ duplicateNote }}</div>
       </div>
       <div class="field">
-        <label for="box-note">Poznámka pro správce</label>
+        <label for="box-note">Poznámka pro dobrovolníky</label>
         <n-input
           id="box-note"
           v-model:value="note"

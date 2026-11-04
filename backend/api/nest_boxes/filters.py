@@ -11,10 +11,12 @@ class SeasonStateFilter(filters.FilterSet):
     type = filters.ModelMultipleChoiceFilter(queryset=NestBoxType.objects.all())
     season_state = filters.MultipleChoiceFilter(choices=SeasonState.choices)
     administration_unit = filters.NumberFilter(field_name="area__administration_unit")
+    # An annotation, see NestBoxQuerySet.with_is_verified
+    is_verified = filters.BooleanFilter()
 
     class Meta:
         model = NestBox
-        fields = ("region", "is_verified")
+        fields = ("region",)
 
 
 class NestBoxFilter(SeasonStateFilter):
@@ -36,7 +38,7 @@ class NestBoxFilter(SeasonStateFilter):
 
     class Meta:
         model = NestBox
-        fields = ("area", "region", "is_verified", "is_confirmed", "condition")
+        fields = ("area", "region", "condition")
 
     def filter_bbox(self, queryset, name, value):
         try:
