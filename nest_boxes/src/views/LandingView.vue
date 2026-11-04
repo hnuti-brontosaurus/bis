@@ -71,8 +71,8 @@ const figures = computed(() => total.value && describeFigures(total.value))
           ptačích budek po celém Česku
         </h1>
         <p class="lead">
-          Budky věší a každý podzim čistí dobrovolníci z Hnutí Brontosaurus. Podívej se,
-          kde visí a v kolika se letos hnízdilo.
+          Budky věší a čistí dobrovolníci z Hnutí Brontosaurus. Podívej se, kde jsou a v
+          kolika se letos hnízdilo.
         </p>
         <div class="cta">
           <RouterLink v-slot="{ navigate }" :to="{ name: 'areas' }" custom>

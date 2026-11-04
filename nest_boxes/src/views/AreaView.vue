@@ -139,6 +139,7 @@ const exportParams = computed(() => ({
 }))
 
 const selectBox = async id => {
+  if (id === selectedId.value) router.push({ name: "box", params: { id } })
   selectedId.value = id
   await nextTick()
   document.querySelector(`[data-box-row="${id}"]`)?.scrollIntoView({ block: "nearest" })

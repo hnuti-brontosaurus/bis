@@ -239,12 +239,16 @@ const scrollToRow = async selector => {
   document.querySelector(selector)?.scrollIntoView({ block: "nearest" })
 }
 
+// A second click on a marker opens it; the area page is for managers only
 const selectArea = id => {
+  if (id === selectedAreaId.value && auth.isManager)
+    router.push({ name: "area", params: { id } })
   selectedAreaId.value = id
   scrollToRow(`[data-area-row="${id}"]`)
 }
 
 const selectBox = id => {
+  if (id === selectedBoxId.value) router.push({ name: "box", params: { id } })
   selectedBoxId.value = id
   scrollToRow(`[data-box-row="${id}"]`)
 }
@@ -364,7 +368,7 @@ const focusBox = box => {
             filterable
             clearable
           />
-          <div v-if="!showsStates" class="season-stepper">
+          <div v-if="!showsStates && season" class="season-stepper">
             <n-button
               size="small"
               quaternary
