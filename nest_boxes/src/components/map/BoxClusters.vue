@@ -4,8 +4,10 @@ import { Marker } from "maplibre-gl"
 
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import {
+  boundsOf,
   bubbleDiameter,
   clusterByDistance,
+  FIT_PADDING,
   MERGE_GAP,
 } from "@/components/map/geometry.js"
 import { areaBubbleElement, boxMarkerElement } from "@/components/map/markers.js"
@@ -16,12 +18,12 @@ const CLUSTER_UNTIL_ZOOM = 14
 const props = defineProps({
   // [{ id, name, location: GeoJSON Point, state: one of BOX_STATES, area_id }]
   boxes: { type: Array, required: true },
-  selectedIds: { type: Array, default: () => [] },
+  selectedId: { type: String, default: null },
   // area id → name, which labels a bubble of one area's boxes
   areaNames: { type: Map, required: true },
 })
 
-// The ids of the boxes under the marker; the panel acts on them
+// The id of a lone box; a cluster zooms in instead
 const emit = defineEmits(["select"])
 
 const { map } = inject("map")
@@ -48,7 +50,7 @@ const clusterElement = items => {
     diameter: bubbleDiameter(items.length),
     name: areaIds.size === 1 ? props.areaNames.get(items[0].area_id) : "",
     merged: true,
-    selected: items.some(box => props.selectedIds.includes(box.id)),
+    selected: items.some(box => box.id === props.selectedId),
   })
 }
 
@@ -67,14 +69,15 @@ const render = () => {
         ? clusterElement(items)
         : boxMarkerElement({
             state: box.state,
-            selected: props.selectedIds.includes(box.id),
+            selected: box.id === props.selectedId,
           })
     element.addEventListener("click", event => {
       event.stopPropagation()
-      emit(
-        "select",
-        items.map(item => item.id),
-      )
+      if (items.length > 1)
+        map.value.fitBounds(boundsOf(items.map(item => item.location)), {
+          padding: FIT_PADDING,
+        })
+      else emit("select", box.id)
     })
     return new Marker({ element, anchor: "center" })
       .setLngLat(map.value.unproject([cluster.x, cluster.y]))
@@ -82,7 +85,7 @@ const render = () => {
   })
 }
 
-watch([() => props.boxes, () => props.selectedIds, zoom], render, { immediate: true })
+watch([() => props.boxes, () => props.selectedId, zoom], render, { immediate: true })
 
 onBeforeUnmount(() => {
   map.value.off("zoomend", onZoom)
@@ -94,7 +97,7 @@ onBeforeUnmount(() => {
   <BoxMarkers
     v-if="!clustered"
     :boxes="boxes"
-    :selected-id="selectedIds.length === 1 ? selectedIds[0] : null"
-    @select="emit('select', [$event])"
+    :selected-id="selectedId"
+    @select="emit('select', $event)"
   />
 </template>

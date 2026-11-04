@@ -74,7 +74,8 @@ onMounted(async () => {
     map.value.addControl(new NavigationControl({ showCompass: false }))
   resizeObserver = new ResizeObserver(() => map.value.resize())
   resizeObserver.observe(container.value)
-  map.value.once("load", () => emit("ready", map.value))
+  // Camera moves work before "load", which waits for slow tiles too
+  emit("ready", map.value)
   stopStyleWatch = watch(style, value => map.value.setStyle(value))
   stopInsetWatch = watch(
     () => props.bottomInset,

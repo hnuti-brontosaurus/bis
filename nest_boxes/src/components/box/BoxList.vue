@@ -12,7 +12,7 @@ const PAGE = 20
 const props = defineProps({
   // [{ key, title, boxes }]
   groups: { type: Array, required: true },
-  selectedIds: { type: Array, default: () => [] },
+  selectedId: { type: String, default: null },
   // box => { text, tone }, see boxRowDetail in composables/areaBoxes.js
   detail: { type: Function, required: true },
   // box => one of BOX_STATES, see map/markers.js
@@ -49,14 +49,11 @@ watch(
 )
 
 // A row picked on the map has to be there to scroll to
-watch(
-  () => props.selectedIds,
-  ids => {
-    const order = props.groups.flatMap(group => group.boxes.map(box => box.id))
-    const index = order.findIndex(id => ids.includes(id))
-    if (index >= limit.value) limit.value = Math.ceil((index + 1) / PAGE) * PAGE
-  },
-)
+watch([() => props.selectedId, () => props.groups], ([selected, groups]) => {
+  const order = groups.flatMap(group => group.boxes.map(box => box.id))
+  const index = order.indexOf(selected)
+  if (index >= limit.value) limit.value = Math.ceil((index + 1) / PAGE) * PAGE
+})
 </script>
 
 <template>
@@ -67,7 +64,7 @@ watch(
         v-for="box in group.shown"
         :key="box.id"
         class="box-row"
-        :class="{ selected: selectedIds.includes(box.id) }"
+        :class="{ selected: box.id === selectedId }"
         :data-box-row="box.id"
         @click="emit('focus', box)"
       >

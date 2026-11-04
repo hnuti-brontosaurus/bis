@@ -3,8 +3,10 @@ import { inject, onBeforeUnmount, ref, watch } from "vue"
 import { Marker } from "maplibre-gl"
 
 import {
+  boundsOf,
   bubbleDiameter,
   clusterByDistance,
+  FIT_PADDING,
   MERGE_GAP,
 } from "@/components/map/geometry.js"
 import { areaBubbleElement } from "@/components/map/markers.js"
@@ -14,10 +16,10 @@ const props = defineProps({
   // [{ area: PublicArea with a marker, count, done, attention }], see
   // composables/statistics.js; the rest of `count` is still to check
   areas: { type: Array, required: true },
-  selectedIds: { type: Array, default: () => [] },
+  selectedId: { type: Number, default: null },
 })
 
-// The ids of the areas under the bubble; the panel acts on them
+// The id of the one area under the bubble; a merged bubble zooms in instead
 const emit = defineEmits(["select"])
 
 const { map } = inject("map")
@@ -50,13 +52,14 @@ const render = () => {
       name: biggest.area.name,
       extra: merged ? `· ${areaCountLabel(cluster.items.length)}` : "",
       merged,
-      selected: cluster.items.some(item => props.selectedIds.includes(item.area.id)),
+      selected: cluster.items.some(item => item.area.id === props.selectedId),
     })
     element.addEventListener("click", () =>
-      emit(
-        "select",
-        cluster.items.map(item => item.area.id),
-      ),
+      merged
+        ? map.value.fitBounds(boundsOf(cluster.items.map(item => item.area.marker)), {
+            padding: FIT_PADDING,
+          })
+        : emit("select", biggest.area.id),
     )
     return new Marker({ element, anchor: "center" })
       .setLngLat(map.value.unproject([cluster.x, cluster.y]))
@@ -64,7 +67,7 @@ const render = () => {
   })
 }
 
-watch([() => props.areas, () => props.selectedIds, zoom], render, { immediate: true })
+watch([() => props.areas, () => props.selectedId, zoom], render, { immediate: true })
 
 onBeforeUnmount(() => {
   map.value.off("zoomend", onZoom)

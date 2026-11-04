@@ -69,8 +69,8 @@ const { season, areas, statistics } = usePublicData()
 
 const unitId = ref(null)
 // What a click on the map picked; the panel's rows act on it
-const selectedAreaIds = ref([])
-const selectedBoxIds = ref([])
+const selectedAreaId = ref(null)
+const selectedBoxId = ref(null)
 const map = shallowRef(null)
 const creatingArea = ref(false)
 const view = ref("states")
@@ -241,24 +241,24 @@ const scrollToRow = async selector => {
   document.querySelector(selector)?.scrollIntoView({ block: "nearest" })
 }
 
-const selectAreas = ids => {
-  selectedAreaIds.value = ids
-  scrollToRow(ids.map(id => `[data-area-row="${id}"]`).join(","))
+const selectArea = id => {
+  selectedAreaId.value = id
+  scrollToRow(`[data-area-row="${id}"]`)
 }
 
-const selectBoxes = ids => {
-  selectedBoxIds.value = ids
-  scrollToRow(ids.map(id => `[data-box-row="${id}"]`).join(","))
+const selectBox = id => {
+  selectedBoxId.value = id
+  scrollToRow(`[data-box-row="${id}"]`)
 }
 
 const focusArea = areaId => {
-  selectedAreaIds.value = [areaId]
+  selectedAreaId.value = areaId
   const area = areasById.value.get(areaId)
   if (area.marker) map.value.flyTo({ center: area.marker.coordinates, zoom: 11 })
 }
 
 const focusBox = box => {
-  selectedBoxIds.value = [box.id]
+  selectedBoxId.value = box.id
   map.value.easeTo({
     center: box.location.coordinates,
     zoom: Math.max(map.value.getZoom(), 16),
@@ -273,16 +273,16 @@ const focusBox = box => {
         <AreaBubbles
           v-if="!showsBoxes"
           :areas="bubbles"
-          :selected-ids="selectedAreaIds"
-          @select="selectAreas"
+          :selected-id="selectedAreaId"
+          @select="selectArea"
         />
         <template v-else>
           <PlannedBoxes :boxes="plannedBoxes" />
           <BoxClusters
             :boxes="markerBoxes"
-            :selected-ids="selectedBoxIds"
+            :selected-id="selectedBoxId"
             :area-names="areaNames"
-            @select="selectBoxes"
+            @select="selectBox"
           />
         </template>
       </BaseMap>
@@ -418,7 +418,7 @@ const focusBox = box => {
     <BoxList
       v-else-if="showsBoxes"
       :groups="boxGroups"
-      :selected-ids="selectedBoxIds"
+      :selected-id="selectedBoxId"
       :detail="detail"
       :state-of="box => markerState(box, null)"
       @focus="focusBox"
@@ -439,7 +439,7 @@ const focusBox = box => {
               v-for="row in statesRows"
               :key="row.area_id"
               :data-area-row="row.area_id"
-              :class="{ selected: selectedAreaIds.includes(row.area_id) }"
+              :class="{ selected: selectedAreaId === row.area_id }"
               @click="focusArea(row.area_id)"
             >
               <td class="first">
@@ -479,7 +479,7 @@ const focusBox = box => {
               v-for="row in statisticsRows"
               :key="row.area.id"
               :data-area-row="row.area.id"
-              :class="{ selected: selectedAreaIds.includes(row.area.id) }"
+              :class="{ selected: selectedAreaId === row.area.id }"
               @click="focusArea(row.area.id)"
             >
               <td class="first">

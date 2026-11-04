@@ -621,9 +621,9 @@ mockups in `mockups/`). It shares no code with the cookbook.
   managers only: area bubbles from the public endpoints, or every manageable box
   from `boxes/map/` (an unpaginated light serializer; the box page loads the
   rest). It reuses the area page's `BoxFilters` / `BoxList`; `BoxList` renders
-  20 rows and more as they scroll into sight. A click on any map only selects
-  rows in the panel (a merged bubble or cluster all of its rows); opening and
-  acting start from the list. Boxes cluster below zoom 14 the way areas merge
+  20 rows and more as they scroll into sight. A click on a single marker or
+  bubble only selects its row in the panel, and a merged bubble or cluster
+  zooms to fit its members; opening and acting start from the list. Boxes cluster below zoom 14 the way areas merge
   (`BoxClusters`, same `MERGE_GAP`, a merged bubble's thick outline). The landing map
   groups by region instead (`public/regions/`: outline, a point inside, box
   count), so the public never gets a box's coordinates.

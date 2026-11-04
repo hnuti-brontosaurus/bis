@@ -50,12 +50,14 @@ export const test = base.extend({
       name: `E2E ${randomUUID().slice(0, 8)}`,
       administration_unit_id: seeded.administration_unit.id,
     })
-    const box = (name, lng) =>
+    // Somewhere of its own in Czechia, so the maps don't stack the test areas
+    const [lng, lat] = [13 + Math.random() * 4, 49 + Math.random()]
+    const box = (name, east) =>
       api.post("/boxes/", {
         area_id: area.id,
         name,
         status: "in_use",
-        location: { type: "Point", coordinates: [lng, 50.07] },
+        location: { type: "Point", coordinates: [lng + east, lat] },
         type_id: 2,
         hole_shape: "round",
         hole_size: 33,
@@ -63,13 +65,13 @@ export const test = base.extend({
         installed_on: "2020-03-01",
       })
     const boxes = {}
-    for (const [name, lng] of [
-      ["1", 14.36],
-      ["2", 14.3612],
-      ["3", 14.3624],
+    for (const [name, east] of [
+      ["1", 0],
+      ["2", 0.0012],
+      ["3", 0.0024],
     ])
-      boxes[name] = await box(name, lng)
-    await use({ ...area, boxes })
+      boxes[name] = await box(name, east)
+    await use({ ...area, boxes, box })
   },
 })
 

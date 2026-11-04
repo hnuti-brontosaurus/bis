@@ -22,6 +22,9 @@ export const circlePolygon = ([lng, lat], radius, steps = 48) => {
   return { type: "Polygon", coordinates: [ring] }
 }
 
+// Around the members a merged bubble zooms to, in px
+export const FIT_PADDING = 64
+
 // How close two bubbles' edges may come before they merge into one, in px
 export const MERGE_GAP = 24
 

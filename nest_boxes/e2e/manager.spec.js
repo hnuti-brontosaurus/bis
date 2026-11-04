@@ -225,4 +225,33 @@ test.describe("the map of areas", () => {
     await page.goBack()
     await expect(page.getByRole("radio", { name: "Budky" })).toBeChecked()
   })
+
+  test("zooms into a cluster and selects a lone box", async ({ page, area }) => {
+    const marked = await area.box(`M${area.id}`, 0.0006)
+    const other = await area.box(`N${area.id}`, 0.0018)
+    await page.goto("/budky/mapa/?mode=boxes")
+    const search = page.getByPlaceholder("Hledat označení")
+    await search.fill(marked.name)
+    await row(page, marked).click()
+    // A marker is a zero-size anchor; its dot and label are what shows
+    const marker = name => page.locator(".box-marker .label", { hasText: name })
+    await expect(marker(marked.name)).toBeVisible()
+    await search.fill("")
+
+    const cluster = page
+      .locator(".area-bubble.merged", { hasText: area.name })
+      .locator(".bubble")
+    await expect(async () => {
+      await page.getByRole("button", { name: "Zoom out" }).click()
+      await expect(cluster).toBeVisible({ timeout: 1_000 })
+    }).toPass()
+    await expect(cluster).toHaveText("5")
+
+    await cluster.click()
+    await expect(marker(other.name)).toBeVisible()
+    await expect(page.locator(".box-row.selected")).toHaveCount(1)
+    await marker(other.name).click()
+    await expect(row(page, other)).toHaveClass(/selected/)
+    await expect(row(page, marked)).not.toHaveClass(/selected/)
+  })
 })

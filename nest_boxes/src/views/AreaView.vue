@@ -64,7 +64,6 @@ const { data, reload } = useLoad(async () => {
 
 const map = shallowRef(null)
 const selectedId = ref(null)
-const selectedIds = computed(() => (selectedId.value ? [selectedId.value] : []))
 const filters = ref(defaultFilters())
 const dialogs = ref({ area: false, batch: false, plan: false, gpx: false })
 
@@ -329,7 +328,7 @@ watch(batchId, () => (selectedId.value = null))
             ]
           : [{ key: 'all', title: 'Budky', boxes: groups.outside }]
       "
-      :selected-ids="selectedIds"
+      :selected-id="selectedId"
       :detail="detail"
       :state-of="box => markerState(box, batch)"
       @focus="focusBox"
