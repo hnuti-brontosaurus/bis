@@ -782,6 +782,11 @@ are regexes over note vocabulary and dates. Non-obvious parts:
   (`worn_out`) and starts a new one with the same name and place. `old_id` is
   unique, so only the box hanging now carries it. A note calling the spot
   unsuitable or not allowed (`notes.asks_to_move`) leaves the box as it is.
+- `note` is read by volunteers, so a box note that only says what the fields
+  now hold (material, opening, a previous name, a replacement year that split
+  the box) or that it was once found or measured stays out of it
+  (`notes.is_recorded`). To-dos for the old app's managers stay in: a
+  volunteer at the box is who can act on them.
 - The 16 November 2025 Mikulčický batch is found by its date and a per-area
   occupied share under 25 %, not by area names; its blanks there are dropped.
 - Area units are guessed from BIS activity (events organized since 2022, board

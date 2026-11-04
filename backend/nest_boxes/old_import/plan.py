@@ -353,8 +353,6 @@ class Planner:
                     filter(None, [box.note, f"otvor ve staré databázi: {hole}"])
                 )
                 self.undecided["hole unreadable, kept in the note"].append(box.old_id)
-        if box_note := (row["note"] or "").strip():
-            box.note = "\n".join(filter(None, [box.note, box_note]))
         return box
 
     def _attributes(self, box, texts):
@@ -496,7 +494,14 @@ class Planner:
             else:
                 last.status = Status.TAKEN_DOWN
                 self.report["boxes taken down by the repair location"] += 1
-        texts = [row["note"] or ""] + [c["note"] for c in rows]
+        box_note = (row["note"] or "").strip()
+        if notes.is_recorded(box_note) and (
+            not box_note_year or box_note_year in replacement_years
+        ):
+            self.report["box notes left out, their values are in the fields"] += 1
+        else:
+            last.note = "\n".join(filter(None, [last.note, box_note]))
+        texts = [box_note] + [c["note"] for c in rows]
         for segment in segments:
             self._attributes(segment, texts)
             left = segment.checks[-1].reading.box_left if segment.checks else ""

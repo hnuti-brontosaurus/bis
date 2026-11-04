@@ -187,7 +187,7 @@ OPENINGS = (
     (Opening.NONE, r"nemá otvírání"),
     (
         Opening.ROOF,
-        r"\b(horní|vrchní)\b(?! (cest|hřeb))|otvírání nahoře|otevírání shora",
+        r"\b(horní|vrchní)\b(?! (cest|hřeb))|(otvírání|otevírání) (nahoře|shora)",
     ),
     (Opening.FRONT, r"^\W*přední\b(?! (stěn|stran))|přední (otvírání|otvířání)"),
 )
@@ -212,9 +212,29 @@ def material(note):
 
 PREVIOUS_NAMES = re.compile(
     r"bývalá (\w+)|staré číslo (\w+)|^stara? (\w+) nově|^stara (\w+)$"
-    r"|původně zaznačena jako (\w+)",
+    r"|původně zaznačena jako (\w+)|místo staré (\w+)|^stara? budka č\.? ?(\w+)$"
+    r"|^náhrada č\.? ?(\w+)$",
     re.IGNORECASE,
 )
+
+# What a box note may say that the box's fields or its checks already hold:
+# material, a type the old record names too, opening, a replacement year, a
+# previous name, and that it was found or measured once
+RECORDED = re.compile(
+    r"dřevocement\w*|dřevěn\w*|plastov\w*|barel\w*|sýkorník\w*|\bsov[ay]\b"
+    r"|přední|horní|vrchní|otv[íi][rř]\w*|otevírání|nahoře|shora|nemá"
+    r"|v[yý]měn\w*|za novou|\b20\d\d\b|\d{1,2}\.\s?\d{1,2}\.\s?\d{4}"
+    r"|nově|nalezen\w*|zaměřen\w*|\b(pro|z|a|budka)\b|[\s,.\-/]"
+)
+
+
+def is_recorded(note):
+    """Nothing in the note that a volunteer would miss once its values are in the box's fields."""
+    key = normalized(note)
+    names_opening = re.search(r"přední|horní|vrchní|otv[íi][rř]|otevír", key)
+    if names_opening and opening(note) is None:
+        return False
+    return bool(key) and not RECORDED.sub("", PREVIOUS_NAMES.sub("", key))
 
 
 def previous_names(note):

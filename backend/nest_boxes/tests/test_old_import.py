@@ -9,6 +9,7 @@ from categories.models import AdministrationUnitCategory
 from django.core.management import call_command
 from nest_boxes.models import Area, Check, NestBox
 from nest_boxes.old_import.dump import parse_dump
+from nest_boxes.old_import.notes import is_recorded
 from nest_boxes.old_import.values import parse_hole, parse_name
 
 DUMP = r"""-- Adminer 4.8.1 MySQL dump
@@ -115,6 +116,24 @@ def test_parse_name_moves_old_numbers_aside():
     assert parse_name("budka od Někoho") == ("bez označení", "", "budka od Někoho")
 
 
+@pytest.mark.parametrize(
+    "note, recorded",
+    [
+        ("Dřevěná, otvírání shora", True),
+        ("plastová budka pro sovy", True),
+        ("bývalá 12", True),
+        ("nalezena 3. 4. 2019", True),
+        ("přední, vysoko", False),
+        ("přední/vrchní otvírání", False),
+        ("otvor odhadnut, přeměřit", False),
+        ("nemá ochranu", False),
+        ("", False),
+    ],
+)
+def test_box_notes_left_out_are_only_those_the_fields_hold(note, recorded):
+    assert is_recorded(note) == recorded
+
+
 def test_import(run_import):
     budkar = User.objects.create(email="budkar@example.com")
 
@@ -141,6 +160,8 @@ def test_import(run_import):
             "velky_sykornik",
         )
         assert box.opening == NestBox.Opening.ROOF
+        # The opening was all its box note said
+        assert box.note == ""
         assert box.elevation is None
         assert not box.is_verified
 
