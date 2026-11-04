@@ -97,12 +97,16 @@ const showsStates = computed(
   () => auth.isManager && !showsBoxes.value && view.value === "states",
 )
 
+const shownSeason = computed(() =>
+  showsStates.value || showsBoxes.value ? currentSeason() : season.value,
+)
+
 const types = computed(() => categories.value?.types ?? [])
 const unitOptions = computed(() =>
   unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
 )
 const seasonOptions = computed(() =>
-  (statistics.value?.seasons ?? [currentSeason()]).map(value => ({
+  (statistics.value?.seasons ?? []).map(value => ({
     label: `Sezóna ${seasonLabel(value)}`,
     value,
   })),
@@ -299,9 +303,7 @@ const focusBox = box => {
     </template>
     <template #summary>
       <div class="summary">
-        <p class="eyebrow">
-          Sezóna {{ seasonLabel(showsStates || showsBoxes ? currentSeason() : season) }}
-        </p>
+        <p v-if="shownSeason" class="eyebrow">Sezóna {{ seasonLabel(shownSeason) }}</p>
         <h2 data-testid="areas-summary">{{ heading }}</h2>
       </div>
     </template>

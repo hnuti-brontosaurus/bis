@@ -51,7 +51,10 @@ export const listPublicRegions = () =>
  * @property {SeasonFigures} total
  */
 
-/** @returns {Promise<Statistics>} */
+/**
+ * @param {number} [season] without one the server's default, see `default_season`
+ * @returns {Promise<Statistics>}
+ */
 export const getStatistics = season =>
   client.get("/public/statistics/", { params: { season } }).then(({ data }) => data)
 

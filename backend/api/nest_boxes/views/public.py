@@ -18,9 +18,9 @@ from django.db.models import Count
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from nest_boxes.models import Area, Batch, Check, HelpArticle, HelpImage, in_use
+from nest_boxes.models import Area, Batch, HelpArticle, HelpImage, in_use
 from nest_boxes.permissions import can_manage_all, manageable_areas
-from nest_boxes.statistics import season_statistics
+from nest_boxes.statistics import default_season, season_statistics
 from regions.models import Region
 from rest_framework import mixins, viewsets
 from rest_framework.fields import IntegerField
@@ -82,10 +82,12 @@ class PublicRegionsView(NestBoxAPIMixin, APIView):
 
 class StatisticsView(NestBoxAPIMixin, APIView):
     def get(self, request):
-        season = IntegerField(min_value=1900).run_validation(
-            request.query_params.get("season", Check.current_season())
+        season = request.query_params.get("season")
+        statistics = season_statistics(
+            default_season()
+            if season is None
+            else IntegerField(min_value=1900).run_validation(season)
         )
-        statistics = season_statistics(season)
         for row in statistics["areas"]:
             row["area"] = StatisticsAreaSerializer(row["area"]).data
         return Response(statistics)

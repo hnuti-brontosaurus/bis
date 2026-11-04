@@ -80,10 +80,22 @@ def _states_per_area(season):
     }
 
 
-def _seasons():
-    """The newest first, from the first season anything was checked in."""
+def default_season():
+    """The season shown unless another is asked for: the current one once anything
+    is checked in it, until then the one before, which a new season on 1 July
+    would otherwise replace with zeros.
+
+    Any check counts, pending or imported too: a pending one already shows in the
+    current season's pie, an imported one is field work done in the old app.
+    """
     current = Check.current_season()
-    first = Check.objects.aggregate(first=Min("season"))["first"] or current
+    return current if Check.objects.filter(season=current).exists() else current - 1
+
+
+def _seasons():
+    """The newest first, from the first season anything was checked in, or else the default one."""
+    current = Check.current_season()
+    first = Check.objects.aggregate(first=Min("season"))["first"] or default_season()
     return list(range(current, first - 1, -1))
 
 
