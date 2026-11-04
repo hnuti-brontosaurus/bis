@@ -16,7 +16,7 @@ test.describe("the area page", () => {
     await page.goto(`/budky/oblast/${area.id}/`)
     await expect(page.getByRole("heading", { name: area.name })).toBeVisible()
 
-    await page.getByRole("button", { name: "Vytvořit obchůzku" }).click()
+    await page.getByRole("button", { name: "Nová obchůzka" }).click()
     await expect(page.getByText("Navržených budek: 3")).toBeVisible()
     await page.getByLabel("Název").fill("Podzim E2E manažer")
     await page
@@ -53,7 +53,7 @@ test.describe("the area page", () => {
     await expect(page.getByText("Budky · 1")).toBeVisible()
     await page.getByPlaceholder("Hledat označení").fill("")
 
-    await page.getByRole("button", { name: "Naplánovat budku" }).click()
+    await page.getByRole("button", { name: "Nová budka" }).click()
     const dialog = page.getByRole("dialog")
     await dialog.getByLabel("Označení", { exact: true }).fill("P9")
     await dialog.getByTestId("map").click()

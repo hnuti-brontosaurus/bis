@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
-import { NButton, NPopconfirm, NSelect, useMessage } from "naive-ui"
+import { NButton, NSelect, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
@@ -36,7 +36,6 @@ import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
 import {
   addBatchBoxes,
-  closeBatch,
   exportUrl,
   getArea,
   getCategories,
@@ -170,18 +169,6 @@ const move = async (box, into) => {
   }
 }
 
-const close = async () => {
-  try {
-    await closeBatch(batch.value.id)
-    message.success("Obchůzka je uzavřená, odkaz už nic nepřijímá.")
-    await router.replace({ query: {} })
-    await reload()
-    auth.refresh()
-  } catch (error) {
-    reportError(error)
-  }
-}
-
 const onBatchCreated = async created => {
   await reload()
   await selectBatch(created.id)
@@ -231,6 +218,7 @@ watch(batchId, () => (selectedId.value = null))
 
     <section class="section batch" data-testid="batch-section">
       <template v-if="batch">
+        <p class="eyebrow">Otevřené obchůzky</p>
         <div class="row">
           <n-select
             v-if="batches.length > 1"
@@ -246,53 +234,33 @@ watch(batchId, () => (selectedId.value = null))
             :to="{ name: 'link', params: { token: batch.token } }"
             >{{ batch.name }}</RouterLink
           >
-          <n-button size="small" quaternary @click="dialogs.batch = true">
-            <template #icon><AppIcon name="plus" /></template>
-            Nová obchůzka
-          </n-button>
-        </div>
-        <BatchProgress :batch="batch" />
-        <BatchLink :token="batch.token" />
-        <div class="row">
           <RouterLink
             v-slot="{ navigate }"
             :to="{ name: 'batch', params: { id: batch.id } }"
             custom
           >
             <n-button type="primary" size="small" @click="navigate">
-              Zkontrolovat a potvrdit
+              Potvrdit obchůzku
             </n-button>
           </RouterLink>
-          <n-popconfirm @positive-click="close">
-            <template #trigger>
-              <n-button size="small">Uzavřít</n-button>
-            </template>
-            Uzavřít obchůzku bez potvrzení? Odkaz přestane přijímat kontroly, ty
-            čekající zůstanou nepotvrzené.
-          </n-popconfirm>
-          <n-button
-            class="push-end"
-            size="small"
-            quaternary
-            @click="dialogs.plan = true"
-          >
-            <template #icon><AppIcon name="plus" /></template>
-            Naplánovat budku
-          </n-button>
         </div>
+        <BatchProgress :batch="batch" />
+        <BatchLink :token="batch.token" />
       </template>
-      <template v-else>
-        <div class="row">
-          <n-button type="primary" size="small" @click="dialogs.batch = true">
-            <template #icon><AppIcon name="plus" /></template>
-            Vytvořit obchůzku
-          </n-button>
-          <n-button size="small" quaternary @click="dialogs.plan = true">
-            <template #icon><AppIcon name="plus" /></template>
-            Naplánovat budku
-          </n-button>
-        </div>
-      </template>
+      <div class="row">
+        <n-button
+          :type="batch ? 'default' : 'primary'"
+          size="small"
+          @click="dialogs.batch = true"
+        >
+          <template #icon><AppIcon name="plus" /></template>
+          Nová obchůzka
+        </n-button>
+        <n-button size="small" quaternary @click="dialogs.plan = true">
+          <template #icon><AppIcon name="plus" /></template>
+          Nová budka
+        </n-button>
+      </div>
     </section>
 
     <section class="section filters">
@@ -401,10 +369,6 @@ watch(batchId, () => (selectedId.value = null))
   gap: 12px;
   padding: 14px 20px;
   border-top: 1px solid var(--line);
-}
-
-.push-end {
-  margin-left: auto;
 }
 
 .batch-name {
