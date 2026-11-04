@@ -21,6 +21,11 @@ export const routes = [
     component: () => import("@/views/AreasMapView.vue"),
   },
   {
+    path: "/statistiky/",
+    name: "statistics",
+    component: () => import("@/views/StatisticsView.vue"),
+  },
+  {
     path: "/chci-vyvesit/",
     name: "want_to_hang",
     component: () => import("@/views/WantToHangView.vue"),

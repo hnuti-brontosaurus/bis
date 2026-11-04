@@ -59,4 +59,9 @@ export const listPublicRegions = () =>
 export const getStatistics = season =>
   client.get("/public/statistics/", { params: { season } }).then(({ data }) => data)
 
+export const getSeasonStatistics = type =>
+  client
+    .get("/public/statistics/seasons/", { params: { type } })
+    .then(({ data }) => data)
+
 export const sendWantToHang = payload => client.post("/public/want_to_hang/", payload)

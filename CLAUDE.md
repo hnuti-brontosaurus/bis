@@ -626,6 +626,11 @@ mockups in `mockups/`). It shares no code with the cookbook.
   (`BoxClusters`, same `MERGE_GAP`, a merged bubble's thick outline). The landing map
   groups by region instead (`public/regions/`: outline, a point inside, box
   count), so the public never gets a box's coordinates.
+- **Statistics across seasons** (`StatisticsView`, `/statistiky/`, public) come
+  from `public/statistics/seasons/` (`statistics_by_season`): raw counts per area,
+  one entry per season aligned with `seasons`; `seasonTable` groups them by unit
+  and sums the totals, ratios are computed from the sums. Both statistics
+  endpoints take `type`.
 - **Built static** goes to `nest_boxes/dist`, which CI copies to
   `backend/nest_boxes_static/`; production nginx serves it like the
   cookbook's (`deployments/base`).

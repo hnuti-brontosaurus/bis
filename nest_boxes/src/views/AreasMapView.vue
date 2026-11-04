@@ -390,6 +390,13 @@ const focusBox = box => {
             </n-button>
           </div>
         </div>
+        <RouterLink
+          v-if="!showsStates"
+          class="all-seasons small"
+          :to="{ name: 'statistics' }"
+        >
+          Všechny sezóny v jedné tabulce<AppIcon name="chev" />
+        </RouterLink>
         <div v-if="showsStates" class="chips">
           <n-popselect
             v-model:value="filters.state"
@@ -635,6 +642,19 @@ const focusBox = box => {
 
 .footnote {
   padding: 12px 20px;
+}
+
+.all-seasons {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+
+.all-seasons .icon {
+  width: 14px;
+  height: 14px;
 }
 
 .title-row {

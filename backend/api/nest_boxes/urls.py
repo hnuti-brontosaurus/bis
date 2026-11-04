@@ -24,6 +24,7 @@ urlpatterns = [
     path("whoami/", public.WhoAmIView.as_view()),
     path("public/regions/", public.PublicRegionsView.as_view()),
     path("public/statistics/", public.StatisticsView.as_view()),
+    path("public/statistics/seasons/", public.SeasonStatisticsView.as_view()),
     path("public/want_to_hang/", public.WantToHangView.as_view()),
     path("categories/", public.CategoriesView.as_view()),
     path("links/<uuid:token>/", links.LinkView.as_view()),

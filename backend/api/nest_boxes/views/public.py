@@ -18,12 +18,25 @@ from django.db.models import Count
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-from nest_boxes.models import Area, Batch, HelpArticle, HelpImage, NestBox, in_use
+from nest_boxes.models import (
+    Area,
+    Batch,
+    HelpArticle,
+    HelpImage,
+    NestBox,
+    NestBoxType,
+    in_use,
+)
 from nest_boxes.permissions import can_manage_all, manageable_areas
-from nest_boxes.statistics import default_season, season_statistics
+from nest_boxes.statistics import (
+    default_season,
+    season_statistics,
+    statistics_by_season,
+)
 from regions.models import Region
 from rest_framework import mixins, viewsets
 from rest_framework.fields import IntegerField
+from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.throttling import UserRateThrottle
@@ -92,17 +105,36 @@ class PublicRegionsView(NestBoxAPIMixin, APIView):
         return Response([*PublicRegionSerializer(regions, many=True).data, abroad])
 
 
+def _types(request):
+    return PrimaryKeyRelatedField(
+        queryset=NestBoxType.objects.all(), many=True, required=False
+    ).run_validation(request.query_params.getlist("type"))
+
+
+def _serialize_areas(statistics):
+    for row in statistics["areas"]:
+        row["area"] = StatisticsAreaSerializer(row["area"]).data
+    return Response(statistics)
+
+
 class StatisticsView(NestBoxAPIMixin, APIView):
     def get(self, request):
         season = request.query_params.get("season")
-        statistics = season_statistics(
-            default_season()
-            if season is None
-            else IntegerField(min_value=1900).run_validation(season)
+        return _serialize_areas(
+            season_statistics(
+                (
+                    default_season()
+                    if season is None
+                    else IntegerField(min_value=1900).run_validation(season)
+                ),
+                _types(request),
+            )
         )
-        for row in statistics["areas"]:
-            row["area"] = StatisticsAreaSerializer(row["area"]).data
-        return Response(statistics)
+
+
+class SeasonStatisticsView(NestBoxAPIMixin, APIView):
+    def get(self, request):
+        return _serialize_areas(statistics_by_season(_types(request)))
 
 
 class WantToHangThrottle(UserRateThrottle):

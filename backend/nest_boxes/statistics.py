@@ -18,11 +18,12 @@ FIGURES = (
 )
 
 
-def boxes_in_season(season):
+def boxes_in_season(season, types=()):
     """Installed before the season ended, not retired before it started, needing cleaning."""
     start, end = Check.season_start(season), Check.season_end(season)
+    boxes = NestBox.objects.filter(type__in=types) if types else NestBox.objects.all()
     return (
-        NestBox.objects.exclude(status=NestBox.Status.PLANNED)
+        boxes.exclude(status=NestBox.Status.PLANNED)
         .exclude(type__needs_cleaning=False)
         .filter(Q(installed_on=None) | Q(installed_on__lte=end))
         .filter(
@@ -31,13 +32,16 @@ def boxes_in_season(season):
     )
 
 
-def inspected_checks(season):
-    """Checks that tell what was inside: not found, unknown and unseen stay out."""
+def confirmed_checks(season, types=()):
     return Check.objects.filter(
-        season=season,
-        is_confirmed=True,
+        season=season, is_confirmed=True, box__in=boxes_in_season(season, types)
+    )
+
+
+def inspected_checks(season, types=()):
+    """Checks that tell what was inside: not found, unknown and unseen stay out."""
+    return confirmed_checks(season, types).filter(
         found=Check.Found.FOUND,
-        box__in=boxes_in_season(season),
         contents__overlap=[Content.NOTHING, Content.BIRD_NEST, Content.OTHER_ANIMAL],
     )
 
@@ -46,20 +50,18 @@ def _per_area(queryset, area_field):
     return dict(queryset.values_list(area_field).annotate(count=Count("pk")).order_by())
 
 
-def _states_per_area(season):
+def _states_per_area(season, types):
     """This season's from the live season states, pending checks included; a past
     one's from its confirmed checks, since a past box's status and condition are
     gone, so there attention is what its check reported.
     """
     if season == Check.current_season():
-        boxes = boxes_in_season(season).with_season_state()
+        boxes = boxes_in_season(season, types).with_season_state()
         return {
             state: _per_area(boxes.filter(season_state=state), "area")
             for state in (SeasonState.DONE, SeasonState.ATTENTION)
         }
-    checks = Check.objects.filter(
-        season=season, is_confirmed=True, box__in=boxes_in_season(season)
-    )
+    checks = confirmed_checks(season, types)
     attention = (
         Q(found=Check.Found.NOT_FOUND)
         | Q(cleaning=Check.Cleaning.NOT_CLEANED)
@@ -98,45 +100,74 @@ def _seasons():
     return list(range(current, first - 1, -1))
 
 
-def season_statistics(season):
-    """Per area (rows with anything to show) and in total; raw counts, ratios are left to the reader."""
-    occupied = [Content.BIRD_NEST, Content.OTHER_ANIMAL]
-    counts = {
-        "boxes": _per_area(boxes_in_season(season), "area"),
+OCCUPIED = [Content.BIRD_NEST, Content.OTHER_ANIMAL]
+
+
+def _figures_per_area(season, types):
+    return {
+        "boxes": _per_area(boxes_in_season(season, types), "area"),
         "cleaned": _per_area(
-            Check.objects.filter(
-                season=season,
-                is_confirmed=True,
-                cleaning=Check.Cleaning.CLEANED,
-                box__in=boxes_in_season(season),
+            confirmed_checks(season, types).filter(cleaning=Check.Cleaning.CLEANED),
+            "box__area",
+        ),
+        "inspected": _per_area(inspected_checks(season, types), "box__area"),
+        "occupied": _per_area(
+            inspected_checks(season, types).filter(contents__overlap=OCCUPIED),
+            "box__area",
+        ),
+        "bird_occupied": _per_area(
+            inspected_checks(season, types).filter(
+                contents__contains=[Content.BIRD_NEST]
             ),
             "box__area",
         ),
-        "inspected": _per_area(inspected_checks(season), "box__area"),
-        "occupied": _per_area(
-            inspected_checks(season).filter(contents__overlap=occupied), "box__area"
-        ),
-        "bird_occupied": _per_area(
-            inspected_checks(season).filter(contents__contains=[Content.BIRD_NEST]),
-            "box__area",
-        ),
-        "previous_inspected": _per_area(inspected_checks(season - 1), "box__area"),
-        "previous_occupied": _per_area(
-            inspected_checks(season - 1).filter(contents__overlap=occupied),
-            "box__area",
-        ),
-        **_states_per_area(season),
+    }
+
+
+def _areas(area_ids):
+    return Area.objects.filter(pk__in=area_ids).select_related("administration_unit")
+
+
+def season_statistics(season, types=()):
+    """Per area (rows with anything to show) and in total; raw counts, ratios are left to the reader."""
+    counts = _figures_per_area(season, types)
+    previous = _figures_per_area(season - 1, types)
+    counts |= {
+        "previous_inspected": previous["inspected"],
+        "previous_occupied": previous["occupied"],
+        **_states_per_area(season, types),
     }
     area_ids = set().union(*counts.values())
     areas = [
         {"area": area, **{figure: counts[figure].get(area.pk, 0) for figure in FIGURES}}
-        for area in Area.objects.filter(pk__in=area_ids).select_related(
-            "administration_unit"
-        )
+        for area in _areas(area_ids)
     ]
     return {
         "season": season,
         "seasons": _seasons(),
         "areas": areas,
         "total": {figure: sum(counts[figure].values()) for figure in FIGURES},
+    }
+
+
+SEASON_FIGURES = ("boxes", "cleaned", "inspected", "occupied", "bird_occupied")
+
+
+def statistics_by_season(types=()):
+    """Every season's figures per area, aligned with `seasons`, newest first."""
+    seasons = _seasons()
+    counts = [_figures_per_area(season, types) for season in seasons]
+    area_ids = set().union(*(per_area for each in counts for per_area in each.values()))
+
+    def figures_of(pk):
+        return [
+            {figure: each[figure].get(pk, 0) for figure in SEASON_FIGURES}
+            for each in counts
+        ]
+
+    return {
+        "seasons": seasons,
+        "areas": [
+            {"area": area, "seasons": figures_of(area.pk)} for area in _areas(area_ids)
+        ],
     }

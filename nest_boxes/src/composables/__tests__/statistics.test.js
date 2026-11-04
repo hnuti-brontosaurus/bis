@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   describeFigures,
+  seasonTable,
   stateBubbles,
   statisticsBubbles,
   unitsOf,
@@ -59,5 +60,33 @@ describe("statistics", () => {
         areas,
       ),
     ).toEqual([{ area: areas[2], count: 10, done: 4, attention: 3 }])
+  })
+
+  it("groups the seasons table by unit, with totals", () => {
+    const unit = (id, name) => ({ id, name, abbreviation: name })
+    const row = (name, administration_unit, inspected) => ({
+      area: { id: name, name, administration_unit },
+      seasons: inspected.map(count => ({ inspected: count, occupied: 1 })),
+    })
+    const brno = unit(1, "Brno")
+    const table = seasonTable([
+      row("Žabovřesky", brno, [2, 3]),
+      row("Adamov", unit(2, "Adamov"), [1, 0]),
+      row("Bohunice", brno, [4, 5]),
+    ])
+
+    expect(table.units.map(group => group.unit.name)).toEqual(["Adamov", "Brno"])
+    expect(table.units[1].areas.map(row => row.area.name)).toEqual([
+      "Bohunice",
+      "Žabovřesky",
+    ])
+    expect(table.units[1].seasons).toEqual([
+      { inspected: 6, occupied: 2 },
+      { inspected: 8, occupied: 2 },
+    ])
+    expect(table.total).toEqual([
+      { inspected: 7, occupied: 3 },
+      { inspected: 8, occupied: 3 },
+    ])
   })
 })

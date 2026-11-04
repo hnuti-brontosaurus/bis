@@ -2,7 +2,11 @@ from datetime import date
 
 import pytest
 from nest_boxes.models import Check, NestBox
-from nest_boxes.statistics import default_season, season_statistics
+from nest_boxes.statistics import (
+    default_season,
+    season_statistics,
+    statistics_by_season,
+)
 from nest_boxes.tests.conftest import made_at, near
 from rest_framework.test import APIClient
 
@@ -105,3 +109,32 @@ def test_statistics_default_to_the_default_season(season_2026, boxes):
     statistics = client.get("/api/nest_boxes/public/statistics/?season=2026").json()
     assert statistics["season"] == 2026
     assert statistics["total"]["cleaned"] == 0
+
+
+def test_statistics_by_season(season_2026, area, boxes, types):
+    check(boxes["bird"], [Content.BIRD_NEST])
+    check(boxes["bats"], [Content.OTHER_ANIMAL])
+    check(boxes["bird"], [Content.NOTHING], season=2024)
+
+    statistics = statistics_by_season()
+
+    assert statistics["seasons"] == [2026, 2025, 2024]
+    [row] = statistics["areas"]
+    assert row["area"] == area
+    assert [season["inspected"] for season in row["seasons"]] == [0, 1, 1]
+    assert [season["occupied"] for season in row["seasons"]] == [0, 1, 0]
+    assert row["seasons"][1]["boxes"] == 9
+
+
+def test_statistics_follow_the_type_filter(season_2026, boxes, types):
+    check(boxes["bird"], [Content.BIRD_NEST])
+    other = types["kavkovnik"].pk
+    client = APIClient()
+
+    statistics = client.get(f"/api/nest_boxes/public/statistics/?type={other}").json()
+    assert statistics["total"]["boxes"] == 0
+
+    by_season = client.get(
+        f"/api/nest_boxes/public/statistics/seasons/?type={boxes['bird'].type_id}"
+    ).json()
+    assert by_season["areas"][0]["seasons"][1]["occupied"] == 1

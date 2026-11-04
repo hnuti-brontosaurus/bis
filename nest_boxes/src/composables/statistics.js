@@ -50,3 +50,27 @@ export const stateBubbles = (rows, areas) =>
     })),
     areas,
   )
+
+const sumSeasons = rows =>
+  rows[0].seasons.map((_, index) =>
+    Object.fromEntries(
+      Object.keys(rows[0].seasons[index]).map(figure => [
+        figure,
+        rows.reduce((total, row) => total + row.seasons[index][figure], 0),
+      ]),
+    ),
+  )
+
+/**
+ * public/statistics/seasons/ rows grouped by administration unit, each group
+ * and the whole table with its totals per season; raw counts, like the rows.
+ */
+export const seasonTable = rows => {
+  const units = unitsOf(rows.map(row => row.area)).map(unit => {
+    const areas = rows
+      .filter(row => row.area.administration_unit.id === unit.id)
+      .sort((a, b) => a.area.name.localeCompare(b.area.name, "cs"))
+    return { unit, areas, seasons: sumSeasons(areas) }
+  })
+  return { units, total: rows.length ? sumSeasons(rows) : [] }
+}
