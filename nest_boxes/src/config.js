@@ -1,6 +1,6 @@
 export const APP_PATH = "/budky"
 
-export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron"
+export const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/bright"
 
 export const DEM_TILES_URL =
   "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png"

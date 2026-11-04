@@ -594,9 +594,12 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **maplibre-gl 6** is ESM with named exports only, and finds its worker next
   to its own module, which Vite's pre-bundling and the build both lose;
   `components/map/maplibre.js` hands it the bundled worker (`?worker&url`).
-- **The map style** is `MAP_STYLE_URL` (OpenFreeMap positron) recoloured by
+- **The map style** is `MAP_STYLE_URL` (OpenFreeMap bright) recoloured by
   `styleFor` in `components/map/mapStyle.js`, with Czech names and
-  hillshade/contours from AWS terrain tiles via maplibre-contour. Anything a
+  hillshade/contours (heights labelled on every fifth line) from AWS terrain
+  tiles via maplibre-contour. Bright was picked over positron for its road
+  hierarchy and stronger forest; its 10%-opaque forest fill is forced opaque,
+  so the token is the colour shown. Anything a
   component draws as a layer goes through `BaseMap`'s `setOverlay`, because
   the style is rebuilt on a theme switch and `setStyle` drops layers added
   with `addLayer`. DOM markers survive it.
