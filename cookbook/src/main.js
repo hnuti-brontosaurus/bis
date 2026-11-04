@@ -5,8 +5,10 @@ import { createApp } from "vue"
 import App from "@/AppProviders.vue"
 import router from "@/router.js"
 import { pinia } from "@/data/pinia.js"
+import { initSentry } from "@/sentry.js"
 
 const app = createApp(App)
+initSentry(app)
 
 app.use(pinia)
 app.use(router)

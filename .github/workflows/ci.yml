@@ -292,12 +292,16 @@ jobs:
         run: cp -r frontend/build/* backend/frontend_static/
 
       - name: Build cookbook
+        env:
+          VITE_ENVIRONMENT: ${{ startsWith(github.ref, 'refs/tags/v') && 'prod' || 'dev' }}
         run: make build_cookbook
 
       - name: Copy cookbook static files to backend
         run: cp -r cookbook/dist/* backend/cookbook_static/
 
       - name: Build nest boxes
+        env:
+          VITE_ENVIRONMENT: ${{ startsWith(github.ref, 'refs/tags/v') && 'prod' || 'dev' }}
         run: make build_nest_boxes
 
       - name: Copy nest boxes static files to backend

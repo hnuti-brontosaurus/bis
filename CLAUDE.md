@@ -786,6 +786,14 @@ are regexes over note vocabulary and dates. Non-obvious parts:
   before the import is its checks. Regions and distances are set afterwards.
 - Output names old users by id only.
 
+### Sentry
+Org `hnuti-brontosaurus`, one project per app: `backend` (Django, also the
+game book's server errors), `frontend`, `cookbook`, `nest-boxes` and
+`game-book` (browser errors only, through the Sentry loader script in
+`game_book/sentry.html`). The SPAs report only when built with
+`VITE_ENVIRONMENT` `dev` or `prod`, which CI sets per deploy target, so local
+dev sends nothing.
+
 ### Deploys and open tabs
 Both SPAs are Vite builds whose `assets/` file names are content-hashed, and a
 deploy replaces the whole static directory. The production nginx

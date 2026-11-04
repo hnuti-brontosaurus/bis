@@ -119,7 +119,7 @@ build_frontend: .env
 	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} frontend sh docker-entrypoint.sh build
 
 build_cookbook: .env
-	docker compose run --rm cookbook sh docker-entrypoint.sh build
+	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} cookbook sh docker-entrypoint.sh build
 
 build_nest_boxes: .env
-	docker compose run --rm nest_boxes sh docker-entrypoint.sh build
+	docker compose run --rm -e VITE_ENVIRONMENT=$${VITE_ENVIRONMENT:-dev} nest_boxes sh docker-entrypoint.sh build

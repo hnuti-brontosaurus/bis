@@ -58,6 +58,7 @@ services:
     environment:
       HOME: /tmp
       HOST: 0.0.0.0
+      VITE_ENVIRONMENT: local
 
   nest_boxes:
     container_name: bis-nest-boxes
@@ -78,6 +79,7 @@ services:
     environment:
       HOME: /tmp
       HOST: 0.0.0.0
+      VITE_ENVIRONMENT: local
 
   backend:
     container_name: bis-backend

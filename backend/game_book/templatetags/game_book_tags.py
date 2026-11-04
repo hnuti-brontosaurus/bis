@@ -1,4 +1,5 @@
 from django import template
+from django.conf import settings
 from tinymce.models import HTMLField
 from tinymce.widgets import TinyMCE
 
@@ -8,6 +9,11 @@ register = template.Library()
 @register.filter
 def is_rich_text(field):
     return isinstance(field.field.widget, TinyMCE)
+
+
+@register.inclusion_tag("game_book/sentry.html")
+def sentry():
+    return {"environment": settings.ENVIRONMENT}
 
 
 @register.simple_tag(takes_context=True)

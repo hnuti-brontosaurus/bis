@@ -1,0 +1,4 @@
+{% if environment == "dev" or environment == "prod" %}
+    <script>window.sentryOnLoad = () => Sentry.init({ environment: "{{ environment }}" })</script>
+    <script src="https://js.sentry-cdn.com/df977a862c4c4c5ec2ea5e23a08bf577.min.js" crossorigin="anonymous"></script>
+{% endif %}
