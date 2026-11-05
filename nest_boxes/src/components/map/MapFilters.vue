@@ -39,7 +39,8 @@ const update = patch => emit("update", patch)
 const typeOptions = computed(() => categoryOptions(props.types))
 const typesById = computed(() => new Map(props.types.map(type => [type.id, type])))
 const legendEntries = computed(() =>
-  LEGEND_KEYS.filter(key => key in (props.legendCounts ?? {})).map(key => ({
+  // A state no box is in would only take room; counted without the legend's own filter
+  LEGEND_KEYS.filter(key => props.legendCounts?.[key]).map(key => ({
     key,
     label: LEGEND_LABELS[key],
     count: props.legendCounts[key],
