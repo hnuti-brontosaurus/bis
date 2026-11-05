@@ -1,24 +1,21 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
-import { NButton, NPopselect, NSelect } from "naive-ui"
+import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
-import BoxFilters from "@/components/box/BoxFilters.vue"
 import BoxList from "@/components/box/BoxList.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxClusters from "@/components/map/BoxClusters.vue"
-import MapLegend from "@/components/map/MapLegend.vue"
+import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import {
   ACTIVE_STATUSES,
   boxRowDetail,
-  defaultFilters,
-  filterBoxes,
   groupByArea,
   markerState,
 } from "@/composables/areaBoxes.js"
@@ -30,11 +27,13 @@ import {
   seasonLabel,
 } from "@/composables/czech.js"
 import {
-  byId,
-  categoryOptions,
-  SEASON_STATE_LABELS,
-  SEASON_STATE_OPTIONS,
-} from "@/composables/labels.js"
+  filterBoxes,
+  legendCounts,
+  matchesSearch,
+  seasonStateParams,
+  useFilters,
+} from "@/composables/filters.js"
+import { byId } from "@/composables/labels.js"
 import {
   describeFigures,
   stateBubbles,
@@ -60,22 +59,25 @@ const STATE_COLUMNS = [
   { key: "attention", label: "K opravě" },
   { key: "done", label: "Hotovo" },
 ]
-const TOTAL_LABELS = { remaining: "zbývá", attention: "k opravě", done: "hotovo" }
+const STATE_KEYS = ["planned", "to_check", "attention", "done"]
+const STATISTICS_UNAVAILABLE = {
+  shown: "Statistiky stavy budek nerozlišují.",
+  unverified: "Statistiky neověřené budky nerozlišují.",
+  checked: "Statistiky se počítají ze všech kontrol sezóny.",
+}
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
-const { season, areas, statistics } = usePublicData()
+const { filters, update } = useFilters()
+const { season, areas, statistics } = usePublicData(() => filters.value.type)
 
-const unitId = ref(null)
 // What a click on the map picked; the panel's rows act on it
 const selectedAreaId = ref(null)
 const selectedBoxId = ref(null)
 const map = shallowRef(null)
 const creatingArea = ref(false)
 const view = ref("states")
-const filters = ref({ state: [], type: [], unverified: false })
-const boxFilters = ref(defaultFilters())
 const categories = shallowRef(null)
 const stateRows = shallowRef(null)
 const mapBoxes = shallowRef(null)
@@ -93,9 +95,10 @@ const showsBoxes = computed(() => mode.value === "boxes")
 const showsStates = computed(
   () => auth.isManager && !showsBoxes.value && view.value === "states",
 )
+const showsStatistics = computed(() => !showsBoxes.value && !showsStates.value)
 
 const shownSeason = computed(() =>
-  showsStates.value || showsBoxes.value ? currentSeason() : season.value,
+  showsStatistics.value ? season.value : currentSeason(),
 )
 
 const types = computed(() => categories.value?.types ?? [])
@@ -106,10 +109,10 @@ const unitOptions = computed(() =>
 const seasons = computed(() => statistics.value?.seasons ?? [])
 const seasonIndex = computed(() => seasons.value.indexOf(season.value))
 const stepSeason = step => (season.value = seasons.value[seasonIndex.value + step])
-const typeOptions = computed(() => categoryOptions(types.value))
 
 const inUnit = area =>
-  unitId.value === null || area.administration_unit.id === unitId.value
+  filters.value.unit === null || area.administration_unit.id === filters.value.unit
+const areaShown = area => inUnit(area) && matchesSearch(area.name, filters.value.search)
 
 const areasById = computed(
   () => new Map((areas.value ?? []).map(area => [area.id, area])),
@@ -120,20 +123,35 @@ const areaNames = computed(
 
 const statisticsRows = computed(() =>
   (statistics.value?.areas ?? [])
-    .filter(row => inUnit(row.area))
+    .filter(row => areaShown(row.area))
     .map(row => ({ ...row, ...describeFigures(row) })),
 )
-// The server filters by unit already
-const statesRows = computed(() =>
+// The server filters by everything but the legend and the search
+const searchedStateRows = computed(() =>
   areas.value && stateRows.value
     ? stateRows.value
-        .map(row => ({
-          ...row,
-          remaining: row.to_check + row.planned,
-          area: areasById.value.get(row.area_id),
-        }))
-        .sort((a, b) => a.area.name.localeCompare(b.area.name, "cs"))
+        .map(row => ({ ...row, area: areasById.value.get(row.area_id) }))
+        .filter(row => matchesSearch(row.area.name, filters.value.search))
     : [],
+)
+const stateCounts = computed(() =>
+  Object.fromEntries(
+    STATE_KEYS.map(key => [
+      key,
+      searchedStateRows.value.reduce((total, row) => total + row[key], 0),
+    ]),
+  ),
+)
+const statesRows = computed(() =>
+  searchedStateRows.value
+    .map(row => {
+      const shown = Object.fromEntries(
+        STATE_KEYS.map(key => [key, filters.value.shown.includes(key) ? row[key] : 0]),
+      )
+      return { ...row, ...shown, remaining: shown.to_check + shown.planned }
+    })
+    .filter(row => STATE_KEYS.some(key => row[key]))
+    .sort((a, b) => a.area.name.localeCompare(b.area.name, "cs")),
 )
 
 const bubbles = computed(() => {
@@ -143,21 +161,13 @@ const bubbles = computed(() => {
     : statisticsBubbles(statisticsRows.value, areas.value)
 })
 
-const stateTotals = computed(() =>
-  Object.fromEntries(
-    STATE_COLUMNS.map(({ key }) => [
-      key,
-      statesRows.value.reduce((total, row) => total + row[key], 0),
-    ]),
-  ),
-)
 const unitBoxes = computed(() =>
   areas.value && mapBoxes.value
     ? mapBoxes.value.filter(box => inUnit(areasById.value.get(box.area_id)))
     : [],
 )
 const shownBoxes = computed(() =>
-  filterBoxes(unitBoxes.value, boxFilters.value, currentSeason()),
+  filterBoxes(unitBoxes.value, filters.value, currentSeason()),
 )
 const boxGroups = computed(() => groupByArea(shownBoxes.value, areasById.value))
 const unverifiedCount = computed(
@@ -166,6 +176,13 @@ const unverifiedCount = computed(
       box => !box.is_verified && ACTIVE_STATUSES.includes(box.status),
     ).length,
 )
+const legend = computed(() => {
+  if (showsBoxes.value)
+    return legendCounts(
+      filterBoxes(unitBoxes.value, filters.value, currentSeason(), { legend: false }),
+    )
+  return showsStates.value ? stateCounts.value : null
+})
 const markerBoxes = computed(() =>
   showsBoxes.value
     ? shownBoxes.value
@@ -181,7 +198,10 @@ const heading = computed(() => {
   if (showsBoxes.value) return boxCountLabel(shownBoxes.value.length)
   const rows = showsStates.value ? statesRows.value : statisticsRows.value
   const boxTotal = showsStates.value
-    ? Object.values(stateTotals.value).reduce((total, count) => total + count, 0)
+    ? rows.reduce(
+        (total, row) => total + STATE_KEYS.reduce((sum, key) => sum + row[key], 0),
+        0,
+      )
     : rows.reduce((total, row) => total + row.boxes, 0)
   return `${areaCountLabel(rows.length)}, ${boxCountLabel(boxTotal)}`
 })
@@ -189,18 +209,14 @@ const totalFigures = computed(
   () => statistics.value && describeFigures(statistics.value.total),
 )
 
-const filterParams = computed(() => ({
-  season_state: filters.value.state,
-  type: filters.value.type,
-  administration_unit: unitId.value ?? undefined,
-  is_verified: filters.value.unverified ? false : undefined,
-}))
-
 watch(
-  [showsStates, filterParams],
+  [
+    showsStates,
+    () => JSON.stringify(seasonStateParams(filters.value, currentSeason())),
+  ],
   () => {
     if (!showsStates.value) return
-    getSeasonStates(filterParams.value).then(
+    getSeasonStates(seasonStateParams(filters.value, currentSeason())).then(
       result => (stateRows.value = result),
       reportError,
     )
@@ -208,11 +224,7 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => auth.isManager,
-  isManager => isManager && getCategories().then(result => (categories.value = result)),
-  { immediate: true },
-)
+getCategories().then(result => (categories.value = result), reportError)
 
 watch(
   showsBoxes,
@@ -270,7 +282,7 @@ const focusBox = box => {
 
 <template>
   <MapPanelLayout>
-    <template #map="{ bottomInset }">
+    <template #map="{ bottomInset, sheetStop }">
       <BaseMap :bottom-inset="bottomInset" @ready="map = $event">
         <AreaBubbles
           v-if="!showsBoxes"
@@ -288,6 +300,23 @@ const focusBox = box => {
           />
         </template>
       </BaseMap>
+      <MapFilters
+        :filters="filters"
+        :units="unitOptions"
+        :types="types"
+        :unverified-count="auth.isManager ? unverifiedCount : null"
+        :checked="auth.isManager"
+        :unavailable="showsStatistics ? STATISTICS_UNAVAILABLE : {}"
+        :search-placeholder="showsBoxes ? 'Hledat označení' : 'Hledat oblast'"
+        :legend-counts="legend"
+        :bottom-inset="bottomInset"
+        :sheet-stop="sheetStop"
+        @update="update"
+      >
+        <template v-if="auth.isManager" #mode>
+          <SegmentedControl v-model="mode" :options="MODES" size="sm" />
+        </template>
+      </MapFilters>
     </template>
     <template #summary>
       <div class="summary">
@@ -310,38 +339,15 @@ const focusBox = box => {
         </div>
       </div>
     </template>
-    <div class="head">
-      <SegmentedControl v-if="auth.isManager" v-model="mode" :options="MODES" />
-      <template v-if="showsBoxes">
-        <n-select
-          v-model:value="unitId"
-          :options="unitOptions"
-          size="small"
-          placeholder="Všechny jednotky"
-          filterable
-          clearable
-        />
-        <BoxFilters
-          v-model="boxFilters"
-          :types="types"
-          :unverified-count="unverifiedCount"
-        />
-        <MapLegend />
-      </template>
-      <template v-else>
-        <SegmentedControl
-          v-if="auth.isManager"
-          v-model="view"
-          :options="VIEWS"
-          size="sm"
-        />
-        <div v-if="showsStates" class="totals three" data-testid="state-totals">
-          <div v-for="column in STATE_COLUMNS" :key="column.key">
-            <b class="num">{{ formatNumber(stateTotals[column.key]) }}</b>
-            <span>{{ TOTAL_LABELS[column.key] }}</span>
-          </div>
-        </div>
-        <div v-else-if="totalFigures" class="totals">
+    <div v-if="!showsBoxes" class="head">
+      <SegmentedControl
+        v-if="auth.isManager"
+        v-model="view"
+        :options="VIEWS"
+        size="sm"
+      />
+      <template v-if="showsStatistics">
+        <div v-if="totalFigures" class="totals">
           <div>
             <b class="num">{{ formatNumber(statistics.total.cleaned) }}</b>
             <span>vyčištěno</span>
@@ -359,82 +365,30 @@ const focusBox = box => {
             <span>obsazeno loni</span>
           </div>
         </div>
-        <div class="filters" :class="{ single: showsStates }">
-          <n-select
-            v-model:value="unitId"
-            :options="unitOptions"
+        <div v-if="season" class="season-stepper">
+          <n-button
             size="small"
-            placeholder="Všechny jednotky"
-            filterable
-            clearable
-          />
-          <div v-if="!showsStates && season" class="season-stepper">
-            <n-button
-              size="small"
-              quaternary
-              aria-label="Starší sezóna"
-              :disabled="seasonIndex === seasons.length - 1"
-              @click="stepSeason(1)"
-            >
-              <template #icon><AppIcon name="chevl" /></template>
-            </n-button>
-            <span>Sezóna {{ seasonLabel(season) }}</span>
-            <n-button
-              size="small"
-              quaternary
-              aria-label="Novější sezóna"
-              :disabled="seasonIndex <= 0"
-              @click="stepSeason(-1)"
-            >
-              <template #icon><AppIcon name="chev" /></template>
-            </n-button>
-          </div>
+            quaternary
+            aria-label="Starší sezóna"
+            :disabled="seasonIndex === seasons.length - 1"
+            @click="stepSeason(1)"
+          >
+            <template #icon><AppIcon name="chevl" /></template>
+          </n-button>
+          <span>Sezóna {{ seasonLabel(season) }}</span>
+          <n-button
+            size="small"
+            quaternary
+            aria-label="Novější sezóna"
+            :disabled="seasonIndex <= 0"
+            @click="stepSeason(-1)"
+          >
+            <template #icon><AppIcon name="chev" /></template>
+          </n-button>
         </div>
-        <RouterLink
-          v-if="!showsStates"
-          class="all-seasons small"
-          :to="{ name: 'statistics' }"
-        >
+        <RouterLink class="all-seasons small" :to="{ name: 'statistics' }">
           Všechny sezóny v jedné tabulce<AppIcon name="chev" />
         </RouterLink>
-        <div v-if="showsStates" class="chips">
-          <n-popselect
-            v-model:value="filters.state"
-            :options="SEASON_STATE_OPTIONS"
-            multiple
-            trigger="click"
-          >
-            <button type="button" class="chip" :class="{ on: filters.state.length }">
-              <AppIcon name="filter" />{{
-                filters.state.length === 1
-                  ? SEASON_STATE_LABELS[filters.state[0]]
-                  : `Stav${filters.state.length ? ` ${filters.state.length}` : ""}`
-              }}
-            </button>
-          </n-popselect>
-          <n-popselect
-            v-model:value="filters.type"
-            :options="typeOptions"
-            multiple
-            trigger="click"
-            scrollable
-          >
-            <button type="button" class="chip" :class="{ on: filters.type.length }">
-              <AppIcon name="filter" />Typ<template v-if="filters.type.length">
-                {{ filters.type.length }}</template
-              >
-            </button>
-          </n-popselect>
-          <button
-            type="button"
-            class="chip"
-            :class="{ on: filters.unverified }"
-            @click="filters.unverified = !filters.unverified"
-          >
-            Neověřené
-          </button>
-        </div>
-        <MapLegend v-if="showsStates" />
       </template>
     </div>
     <p v-if="showsBoxes && !mapBoxes" class="muted loading">Načítám budky…</p>
@@ -568,10 +522,6 @@ const focusBox = box => {
   gap: 8px;
 }
 
-.totals.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .totals div {
   display: grid;
   gap: 2px;
@@ -586,16 +536,6 @@ const focusBox = box => {
 .totals span {
   font-size: 12.5px;
   color: var(--muted);
-}
-
-.filters {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-}
-
-.filters.single {
-  grid-template-columns: 1fr;
 }
 
 .season-stepper {

@@ -622,13 +622,23 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Map of areas** (`AreasMapView`, `/mapa/`) has two modes, `?mode=boxes` for
   managers only: area bubbles from the public endpoints, or every manageable box
   from `boxes/map/` (an unpaginated light serializer; the box page loads the
-  rest). It reuses the area page's `BoxFilters` / `BoxList`; `BoxList` renders
+  rest). It reuses the area page's `BoxList`; `BoxList` renders
   20 rows and more as they scroll into sight. A click on a single marker or
   bubble selects its row in the panel, a second click opens it (the area page
   only for managers), and a merged bubble or cluster zooms to fit its members; opening and acting start from the list. Boxes cluster below zoom 14 the way areas merge
   (`BoxClusters`, same `MERGE_GAP`, a merged bubble's thick outline). The landing map
   groups by region instead (`public/regions/`: outline, a point inside, box
   count), so the public never gets a box's coordinates.
+- **Filters** of the map, the area page and `/statistiky/` are one set in
+  the URL (`composables/filters.js`: `unit`, `type`, `states`, `unverified`,
+  `checked`, `q`), drawn over the map by `MapFilters`: a floating bar with
+  the search and a "Filtry" popover, the active ones as chips, and the legend,
+  whose entries (season states plus `ended`, hidden by default) toggle what is
+  shown. A view opened without filters in its URL takes the previous view's,
+  search excepted. On `areas/season_states/` the legend is applied client side,
+  so its counts stay whole; exports send it as `state`. The check filters there
+  are `Exists` subqueries, since that endpoint groups by area and can't use
+  `last_checked_on`, an aggregate.
 - **Statistics across seasons** (`StatisticsView`, `/statistiky/`, public) come
   from `public/statistics/seasons/` (`statistics_by_season`): raw counts per area,
   one entry per season aligned with `seasons`; `seasonTable` groups them by unit

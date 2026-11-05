@@ -1,0 +1,452 @@
+<script setup>
+import { computed } from "vue"
+import { NButton, NCheckbox, NInput, NPopover, NSelect } from "naive-ui"
+
+import AppIcon from "@/components/app/AppIcon.vue"
+import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
+import {
+  CHECKED_OPTIONS,
+  defaultFilters,
+  isDefaultShown,
+  LEGEND_KEYS,
+} from "@/composables/filters.js"
+import { categoryOptions, LEGEND_LABELS } from "@/composables/labels.js"
+
+const props = defineProps({
+  // see defaultFilters in composables/filters.js
+  filters: { type: Object, required: true },
+  // [{ label, value }] of administration units; null where there is just one
+  units: { type: Array, default: null },
+  types: { type: Array, required: true },
+  // filter key → why it doesn't apply to what the map shows now
+  unavailable: { type: Object, default: () => ({}) },
+  // null where the filter is not offered at all
+  unverifiedCount: { type: Number, default: null },
+  checked: { type: Boolean, default: true },
+  searchPlaceholder: { type: String, required: true },
+  // legend key → count; null hides the legend
+  legendCounts: { type: Object, default: null },
+  // the part of the map under the phone's bottom sheet
+  bottomInset: { type: Number, default: 0 },
+  // the phone sheet's stop, see SHEET_STOPS; null on a desktop
+  sheetStop: { type: String, default: null },
+})
+
+const emit = defineEmits(["update"])
+
+const update = patch => emit("update", patch)
+
+const typeOptions = computed(() => categoryOptions(props.types))
+const typesById = computed(() => new Map(props.types.map(type => [type.id, type])))
+const legendEntries = computed(() =>
+  LEGEND_KEYS.filter(key => key in (props.legendCounts ?? {})).map(key => ({
+    key,
+    label: LEGEND_LABELS[key],
+    count: props.legendCounts[key],
+    shown: props.filters.shown.includes(key),
+  })),
+)
+
+const lower = key => LEGEND_LABELS[key].toLowerCase()
+const listed = keys => keys.map(lower).join(", ")
+
+const legendChip = computed(() => {
+  const { shown } = props.filters
+  if (shown.length <= 2) return shown.length ? `Jen ${listed(shown)}` : "Žádný stav"
+  const hidden = LEGEND_KEYS.filter(key => key !== "ended" && !shown.includes(key))
+  const parts = [
+    ...(hidden.length ? [`bez ${listed(hidden)}`] : []),
+    ...(shown.includes("ended") ? ["se zaniklými"] : []),
+  ]
+  const text = parts.join(", ")
+  return text.charAt(0).toUpperCase() + text.slice(1)
+})
+
+const chips = computed(() => {
+  const { filters } = props
+  return [
+    props.units &&
+      filters.unit !== null && {
+        key: "unit",
+        label:
+          props.units?.find(unit => unit.value === filters.unit)?.label ?? "Jednotka",
+        reset: { unit: null },
+      },
+    filters.type.length && {
+      key: "type",
+      label:
+        filters.type.length === 1
+          ? `Typ: ${typesById.value.get(filters.type[0])?.name ?? "?"}`
+          : `Typy: ${filters.type.length}`,
+      reset: { type: [] },
+    },
+    !isDefaultShown(filters.shown) && {
+      key: "shown",
+      label: legendChip.value,
+      reset: { shown: defaultFilters().shown },
+    },
+    props.unverifiedCount !== null &&
+      filters.unverified && {
+        key: "unverified",
+        label: "Neověřené",
+        reset: { unverified: false },
+      },
+    props.checked &&
+      filters.checked && {
+        key: "checked",
+        label: CHECKED_OPTIONS.find(option => option.value === filters.checked).label,
+        reset: { checked: null },
+      },
+  ].filter(Boolean)
+})
+// Only what this map offers; a unit kept from the map of areas is no filter on one area
+const count = computed(() => chips.value.length)
+
+const resetAll = () => update({ ...defaultFilters(), search: props.filters.search })
+
+const toggle = key =>
+  update({
+    shown: props.filters.shown.includes(key)
+      ? props.filters.shown.filter(item => item !== key)
+      : [...props.filters.shown, key],
+  })
+
+const only = key => update({ shown: [key] })
+</script>
+
+<template>
+  <div class="map-filters" :style="{ '--bottom-inset': `${bottomInset}px` }">
+    <div v-show="sheetStop !== 'full'" class="top">
+      <div class="bar">
+        <div v-if="$slots.mode" class="mode"><slot name="mode" /></div>
+        <n-input
+          class="search"
+          :value="filters.search"
+          size="small"
+          clearable
+          :placeholder="searchPlaceholder"
+          @update:value="update({ search: $event })"
+        />
+        <n-popover trigger="click" placement="bottom-end" :show-arrow="false">
+          <template #trigger>
+            <n-button size="small" data-testid="filters-button">
+              <template #icon><AppIcon name="filter" /></template>
+              Filtry
+              <span v-if="count" class="count">{{ count }}</span>
+            </n-button>
+          </template>
+          <div class="popover" data-testid="filters">
+            <label v-if="units">
+              <span class="label">Jednotka</span>
+              <n-select
+                :value="filters.unit"
+                :options="units"
+                size="small"
+                placeholder="Všechny jednotky"
+                filterable
+                clearable
+                @update:value="update({ unit: $event })"
+              />
+            </label>
+            <label :class="{ unavailable: unavailable.type }">
+              <span class="label">Typ</span>
+              <n-select
+                :value="filters.type"
+                :options="typeOptions"
+                size="small"
+                placeholder="Všechny typy"
+                multiple
+                filterable
+                clearable
+                :disabled="Boolean(unavailable.type)"
+                @update:value="update({ type: $event })"
+              />
+              <span v-if="unavailable.type" class="why">{{ unavailable.type }}</span>
+            </label>
+            <label v-if="checked" :class="{ unavailable: unavailable.checked }">
+              <span class="label">Kontrola</span>
+              <n-select
+                :value="filters.checked"
+                :options="CHECKED_OPTIONS"
+                size="small"
+                placeholder="Kdykoli"
+                clearable
+                :disabled="Boolean(unavailable.checked)"
+                @update:value="update({ checked: $event })"
+              />
+              <span v-if="unavailable.checked" class="why">{{
+                unavailable.checked
+              }}</span>
+            </label>
+            <div
+              v-if="unverifiedCount !== null"
+              :class="{ unavailable: unavailable.unverified }"
+            >
+              <n-checkbox
+                :checked="filters.unverified"
+                :disabled="Boolean(unavailable.unverified)"
+                @update:checked="update({ unverified: $event })"
+              >
+                Jen neověřené ({{ unverifiedCount }})
+              </n-checkbox>
+              <span v-if="unavailable.unverified" class="why">{{
+                unavailable.unverified
+              }}</span>
+            </div>
+            <n-button v-if="count" size="small" quaternary @click="resetAll">
+              Zrušit všechny filtry
+            </n-button>
+          </div>
+        </n-popover>
+      </div>
+      <div v-if="chips.length" class="chips active hide-sm">
+        <button
+          v-for="chip in chips"
+          :key="chip.key"
+          type="button"
+          class="chip on"
+          :class="{ unavailable: unavailable[chip.key] }"
+          :title="unavailable[chip.key]"
+          :aria-label="`Zrušit filtr ${chip.label}`"
+          @click="update(chip.reset)"
+        >
+          {{ chip.label }}<AppIcon name="x" />
+        </button>
+        <button type="button" class="chip dim" @click="resetAll">Zrušit vše</button>
+      </div>
+    </div>
+    <div
+      v-if="legendCounts"
+      v-show="!sheetStop || sheetStop === 'collapsed'"
+      class="legend"
+      role="group"
+      aria-label="Legenda, kliknutím skryješ nebo ukážeš"
+      data-testid="legend"
+    >
+      <button
+        v-for="entry in legendEntries"
+        :key="entry.key"
+        type="button"
+        :class="{ off: !entry.shown }"
+        :aria-pressed="entry.shown"
+        :aria-label="`${entry.label} ${entry.count}`"
+        :title="`${entry.label}: kliknutím ${entry.shown ? 'skryješ' : 'ukážeš'}, dvojklikem necháš jen ty`"
+        @click="toggle(entry.key)"
+        @dblclick="only(entry.key)"
+      >
+        <MarkerGlyph :state="entry.key === 'ended' ? 'out' : entry.key" />
+        <span class="name hide-sm">{{ entry.label }}</span>
+        <span class="num">{{ entry.count }}</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.map-filters {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.map-filters > * {
+  pointer-events: auto;
+}
+
+.top {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 60px;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.top > * {
+  pointer-events: auto;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px var(--shadow-c);
+  max-width: 100%;
+}
+
+.search {
+  width: 210px;
+}
+
+.count {
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 11.5px;
+  font-weight: 800;
+  display: inline-grid;
+  place-items: center;
+}
+
+.active .chip {
+  box-shadow: 0 1px 4px var(--shadow-c);
+  cursor: pointer;
+}
+
+.active .chip.dim {
+  background: var(--surface);
+}
+
+.unavailable {
+  opacity: 0.55;
+}
+
+.popover {
+  width: 260px;
+  max-width: calc(100vw - 48px);
+  display: grid;
+  gap: 12px;
+}
+
+.popover label {
+  display: grid;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.why {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px var(--shadow-c);
+}
+
+.legend button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+}
+
+.legend button:hover {
+  background: var(--surface-2);
+}
+
+.legend button:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+.legend .name {
+  flex: 1;
+}
+
+.legend .num {
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend .off {
+  opacity: 0.45;
+}
+
+.legend .off :deep(.marker-glyph) {
+  filter: grayscale(1);
+}
+
+.legend :deep(.marker-glyph) {
+  width: 18px;
+  height: 18px;
+  border-width: 2.5px;
+}
+
+.legend :deep(.marker-glyph.out) {
+  width: 14px;
+  height: 14px;
+  margin: 2px;
+}
+
+.legend :deep(.marker-icon) {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 720px) {
+  .top {
+    right: 56px;
+    justify-items: stretch;
+  }
+
+  .bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mode {
+    grid-column: 1 / -1;
+    order: 1;
+  }
+
+  .search {
+    width: auto;
+  }
+
+  .legend {
+    left: 10px;
+    right: 10px;
+    bottom: calc(var(--bottom-inset) + 10px);
+    display: flex;
+    justify-content: space-between;
+    padding: 4px;
+  }
+
+  .legend button {
+    padding: 4px 6px;
+    gap: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .legend {
+    transition: bottom 0.2s ease;
+  }
+}
+</style>

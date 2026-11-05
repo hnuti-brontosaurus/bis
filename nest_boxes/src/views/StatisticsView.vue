@@ -6,6 +6,7 @@ import { NSelect } from "naive-ui"
 import AppIcon from "@/components/app/AppIcon.vue"
 import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import { formatNumber, percent, seasonLabel } from "@/composables/czech.js"
+import { useFilters } from "@/composables/filters.js"
 import { categoryOptions } from "@/composables/labels.js"
 import { ratio, seasonTable, unitsOf } from "@/composables/statistics.js"
 import { useAuthStore } from "@/data/auth.js"
@@ -41,8 +42,8 @@ const METRICS = [
 
 const auth = useAuthStore()
 const metricKey = ref("occupancy")
-const unitId = ref(null)
-const typeIds = ref([])
+// The map's unit and type, shared through the URL
+const { filters, update } = useFilters()
 const statistics = shallowRef(null)
 const types = shallowRef([])
 const scroller = ref(null)
@@ -63,7 +64,9 @@ const typeOptions = computed(() => categoryOptions(types.value))
 const table = computed(() =>
   seasonTable(
     (statistics.value?.areas ?? []).filter(
-      row => unitId.value === null || row.area.administration_unit.id === unitId.value,
+      row =>
+        filters.value.unit === null ||
+        row.area.administration_unit.id === filters.value.unit,
     ),
   ),
 )
@@ -82,10 +85,10 @@ const cell = figures => ({
 getCategories().then(result => (types.value = result.types), reportError)
 
 watch(
-  typeIds,
-  async value => {
+  () => filters.value.type.join(","),
+  async () => {
     try {
-      statistics.value = await getSeasonStatistics(value)
+      statistics.value = await getSeasonStatistics(filters.value.type)
       await nextTick()
       scroller.value?.scrollTo({ left: scroller.value.scrollWidth })
     } catch (error) {
@@ -111,21 +114,23 @@ watch(
     <div class="controls">
       <SegmentedControl v-model="metricKey" :options="METRICS" size="sm" />
       <n-select
-        v-model:value="unitId"
+        :value="filters.unit"
         :options="unitOptions"
         size="small"
         placeholder="Všechny jednotky"
         filterable
         clearable
+        @update:value="update({ unit: $event })"
       />
       <n-select
-        v-model:value="typeIds"
+        :value="filters.type"
         :options="typeOptions"
         size="small"
         placeholder="Všechny typy budek"
         multiple
         clearable
         max-tag-count="responsive"
+        @update:value="update({ type: $event })"
       />
     </div>
     <p v-if="!statistics" class="muted">Načítám…</p>

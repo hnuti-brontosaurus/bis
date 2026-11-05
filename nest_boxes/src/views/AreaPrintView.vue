@@ -4,9 +4,10 @@ import { RouterLink, useRoute } from "vue-router"
 import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
-import { defaultFilters, filterBoxes, splitByBatch } from "@/composables/areaBoxes.js"
+import { splitByBatch } from "@/composables/areaBoxes.js"
 import { holeLabel, typeName } from "@/composables/boxes.js"
 import { boxCountLabel, currentSeason, formatDate } from "@/composables/czech.js"
+import { filterBoxes, parseFilters } from "@/composables/filters.js"
 import { byId, OPENING_LABELS, STATUS_LABELS } from "@/composables/labels.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { getArea, getBatch, getCategories } from "@/data/manage.js"
@@ -25,7 +26,7 @@ const { data } = useLoad(async () => {
 
 const print = () => window.print()
 
-const filters = route.query.filters ? JSON.parse(route.query.filters) : defaultFilters()
+const filters = parseFilters(route.query)
 
 const typesById = computed(() => byId(data.value?.categories.types ?? []))
 const boxes = computed(() => {

@@ -9,25 +9,28 @@ import GpxImportDialog from "@/components/area/GpxImportDialog.vue"
 import NewBatchDialog from "@/components/area/NewBatchDialog.vue"
 import BatchLink from "@/components/batch/BatchLink.vue"
 import BatchProgress from "@/components/batch/BatchProgress.vue"
-import BoxFilters from "@/components/box/BoxFilters.vue"
 import BoxFormDialog from "@/components/box/BoxFormDialog.vue"
 import BoxList from "@/components/box/BoxList.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
-import MapLegend from "@/components/map/MapLegend.vue"
+import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import { boundsOf } from "@/components/map/geometry.js"
 import {
   ACTIVE_STATUSES,
   boxRowDetail,
-  defaultFilters,
-  filterBoxes,
-  filterParams,
   markerState,
   splitByBatch,
 } from "@/composables/areaBoxes.js"
 import { boxCountLabel, currentSeason } from "@/composables/czech.js"
+import {
+  exportParams as filterExportParams,
+  filterBoxes,
+  filterQuery,
+  legendCounts,
+  useFilters,
+} from "@/composables/filters.js"
 import { byId } from "@/composables/labels.js"
 import { latestChecks } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
@@ -63,7 +66,7 @@ const { data, reload } = useLoad(async () => {
 
 const map = shallowRef(null)
 const selectedId = ref(null)
-const filters = ref(defaultFilters())
+const { filters, update } = useFilters()
 const dialogs = ref({ area: false, batch: false, plan: false, gpx: false })
 
 const area = computed(() => data.value?.area)
@@ -83,6 +86,13 @@ const selectBatch = id => router.replace({ query: { ...route.query, batch: id } 
 
 const shown = computed(() =>
   area.value ? filterBoxes(area.value.boxes, filters.value, season) : [],
+)
+const legend = computed(() =>
+  area.value
+    ? legendCounts(
+        filterBoxes(area.value.boxes, filters.value, season, { legend: false }),
+      )
+    : null,
 )
 const groups = computed(() => splitByBatch(shown.value, batch.value))
 const checkOf = box => data.value.checks.get(box.id)
@@ -133,7 +143,7 @@ const unverifiedCount = computed(
     ).length,
 )
 const exportParams = computed(() => ({
-  ...filterParams(filters.value, season),
+  ...filterExportParams(filters.value, season),
   ...(batch.value && { batch: batch.value.id }),
 }))
 
@@ -190,7 +200,7 @@ watch(batchId, () => (selectedId.value = null))
 
 <template>
   <MapPanelLayout v-if="data">
-    <template #map="{ bottomInset }">
+    <template #map="{ bottomInset, sheetStop }">
       <BaseMap :bounds="bounds" :bottom-inset="bottomInset" @ready="map = $event">
         <PlannedBoxes :boxes="plannedBoxes" />
         <BoxMarkers
@@ -199,6 +209,16 @@ watch(batchId, () => (selectedId.value = null))
           @select="selectBox"
         />
       </BaseMap>
+      <MapFilters
+        :filters="filters"
+        :types="data.categories.types"
+        :unverified-count="unverifiedCount"
+        search-placeholder="Hledat označení"
+        :legend-counts="legend"
+        :bottom-inset="bottomInset"
+        :sheet-stop="sheetStop"
+        @update="update"
+      />
     </template>
     <template #summary>
       <div class="summary">
@@ -263,12 +283,7 @@ watch(batchId, () => (selectedId.value = null))
       </div>
     </section>
 
-    <section class="section filters">
-      <BoxFilters
-        v-model="filters"
-        :types="data.categories.types"
-        :unverified-count="unverifiedCount"
-      />
+    <section class="section">
       <div class="chips tools">
         <a class="chip dim" :href="exportUrl(area.id, 'gpx', exportParams)" download>
           <AppIcon name="down" />GPX
@@ -281,7 +296,7 @@ watch(batchId, () => (selectedId.value = null))
           :to="{
             name: 'area_print',
             params: { id: area.id },
-            query: { batch: batch?.id, filters: JSON.stringify(filters) },
+            query: { batch: batch?.id, ...filterQuery(filters) },
           }"
         >
           <AppIcon name="print" />Tisk
@@ -290,7 +305,6 @@ watch(batchId, () => (selectedId.value = null))
           <AppIcon name="up" />Import GPX
         </button>
       </div>
-      <MapLegend class="hide-sm" />
     </section>
 
     <BoxList

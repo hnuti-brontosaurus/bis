@@ -19,7 +19,14 @@ export const SEASON_STATE_LABELS = {
   planned: "Plánovaná",
 }
 
-export const SEASON_STATE_OPTIONS = options(SEASON_STATE_LABELS)
+// The entries of the map legend, see LEGEND_KEYS in composables/filters.js
+export const LEGEND_LABELS = {
+  planned: "Plánované",
+  to_check: "Ke kontrole",
+  attention: "K opravě",
+  done: "Hotovo",
+  ended: "Zaniklé",
+}
 
 // Ending is an action of its own, never a plain edit.
 export const EDITABLE_STATUSES = ["planned", "in_use", "taken_down", "missing"]

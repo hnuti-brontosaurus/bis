@@ -54,10 +54,13 @@ export const listPublicRegions = () =>
 
 /**
  * @param {number} [season] without one the server's default, see `default_season`
+ * @param {number[]} [type] box type ids, all when empty
  * @returns {Promise<Statistics>}
  */
-export const getStatistics = season =>
-  client.get("/public/statistics/", { params: { season } }).then(({ data }) => data)
+export const getStatistics = (season, type) =>
+  client
+    .get("/public/statistics/", { params: { season, type } })
+    .then(({ data }) => data)
 
 export const getSeasonStatistics = type =>
   client

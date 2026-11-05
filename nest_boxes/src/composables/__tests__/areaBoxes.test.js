@@ -2,9 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   boxRowDetail,
-  defaultFilters,
-  filterBoxes,
-  filterParams,
   groupByArea,
   markerState,
   splitByBatch,
@@ -33,49 +30,6 @@ const boxes = [
   box("P1", { status: "planned", type_id: 7, season_state: "planned" }),
 ]
 const names = list => list.map(item => item.name)
-const filtered = overrides =>
-  names(filterBoxes(boxes, { ...defaultFilters(), ...overrides }, 2026))
-
-describe("filterBoxes", () => {
-  it("leaves out ended boxes by default", () => {
-    expect(filtered({})).toEqual(["N10", "N2", "P1"])
-  })
-
-  it("filters by type, season state, verification and the last check", () => {
-    expect(filtered({ state: ["done", "planned"] })).toEqual(["N10", "P1"])
-    expect(filtered({ type: [7] })).toEqual(["P1"])
-    expect(filtered({ unverified: true })).toEqual(["N2"])
-    expect(filtered({ checked: "this_season" })).toEqual(["N10"])
-    expect(filtered({ checked: "before" })).toEqual(["N2"])
-    expect(filtered({ checked: "never" })).toEqual(["P1"])
-  })
-
-  it("searches names without diacritics", () => {
-    expect(filtered({ search: "kuba", status: [] })).toEqual(["Kuba"])
-  })
-})
-
-describe("filterParams", () => {
-  it("maps the filters to the export's query", () => {
-    expect(
-      filterParams(
-        { ...defaultFilters(), unverified: true, checked: "never", type: [2] },
-        2026,
-      ),
-    ).toEqual({
-      status: ["planned", "in_use", "taken_down", "missing"],
-      season_state: [],
-      type: [2],
-      is_verified: false,
-      never_checked: true,
-    })
-    expect(
-      filterParams({ ...defaultFilters(), checked: "before" }, 2026),
-    ).toMatchObject({
-      last_checked_before: "2026-07-01",
-    })
-  })
-})
 
 describe("splitByBatch", () => {
   it("puts the batch's boxes first, each part by name", () => {

@@ -25,6 +25,8 @@ const heights = computed(() =>
 const sheetHeight = computed(() => dragHeight.value ?? heights.value[stop.value])
 const isPhone = useMediaQuery("(max-width: 720px)")
 const bottomInset = computed(() => (isPhone.value ? heights.value[stop.value] : 0))
+// Where the phone's sheet rests; null on a desktop, which has no sheet
+const sheetStop = computed(() => (isPhone.value ? stop.value : null))
 
 let drag = null
 
@@ -68,7 +70,7 @@ onBeforeUnmount(() => resizeObserver.disconnect())
 <template>
   <div ref="layout" class="map-panel" :class="{ dragging: dragHeight !== null }">
     <div class="map-area">
-      <slot name="map" :bottom-inset="bottomInset" />
+      <slot name="map" :bottom-inset="bottomInset" :sheet-stop="sheetStop" />
     </div>
     <aside
       class="panel"

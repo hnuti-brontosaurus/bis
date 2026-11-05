@@ -1,60 +1,9 @@
 import { checkResult, lastCheckedLabel, typeName } from "@/composables/boxes.js"
-import { seasonStart } from "@/composables/czech.js"
 import { CONDITION_LABELS, STATUS_LABELS } from "@/composables/labels.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 
-// Ended boxes are history; the list starts without them.
+// A box on a tree, or about to be; ended ones are history.
 export const ACTIVE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
-
-export const CHECKED_OPTIONS = [
-  { value: "this_season", label: "Letos zkontrolované" },
-  { value: "before", label: "Naposledy před letoškem" },
-  { value: "never", label: "Nikdy zkontrolované" },
-]
-
-export const defaultFilters = () => ({
-  status: [...ACTIVE_STATUSES],
-  state: [],
-  type: [],
-  unverified: false,
-  checked: null,
-  search: "",
-})
-
-const normalized = text => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-
-/** The client side of the boxes/ filters, so the list and the exports agree. */
-export const filterBoxes = (boxes, filters, season) => {
-  const start = seasonStart(season)
-  const search = normalized(filters.search.trim())
-  return boxes.filter(
-    box =>
-      (!filters.status.length || filters.status.includes(box.status)) &&
-      (!filters.state.length || filters.state.includes(box.season_state)) &&
-      (!filters.type.length || filters.type.includes(box.type_id)) &&
-      (!filters.unverified || !box.is_verified) &&
-      (filters.checked !== "this_season" ||
-        (box.last_checked_on && box.last_checked_on >= start)) &&
-      (filters.checked !== "before" ||
-        (box.last_checked_on && box.last_checked_on < start)) &&
-      (filters.checked !== "never" || !box.last_checked_on) &&
-      (!search || normalized(`${box.name} ${box.previous_names}`).includes(search)),
-  )
-}
-
-/** The same filters as query parameters of export.gpx / export.xlsx. */
-export const filterParams = (filters, season) => {
-  const start = seasonStart(season)
-  return {
-    status: filters.status,
-    season_state: filters.state,
-    type: filters.type,
-    ...(filters.unverified && { is_verified: false }),
-    ...(filters.checked === "this_season" && { last_checked_after: start }),
-    ...(filters.checked === "before" && { last_checked_before: start }),
-    ...(filters.checked === "never" && { never_checked: true }),
-  }
-}
 
 /** Boxes in the batch first, the rest after; both by name. */
 export const splitByBatch = (boxes, batch) => {

@@ -549,6 +549,26 @@ def test_season_states_per_area(board_client, area, unit, make_box, types):
     ]
     assert board_client.get(url, {"administration_unit": other_unit.pk}).json() == []
     assert board_client.get(url, {"season_state": "nonsense"}).status_code == 400
+    only_4 = [counts | {"to_check": 1, "attention": 0, "done": 0}]
+    assert board_client.get(url, {"last_checked_before": "2026-07-01"}).json() == only_4
+    assert board_client.get(url, {"last_checked_after": "2020-01-01"}).json() == only_4
+    assert board_client.get(url, {"last_checked_after": "2021-01-01"}).json() == []
+    assert board_client.get(url, {"never_checked": True}).json() == [
+        counts | {"to_check": 1, "done": 1}
+    ]
+
+
+def test_boxes_by_legend_entry(board_client, make_box):
+    make_box("1")
+    make_box("E", location=near(east=100), status=NestBox.Status.ENDED)
+    make_box("P", location=near(east=200), status=NestBox.Status.PLANNED)
+
+    def names(*states):
+        boxes = board_client.get(f"{API}/boxes/", {"state": states}).json()
+        return sorted(box["name"] for box in boxes["results"])
+
+    assert names("to_check", "ended") == ["1", "E"]
+    assert names("planned") == ["P"]
 
 
 def test_boxes_in_a_bounding_box(board_client, make_box):
