@@ -1,8 +1,9 @@
 <script setup>
-import { computed } from "vue"
-import { NButton, NCheckbox, NInput, NPopover, NSelect } from "naive-ui"
+import { computed, ref } from "vue"
+import { NButton, NCheckbox, NInput, NModal, NSelect } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
+import ChoiceChips from "@/components/app/ChoiceChips.vue"
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import {
   CHECKED_OPTIONS,
@@ -35,6 +36,9 @@ const props = defineProps({
 const emit = defineEmits(["update"])
 
 const update = patch => emit("update", patch)
+
+const open = ref(false)
+const CHECKED_CHOICES = [{ value: null, label: "Kdykoli" }, ...CHECKED_OPTIONS]
 
 const typeOptions = computed(() => categoryOptions(props.types))
 const typesById = computed(() => new Map(props.types.map(type => [type.id, type])))
@@ -128,79 +132,11 @@ const only = key => update({ shown: [key] })
           :placeholder="searchPlaceholder"
           @update:value="update({ search: $event })"
         />
-        <n-popover trigger="click" placement="bottom-end" :show-arrow="false">
-          <template #trigger>
-            <n-button size="small" data-testid="filters-button">
-              <template #icon><AppIcon name="filter" /></template>
-              Filtry
-              <span v-if="count" class="count">{{ count }}</span>
-            </n-button>
-          </template>
-          <div class="popover" data-testid="filters">
-            <div v-if="units" class="field">
-              <span class="label">Jednotka</span>
-              <n-select
-                :value="filters.unit"
-                :options="units"
-                size="small"
-                placeholder="Všechny jednotky"
-                clearable
-                @update:value="update({ unit: $event })"
-              />
-            </div>
-            <div class="field" :class="{ unavailable: unavailable.type }">
-              <span class="label">Typ</span>
-              <n-select
-                :value="filters.type"
-                :options="typeOptions"
-                size="small"
-                placeholder="Všechny typy"
-                multiple
-                clearable
-                :disabled="Boolean(unavailable.type)"
-                @update:value="update({ type: $event })"
-              />
-              <span v-if="unavailable.type" class="why">{{ unavailable.type }}</span>
-            </div>
-            <div
-              v-if="checked"
-              class="field"
-              :class="{ unavailable: unavailable.checked }"
-            >
-              <span class="label">Kontrola</span>
-              <n-select
-                :value="filters.checked"
-                :options="CHECKED_OPTIONS"
-                size="small"
-                placeholder="Kdykoli"
-                clearable
-                :disabled="Boolean(unavailable.checked)"
-                @update:value="update({ checked: $event })"
-              />
-              <span v-if="unavailable.checked" class="why">{{
-                unavailable.checked
-              }}</span>
-            </div>
-            <div
-              v-if="unverifiedCount !== null"
-              :class="{ unavailable: unavailable.unverified }"
-            >
-              <n-checkbox
-                :checked="filters.unverified"
-                :disabled="Boolean(unavailable.unverified)"
-                @update:checked="update({ unverified: $event })"
-              >
-                Jen neověřené ({{ unverifiedCount }})
-              </n-checkbox>
-              <span v-if="unavailable.unverified" class="why">{{
-                unavailable.unverified
-              }}</span>
-            </div>
-            <n-button v-if="count" size="small" quaternary @click="resetAll">
-              Zrušit všechny filtry
-            </n-button>
-          </div>
-        </n-popover>
+        <n-button size="small" data-testid="filters-button" @click="open = true">
+          <template #icon><AppIcon name="filter" /></template>
+          Filtry
+          <span v-if="count" class="count">{{ count }}</span>
+        </n-button>
       </div>
       <div v-if="chips.length" class="chips active hide-sm">
         <button
@@ -242,6 +178,94 @@ const only = key => update({ shown: [key] })
         <span class="num">{{ entry.count }}</span>
       </button>
     </div>
+    <n-modal
+      v-model:show="open"
+      preset="card"
+      title="Filtry"
+      class="filters-modal"
+      :bordered="false"
+      data-testid="filters"
+    >
+      <div class="sections">
+        <section :class="{ unavailable: unavailable.shown }">
+          <h3>Stav</h3>
+          <ChoiceChips
+            v-if="legendEntries.length"
+            :model-value="filters.shown"
+            :options="legendEntries.map(entry => ({ ...entry, value: entry.key }))"
+            multiple
+            @update:model-value="update({ shown: $event })"
+          >
+            <template #option="{ option }">
+              <MarkerGlyph :state="option.key === 'ended' ? 'out' : option.key" />
+              {{ option.label }} <span class="muted num">{{ option.count }}</span>
+            </template>
+          </ChoiceChips>
+          <p class="why">
+            {{
+              unavailable.shown ??
+              "Stejně jako kliknutí na legendu v mapě. Zaniklé budky jsou zprvu skryté."
+            }}
+          </p>
+        </section>
+        <section v-if="units">
+          <h3>Jednotka</h3>
+          <n-select
+            :value="filters.unit"
+            :options="units"
+            placeholder="Všechny jednotky"
+            clearable
+            @update:value="update({ unit: $event })"
+          />
+        </section>
+        <section :class="{ unavailable: unavailable.type }">
+          <h3>Typ budky</h3>
+          <ChoiceChips
+            :model-value="filters.type"
+            :options="typeOptions"
+            multiple
+            @update:model-value="update({ type: $event })"
+          />
+          <p class="why">
+            {{ unavailable.type ?? "Bez výběru všechny typy." }}
+          </p>
+        </section>
+        <section v-if="checked" :class="{ unavailable: unavailable.checked }">
+          <h3>Poslední kontrola</h3>
+          <ChoiceChips
+            :model-value="filters.checked"
+            :options="CHECKED_CHOICES"
+            @update:model-value="update({ checked: $event })"
+          />
+          <p v-if="unavailable.checked" class="why">{{ unavailable.checked }}</p>
+        </section>
+        <section
+          v-if="unverifiedCount !== null"
+          :class="{ unavailable: unavailable.unverified }"
+        >
+          <h3>Ověření</h3>
+          <n-checkbox
+            :checked="filters.unverified"
+            @update:checked="update({ unverified: $event })"
+          >
+            Jen neověřené budky ({{ unverifiedCount }})
+          </n-checkbox>
+          <p class="why">
+            {{
+              unavailable.unverified ?? "Ověřená budka má potvrzenou kontrolu z terénu."
+            }}
+          </p>
+        </section>
+      </div>
+      <template #footer>
+        <div class="footer">
+          <n-button quaternary :disabled="!count" @click="resetAll">
+            Zrušit všechny filtry
+          </n-button>
+          <n-button type="primary" @click="open = false">Zavřít</n-button>
+        </div>
+      </template>
+    </n-modal>
   </div>
 </template>
 
@@ -310,34 +334,64 @@ const only = key => update({ shown: [key] })
   background: var(--surface);
 }
 
-.unavailable {
+.active .unavailable {
   opacity: 0.55;
 }
 
-.popover {
-  width: 260px;
-  max-width: calc(100vw - 48px);
+.sections {
   display: grid;
-  gap: 12px;
+  gap: 22px;
 }
 
-.field {
+.sections section {
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
-.label {
-  font-size: 12px;
+.sections h3 {
+  margin: 0;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
+.sections :deep(.marker-glyph) {
+  width: 16px;
+  height: 16px;
+  border-width: 2.5px;
+}
+
+.sections :deep(.marker-glyph.out) {
+  width: 12px;
+  height: 12px;
+}
+
+.sections :deep(.marker-icon) {
+  width: 11px;
+  height: 11px;
+}
+
+.sections .num {
+  font-weight: 600;
+}
+
 .why {
-  display: block;
-  font-size: 12px;
+  margin: 0;
+  font-size: 13px;
   color: var(--muted);
+}
+
+.unavailable > :not(h3, .why) {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .legend {
@@ -451,5 +505,12 @@ const only = key => update({ shown: [key] })
   .legend {
     transition: bottom 0.2s ease;
   }
+}
+</style>
+
+<style>
+/* n-modal renders in a portal, outside the scoped styles */
+.filters-modal {
+  width: min(560px, calc(100vw - 32px));
 }
 </style>

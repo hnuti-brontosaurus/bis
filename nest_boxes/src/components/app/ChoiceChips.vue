@@ -31,7 +31,7 @@ const toggle = value => {
       @click="toggle(option.value)"
     >
       <AppIcon v-if="isOn(option.value)" name="check" />
-      {{ option.label }}
+      <slot name="option" :option="option">{{ option.label }}</slot>
     </button>
   </div>
 </template>
