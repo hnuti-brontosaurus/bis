@@ -70,7 +70,10 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const { filters, update } = useFilters()
-const { season, areas, statistics } = usePublicData(() => filters.value.type)
+// The public map filters by the unit only
+const { season, areas, statistics } = usePublicData(() =>
+  auth.isManager ? filters.value.type : [],
+)
 
 // What a click on the map picked; the panel's rows act on it
 const selectedAreaId = ref(null)
@@ -303,7 +306,8 @@ const focusBox = box => {
       <MapFilters
         :filters="filters"
         :units="unitOptions"
-        :types="types"
+        :types="auth.isManager ? types : null"
+        :states="auth.isManager"
         :unverified-count="auth.isManager ? unverifiedCount : null"
         :checked="auth.isManager"
         :unavailable="showsStatistics ? STATISTICS_UNAVAILABLE : {}"

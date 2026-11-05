@@ -18,7 +18,9 @@ const props = defineProps({
   filters: { type: Object, required: true },
   // [{ label, value }] of administration units; null where there is just one
   units: { type: Array, default: null },
-  types: { type: Array, required: true },
+  // null where the filter is not offered at all
+  types: { type: Array, default: null },
+  states: { type: Boolean, default: true },
   // filter key → why it doesn't apply to what the map shows now
   unavailable: { type: Object, default: () => ({}) },
   // null where the filter is not offered at all
@@ -40,8 +42,10 @@ const update = patch => emit("update", patch)
 const open = ref(false)
 const CHECKED_CHOICES = [{ value: null, label: "Kdykoli" }, ...CHECKED_OPTIONS]
 
-const typeOptions = computed(() => categoryOptions(props.types))
-const typesById = computed(() => new Map(props.types.map(type => [type.id, type])))
+const typeOptions = computed(() => categoryOptions(props.types ?? []))
+const typesById = computed(
+  () => new Map((props.types ?? []).map(type => [type.id, type])),
+)
 const legendEntries = computed(() =>
   // A state no box is in would only take room; counted without the legend's own filter
   LEGEND_KEYS.filter(key => props.legendCounts?.[key]).map(key => ({
@@ -77,14 +81,15 @@ const chips = computed(() => {
           props.units?.find(unit => unit.value === filters.unit)?.label ?? "Jednotka",
         reset: { unit: null },
       },
-    filters.type.length && {
-      key: "type",
-      label:
-        filters.type.length === 1
-          ? `Typ: ${typesById.value.get(filters.type[0])?.name ?? "?"}`
-          : `Typy: ${filters.type.length}`,
-      reset: { type: [] },
-    },
+    props.types &&
+      filters.type.length && {
+        key: "type",
+        label:
+          filters.type.length === 1
+            ? `Typ: ${typesById.value.get(filters.type[0])?.name ?? "?"}`
+            : `Typy: ${filters.type.length}`,
+        reset: { type: [] },
+      },
     !isDefaultShown(filters.shown) && {
       key: "shown",
       label: legendChip.value,
@@ -187,7 +192,7 @@ const only = key => update({ shown: [key] })
       data-testid="filters"
     >
       <div class="sections">
-        <section :class="{ unavailable: unavailable.shown }">
+        <section v-if="states" :class="{ unavailable: unavailable.shown }">
           <h3>Stav</h3>
           <ChoiceChips
             v-if="legendEntries.length"
@@ -218,7 +223,7 @@ const only = key => update({ shown: [key] })
             @update:value="update({ unit: $event })"
           />
         </section>
-        <section :class="{ unavailable: unavailable.type }">
+        <section v-if="types" :class="{ unavailable: unavailable.type }">
           <h3>Typ budky</h3>
           <ChoiceChips
             :model-value="filters.type"
