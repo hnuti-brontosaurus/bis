@@ -10,7 +10,7 @@ import {
   NText,
   useDialog,
 } from "naive-ui"
-import { faCheck, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faCheck, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { icon } from "@/contrib/composables/render.js"
 import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
@@ -18,6 +18,7 @@ import { storeToRefs } from "pinia"
 import axios from "axios"
 import AppPage from "@/components/app/AppPage.vue"
 import UploadPhotosDialog from "@/components/UploadPhotosDialog.vue"
+import AddTagDialog from "@/components/recipe/AddTagDialog.vue"
 import { propertyRef, scrollToFirstFormError } from "@/contrib/composables/helpers.js"
 import GenericForm from "@/contrib/components/GenericForm.vue"
 import { _ } from "@/composables/translations.js"
@@ -192,6 +193,9 @@ const basicInputs = computed(() => {
   ].filter(Boolean)
 })
 
+const showAddTag = ref(false)
+const onTagCreated = tag => recipe.value.tag_ids.push(tag.id)
+
 const tagInputs = computed(() =>
   tagGroups.value.map(group => ({
     type: "checkboxes",
@@ -353,7 +357,16 @@ const save = async () => {
         />
       </section>
       <section v-if="tagInputs.length" class="panel">
-        <n-h2>{{ _.recipes.tags }}</n-h2>
+        <div class="title-row">
+          <n-h2>{{ _.recipes.tags }}</n-h2>
+          <n-button
+            v-if="isEditor"
+            size="small"
+            :render-icon="icon(faPlus)"
+            @click="showAddTag = true"
+            >{{ _.edit_recipe.add_tag }}</n-button
+          >
+        </div>
         <GenericForm
           v-model:data="recipe"
           :inputs="tagInputs"
@@ -387,6 +400,11 @@ const save = async () => {
         </GenericForm>
       </section>
     </n-form>
+    <AddTagDialog
+      v-model:show="showAddTag"
+      :groups="tagGroups"
+      @created="onTagCreated"
+    />
     <UploadPhotosDialog
       v-model:show="showUploadDialog"
       :state="upload.state"

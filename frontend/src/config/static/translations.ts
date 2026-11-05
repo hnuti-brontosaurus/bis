@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 8631b8c95028031e
+// source-hash: 5d4c55a40e316b4c
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1327,6 +1327,14 @@ export const cookbook = {
     servings_note_hint:
       'Co se porcí myslí, např. „typická porce pro jednoho“ nebo „na jeden plech“. Zobrazí se pod počtem porcí.',
     recalculate_amounts: 'Přepočítávat množství při změně porcí nebo jednotky',
+    add_tag: 'Přidat tag',
+    add_tag_error: 'Tag se nepodařilo přidat',
+    tag_group: 'Kategorie',
+    tag_name: 'Název tagu',
+    add_tag_warning:
+      'Po přidání už tag nepůjde bez Blonďáka přejmenovat ani smazat, tak si název dobře rozmysli.',
+    add_tag_note:
+      'Pokud potřebuješ novou kategorii tagů, nebo kategorii či tag přesunout, přejmenovat nebo změnit pořadí, ozvi se Blonďákovi.',
   },
   home: {
     title: 'Veganská Brontosauří kuchařka',

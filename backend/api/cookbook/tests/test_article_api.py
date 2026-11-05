@@ -4,8 +4,7 @@ import pytest
 from cookbook.models.articles import Article, ArticleImage
 from rest_framework.test import APIClient
 
-from .conftest import _png_bytes
-from .test_permissions import _client_for
+from .conftest import _client_for, _png_bytes
 
 URL = "/api/cookbook/articles/manifest/"
 

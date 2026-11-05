@@ -11,78 +11,8 @@ Exercises the rules in `api/cookbook/permissions.py`:
 import base64
 
 import pytest
-from bis.models import User
-from cookbook.models.chefs import Chef
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import Recipe
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient
-
-
-def _make_chef_user(email, name="Other"):
-    user = User.objects.create(first_name=name, last_name="X", email=email)
-    Token.objects.get_or_create(user=user)
-    return user
-
-
-def _make_chef(user, is_editor=False):
-    return Chef.objects.create(
-        user=user,
-        name=user.first_name,
-        email=user.email,
-        is_editor=is_editor,
-    )
-
-
-def _client_for(user):
-    client = APIClient()
-    client.credentials(HTTP_AUTHORIZATION=f"Token {user.auth_token.key}")
-    return client
-
-
-@pytest.fixture
-def other_chef_user(db):
-    return _make_chef_user("other@example.com", name="Other")
-
-
-@pytest.fixture
-def other_chef(other_chef_user):
-    return _make_chef(other_chef_user)
-
-
-@pytest.fixture
-def other_client(other_chef_user, other_chef):
-    return _client_for(other_chef_user)
-
-
-@pytest.fixture
-def editor_user(db):
-    return _make_chef_user("editor@example.com", name="Editor")
-
-
-@pytest.fixture
-def editor(editor_user):
-    return _make_chef(editor_user, is_editor=True)
-
-
-@pytest.fixture
-def editor_client(editor_user, editor):
-    return _client_for(editor_user)
-
-
-@pytest.fixture
-def non_chef_user(db):
-    return _make_chef_user("plain@example.com", name="Plain")
-
-
-@pytest.fixture
-def non_chef_client(non_chef_user):
-    return _client_for(non_chef_user)
-
-
-@pytest.fixture
-def anon_client():
-    return APIClient()
 
 
 @pytest.fixture

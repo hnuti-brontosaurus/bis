@@ -18,6 +18,7 @@ Writes:
   * Recipe / ingredient / step / tip photo: created by whoever may edit the recipe.
   * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
   * Article image: editors upload; the article save deletes it.
+  * Recipe tag: editors create, in an existing group; the rest is admin work.
 
 The viewset wires this in via `CookbookViewSetMixin`, which both sets
 `permission_classes` and applies `filter_visible` in `get_queryset`.
@@ -164,7 +165,14 @@ class CookbookAccessPermission(BasePermission):
             return True
 
         if user.is_editor:
-            return model in (Article, ArticleImage, Recipe, Menu, *PHOTO_MODELS)
+            return model in (
+                Article,
+                ArticleImage,
+                Recipe,
+                RecipeTag,
+                Menu,
+                *PHOTO_MODELS,
+            )
 
         if model is Recipe:
             return self._matches(request, obj, "chef_id", user.chef.id)

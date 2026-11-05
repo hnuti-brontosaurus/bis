@@ -1,4 +1,5 @@
-from bis.cache import CachedViewSetMixin
+from api.cookbook.permissions import CookbookViewSetMixin
+from bis.cache import CachedViewSetMixin, invalidate_cache
 from cookbook_categories.models import (
     Allergen,
     IngredientCategory,
@@ -15,6 +16,7 @@ from cookbook_categories.serializers import (
     RecipeTagSerializer,
     UnitSerializer,
 )
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 
@@ -34,9 +36,15 @@ class RecipeRequiredTimeViewSet(CachedCookbookCategoryViewSet):
     queryset = RecipeRequiredTime.objects.all()
 
 
-class RecipeTagViewSet(CachedCookbookCategoryViewSet):
+class RecipeTagViewSet(
+    CookbookViewSetMixin, CreateModelMixin, CachedCookbookCategoryViewSet
+):
     serializer_class = RecipeTagSerializer
     queryset = RecipeTag.objects.all()
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        invalidate_cache(self.cache_namespace)
 
 
 class UnitViewSet(CachedCookbookCategoryViewSet):
