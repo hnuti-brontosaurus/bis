@@ -265,13 +265,18 @@ const selectBox = id => {
   scrollToRow(`[data-box-row="${id}"]`)
 }
 
+// A click on the selected row opens it, as a second click on its marker does
 const focusArea = areaId => {
+  if (areaId === selectedAreaId.value && canManage(areaId))
+    return router.push({ name: "area", params: { id: areaId } })
   selectedAreaId.value = areaId
   const area = areasById.value.get(areaId)
   if (area.marker) map.value.flyTo({ center: area.marker.coordinates, zoom: 11 })
 }
 
 const focusBox = box => {
+  if (box.id === selectedBoxId.value)
+    return router.push({ name: "box", params: { id: box.id } })
   selectedBoxId.value = box.id
   map.value.easeTo({
     center: box.location.coordinates,

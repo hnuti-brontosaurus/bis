@@ -268,5 +268,11 @@ test.describe("the map of areas", () => {
     await marker(other.name).click()
     await expect(row(page, other)).toHaveClass(/selected/)
     await expect(row(page, marked)).not.toHaveClass(/selected/)
+
+    // A click on the selected row opens the box, like a second click on its marker
+    await row(page, other).click()
+    await expect(
+      page.getByRole("heading", { name: other.name, exact: true }),
+    ).toBeVisible()
   })
 })
