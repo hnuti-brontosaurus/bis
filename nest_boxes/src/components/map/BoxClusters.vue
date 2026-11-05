@@ -36,6 +36,7 @@ const onMove = () => {
   moved.value += 1
 }
 map.value.on("moveend", onMove)
+map.value.on("resize", onMove)
 
 const clustered = computed(() => zoom.value < CLUSTER_UNTIL_ZOOM)
 
@@ -98,6 +99,7 @@ watch([() => props.boxes, () => props.selectedId, moved], render, { immediate: t
 
 onBeforeUnmount(() => {
   map.value.off("moveend", onMove)
+  map.value.off("resize", onMove)
   clear()
 })
 </script>

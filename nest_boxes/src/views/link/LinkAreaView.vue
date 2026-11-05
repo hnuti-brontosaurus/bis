@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue"
-import { RouterLink } from "vue-router"
+import { RouterLink, useRouter } from "vue-router"
 import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
@@ -31,6 +31,7 @@ const SORTS = [
 ]
 
 const link = useLinkStore()
+const router = useRouter()
 // whoami needs signal, and offline its failure would only be noise
 const auth = navigator.onLine ? useAuthStore() : null
 const position = usePosition()
@@ -95,7 +96,10 @@ const canManage = computed(
 const away = row =>
   position.value ? formatDistance(distance(position.value, row.location)) : ""
 
+// A second click on a batch box's marker opens its check, as on the manager maps
 const select = async id => {
+  if (id === selectedId.value && link.rows.some(row => row.id === id))
+    return router.push(checkRoute({ id }))
   selectedId.value = id
   await nextTick()
   document.querySelector(`[data-box-row="${id}"]`)?.scrollIntoView({ block: "nearest" })

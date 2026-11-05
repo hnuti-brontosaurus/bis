@@ -64,7 +64,9 @@ watch(
   },
   { immediate: true },
 )
+// A resize changes the view too, and the map is resized while it settles in
 map.value.on("moveend", sync)
+map.value.on("resize", sync)
 
 watch(
   () => props.selectedId,
@@ -76,6 +78,7 @@ watch(
 
 onBeforeUnmount(() => {
   map.value.off("moveend", sync)
+  map.value.off("resize", sync)
   clear()
 })
 </script>
