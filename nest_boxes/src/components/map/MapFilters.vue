@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from "vue"
 import { NButton, NInput, NModal, NSelect } from "naive-ui"
+import { useMediaQuery } from "@vueuse/core"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
@@ -40,6 +41,8 @@ const emit = defineEmits(["update"])
 const update = patch => emit("update", patch)
 
 const open = ref(false)
+// A phone keeps the search in the modal, so the bar stays one row
+const isPhone = useMediaQuery("(max-width: 720px)")
 const CHECKED_CHOICES = [{ value: null, label: "Kdykoli" }, ...CHECKED_OPTIONS]
 const VERIFIED_CHOICES = [
   { value: null, label: "Všechny" },
@@ -115,7 +118,9 @@ const chips = computed(() => {
   ].filter(Boolean)
 })
 // Only what this map offers; a unit kept from the map of areas is no filter on one area
-const count = computed(() => chips.value.length)
+const count = computed(
+  () => chips.value.length + (isPhone.value && props.filters.search ? 1 : 0),
+)
 
 const resetAll = () => update(defaultFilters())
 
@@ -132,9 +137,10 @@ const only = key => update({ shown: [key] })
 <template>
   <div class="map-filters" :style="{ '--bottom-inset': `${bottomInset}px` }">
     <div v-show="sheetStop !== 'full'" class="top">
-      <div class="bar">
+      <div class="bar" :class="{ 'has-mode': $slots.mode }">
         <div v-if="$slots.mode" class="mode"><slot name="mode" /></div>
         <n-input
+          v-if="!isPhone"
           class="search"
           :value="filters.search"
           size="small"
@@ -197,6 +203,15 @@ const only = key => update({ shown: [key] })
       data-testid="filters"
     >
       <div class="sections">
+        <section v-if="isPhone">
+          <h3>Hledat</h3>
+          <n-input
+            :value="filters.search"
+            clearable
+            :placeholder="searchPlaceholder"
+            @update:value="update({ search: $event })"
+          />
+        </section>
         <section v-if="states" :class="{ unavailable: unavailable.shown }">
           <h3>Stav</h3>
           <ChoiceChips
@@ -475,21 +490,15 @@ const only = key => update({ shown: [key] })
 @media (max-width: 720px) {
   .top {
     right: 56px;
-    justify-items: stretch;
   }
 
-  .bar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+  .bar.has-mode {
+    justify-self: stretch;
   }
 
   .mode {
-    grid-column: 1 / -1;
-    order: 1;
-  }
-
-  .search {
-    width: auto;
+    flex: 1;
+    min-width: 0;
   }
 
   .legend {

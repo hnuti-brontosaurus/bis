@@ -632,7 +632,7 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Filters** of the map, the area page and `/statistiky/` are one set in
   the URL (`composables/filters.js`: `unit`, `type`, `states`, `verified`,
   `checked`, `q`), drawn over the map by `MapFilters`: a floating bar with
-  the search and a "Filtry" modal (with the legend's states too), the active ones as chips, and the legend,
+  the search and a "Filtry" modal (with the legend's states too; on a phone the search moves into it), the active ones as chips, and the legend,
   whose entries (season states plus `ended`, hidden by default) toggle what is
   shown. A view opened without filters in its URL takes the previous view's,
   search excepted. On `areas/season_states/` the legend is applied client side,
