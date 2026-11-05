@@ -10,7 +10,9 @@ API = "/api/nest_boxes"
 
 
 @pytest.fixture(autouse=True)
-def no_throttle_history():
+def empty_cache():
+    """Throttle history and the public figures; on_commit never fires in a test,
+    so nothing would invalidate the figures between tests."""
     cache.clear()
     yield
     cache.clear()
@@ -33,21 +35,14 @@ def anonymous(client_for):
 
 
 @pytest.fixture
-def board_member(movement, unit, manager):
-    unit.board_members.add(manager)
+def budkar(movement, manager):
+    movement.nest_box_managers.add(manager)
     return manager
 
 
 @pytest.fixture
-def board_client(client_for, board_member):
-    return client_for(board_member)
-
-
-@pytest.fixture
-def budkar(movement):
-    user = User.objects.create(email="budkar@example.com")
-    movement.nest_box_managers.add(user)
-    return user
+def budkar_client(client_for, budkar):
+    return client_for(budkar)
 
 
 @pytest.fixture

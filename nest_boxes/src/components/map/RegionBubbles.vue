@@ -5,14 +5,12 @@ import { Marker } from "maplibre-gl"
 import { bubbleDiameter } from "@/components/map/geometry.js"
 import { areaBubbleElement } from "@/components/map/markers.js"
 
-const OVERLAY = "nest_boxes_regions"
-
 const props = defineProps({
   // PublicRegion[], see data/public.js
   regions: { type: Array, required: true },
 })
 
-const { map, setOverlay, removeOverlay } = inject("map")
+const { map } = inject("map")
 let markers = []
 
 const clear = () => {
@@ -21,27 +19,6 @@ const clear = () => {
 }
 
 watchEffect(() => {
-  // The boxes abroad come as a region without an outline
-  const features = props.regions
-    .filter(region => region.outline)
-    .map(region => ({
-      type: "Feature",
-      properties: { id: region.id },
-      geometry: region.outline,
-    }))
-  setOverlay(OVERLAY, colors => ({
-    sources: {
-      [OVERLAY]: { type: "geojson", data: { type: "FeatureCollection", features } },
-    },
-    layers: [
-      {
-        id: `${OVERLAY}_line`,
-        type: "line",
-        source: OVERLAY,
-        paint: { "line-color": colors.primary, "line-width": 1, "line-opacity": 0.45 },
-      },
-    ],
-  }))
   clear()
   markers = props.regions
     .filter(region => region.box_count)
@@ -60,10 +37,7 @@ watchEffect(() => {
     })
 })
 
-onBeforeUnmount(() => {
-  clear()
-  removeOverlay(OVERLAY)
-})
+onBeforeUnmount(clear)
 </script>
 
 <template>

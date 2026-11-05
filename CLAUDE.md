@@ -627,7 +627,7 @@ mockups in `mockups/`). It shares no code with the cookbook.
   bubble selects its row in the panel, a second click opens it (the area page
   only for managers), and so does a click on the selected row, and a merged bubble or cluster zooms to fit its members; opening and acting start from the list. An ended box within 5 m of a current one is left off every map as replaced (`withoutReplaced`), though it stays in the list. Only markers in or near the view exist (`inView`, refreshed on `moveend`): maplibre moves every DOM marker on every frame, off screen too. Boxes cluster below zoom 14 the way areas merge
   (`BoxClusters`, same `MERGE_GAP`, a merged bubble's thick outline). The landing map
-  groups by region instead (`public/regions/`: outline, a point inside, box
+  groups by region instead (`public/regions/`: a point inside, box
   count), so the public never gets a box's coordinates.
 - **Filters** of the map, the area page and `/statistiky/` are one set in
   the URL (`composables/filters.js`: `unit`, `type`, `states`, `problem` (why a box is K opravě), `verified`,
@@ -771,6 +771,9 @@ permissions, spacing, check upserts, confirming and statistics live in
 - The budkař role is `BrontosaurusMovement.nest_box_managers` (role slug
   `nest_box_manager`, `User.is_nest_box_manager`). It is deliberately not
   part of `is_staff`, and the admin shows the app to superusers only.
+- Managing is all or nothing: a budkař or superuser manages every area
+  (`permissions.is_manager`), nobody else any. An area's unit only groups the
+  statistics; its board gets no access.
 
 The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
 
@@ -787,9 +790,8 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
 - `NestBoxAPIMixin.handle_exception` turns the domain's Django
   `ValidationError` into a 400, `BatchClosed` into a 410 and `ProtectedError`
   into a 400, so views call the domain functions without try blocks.
-- Managers' querysets are filtered by `manageable_areas`, so another unit's
-  rows are 404s; `IsManager` (`permissions.is_manager`) makes everything a 403
-  for non-managers. A budkař without any area is still a manager.
+- `IsManager` makes every manager endpoint a 403 for non-managers, so their
+  querysets are unfiltered.
 - A batch link (`links/<token>/…`) shows only that batch's boxes and never
   volunteers' emails.
 - `POST /api/nest_boxes/testing/seed/` (TESTING only, 404 elsewhere) resets the
@@ -811,11 +813,16 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
   checks; change the help editor's Tiptap extensions with it. Links between
   articles are `/budky/napoveda/<slug>/`, and `HtmlText` opens them in place:
   in the volunteer's offline help, or in the check form's help panel.
+- The public figures (`public/regions/`, `public/statistics/`,
+  `public/statistics/seasons/`) are cached by `nest_boxes/public_cache.py`
+  under a generation key that any `NestBox`, `Check` or `Area` save or delete
+  replaces on commit. Bulk writes skip the signals, so call
+  `public_cache.invalidate()` after them, as the old import does.
 - `update_box` clears `elevation` when the location changes;
   `fill_nest_box_elevations` (in `nightly`) fills empty ones from OpenTopoData
   `eudem25m`, 100 points a request, one request a second.
 - `daily` sends `emails.open_batches_reminder` on Mondays: batches open over a
-  week, to the area unit's board and the batch's author.
+  week, to the batch's author while still a budkař, else to every budkař.
 
 `import_old_nest_boxes <dump.sql>` replaces **all** nest box data (areas,
 batches and photos included) with the old database. It reads the Adminer dump
@@ -864,6 +871,10 @@ asset 404 instead of falling back to `index.html`. A tab opened before a deploy
 still asks for the old chunks: the resulting `vite:preloadError` reloads the
 page (`frontend/src/index.tsx`) or, in the cookbook, fully loads the route it
 was navigating to (`router.onError` in `cookbook/src/router.js`).
+
+The ingress sends `/api/`, `/admin/` and the other Django paths straight to
+gunicorn, past the pod's nginx, so Django's `GZipMiddleware` compresses those
+and nginx (`gzip on`) only the static files.
 
 ### Data Flow
 1. React/Vue frontends → RTK-Query/Axios → Django REST Framework API

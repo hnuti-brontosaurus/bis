@@ -2,7 +2,6 @@
 import { computed, ref, shallowRef, watch } from "vue"
 import { NButton, NInput, NModal, NSelect } from "naive-ui"
 
-import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
 import { createArea, listUnits, updateArea } from "@/data/manage.js"
 
@@ -14,7 +13,6 @@ const props = defineProps({
 const emit = defineEmits(["saved"])
 const show = defineModel("show", { type: Boolean, required: true })
 
-const auth = useAuthStore()
 const units = shallowRef([])
 const values = ref({})
 const saving = ref(false)
@@ -34,7 +32,7 @@ watch(
       note: props.area?.note ?? "",
     }
     error.value = ""
-    if (auth.me.is_budkar && !units.value.length)
+    if (!units.value.length)
       listUnits().then(result => (units.value = result), reportError)
   },
   { immediate: true },
@@ -79,17 +77,12 @@ const save = async () => {
       <div class="field">
         <label for="area-unit">Stará se o ni</label>
         <n-select
-          v-if="auth.me.is_budkar"
           v-model:value="values.administration_unit_id"
           :options="unitOptions"
           :input-props="{ id: 'area-unit' }"
           filterable
           placeholder="Základní článek"
         />
-        <span v-else>{{ area.administration_unit.abbreviation }}</span>
-        <span v-if="!auth.me.is_budkar" class="hint">
-          Článek oblasti mění budkař.
-        </span>
       </div>
       <div class="field">
         <label for="area-note">Poznámka</label>

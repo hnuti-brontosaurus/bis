@@ -19,15 +19,12 @@ export const listPublicAreas = () => fetchAll("/public/areas/")
  * @property {string} name
  * @property {{ type: "Point", coordinates: [number, number] }} marker
  *   a point inside the region, never one of its boxes
- * @property {{ type: "Polygon", coordinates: number[][][] } | null} outline
- *   simplified; null abroad
  * @property {number} box_count boxes in use
  */
 
-let regions = null
-/** @returns {Promise<PublicRegion[]>} fetched once: the outlines never change */
+/** @returns {Promise<PublicRegion[]>} */
 export const listPublicRegions = () =>
-  (regions ??= client.get("/public/regions/").then(({ data }) => data))
+  client.get("/public/regions/").then(({ data }) => data)
 
 /**
  * @typedef {Object} SeasonFigures

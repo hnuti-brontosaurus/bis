@@ -22,6 +22,8 @@ from nest_boxes.models import Area, Batch, Check, NestBox, NestBoxHistory
 from nest_boxes.old_import.plan import ENTRIES_SINCE, OLD_TYPES
 from regions.models import Region
 
+from nest_boxes import public_cache
+
 HEADQUARTERS_CATEGORY = "headquarter"
 ACTIVITY_SINCE = date(2022, 1, 1)
 # Sitting on a unit's board says more than organizing one of its events
@@ -228,6 +230,7 @@ def load(plan, old_users):
             ]
     Check.objects.bulk_create(checks)
     Check.occupants.through.objects.bulk_create(check_occupants)
+    transaction.on_commit(public_cache.invalidate)
 
     movement = BrontosaurusMovement.get()
     managers = {users[old] for old in plan.data_users if old in users}

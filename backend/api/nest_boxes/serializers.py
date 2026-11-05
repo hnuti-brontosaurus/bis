@@ -40,13 +40,9 @@ from rest_framework.relations import PrimaryKeyRelatedField, SlugRelatedField
 from rest_framework.serializers import (
     ModelSerializer,
     Serializer,
-    SerializerMethodField,
     as_serializer_error,
 )
 from rest_framework_gis.fields import GeometryField
-
-# Degrees, about 400 m: a region's outline is only drawn on a map of the country
-OUTLINE_TOLERANCE = 0.004
 
 
 def related(model, source, **kwargs):
@@ -131,16 +127,10 @@ class PublicAreaSerializer(ModelSerializer):
 
 class PublicRegionSerializer(ModelSerializer):
     marker = GeometryField(precision=4)
-    outline = SerializerMethodField()
-    box_count = IntegerField()
 
     class Meta:
         model = Region
-        fields = ("id", "name", "marker", "outline", "box_count")
-
-    def get_outline(self, region):
-        outline = region.area.simplify(OUTLINE_TOLERANCE, preserve_topology=True)
-        return GeometryField(precision=4).to_representation(outline)
+        fields = ("id", "name", "marker")
 
 
 class StatisticsAreaSerializer(ModelSerializer):

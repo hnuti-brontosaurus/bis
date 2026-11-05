@@ -95,6 +95,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # The ingress sends /api/ straight to gunicorn, so nothing else compresses it
+    "django.middleware.gzip.GZipMiddleware",
     "bis.middleware.RequestLogMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -106,9 +108,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 if ENVIRONMENT in ("local", "testing"):
-    MIDDLEWARE.insert(0, "bis.middleware.sql_middleware")
+    # After GZipMiddleware: the toolbar edits the HTML it encodes
+    MIDDLEWARE.insert(1, "bis.middleware.sql_middleware")
     MIDDLEWARE.insert(
-        0,
+        1,
         "debug_toolbar.middleware.DebugToolbarMiddleware",
     )
 

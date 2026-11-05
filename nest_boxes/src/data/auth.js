@@ -29,17 +29,12 @@ export const useAuthStore = defineStore("auth", () => {
   const loaded = refresh()
 
   const isAuthenticated = computed(() => Boolean(me.value?.is_authenticated))
-  const isManager = computed(
-    () => Boolean(me.value?.is_budkar) || Boolean(me.value?.managed_area_ids.length),
-  )
+  const isManager = computed(() => Boolean(me.value?.is_manager))
   const openBatchCount = computed(() => me.value?.open_batch_count ?? 0)
   const initials = computed(() => {
     const user = me.value?.user
     return user ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}` : ""
   })
-
-  const canManage = areaId =>
-    Boolean(me.value?.is_budkar) || Boolean(me.value?.managed_area_ids.includes(areaId))
 
   const isAnonymous = computed(() => me.value?.is_authenticated === false)
 
@@ -50,7 +45,6 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     isAnonymous,
     isManager,
-    canManage,
     openBatchCount,
     initials,
   }

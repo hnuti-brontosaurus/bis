@@ -33,7 +33,7 @@ describe("login", () => {
   })
 
   it("lets a signed-in user through", async () => {
-    whoami.mockResolvedValue({ data: { is_authenticated: true, managed_area_ids: [] } })
+    whoami.mockResolvedValue({ data: { is_authenticated: true, is_manager: false } })
     expect(await requireLogin(managerPage)).toBeUndefined()
     expect(window.location.assign).not.toHaveBeenCalled()
   })

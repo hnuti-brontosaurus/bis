@@ -91,7 +91,7 @@ const save = async () => {
           <div class="row">
             <p class="eyebrow">Nápověda</p>
             <span class="spacer" />
-            <n-button v-if="auth.me?.is_budkar" size="small" @click="edit">
+            <n-button v-if="auth.isManager" size="small" @click="edit">
               <template #icon><AppIcon name="edit" /></template>
               Upravit
             </n-button>

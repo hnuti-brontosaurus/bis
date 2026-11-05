@@ -89,10 +89,7 @@ const bounds = link.payload.boxes.length
   ? boundsOf(link.payload.boxes.map(box => box.location))
   : undefined
 
-const canManage = computed(
-  () =>
-    auth?.me?.is_budkar || auth?.me?.managed_area_ids.includes(link.payload.area.id),
-)
+const canManage = computed(() => Boolean(auth?.isManager))
 
 const away = row =>
   position.value ? formatDistance(distance(position.value, row.location)) : ""

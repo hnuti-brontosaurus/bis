@@ -243,8 +243,6 @@ const detailContext = computed(() => ({
 }))
 const extras = box => boxExtras(box, null, detailContext.value)
 
-const canManage = auth.canManage
-
 const onAreaCreated = area => router.push({ name: "area", params: { id: area.id } })
 
 const scrollToRow = async selector => {
@@ -268,7 +266,7 @@ const selectBox = id => {
 
 // A click on the selected row opens it, as a second click on its marker does
 const focusArea = areaId => {
-  if (areaId === selectedAreaId.value && canManage(areaId))
+  if (areaId === selectedAreaId.value && auth.isManager)
     return router.push({ name: "area", params: { id: areaId } })
   selectedAreaId.value = areaId
   const area = areasById.value.get(areaId)
@@ -335,7 +333,7 @@ const focusBox = box => {
             <h2 data-testid="areas-summary">{{ heading }}</h2>
           </div>
           <n-button
-            v-if="auth.me?.is_budkar"
+            v-if="auth.isManager"
             size="small"
             quaternary
             @click="creatingArea = true"
@@ -471,7 +469,7 @@ const focusBox = box => {
             >
               <td class="first">
                 <RouterLink
-                  v-if="canManage(row.area.id)"
+                  v-if="auth.isManager"
                   :to="{ name: 'area', params: { id: row.area.id } }"
                   @click.stop
                 >

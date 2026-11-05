@@ -1,13 +1,14 @@
 from collections import defaultdict
 from datetime import timedelta
 
+from administration_units.models import BrontosaurusMovement
 from bis.emails import emails, text
 from django.conf import settings
 from django.utils.formats import date_format
 from django.utils.html import format_html, format_html_join
 from django.utils.timezone import localtime, now
 from nest_boxes.models import Batch
-from nest_boxes.permissions import can_manage
+from nest_boxes.permissions import is_manager
 
 WANT_TO_HANG_RECIPIENTS = [emails["movement"][1]]
 REMIND_AFTER = timedelta(weeks=1)
@@ -50,17 +51,16 @@ def batch_url(batch):
 
 
 def open_batches_reminder():
-    """Weekly: the unit's board, and the batch's author while they still manage the
-    area, hear about every batch left open for over a week."""
+    """Weekly: the batch's author while still a budkař, else every budkař, hears
+    about each batch left open for over a week."""
     batches = Batch.objects.filter(
         closed_at=None, created_at__lt=now() - REMIND_AFTER
-    ).select_related("area__administration_unit", "created_by")
+    ).select_related("area", "created_by")
+    budkari = list(BrontosaurusMovement.get().nest_box_managers.all())
     by_recipient = defaultdict(list)
     for batch in batches:
-        recipients = set(batch.area.administration_unit.board_members.all())
-        if batch.created_by and can_manage(batch.created_by, batch.area):
-            recipients.add(batch.created_by)
-        for recipient in recipients:
+        author = batch.created_by
+        for recipient in [author] if author and is_manager(author) else budkari:
             by_recipient[recipient].append(batch)
 
     for recipient, batches in by_recipient.items():

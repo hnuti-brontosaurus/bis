@@ -9,7 +9,7 @@ from api.nest_boxes.serializers import (
     categories_data,
 )
 from api.nest_boxes.views.base import (
-    IsBudkarOrReadOnly,
+    IsManagerOrReadOnly,
     NestBoxAPIMixin,
     help_articles,
 )
@@ -25,9 +25,9 @@ from nest_boxes.models import (
     HelpImage,
     NestBox,
     NestBoxType,
-    in_use,
 )
-from nest_boxes.permissions import can_manage_all, manageable_areas
+from nest_boxes.permissions import is_manager
+from nest_boxes.public_cache import cached
 from nest_boxes.statistics import (
     default_season,
     season_statistics,
@@ -50,7 +50,7 @@ class WhoAmIView(NestBoxAPIMixin, APIView):
     @method_decorator(ensure_csrf_cookie)
     def get(self, request):
         user = request.user
-        areas = manageable_areas(user)
+        manager = is_manager(user)
         return Response(
             {
                 "is_authenticated": user.is_authenticated,
@@ -59,11 +59,10 @@ class WhoAmIView(NestBoxAPIMixin, APIView):
                     if user.is_authenticated
                     else None
                 ),
-                "is_budkar": can_manage_all(user),
-                "managed_area_ids": list(areas.values_list("id", flat=True)),
-                "open_batch_count": Batch.objects.filter(
-                    area__in=areas, closed_at=None
-                ).count(),
+                "is_manager": manager,
+                "open_batch_count": (
+                    Batch.objects.filter(closed_at=None).count() if manager else 0
+                ),
             }
         )
 
@@ -86,23 +85,37 @@ class PublicAreaViewSet(
 ABROAD_MARKER = {"type": "Point", "coordinates": [17.4194825, 50.7438250]}
 
 
+def _cached(request, compute):
+    return Response(cached(request.get_full_path(), compute))
+
+
+def _regions():
+    # Counted apart: grouped by region, the marker would be computed per box
+    counts = dict(
+        NestBox.objects.in_use().values_list("region").annotate(Count("pk")).order_by()
+    )
+    regions = Region.objects.defer("area").annotate(marker=PointOnSurface("area"))
+    abroad = {
+        "id": "abroad",
+        "name": "V zahraničí",
+        "marker": ABROAD_MARKER,
+        "box_count": counts.get(None, 0),
+    }
+    return [
+        *(
+            {**region, "box_count": counts.get(region["id"], 0)}
+            for region in PublicRegionSerializer(regions, many=True).data
+        ),
+        abroad,
+    ]
+
+
 class PublicRegionsView(NestBoxAPIMixin, APIView):
-    """Every region with its outline and boxes in use, for the landing map,
-    and the boxes abroad as a region without an outline."""
+    """Every region with its boxes in use, for the landing map, and the boxes
+    abroad as one more region."""
 
     def get(self, request):
-        regions = Region.objects.annotate(
-            marker=PointOnSurface("area"),
-            box_count=Count("nest_boxes", filter=in_use("nest_boxes__")),
-        )
-        abroad = {
-            "id": "abroad",
-            "name": "V zahraničí",
-            "marker": ABROAD_MARKER,
-            "outline": None,
-            "box_count": NestBox.objects.in_use().filter(region=None).count(),
-        }
-        return Response([*PublicRegionSerializer(regions, many=True).data, abroad])
+        return _cached(request, _regions)
 
 
 def _types(request):
@@ -114,27 +127,27 @@ def _types(request):
 def _serialize_areas(statistics):
     for row in statistics["areas"]:
         row["area"] = StatisticsAreaSerializer(row["area"]).data
-    return Response(statistics)
+    return statistics
 
 
 class StatisticsView(NestBoxAPIMixin, APIView):
     def get(self, request):
         season = request.query_params.get("season")
-        return _serialize_areas(
-            season_statistics(
-                (
-                    default_season()
-                    if season is None
-                    else IntegerField(min_value=1900).run_validation(season)
-                ),
-                _types(request),
-            )
+        season = (
+            default_season()
+            if season is None
+            else IntegerField(min_value=1900).run_validation(season)
+        )
+        types = _types(request)
+        return _cached(
+            request, lambda: _serialize_areas(season_statistics(season, types))
         )
 
 
 class SeasonStatisticsView(NestBoxAPIMixin, APIView):
     def get(self, request):
-        return _serialize_areas(statistics_by_season(_types(request)))
+        types = _types(request)
+        return _cached(request, lambda: _serialize_areas(statistics_by_season(types)))
 
 
 class WantToHangThrottle(UserRateThrottle):
@@ -165,7 +178,7 @@ class HelpArticleViewSet(
 ):
     lookup_field = "slug"
     serializer_class = HelpArticleSerializer
-    permission_classes = [IsBudkarOrReadOnly]
+    permission_classes = [IsManagerOrReadOnly]
     pagination_class = None
 
     def get_queryset(self):
@@ -183,5 +196,5 @@ class HelpImageViewSet(
     """An image is uploaded the moment it is inserted; the article save deletes it."""
 
     serializer_class = HelpImageSerializer
-    permission_classes = [IsBudkarOrReadOnly]
+    permission_classes = [IsManagerOrReadOnly]
     queryset = HelpImage.objects.all()
