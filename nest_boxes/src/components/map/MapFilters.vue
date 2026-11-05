@@ -301,7 +301,8 @@ const only = key => update({ shown: [key] })
           />
           <p class="why">
             {{
-              unavailable.verified ?? "Ověřená budka má potvrzenou kontrolu z terénu."
+              unavailable.verified ??
+              "Ověřená budka má potvrzenou kontrolu z terénu v nové databázi."
             }}
           </p>
         </section>
