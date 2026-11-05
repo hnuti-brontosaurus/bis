@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: a6a727f06078dd4c
+// source-hash: 077a8e312c895ad4
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1434,7 +1434,8 @@ export const cookbook = {
     title: 'Moje poznámka',
     add: 'Přidat poznámku',
     edit: 'Upravit poznámku',
-    hint: 'Poznámku k receptu uvidíš jen ty, třeba „2,5 dávky na moji největší dortovou formu“.',
+    hint: 'Zapiš si, co chceš mít při příštím vaření po ruce, třeba „2,5 dávky na moji největší dortovou formu“.',
+    private: 'Poznámku vidíš jen ty.',
     dialog_hint: 'Poznámku uvidíš jen ty. Když ji uložíš prázdnou, smaže se.',
     load_error: 'Poznámku se nepodařilo načíst',
   },

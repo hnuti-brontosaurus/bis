@@ -305,8 +305,10 @@ const onDelete = () => {
       <n-h2>{{ _.recipes.sources }}</n-h2>
       <n-text tag="div" class="prose"><HtmlText :html="recipe.sources" /></n-text>
     </section>
-    <RecipeComments :recipe="recipe" />
-    <RecipeNote :recipe="recipe" />
+    <div class="columns">
+      <RecipeComments :recipe="recipe" />
+      <RecipeNote :recipe="recipe" />
+    </div>
   </AppPage>
 </template>
 

@@ -1,7 +1,8 @@
 <script setup>
-import { NButton, NFlex, NH2, NSwitch, NTag, NText, useDialog } from "naive-ui"
+import { NButton, NFlex, NH2, NSwitch, NText, useDialog } from "naive-ui"
 import { ref, watch } from "vue"
-import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faLock, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import { icon } from "@/contrib/composables/render.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { recipeCommentsApi } from "@/data/recipeComments.js"
@@ -53,10 +54,11 @@ const remove = comment =>
   })
 
 const date = value => new Date(value).toLocaleDateString("cs-CZ")
+const initial = name => name?.trim()[0]?.toUpperCase() ?? "?"
 </script>
 
 <template>
-  <section>
+  <section class="panel">
     <div class="title-row">
       <n-h2>{{ _.comments.title }}</n-h2>
       <n-button size="small" :render-icon="icon(faPlus)" @click="write">
@@ -64,30 +66,35 @@ const date = value => new Date(value).toLocaleDateString("cs-CZ")
       </n-button>
     </div>
     <n-text v-if="!comments.length" depth="3">{{ _.comments.empty }}</n-text>
-    <article v-for="comment in comments" :key="comment.id" class="comment">
-      <n-flex align="center" :size="8">
-        <strong>{{ comment.author }}</strong>
-        <n-text depth="3">{{ date(comment.created_at) }}</n-text>
-        <n-tag v-if="!comment.is_public" size="small" :bordered="false">
-          {{ _.comments.private }}
-        </n-tag>
-        <n-button
-          v-if="comment.can_delete"
-          class="delete"
-          size="tiny"
-          quaternary
-          :title="_.comments.delete"
-          :render-icon="icon(faTrash)"
-          @click="remove(comment)"
-        />
-      </n-flex>
-      <HtmlText :html="comment.comment" />
-      <RecipePhotos
-        v-if="comment.photos.length"
-        :photos="comment.photos"
-        :alt="comment.author"
-      />
-    </article>
+    <div v-else class="comments">
+      <article v-for="comment in comments" :key="comment.id" class="comment">
+        <span class="avatar display-font">{{ initial(comment.author) }}</span>
+        <div class="comment-body">
+          <div class="comment-meta">
+            <span class="author">{{ comment.author }}</span>
+            <span class="muted">{{ date(comment.created_at) }}</span>
+            <span v-if="!comment.is_public" class="muted private">
+              <font-awesome-icon :icon="faLock" /> {{ _.comments.private }}
+            </span>
+            <n-button
+              v-if="comment.can_delete"
+              class="delete"
+              size="tiny"
+              quaternary
+              :title="_.comments.delete"
+              :render-icon="icon(faTrash)"
+              @click="remove(comment)"
+            />
+          </div>
+          <HtmlText :html="comment.comment" />
+          <RecipePhotos
+            v-if="comment.photos.length"
+            :photos="comment.photos"
+            :alt="comment.author"
+          />
+        </div>
+      </article>
+    </div>
     <WriteDialog
       v-model:show="writing"
       :title="_.comments.add"
@@ -114,14 +121,60 @@ const date = value => new Date(value).toLocaleDateString("cs-CZ")
 <style scoped>
 .comment {
   display: flex;
+  gap: 12px;
+  padding: 14px 0;
+}
+
+.comment:first-child {
+  padding-top: 0;
+}
+
+.comment + .comment {
+  border-top: 1px solid var(--line);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  color: var(--primary-text);
+  font-weight: 700;
+}
+
+.comment-body {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
-  max-width: 66ch;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.author {
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.private {
+  font-style: italic;
 }
 
 .delete {
+  align-self: center;
   margin-left: auto;
 }
 </style>

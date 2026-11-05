@@ -2,7 +2,8 @@
 import { NButton, NH2, NText } from "naive-ui"
 import { computed, ref, watch } from "vue"
 import { storeToRefs } from "pinia"
-import { faPen, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { faLock, faPen, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
 import { icon } from "@/contrib/composables/render.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { recipeNotesApi } from "@/data/recipeComments.js"
@@ -50,22 +51,25 @@ const save = async value => {
 </script>
 
 <template>
-  <section>
+  <section class="panel">
     <div class="title-row">
       <n-h2>{{ _.notes.title }}</n-h2>
       <n-button size="small" :render-icon="icon(note ? faPen : faPlus)" @click="write">
         {{ note ? _.notes.edit : _.notes.add }}
       </n-button>
     </div>
-    <div v-if="note" class="note">
+    <template v-if="note">
       <HtmlText v-if="note.note" :html="note.note" />
       <RecipePhotos
         v-if="note.photos.length"
         :photos="note.photos"
         :alt="recipe.name"
       />
-    </div>
+    </template>
     <n-text v-else depth="3">{{ _.notes.hint }}</n-text>
+    <n-text depth="3" class="private">
+      <font-awesome-icon :icon="faLock" /> {{ _.notes.private }}
+    </n-text>
     <WriteDialog
       v-model:show="writing"
       :title="_.notes.title"
@@ -80,14 +84,7 @@ const save = async value => {
 </template>
 
 <style scoped>
-.note {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 66ch;
-  padding: 10px 14px;
-  border-left: 4px solid var(--primary);
-  border-radius: 0 3px 3px 0;
-  background: var(--primary-soft);
+.private {
+  font-size: 0.85em;
 }
 </style>
