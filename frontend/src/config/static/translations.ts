@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: bab11b938e5abe13
+// source-hash: a6a727f06078dd4c
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1377,6 +1377,24 @@ export const cookbook = {
   home: {
     title: 'Veganská Brontosauří kuchařka',
     subtitle: '*nejen pro Brontosaury',
+    open: 'Otevřít',
+    recipes:
+      'Vyzkoušené veganské recepty od Brontosauřího kuchařstva, od snídaně po vaření pro celou akci.',
+    menus: 'Jídelníčky na celou akci, ať víš, co uvařit a kolik čeho nakoupit.',
+    chefs: 'Kdo za recepty stojí.',
+    ingredients: 'Přísady, jejich alergeny a přepočty jednotek.',
+    manifest: 'Proč na akcích Brontosaura vaříme vegansky.',
+    how_to: 'První kroky k rostlinné stravě.',
+    risks: 'Na co si dát pozor, aby byla strava pestrá a vyvážená.',
+    where_to_go: 'Knihy, weby a další zdroje, když chceš vědět víc.',
+    bronto:
+      'Jak uvařit pro celou akci, od plánování a nákupu po poslední talíř.',
+    faq: 'Odpovědi na to, na co se lidé ptají nejčastěji.',
+    dumpster_diving:
+      'Jak zachránit jídlo, které by jinak skončilo v kontejneru.',
+    zero_waste: 'Jak vařit a nakupovat s co nejmenším odpadem.',
+    join_us:
+      'Přidej svůj recept, pomoz s kuchařkou nebo se zapoj do Brontosaura.',
   },
   editor: {
     bold: 'Tučně',
