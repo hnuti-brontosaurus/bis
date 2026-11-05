@@ -5,6 +5,7 @@ import {
   groupByArea,
   markerState,
   splitByBatch,
+  withoutReplaced,
 } from "@/composables/areaBoxes.js"
 
 const box = (name, overrides = {}) => ({
@@ -111,5 +112,25 @@ describe("groupByArea", () => {
       ["Cibulka", ["2"]],
       ["Žabovřesky", ["9", "10"]],
     ])
+  })
+})
+
+describe("withoutReplaced", () => {
+  const at = metresEast => ({
+    type: "Point",
+    coordinates: [14.4 + metresEast / 71_700, 50],
+  })
+
+  it("hides an ended box a current one hangs within 5 m of", () => {
+    const replaced = box("Old", { status: "ended", location: at(0) })
+    const kept = box("Far", { status: "ended", location: at(30) })
+    const current = box("New", { location: at(3) })
+    expect(names(withoutReplaced([replaced, kept, current]))).toEqual(["Far", "New"])
+  })
+
+  it("looks for the replacement among all boxes, not just the shown ones", () => {
+    const replaced = box("Old", { status: "ended", location: at(0) })
+    const current = box("New", { status: "planned", location: at(4) })
+    expect(withoutReplaced([replaced], [replaced, current])).toEqual([])
   })
 })

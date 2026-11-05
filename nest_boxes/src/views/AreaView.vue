@@ -22,6 +22,7 @@ import {
   boxRowDetail,
   markerState,
   splitByBatch,
+  withoutReplaced,
 } from "@/composables/areaBoxes.js"
 import { boxCountLabel, currentSeason } from "@/composables/czech.js"
 import {
@@ -105,7 +106,7 @@ const detail = box =>
   })
 
 const markerBoxes = computed(() =>
-  shown.value
+  withoutReplaced(shown.value, area.value.boxes)
     .filter(box => box.status !== "planned")
     .map(box => ({ ...box, state: markerState(box, batch.value) })),
 )
@@ -340,6 +341,7 @@ watch(batchId, () => (selectedId.value = null))
       :center="center"
       :batch-id="batch?.id ?? null"
       :types="data.categories.types"
+      :other-boxes="area.boxes"
       @saved="onPlanned"
     />
     <GpxImportDialog

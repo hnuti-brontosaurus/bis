@@ -6,7 +6,9 @@ import { NButton, NInput, NInputNumber, NModal, NSelect } from "naive-ui"
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
 import BoxFields from "@/components/box/BoxFields.vue"
+import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import { boxValues } from "@/components/check/checkForm.js"
+import { markerState, withoutReplaced } from "@/composables/areaBoxes.js"
 import { formatDistance } from "@/composables/czech.js"
 import {
   CONDITION_OPTIONS,
@@ -27,9 +29,17 @@ const props = defineProps({
   // a new box is planned into this batch
   batchId: { type: Number, default: null },
   types: { type: Array, required: true },
+  // the area's boxes, ended ones included, shown on the map for orientation
+  otherBoxes: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(["saved"])
+
+const mapBoxes = computed(() =>
+  withoutReplaced(props.otherBoxes)
+    .filter(box => box.id !== props.box?.id)
+    .map(box => ({ ...box, state: markerState(box, null) })),
+)
 const show = defineModel("show", { type: Boolean, required: true })
 
 const blank = () => ({
@@ -188,7 +198,11 @@ const save = async () => {
               ]
             : undefined
         "
-      />
+      >
+        <template #map>
+          <BoxMarkers :boxes="mapBoxes" />
+        </template>
+      </BoxFields>
       <div
         v-for="warning in warnings.spacing"
         :key="warning.box_id"

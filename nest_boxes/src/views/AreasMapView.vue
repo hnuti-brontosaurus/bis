@@ -13,7 +13,12 @@ import BoxClusters from "@/components/map/BoxClusters.vue"
 import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
-import { boxRowDetail, groupByArea, markerState } from "@/composables/areaBoxes.js"
+import {
+  boxRowDetail,
+  groupByArea,
+  markerState,
+  withoutReplaced,
+} from "@/composables/areaBoxes.js"
 import {
   areaCountLabel,
   boxCountLabel,
@@ -180,7 +185,7 @@ const legend = computed(() => {
 })
 const markerBoxes = computed(() =>
   showsBoxes.value
-    ? shownBoxes.value
+    ? withoutReplaced(shownBoxes.value, unitBoxes.value)
         .filter(box => box.status !== "planned")
         .map(box => ({ ...box, state: markerState(box, null) }))
     : [],

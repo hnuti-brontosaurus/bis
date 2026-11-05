@@ -1,9 +1,26 @@
+import { distance } from "@/components/map/geometry.js"
 import { checkResult, lastCheckedLabel, typeName } from "@/composables/boxes.js"
 import { CONDITION_LABELS, STATUS_LABELS } from "@/composables/labels.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 
 // A box on a tree, or about to be; ended ones are history.
 export const ACTIVE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
+
+// An ended box this close to a box that isn't ended was replaced by it
+const REPLACED_WITHIN = 5
+
+/**
+ * `boxes` without the ended ones some box of `others` (not ended) hangs in
+ * place of, which on a map would only cover their replacement.
+ */
+export const withoutReplaced = (boxes, others = boxes) => {
+  const current = others.filter(box => box.status !== "ended")
+  return boxes.filter(
+    box =>
+      box.status !== "ended" ||
+      !current.some(other => distance(box.location, other.location) <= REPLACED_WITHIN),
+  )
+}
 
 /** Boxes in the batch first, the rest after; both by name. */
 export const splitByBatch = (boxes, batch) => {
