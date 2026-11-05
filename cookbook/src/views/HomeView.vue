@@ -58,7 +58,7 @@ const joinUs = { key: "join_us", icon: faHandshake }
   <div class="home">
     <header class="intro">
       <n-h1 class="title">{{ _.home.title }}</n-h1>
-      <n-text depth="3">{{ _.home.subtitle }}</n-text>
+      <n-text depth="3" class="subtitle">{{ _.home.subtitle }}</n-text>
     </header>
 
     <section v-for="section in sections" :key="section.key" class="section">
@@ -118,13 +118,32 @@ const joinUs = { key: "join_us", icon: faHandshake }
 .intro {
   display: flex;
   flex-direction: column;
+  gap: 8px;
   align-items: center;
+  padding: 24px 0 4px;
   text-align: center;
 }
 
+.intro::after {
+  width: 56px;
+  height: 3px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: var(--accent);
+  content: "";
+}
+
+.subtitle {
+  font-size: 1.05em;
+  font-style: italic;
+}
+
 .intro .title {
+  max-width: 18ch;
   margin: 0;
   color: var(--primary-text);
+  font-size: clamp(2em, 5vw, 2.8em);
+  line-height: 1.15;
 }
 
 .section {
