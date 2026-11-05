@@ -300,6 +300,7 @@ const save = async () => {
       ingredient => ({ ...ingredient, amount: ingredient.amount / servings.value }),
     )
     recipe.value.steps.forEach((row, i) => (row.order = i))
+    recipe.value.tips.forEach((row, i) => (row.order = i))
 
     showUploadDialog.value = true
     await upload.run(recipe.value)

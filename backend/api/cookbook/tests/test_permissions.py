@@ -461,6 +461,7 @@ photo_endpoints = pytest.mark.parametrize(
         ("recipe_photos", lambda recipe: recipe),
         ("recipe_ingredient_photos", lambda recipe: recipe.ingredients.first()),
         ("recipe_step_photos", lambda recipe: recipe.steps.first()),
+        ("recipe_tip_photos", lambda recipe: recipe.tips.first()),
     ],
 )
 

@@ -128,7 +128,7 @@ def test_recipe_html_fields_drop_empty_lines(api_client, recipe):
 def test_recipe_tip_description_cannot_be_only_empty_lines(api_client, recipe):
     response = api_client.patch(
         f"/api/cookbook/recipes/{recipe.id}/",
-        {"tips": [{"name": "Tip", "description": "<p>&nbsp;</p>"}]},
+        {"tips": [{"order": 0, "name": "Tip", "description": "<p>&nbsp;</p>"}]},
         format="json",
     )
     assert response.status_code == 400
@@ -252,8 +252,8 @@ def test_recipe_nested_steps_and_tips_roundtrip(api_client, recipe):
                 {"order": 1, "name": "Second", "description": "Then that"},
             ],
             "tips": [
-                {"name": "Tip A", "description": "Watch heat"},
-                {"name": "Tip B", "description": "Use timer"},
+                {"order": 0, "name": "Tip A", "description": "Watch heat"},
+                {"order": 1, "name": "Tip B", "description": "Use timer"},
             ],
         },
         format="json",
@@ -480,7 +480,7 @@ def test_recipe_full_create_then_edit(
                 {"order": 1, "name": "Péct", "description": "180°C, 40 min"},
             ],
             "tips": [
-                {"name": "Vychladit", "description": "Před krájením"},
+                {"order": 0, "name": "Vychladit", "description": "Před krájením"},
             ],
         },
         format="json",
@@ -523,8 +523,12 @@ def test_recipe_full_create_then_edit(
                 {"order": 2, "name": "Péct", "description": "170°C, 50 min"},
             ],
             "tips": [
-                {"name": "Kakao", "description": "Holandského typu"},
-                {"name": "Forma", "description": "Vymazat máslem a vysypat moukou"},
+                {"order": 0, "name": "Kakao", "description": "Holandského typu"},
+                {
+                    "order": 1,
+                    "name": "Forma",
+                    "description": "Vymazat máslem a vysypat moukou",
+                },
             ],
         },
         format="json",
@@ -554,8 +558,7 @@ def test_recipe_full_create_then_edit(
         "170°C, 50 min",
     ]
 
-    tip_names = sorted(t["name"] for t in body["tips"])
-    assert tip_names == ["Forma", "Kakao"]
+    assert [t["name"] for t in body["tips"]] == ["Kakao", "Forma"]
 
 
 @pytest.mark.django_db

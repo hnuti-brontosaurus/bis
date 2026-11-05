@@ -5,6 +5,7 @@ import {
   uploadIngredientPhoto,
   uploadRecipePhoto,
   uploadStepPhoto,
+  uploadTipPhoto,
 } from "@/data/recipePhotos.js"
 
 // A gallery entry is `{ id, order, photo }` once saved, or `{ photo }` with
@@ -19,6 +20,7 @@ const GALLERIES = [
     parents: recipe => recipe.ingredients ?? [],
   },
   { kind: "step", upload: uploadStepPhoto, parents: recipe => recipe.steps ?? [] },
+  { kind: "tip", upload: uploadTipPhoto, parents: recipe => recipe.tips ?? [] },
 ]
 const uploaders = Object.fromEntries(
   GALLERIES.map(({ kind, upload }) => [kind, upload]),

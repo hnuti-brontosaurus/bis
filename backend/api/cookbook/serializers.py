@@ -45,6 +45,7 @@ from cookbook.models.recipes import (
     RecipeStep,
     RecipeStepPhoto,
     RecipeTip,
+    RecipeTipPhoto,
 )
 from cookbook_categories.models import (
     Allergen,
@@ -199,6 +200,11 @@ class RecipeStepPhotoSerializer(RecipePhotoSerializer):
         model = RecipeStepPhoto
 
 
+class RecipeTipPhotoSerializer(RecipePhotoSerializer):
+    class Meta(RecipePhotoSerializer.Meta):
+        model = RecipeTipPhoto
+
+
 class RecipePhotoUploadSerializer(RecipePhotoSerializer):
     parent_id = PrimaryKeyRelatedField(source="parent", queryset=Recipe.objects.all())
 
@@ -221,6 +227,15 @@ class RecipeStepPhotoUploadSerializer(RecipeStepPhotoSerializer):
     )
 
     class Meta(RecipeStepPhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeTipPhotoUploadSerializer(RecipeTipPhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(
+        source="parent", queryset=RecipeTip.objects.all()
+    )
+
+    class Meta(RecipeTipPhotoSerializer.Meta):
         fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
 
 
@@ -254,10 +269,12 @@ class RecipeStepSerializer(SanitizesHTML, WritableNestedModelSerializer):
         fields = ("id", "name", "order", "description", "photos", "is_optional")
 
 
-class RecipeTipSerializer(SanitizesHTML, serializers.ModelSerializer):
+class RecipeTipSerializer(SanitizesHTML, WritableNestedModelSerializer):
+    photos = RecipeTipPhotoSerializer(many=True, required=False)
+
     class Meta:
         model = RecipeTip
-        fields = ("id", "name", "description")
+        fields = ("id", "name", "order", "description", "photos")
 
 
 class RecipeCommentSerializer(SanitizesHTML, serializers.ModelSerializer):

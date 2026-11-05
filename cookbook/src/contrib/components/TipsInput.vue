@@ -8,6 +8,7 @@ defineProps(["index"])
 const inputs = computed(() => [
   { type: "text", key: "name", required: true, max_length: 31 },
   { type: "html", key: "description", required: true },
+  { type: "images", key: "photos" },
 ])
 </script>
 

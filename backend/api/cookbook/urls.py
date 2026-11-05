@@ -19,6 +19,7 @@ from api.cookbook.views.cookbook import (
     RecipeIngredientPhotoViewSet,
     RecipePhotoViewSet,
     RecipeStepPhotoViewSet,
+    RecipeTipPhotoViewSet,
     RecipeViewSet,
 )
 from django.urls import include, path
@@ -34,6 +35,7 @@ router.register(
     "recipe_ingredient_photos",
 )
 router.register("recipe_step_photos", RecipeStepPhotoViewSet, "recipe_step_photos")
+router.register("recipe_tip_photos", RecipeTipPhotoViewSet, "recipe_tip_photos")
 router.register("menus", MenuViewSet, "menus")
 router.register("articles", ArticleViewSet, "articles")
 router.register("article_images", ArticleImageViewSet, "article_images")

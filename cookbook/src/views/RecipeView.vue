@@ -84,16 +84,25 @@ const togglePublic = async value => {
   }
 }
 
-// Step photos follow the recipe's own, so the whole cooking can be browsed
-// in one preview. Ids are per table, hence the prefixed keys.
+// Step and tip photos follow the recipe's own, so the whole cooking can be
+// browsed in one preview. Ids are per table, hence the prefixed keys.
 const gallery = computed(() => [
   ...recipe.value.photos.map(({ id, photo }) => ({
     key: `recipe-${id}`,
     photo,
     alt: recipe.value.name,
   })),
-  ...recipe.value.steps.flatMap(step =>
-    step.photos.map(({ id, photo }) => ({ key: `step-${id}`, photo, alt: step.name })),
+  ...[
+    ["step", recipe.value.steps],
+    ["tip", recipe.value.tips],
+  ].flatMap(([kind, rows]) =>
+    rows.flatMap(row =>
+      row.photos.map(({ id, photo }) => ({
+        key: `${kind}-${id}`,
+        photo,
+        alt: row.name,
+      })),
+    ),
   ),
 ])
 
@@ -252,7 +261,14 @@ const onDelete = () => {
       <n-h2>{{ _.recipes.tips }}</n-h2>
       <CollapseList :data="recipe.tips" class="tips">
         <template #default="{ item }">
-          <HtmlText :html="item.description" />
+          <n-flex vertical>
+            <HtmlText :html="item.description" />
+            <RecipePhotos
+              v-if="item.photos.length"
+              :photos="item.photos"
+              :alt="item.name"
+            />
+          </n-flex>
         </template>
       </CollapseList>
     </section>

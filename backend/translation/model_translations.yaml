@@ -936,6 +936,12 @@ RecipeTip:
   name_plural: Tipy k receptu
   fields:
     recipe: Recept
+    photos: Fotky
+RecipeTipPhoto:
+  name: Fotka tipu k receptu
+  name_plural: Fotky tipu k receptu
+  fields:
+    parent: Tip k receptu
 RecipeComment:
   name: Komentář receptu
   name_plural: Komentáře receptu

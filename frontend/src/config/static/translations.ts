@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 2797d650e91e1755
+// source-hash: 8631b8c95028031e
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1061,6 +1061,13 @@ export const recipeTip = {
   _name: 'Tip k receptu',
   _name_plural: 'Tip k receptu',
   recipe: 'Recept',
+  photos: 'Fotky',
+} as const
+
+export const recipeTipPhoto = {
+  _name: 'Fotka tipu k receptu',
+  _name_plural: 'Fotka tipu k receptu',
+  parent: 'Tip k receptu',
 } as const
 
 export const recipeComment = {

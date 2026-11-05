@@ -14,6 +14,7 @@ vi.mock("@/data/recipePhotos.js", () => ({
   uploadRecipePhoto: vi.fn(),
   uploadIngredientPhoto: vi.fn(),
   uploadStepPhoto: vi.fn(),
+  uploadTipPhoto: vi.fn(),
 }))
 
 import { useRecipeSave } from "../useRecipeSave.js"
@@ -21,6 +22,7 @@ import {
   uploadIngredientPhoto,
   uploadRecipePhoto,
   uploadStepPhoto,
+  uploadTipPhoto,
 } from "@/data/recipePhotos.js"
 
 const picked = (name = "x.png") => ({
@@ -35,13 +37,14 @@ const buildRecipe = ({
   photos = [],
   steps = [],
   ingredients = [],
+  tips = [],
 }) => ({
   ...(id != null ? { id } : {}),
   is_public: isPublic,
   photos,
   steps,
   ingredients,
-  tips: [],
+  tips,
 })
 
 beforeEach(() => {
@@ -51,6 +54,7 @@ beforeEach(() => {
   uploadRecipePhoto.mockReset()
   uploadIngredientPhoto.mockReset()
   uploadStepPhoto.mockReset()
+  uploadTipPhoto.mockReset()
 })
 
 describe("useRecipeSave", () => {
@@ -103,6 +107,23 @@ describe("useRecipeSave", () => {
       dataUri("s.png"),
       expect.any(Function),
     )
+    expect(state.phase).toBe("done")
+  })
+
+  it("uploads tip photos to the tip rows", async () => {
+    recipesStore.save.mockResolvedValue({ id: 6, tips: [{ id: 60 }, { id: 61 }] })
+    recipesStore.fetchOne.mockResolvedValue({ id: 6 })
+    uploadTipPhoto.mockResolvedValue(saved(7))
+
+    const recipe = buildRecipe({ tips: [{}, { photos: [picked("t.png")] }] })
+
+    const { run, state } = useRecipeSave()
+    await run(recipe)
+
+    expect(recipesStore.save.mock.calls[0][0].tips[1].photos).toEqual([])
+    expect(uploadTipPhoto.mock.calls.map(call => call.slice(0, 3))).toEqual([
+      [61, 0, dataUri("t.png")],
+    ])
     expect(state.phase).toBe("done")
   })
 

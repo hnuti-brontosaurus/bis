@@ -139,7 +139,7 @@ def recipe(chef, difficulty, required_time, tag, unit, ingredient, image_file):
         recipe=r, order=0, ingredient=ingredient, unit=unit, amount=1.0
     )
     RecipeStep.objects.create(recipe=r, order=0, name="Step one", description="Do it")
-    RecipeTip.objects.create(recipe=r, name="Tip", description="Be careful")
+    RecipeTip.objects.create(recipe=r, name="Tip", order=0, description="Be careful")
     return r
 
 

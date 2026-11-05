@@ -15,7 +15,7 @@ Writes:
     of ingredients still referenced by a recipe.
   * Recipe: chef creates / edits / deletes own; editor edits / deletes any.
   * Menu: chef creates / edits / deletes own; editor edits / deletes any.
-  * Recipe / ingredient / step photo: created by whoever may edit the recipe.
+  * Recipe / ingredient / step / tip photo: created by whoever may edit the recipe.
   * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
   * Article image: editors upload; the article save deletes it.
 
@@ -32,6 +32,7 @@ from cookbook.models.recipes import (
     RecipeIngredientPhoto,
     RecipePhoto,
     RecipeStepPhoto,
+    RecipeTipPhoto,
 )
 from cookbook_categories.models import (
     Allergen,
@@ -44,7 +45,7 @@ from cookbook_categories.models import (
 from django.db.models import Q
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
-PHOTO_MODELS = (RecipePhoto, RecipeIngredientPhoto, RecipeStepPhoto)
+PHOTO_MODELS = (RecipePhoto, RecipeIngredientPhoto, RecipeStepPhoto, RecipeTipPhoto)
 
 HIDDEN_AUTHORS = {
     "kiki.suldovska@gmail.com": ["marketa.tumova28@gmail.com"],

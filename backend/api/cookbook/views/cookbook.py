@@ -10,6 +10,7 @@ from api.cookbook.serializers import (
     RecipePhotoUploadSerializer,
     RecipeSerializer,
     RecipeStepPhotoUploadSerializer,
+    RecipeTipPhotoUploadSerializer,
 )
 from cookbook.models.articles import Article, ArticleImage
 from cookbook.models.chefs import Chef
@@ -20,6 +21,7 @@ from cookbook.models.recipes import (
     RecipeIngredientPhoto,
     RecipePhoto,
     RecipeStepPhoto,
+    RecipeTipPhoto,
 )
 from cookbook.services.ingredient_enrichment import enrich_ingredient
 from django.http import Http404
@@ -48,7 +50,7 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
             "photos",
             "ingredients__photos",
             "steps__photos",
-            "tips",
+            "tips__photos",
             "comments",
             "comments__user",
         )
@@ -79,6 +81,11 @@ class RecipeIngredientPhotoViewSet(PhotoUploadViewSet):
 class RecipeStepPhotoViewSet(PhotoUploadViewSet):
     serializer_class = RecipeStepPhotoUploadSerializer
     queryset = RecipeStepPhoto.objects.all()
+
+
+class RecipeTipPhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipeTipPhotoUploadSerializer
+    queryset = RecipeTipPhoto.objects.all()
 
 
 class MenuViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):

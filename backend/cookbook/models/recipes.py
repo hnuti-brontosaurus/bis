@@ -116,7 +116,17 @@ class RecipeStepPhoto(Photo):
 class RecipeTip(BaseModel):
     recipe = m.ForeignKey(Recipe, related_name="tips", on_delete=CASCADE)
     name = m.CharField(max_length=31)
+    order = m.PositiveSmallIntegerField()
     description = HTMLField()
+
+    class Meta:
+        ordering = ("order",)
+
+
+@translate_model
+class RecipeTipPhoto(Photo):
+    parent = m.ForeignKey(RecipeTip, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipe_tips")
 
 
 @translate_model
