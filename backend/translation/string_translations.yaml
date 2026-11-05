@@ -135,6 +135,7 @@ cookbook:
     delete_error: Nepodařilo se smazat recept
     duplicate: duplikovat
     duplicate_title: Duplikovat recept
+    duplicate_confirm: Duplikovat
     duplicate_intro: "Vznikne soukromá kopie receptu, kterou si můžeš upravit po svém. Zveřejnit ji můžeš, jen pokud:"
     duplicate_error: Recept se nepodařilo duplikovat
     publish: Zveřejnit

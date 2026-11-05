@@ -21,7 +21,7 @@ export const useCopyRules = () => {
     dialog.info({
       title: _.value.recipes.duplicate_title,
       content: copyRules(_.value.recipes.duplicate_intro),
-      positiveText: _.value.recipes.duplicate,
+      positiveText: _.value.recipes.duplicate_confirm,
       negativeText: _.value.common.back,
       onPositiveClick: onConfirm,
     })
