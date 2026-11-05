@@ -90,6 +90,24 @@ test.describe("cookbook smoke", () => {
     await expect(page.getByText(tag).first()).toBeAttached()
   })
 
+  test("inserts an emoji from the editor's picker", async ({ page, recipe }) => {
+    await page.goto(`/kucharka/recept/${recipe.id}/upravit/`)
+    const description = page.locator(EDITOR).first()
+    await description.fill("Dobrou chuť ")
+
+    await page.getByRole("button", { name: "Emoji" }).first().click()
+    const picker = page.locator("emoji-picker")
+    await expect(picker.getByRole("menuitem").first()).toBeVisible()
+    await picker.locator("input#search").fill("pizza")
+    await picker.getByRole("option", { name: /pizza/ }).click()
+    await expect(description).toHaveText("Dobrou chuť 🍕")
+
+    await save(page)
+    await expect(page).toHaveURL(new RegExp(`/kucharka/recept/${recipe.id}/$`))
+    await page.reload()
+    await expect(page.getByText("Dobrou chuť 🍕").first()).toBeAttached()
+  })
+
   test("adds an ingredient, step, and tip via the form and persists them", async ({
     page,
     recipe,

@@ -3,9 +3,12 @@ import { EditorContent, useEditor } from "@tiptap/vue-3"
 import { BubbleMenu } from "@tiptap/vue-3/menus"
 import Image from "@tiptap/extension-image"
 import StarterKit from "@tiptap/starter-kit"
+import "emoji-picker-element"
+import emojiData from "emoji-picker-element-data/en/emojibase/data.json?url"
 import { NButton, NInput, NInputGroup, NPopover } from "naive-ui"
 import {
   faBold,
+  faFaceSmile,
   faImage,
   faItalic,
   faLink,
@@ -14,7 +17,7 @@ import {
   faMinus,
   faQuoteLeft,
 } from "@fortawesome/free-solid-svg-icons"
-import { ref, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import { toDataUri } from "@/contrib/composables/helpers.js"
 import { icon } from "@/contrib/composables/render.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
@@ -145,6 +148,48 @@ const insertImage = async event => {
   }
 }
 
+const emojiCategories = [
+  "smileys-emotion",
+  "people-body",
+  "animals-nature",
+  "food-drink",
+  "travel-places",
+  "activities",
+  "objects",
+  "symbols",
+  "flags",
+]
+const skinTones = ["default", "light", "medium_light", "medium", "medium_dark", "dark"]
+const emojiPickerTexts = computed(() => {
+  const texts = _.value.emoji_picker
+  return {
+    categoriesLabel: texts.categories,
+    emojiUnsupportedMessage: texts.unsupported,
+    favoritesLabel: texts.favorites,
+    loadingMessage: texts.loading,
+    networkErrorMessage: texts.network_error,
+    regionLabel: texts.region,
+    searchDescription: texts.search_description,
+    searchLabel: texts.search,
+    searchResultsLabel: texts.search_results,
+    skinToneDescription: texts.skin_tone_description,
+    skinToneLabel: texts.skin_tone,
+    skinTonesLabel: texts.skin_tones,
+    skinTones: skinTones.map(tone => texts[`skin_tone_${tone}`]),
+    categories: Object.fromEntries(
+      emojiCategories.map(category => [
+        category,
+        texts[`category_${category.replace("-", "_")}`],
+      ]),
+    ),
+  }
+})
+const showEmojiPicker = ref(false)
+const insertEmoji = event => {
+  editor.value.chain().focus().insertContent(event.detail.unicode).run()
+  showEmojiPicker.value = false
+}
+
 const linkUrl = ref("")
 const showLinkInput = ref(false)
 const openLinkInput = () => {
@@ -205,6 +250,31 @@ const insertLink = () => {
             {{ _.editor.insert }}
           </n-button>
         </n-input-group>
+      </n-popover>
+      <n-popover
+        v-model:show="showEmojiPicker"
+        trigger="click"
+        placement="bottom-start"
+        :show-arrow="false"
+        raw
+      >
+        <template #trigger>
+          <n-button
+            size="tiny"
+            quaternary
+            :title="_.editor.emoji"
+            :aria-label="_.editor.emoji"
+            :render-icon="icon(faFaceSmile)"
+          />
+        </template>
+        <!-- No emoji data exists in Czech, so search matches English names. -->
+        <emoji-picker
+          class="emoji-picker"
+          :data-source.prop="emojiData"
+          :i18n.prop="emojiPickerTexts"
+          :emoji-version.prop="17"
+          @emoji-click="insertEmoji"
+        />
       </n-popover>
       <template v-if="uploadImage">
         <n-button
@@ -274,6 +344,23 @@ const insertLink = () => {
   padding: 2px 4px;
   border-bottom: 1px solid var(--line);
   background: var(--surface-muted);
+}
+
+.emoji-picker {
+  --background: var(--surface);
+  --border-color: var(--line);
+  --button-active-background: var(--primary-soft);
+  --button-hover-background: var(--surface-muted);
+  --category-font-color: var(--text);
+  --emoji-font-family: "Noto Color Emoji";
+  --indicator-color: var(--primary);
+  --input-border-color: var(--line);
+  --input-font-color: var(--text);
+  --input-placeholder-color: var(--muted);
+  --outline-color: var(--primary);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .image-menu {

@@ -57,8 +57,8 @@ const palettes = {
 }
 
 const fonts = {
-  display: '"Bitter", Georgia, serif',
-  body: '"Source Sans 3", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+  display: '"Bitter", "Noto Color Emoji", Georgia, serif',
+  body: '"Source Sans 3", "Noto Color Emoji", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
 }
 
 const SCALE = 1.2

@@ -469,6 +469,14 @@ theme, dark mode included. TinyMCE needs one skin per theme and cannot switch
 skins on a live editor, and `@tinymce/tinymce-vue`'s `v-model` resets the
 cursor while a format caret is open.
 
+The editor's emoji button inserts plain unicode from `emoji-picker-element`,
+with the English emojibase data bundled (there is no Czech data, so search
+matches English names). Emoji are drawn in Noto Color Emoji everywhere: it
+follows the body and display fonts in `theme.js`. `assets/noto-color-emoji.css`
+declares it from fontsource's `.woff` files, not its stylesheet: the `.woff2`
+files keep only the SVG colour table, which Chrome draws as blanks, while the
+`.woff` files also keep COLRv1.
+
 Single-line inputs take a `max_length` equal to the model's `max_length`.
 
 ### Cookbook articles

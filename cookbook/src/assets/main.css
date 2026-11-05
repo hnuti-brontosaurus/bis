@@ -1,4 +1,5 @@
 @import "base.css";
+@import "noto-color-emoji.css";
 
 .n-page-header {
   align-items: baseline;

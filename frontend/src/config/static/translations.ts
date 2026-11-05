@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 37bea46de6008808
+// source-hash: 4eb7c9d39d04118d
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1414,6 +1414,38 @@ export const cookbook = {
     image_small_right: 'Malý vpravo',
     image_medium: 'Střední',
     image_full: 'Celá šířka',
+    emoji: 'Emoji',
+  },
+  emoji_picker: {
+    categories: 'Kategorie',
+    unsupported: 'Tvůj prohlížeč neumí zobrazit barevné emoji.',
+    favorites: 'Oblíbené',
+    loading: 'Načítám…',
+    network_error: 'Emoji se nepodařilo načíst.',
+    region: 'Výběr emoji',
+    search_description:
+      'Až se objeví výsledky, vyber šipkami nahoru a dolů a potvrď Enterem.',
+    search: 'Hledat (anglicky)',
+    search_results: 'Výsledky hledání',
+    skin_tone_description:
+      'Po rozbalení vyber šipkami nahoru a dolů a potvrď Enterem.',
+    skin_tone: 'Vyber odstín pleti (teď {skinTone})',
+    skin_tones: 'Odstíny pleti',
+    skin_tone_default: 'Výchozí',
+    skin_tone_light: 'Světlý',
+    skin_tone_medium_light: 'Středně světlý',
+    skin_tone_medium: 'Střední',
+    skin_tone_medium_dark: 'Středně tmavý',
+    skin_tone_dark: 'Tmavý',
+    category_smileys_emotion: 'Smajlíci a emoce',
+    category_people_body: 'Lidé a tělo',
+    category_animals_nature: 'Zvířata a příroda',
+    category_food_drink: 'Jídlo a pití',
+    category_travel_places: 'Cestování a místa',
+    category_activities: 'Aktivity',
+    category_objects: 'Předměty',
+    category_symbols: 'Symboly',
+    category_flags: 'Vlajky',
   },
   article: { edit: 'Upravit', empty: 'Na tomhle článku se ještě pracuje.' },
   section: { tips: 'tip', steps: 'krok', ingredients: 'přísada', part: 'část' },
