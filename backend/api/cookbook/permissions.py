@@ -14,6 +14,7 @@ Writes:
   * Ingredient: any chef can create / edit / delete. The DB PROTECTs deletion
     of ingredients still referenced by a recipe.
   * Recipe: chef creates / edits / deletes own; editor edits / deletes any.
+    Any chef duplicates a recipe they can read, into their own.
   * Menu: chef creates / edits / deletes own; editor edits / deletes any.
   * Recipe / ingredient / step / tip photo: created by whoever may edit the recipe.
   * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
@@ -208,6 +209,8 @@ class CookbookAccessPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return self._can_read(request, obj)
+        if view.action == "duplicate":
+            return request.user.is_chef and self._can_read(request, obj)
         return self._can_write(request, view, obj)
 
 

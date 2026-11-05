@@ -25,7 +25,9 @@ from cookbook.models.recipes import (
 )
 from cookbook.services.ingredient_enrichment import enrich_ingredient
 from django.http import Http404
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 
@@ -56,6 +58,11 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
         )
         .all()
     )
+
+    @action(detail=True, methods=["post"])
+    def duplicate(self, request, **kwargs):
+        copy = self.get_object().duplicate(request.user.chef)
+        return Response(self.get_serializer(copy).data, status=status.HTTP_201_CREATED)
 
 
 class PhotoUploadViewSet(

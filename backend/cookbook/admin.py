@@ -94,7 +94,7 @@ class RecipeAdmin(PermissionMixin, NestedModelAdmin):
         RecipeTipAdmin,
         RecipeCommentAdmin,
     ]
-    autocomplete_fields = ["chef", "tags"]
+    autocomplete_fields = ["chef", "tags", "original"]
     search_fields = ["name"]
 
 

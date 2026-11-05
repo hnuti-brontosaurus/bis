@@ -307,6 +307,7 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
     # Cached on the Recipe via signals (cookbook.signals); chefs edit
     # allergens on the Ingredient, never per-recipe.
     allergen_ids = PrimaryKeyRelatedField(source="allergens", many=True, read_only=True)
+    original_id = PrimaryKeyRelatedField(source="original", read_only=True)
 
     class Meta:
         model = Recipe
@@ -329,6 +330,7 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
             "comments",
             "allergen_ids",
             "is_public",
+            "original_id",
             "created_at",
         )
         read_only_fields = ("created_at",)

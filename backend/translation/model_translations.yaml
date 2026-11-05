@@ -896,6 +896,7 @@ Recipe:
     required_time: Časová náročnost
     steps: Postup
     tips: Tipy
+    original: Původní recept
     allergens: Typicky obsahuje alergeny
     photos: Fotky
 

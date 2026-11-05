@@ -12,13 +12,14 @@ import {
   NH2,
   useDialog,
 } from "naive-ui"
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faCopy, faPen, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { icon } from "@/contrib/composables/render.js"
 import { computed, onMounted, onUnmounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { storeToRefs } from "pinia"
 import { useWakeLock } from "@vueuse/core"
-import { useRecipesStore, useRecipe } from "@/data/recipes.js"
+import { duplicateRecipe, useRecipesStore, useRecipe } from "@/data/recipes.js"
+import { useCopyRules } from "@/composables/copyRules.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
 import { useRecipeRequiredTimesStore } from "@/data/recipeRequiredTimes.js"
@@ -40,7 +41,8 @@ const route = useRoute()
 const router = useRouter()
 const dialog = useDialog()
 const recipesStore = useRecipesStore()
-const { isEditor, chefId } = storeToRefs(useAuthStore())
+const { isChef, isEditor, chefId } = storeToRefs(useAuthStore())
+const { confirmDuplicate, confirmPublish } = useCopyRules()
 
 useChefsStore().fetchAll()
 useRecipeDifficultiesStore().fetchAll()
@@ -77,6 +79,7 @@ const canEdit = computed(() => {
 })
 
 const togglePublic = async value => {
+  if (value && !(await confirmPublish(recipe.value))) return
   try {
     await recipesStore.save({ id: recipe.value.id, is_public: value })
   } catch (e) {
@@ -114,6 +117,16 @@ const facts = computed(() =>
   ].filter(([, item]) => item),
 )
 
+const onDuplicate = () =>
+  confirmDuplicate(async () => {
+    try {
+      const copy = await duplicateRecipe(recipe.value.id)
+      router.push({ name: "edit_recipe", params: { id: copy.id } })
+    } catch (e) {
+      handleAxiosError(_.value.recipes.duplicate_error)(e)
+    }
+  })
+
 const onDelete = () => {
   dialog.warning({
     title: _.value.recipes.delete_title,
@@ -134,19 +147,33 @@ const onDelete = () => {
 
 <template>
   <AppPage v-if="recipe">
-    <template v-if="canEdit" #actions>
-      <n-switch :value="!!recipe.is_public" @update:value="togglePublic" :round="false">
+    <template v-if="canEdit || isChef" #actions>
+      <n-switch
+        v-if="canEdit"
+        :value="!!recipe.is_public"
+        @update:value="togglePublic"
+        :round="false"
+      >
         <template #checked>{{ _.recipes.is_public }}</template>
         <template #unchecked>{{ _.recipes.is_private }}</template>
       </n-switch>
       <n-button
+        v-if="canEdit"
         :render-icon="icon(faPen)"
         @click="$router.push({ name: 'edit_recipe', params: { id: recipe.id } })"
         >{{ _.recipes.edit }}</n-button
       >
-      <n-button type="error" ghost :render-icon="icon(faTrash)" @click="onDelete">{{
-        _.recipes.delete
+      <n-button v-if="isChef" :render-icon="icon(faCopy)" @click="onDuplicate">{{
+        _.recipes.duplicate
       }}</n-button>
+      <n-button
+        v-if="canEdit"
+        type="error"
+        ghost
+        :render-icon="icon(faTrash)"
+        @click="onDelete"
+        >{{ _.recipes.delete }}</n-button
+      >
     </template>
     <div class="hero" :class="{ 'with-photo': gallery.length }">
       <div v-if="gallery.length" class="hero-gallery">

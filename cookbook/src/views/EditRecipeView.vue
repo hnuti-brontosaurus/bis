@@ -24,6 +24,7 @@ import GenericForm from "@/contrib/components/GenericForm.vue"
 import { _ } from "@/composables/translations.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import { useRecipeSave } from "@/composables/useRecipeSave.js"
+import { useCopyRules } from "@/composables/copyRules.js"
 import { useRecipesStore } from "@/data/recipes.js"
 import { useChefsStore } from "@/data/chefs.js"
 import { useRecipeDifficultiesStore } from "@/data/recipeDifficulties.js"
@@ -279,6 +280,12 @@ const onDelete = () => {
   })
 }
 
+const { confirmPublish } = useCopyRules()
+const togglePublic = async value => {
+  if (value && !(await confirmPublish(recipe.value))) return
+  recipe.value.is_public = value
+}
+
 const upload = useRecipeSave()
 const showUploadDialog = ref(false)
 
@@ -327,11 +334,7 @@ const save = async () => {
 <template>
   <AppPage :title="recipe_id ? _.edit_recipe.title_edit : _.edit_recipe.title_new">
     <template v-if="recipe" #actions>
-      <n-switch
-        :value="!!recipe.is_public"
-        @update:value="v => (recipe.is_public = v)"
-        :round="false"
-      >
+      <n-switch :value="!!recipe.is_public" @update:value="togglePublic" :round="false">
         <template #checked>{{ _.recipes.is_public }}</template>
         <template #unchecked>{{ _.recipes.is_private }}</template>
       </n-switch>

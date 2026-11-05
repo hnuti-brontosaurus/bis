@@ -1,5 +1,5 @@
 import { computed, unref } from "vue"
-import { crudApi } from "./client.js"
+import { client, crudApi } from "./client.js"
 import { defineByIdStore } from "./factory.js"
 import { useChefsStore } from "./chefs.js"
 import { useIngredientsStore } from "./ingredients.js"
@@ -50,4 +50,10 @@ export const useRecipe = id => {
       })),
     }
   })
+}
+
+export const duplicateRecipe = async id => {
+  const { data } = await client.post(`/recipes/${id}/duplicate/`)
+  useRecipesStore().upsertLocal(data)
+  return data
 }

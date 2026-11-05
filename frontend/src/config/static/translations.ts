@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 5d4c55a40e316b4c
+// source-hash: 647b82cbc5ed62e8
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1015,6 +1015,7 @@ export const recipe = {
   required_time: 'Časová náročnost',
   steps: 'Postup',
   tips: 'Tipy',
+  original: 'Původní recept',
   allergens: 'Typicky obsahuje alergeny',
   photos: 'Fotky',
 } as const
@@ -1275,6 +1276,19 @@ export const cookbook = {
     delete_title: 'Smazat recept',
     delete_content: 'Opravdu chceš tento recept smazat?',
     delete_error: 'Nepodařilo se smazat recept',
+    duplicate: 'duplikovat',
+    duplicate_title: 'Duplikovat recept',
+    duplicate_intro:
+      'Vznikne soukromá kopie receptu, kterou si můžeš upravit po svém. Zveřejnit ji můžeš, jen pokud',
+    duplicate_error: 'Recept se nepodařilo duplikovat',
+    publish: 'Zveřejnit',
+    publish_copy_title: 'Zveřejnit kopii receptu?',
+    publish_copy_intro:
+      'Tento recept je kopií jiného receptu. Zveřejni ho, jen pokud',
+    copy_rule_photos: 'nahraješ vlastní fotky, nebo aspoň změníš úvodní fotku,',
+    copy_rule_differs: 'se recept od původního dostatečně liší,',
+    copy_rule_source:
+      've zdrojích odkazuješ na původní recept (odkaz tam při duplikování přidáme sami).',
     is_public: 'Veřejný',
     is_private: 'Soukromý',
     chef: 'Autorstvo',
