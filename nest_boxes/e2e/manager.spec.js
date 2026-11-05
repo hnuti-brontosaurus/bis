@@ -32,9 +32,7 @@ test.describe("the area page", () => {
     // The batch is edited on its link, where a manager of the area may change it
     const shown = await batch.getByTestId("batch-link").textContent()
     await page.goto(shown.slice(shown.indexOf("/budky/")))
-    await page.getByLabel("Přezdívka").fill("Budkař")
-    await page.getByLabel("E-mail").fill("budkar@example.com")
-    await page.getByRole("button", { name: "Pokračovat na mapu" }).click()
+    // Signed in, so the link doesn't ask who it is
     await row(page, area.boxes["3"]).locator(".head").click()
     await row(page, area.boxes["3"])
       .getByRole("button", { name: "Vyřadit z obchůzky" })

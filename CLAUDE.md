@@ -648,10 +648,12 @@ mockups in `mockups/`). It shares no code with the cookbook.
   `backend/nest_boxes_static/`; production nginx serves it like the
   cookbook's (`deployments/base`).
 - **Box rows** in the manager lists and on batch links are `BoxItem`: name,
-  a tag only for what is off (`boxTags`), the note's first line; a click opens
+  a tag only for what is off (`boxTags`, never "neověřená"), the note's first line; a click opens
   the full note, the type with a Mapy.com link and the list's extras. A
   manager of the area edits a batch's boxes on its link (remove in an opened
   row, add from "Mimo obchůzku"), not on the area page.
+  Signed in, a link skips the volunteer's nickname and its checks record
+  `entered_by` instead.
 - **Volunteer pages** (`/d/<token>/…`, `views/link/`) work offline. The
   `link` store (`data/link.js`) keeps the link payload in IndexedDB
   (`data/offline.js`) and falls back to it when `GET links/<token>/` gets no

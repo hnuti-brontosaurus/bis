@@ -167,9 +167,4 @@ export const boxTags = box =>
       tone: STATUS_TONES[box.status],
     },
     box.should_be_moved && { text: "přemístit", tone: "warn" },
-    !box.is_verified &&
-      !["planned", "ended"].includes(box.status) && {
-        text: "neověřená",
-        tone: "warn",
-      },
   ].filter(Boolean)

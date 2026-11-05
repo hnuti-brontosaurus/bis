@@ -597,6 +597,18 @@ def test_volunteer_gets_the_season_state(anonymous, batch, season_2025):
     assert anonymous.get(url).json()["boxes"][0]["season_state"] == "attention"
 
 
+def test_a_signed_in_link_check_names_its_author(
+    anonymous, board_client, board_member, batch, season_2025
+):
+    url = f"{API}/links/{batch.token}/checks/"
+    box = batch.boxes.get()
+    anonymous.post(url, link_check(box, **NOT_FOUND), format="json")
+    assert Check.objects.get().entered_by is None
+
+    board_client.post(url, link_check(box, hour=11, **NOT_FOUND), format="json")
+    assert Check.objects.get().entered_by == board_member
+
+
 def test_map_of_boxes_has_constant_queries(
     board_client, area, unit, make_box, django_assert_num_queries
 ):

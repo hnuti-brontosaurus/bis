@@ -30,6 +30,11 @@ def open_batch(token):
     return batch
 
 
+def signed_in(request):
+    """Who sends from a link while signed in; such a person skips the nickname."""
+    return request.user if request.user.is_authenticated else None
+
+
 class LinkView(NestBoxAPIMixin, APIView):
     def get(self, request, token):
         """Everything the phone stores for offline use when the link is opened."""
@@ -59,6 +64,7 @@ class LinkChecksView(NestBoxAPIMixin, APIView):
         serializer = LinkCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         check, occupants = serializer.build()
+        check.entered_by = signed_in(request)
         stored = submit_check(batch, check, occupants)
         accepted = stored is check
         box = NestBox.objects.with_season_state().get(pk=stored.box_id)
@@ -79,7 +85,7 @@ class LinkBoxesView(NestBoxAPIMixin, APIView):
         serializer = LinkNewBoxSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = dict(serializer.validated_data)
-        check = Check(**values.pop("check"))
+        check = Check(**values.pop("check"), entered_by=signed_in(request))
         box, check = submit_box(batch, values, check)
         box = NestBox.objects.with_season_state().get(pk=box.pk)
         return Response(

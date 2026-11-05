@@ -1,11 +1,12 @@
 <script setup>
-import { watch } from "vue"
+import { computed, ref, watch } from "vue"
 import { RouterView, useRoute } from "vue-router"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
 import VolunteerWelcome from "@/components/link/VolunteerWelcome.vue"
 import { plural } from "@/composables/czech.js"
+import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
 import { useLinkStore } from "@/data/link.js"
 
@@ -28,6 +29,13 @@ const STATUSES = {
 const route = useRoute()
 const link = useLinkStore()
 
+// A signed-in person is known already; a volunteer says who they are once.
+// Offline whoami would only fail into noise, so the volunteer is asked then.
+const auth = !link.profile.nickname && navigator.onLine ? useAuthStore() : null
+const knowsWho = ref(!auth)
+auth?.loaded.finally(() => (knowsWho.value = true))
+const asksWho = computed(() => !link.profile.nickname && !auth?.isAuthenticated)
+
 watch(
   () => route.params.token,
   token => link.open(token).catch(reportError),
@@ -40,8 +48,10 @@ const droppedLabel = count =>
 
 <template>
   <template v-if="link.status === 'ready'">
-    <VolunteerWelcome v-if="!link.profile.nickname" />
-    <RouterView v-else />
+    <template v-if="knowsWho">
+      <VolunteerWelcome v-if="asksWho" />
+      <RouterView v-else />
+    </template>
   </template>
   <template v-else>
     <VolunteerHeader title="Čištění budek" />

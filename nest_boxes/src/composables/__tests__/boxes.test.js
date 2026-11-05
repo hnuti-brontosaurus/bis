@@ -109,12 +109,10 @@ describe("reportedState", () => {
 
 describe("boxTags", () => {
   it("names only what is off", () => {
-    const box = { status: "in_use", is_verified: true }
-    expect(boxTags(box)).toEqual([])
-    expect(boxTags({ ...box, status: "needs_replacing", is_verified: false })).toEqual([
+    expect(boxTags({ status: "in_use", is_verified: false })).toEqual([])
+    expect(boxTags({ status: "needs_replacing", should_be_moved: true })).toEqual([
       { text: "potřebuje vyměnit", tone: "bad" },
-      { text: "neověřená", tone: "warn" },
+      { text: "přemístit", tone: "warn" },
     ])
-    expect(boxTags({ status: "planned", is_verified: false })).toEqual([])
   })
 })
