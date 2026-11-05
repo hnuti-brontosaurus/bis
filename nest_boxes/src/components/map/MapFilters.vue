@@ -117,7 +117,7 @@ const chips = computed(() => {
 // Only what this map offers; a unit kept from the map of areas is no filter on one area
 const count = computed(() => chips.value.length)
 
-const resetAll = () => update({ ...defaultFilters(), search: props.filters.search })
+const resetAll = () => update(defaultFilters())
 
 const toggle = key =>
   update({
@@ -148,7 +148,7 @@ const only = key => update({ shown: [key] })
           <span v-if="count" class="count">{{ count }}</span>
         </n-button>
       </div>
-      <div v-if="chips.length" class="chips active hide-sm">
+      <div v-if="chips.length || filters.search" class="chips active hide-sm">
         <button
           v-for="chip in chips"
           :key="chip.key"
@@ -265,7 +265,7 @@ const only = key => update({ shown: [key] })
       </div>
       <template #footer>
         <div class="footer">
-          <n-button quaternary :disabled="!count" @click="resetAll">
+          <n-button quaternary :disabled="!count && !filters.search" @click="resetAll">
             Zrušit všechny filtry
           </n-button>
           <n-button type="primary" @click="open = false">Zavřít</n-button>

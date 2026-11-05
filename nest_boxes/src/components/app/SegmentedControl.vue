@@ -2,13 +2,15 @@
 defineProps({
   options: { type: Array, required: true },
   size: { type: String, default: "" },
+  // without the track, for a switch inside a toolbar
+  plain: { type: Boolean, default: false },
 })
 
 const model = defineModel({ type: [String, Number, Boolean], default: null })
 </script>
 
 <template>
-  <div class="segmented" :class="size" role="radiogroup">
+  <div class="segmented" :class="[size, { plain }]" role="radiogroup">
     <button
       v-for="option in options"
       :key="String(option.value)"
@@ -51,6 +53,24 @@ const model = defineModel({ type: [String, Number, Boolean], default: null })
   color: var(--primary-text);
   font-weight: 800;
   box-shadow: 0 1px 2px var(--shadow-c);
+}
+
+.segmented.plain {
+  padding: 0;
+  gap: 2px;
+  background: none;
+  border: 0;
+}
+
+.segmented.plain button {
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.segmented.plain button.on {
+  background: var(--primary-soft);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .segmented.small button {

@@ -310,7 +310,7 @@ const focusBox = box => {
         @update="update"
       >
         <template v-if="auth.isManager" #mode>
-          <SegmentedControl v-model="mode" :options="MODES" size="sm" />
+          <SegmentedControl v-model="mode" :options="MODES" plain />
         </template>
       </MapFilters>
     </template>
