@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  {% if report %}
+    <p>Hotovo, data budek jsou nahrazená.</p>
+    <pre>{{ report }}</pre>
+  {% else %}
+    <p>Smaže všechna data budek a nahraje je znovu ze SQL dumpu staré aplikace.</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Nahrát a importovat">
+    </form>
+  {% endif %}
+{% endblock %}

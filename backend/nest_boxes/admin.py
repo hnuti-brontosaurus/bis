@@ -1,6 +1,10 @@
 from bis.admin_permissions import PermissionMixin
+from django import forms
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
+from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
+from django.urls import path
 from nest_boxes.models import (
     Area,
     Check,
@@ -10,6 +14,7 @@ from nest_boxes.models import (
     NestBox,
     NestBoxHistory,
 )
+from nest_boxes.old_import.run import import_dump
 
 
 class BoxInline(PermissionMixin, admin.TabularInline):
@@ -34,6 +39,10 @@ class HistoryInline(PermissionMixin, admin.TabularInline):
     extra = 0
 
 
+class OldDumpForm(forms.Form):
+    dump = forms.FileField(label="SQL dump z Admineru")
+
+
 @admin.register(NestBox)
 class NestBoxAdmin(PermissionMixin, GISModelAdmin):
     list_display = (
@@ -55,9 +64,40 @@ class NestBoxAdmin(PermissionMixin, GISModelAdmin):
         "created_at",
     )
     inlines = (HistoryInline,)
+    change_list_template = "nest_boxes/nest_box_change_list.html"
 
     def get_queryset(self, request):
         return super().get_queryset(request).with_is_verified()
+
+    def get_urls(self):
+        return [
+            path(
+                "import/",
+                self.admin_site.admin_view(self.import_view),
+                name="nest_boxes_nestbox_import",
+            ),
+            *super().get_urls(),
+        ]
+
+    def import_view(self, request):
+        """The import command for those who can't reach the server's shell."""
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        form = OldDumpForm(request.POST or None, request.FILES or None)
+        report = None
+        if form.is_valid():
+            report = import_dump(form.cleaned_data["dump"].read().decode("utf-8"))
+        return TemplateResponse(
+            request,
+            "nest_boxes/import_old_nest_boxes.html",
+            {
+                **self.admin_site.each_context(request),
+                "opts": self.model._meta,
+                "title": "Import ze starých budek",
+                "form": form,
+                "report": "\n".join(report) if report else None,
+            },
+        )
 
     @admin.display(boolean=True, description="Ověřena?", ordering="is_verified")
     def is_verified(self, box):

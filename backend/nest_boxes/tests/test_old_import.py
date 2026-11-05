@@ -6,7 +6,9 @@ from administration_units.models import AdministrationUnit
 from bis.helpers import paused_validation
 from bis.models import User
 from categories.models import AdministrationUnitCategory
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
+from django.urls import reverse
 from nest_boxes.models import Area, Check, NestBox
 from nest_boxes.old_import.dump import parse_dump
 from nest_boxes.old_import.notes import is_recorded
@@ -225,3 +227,18 @@ def test_import_replaces_the_previous_import(run_import):
 
     assert NestBox.objects.count() == 7
     assert Check.objects.count() == 10
+
+
+def test_a_superuser_imports_through_the_admin(
+    client, monkeypatch, movement, headquarters
+):
+    monkeypatch.setattr(User, "is_superuser", True)
+    client.force_login(User.objects.create(email="admin@example.com"))
+    url = reverse("admin:nest_boxes_nestbox_import")
+
+    assert client.get(reverse("admin:nest_boxes_nestbox_changelist")).status_code == 200
+    response = client.post(url, {"dump": SimpleUploadedFile("dump.sql", DUMP.encode())})
+
+    assert response.status_code == 200
+    assert "Areas and their units:" in response.content.decode()
+    assert Area.objects.get().name == "Les"
