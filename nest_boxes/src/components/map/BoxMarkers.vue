@@ -9,6 +9,8 @@ const props = defineProps({
   // [{ id, name, location: GeoJSON Point, state: one of BOX_STATES }]
   boxes: { type: Array, required: true },
   selectedId: { type: [String, Number], default: null },
+  // only to look at: a click goes through to the map, as on a location picker
+  passive: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(["select"])
@@ -28,10 +30,12 @@ const markerOf = box => {
     state: box.state,
     selected: box.id === props.selectedId,
   })
-  element.addEventListener("click", event => {
-    event.stopPropagation()
-    emit("select", box.id)
-  })
+  if (props.passive) element.style.pointerEvents = "none"
+  else
+    element.addEventListener("click", event => {
+      event.stopPropagation()
+      emit("select", box.id)
+    })
   return new Marker({ element, anchor: "center" })
     .setLngLat(box.location.coordinates)
     .addTo(map.value)

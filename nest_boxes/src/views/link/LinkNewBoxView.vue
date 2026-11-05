@@ -128,7 +128,7 @@ const save = async () => {
         :locate-on-open="!editing"
       >
         <template #map>
-          <BoxMarkers :boxes="others" />
+          <BoxMarkers :boxes="others" passive />
         </template>
       </BoxFields>
       <div v-for="warning in spacing" :key="warning.box.id" class="note warn">

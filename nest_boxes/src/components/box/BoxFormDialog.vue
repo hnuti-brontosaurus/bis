@@ -200,7 +200,7 @@ const save = async () => {
         "
       >
         <template #map>
-          <BoxMarkers :boxes="mapBoxes" />
+          <BoxMarkers :boxes="mapBoxes" passive />
         </template>
       </BoxFields>
       <div
