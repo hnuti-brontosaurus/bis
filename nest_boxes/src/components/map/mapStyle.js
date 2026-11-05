@@ -34,8 +34,14 @@ const colorFor = (layer, map) => {
   return null
 }
 
-// One-way arrows and the fake 3D building tops only add noise at our zooms
-const DROPPED_LAYERS = ["road_oneway", "road_oneway_opposite", "building-top"]
+// One-way arrows, the fake 3D building tops and the borders of regions and
+// districts (admin levels 3–6) only add noise; country borders stay
+const DROPPED_LAYERS = [
+  "road_oneway",
+  "road_oneway_opposite",
+  "building-top",
+  "boundary_3",
+]
 
 const NAMED_LAYERS = ["place", "water_name", "waterway"]
 
