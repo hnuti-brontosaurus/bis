@@ -136,7 +136,7 @@ const only = key => update({ shown: [key] })
 
 <template>
   <div class="map-filters" :style="{ '--bottom-inset': `${bottomInset}px` }">
-    <div v-show="sheetStop !== 'full'" class="top">
+    <div class="top">
       <div class="bar" :class="{ 'has-mode': $slots.mode }">
         <div v-if="$slots.mode" class="mode"><slot name="mode" /></div>
         <n-input
