@@ -11,8 +11,9 @@ import {
   defaultFilters,
   isDefaultShown,
   LEGEND_KEYS,
+  PROBLEM_KEYS,
 } from "@/composables/filters.js"
-import { categoryOptions, LEGEND_LABELS } from "@/composables/labels.js"
+import { categoryOptions, LEGEND_LABELS, PROBLEM_LABELS } from "@/composables/labels.js"
 
 const props = defineProps({
   // see defaultFilters in composables/filters.js
@@ -44,6 +45,10 @@ const open = ref(false)
 // A phone keeps the search in the modal, so the bar stays one row
 const isPhone = useMediaQuery("(max-width: 720px)")
 const CHECKED_CHOICES = [{ value: null, label: "Kdykoli" }, ...CHECKED_OPTIONS]
+const PROBLEM_CHOICES = PROBLEM_KEYS.map(key => ({
+  value: key,
+  label: PROBLEM_LABELS[key],
+}))
 const VERIFIED_CHOICES = [
   { value: null, label: "Všechny" },
   { value: true, label: "Ověřené" },
@@ -103,6 +108,15 @@ const chips = computed(() => {
       label: legendChip.value,
       reset: { shown: defaultFilters().shown },
     },
+    props.states &&
+      filters.problem.length && {
+        key: "problem",
+        label:
+          filters.problem.length === 1
+            ? PROBLEM_LABELS[filters.problem[0]]
+            : `Stav budky: ${filters.problem.length}`,
+        reset: { problem: [] },
+      },
     props.verification &&
       filters.verified !== null && {
         key: "verified",
@@ -230,6 +244,20 @@ const only = key => update({ shown: [key] })
             {{
               unavailable.shown ??
               "Stejně jako kliknutí na legendu v mapě. Zaniklé budky jsou zprvu skryté."
+            }}
+          </p>
+        </section>
+        <section v-if="states" :class="{ unavailable: unavailable.problem }">
+          <h3>Co je s budkou</h3>
+          <ChoiceChips
+            :model-value="filters.problem"
+            :options="PROBLEM_CHOICES"
+            multiple
+            @update:model-value="update({ problem: $event })"
+          />
+          <p class="why">
+            {{
+              unavailable.problem ?? "Proč je budka K opravě. Bez výběru všechny budky."
             }}
           </p>
         </section>

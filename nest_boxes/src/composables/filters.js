@@ -16,10 +16,23 @@ export const CHECKED_OPTIONS = [
 
 export const legendKey = box => box.season_state ?? "ended"
 
+// Why a box needs attention, see SeasonStateFilter.problem
+export const PROBLEM_KEYS = [
+  "needs_repair",
+  "needs_replacing",
+  "taken_down",
+  "missing",
+  "moved",
+]
+
+const hasProblem = (box, problems) =>
+  problems.includes(box.status) || (problems.includes("moved") && box.should_be_moved)
+
 export const defaultFilters = () => ({
   unit: null,
   type: [],
   shown: [...DEFAULT_SHOWN],
+  problem: [],
   // true or false for only the verified or unverified boxes, null for all
   verified: null,
   checked: null,
@@ -36,6 +49,7 @@ export const parseFilters = query => ({
     query.states === undefined
       ? [...DEFAULT_SHOWN]
       : query.states.split(",").filter(key => LEGEND_KEYS.includes(key)),
+  problem: (query.problem ?? "").split(",").filter(key => PROBLEM_KEYS.includes(key)),
   verified: query.verified === undefined ? null : query.verified === "1",
   checked: CHECKED_OPTIONS.some(option => option.value === query.checked)
     ? query.checked
@@ -53,6 +67,7 @@ export const filterQuery = filters => ({
   states: isDefaultShown(filters.shown)
     ? undefined
     : LEGEND_KEYS.filter(key => filters.shown.includes(key)).join(","),
+  problem: filters.problem.length ? filters.problem.join(",") : undefined,
   verified: filters.verified === null ? undefined : filters.verified ? "1" : "0",
   checked: filters.checked ?? undefined,
   q: filters.search || undefined,
@@ -111,6 +126,7 @@ export const filterBoxes = (boxes, filters, season, { legend = true } = {}) => {
       (!legend || filters.shown.includes(legendKey(box))) &&
       (!filters.type.length || filters.type.includes(box.type_id)) &&
       (filters.verified === null || box.is_verified === filters.verified) &&
+      (!filters.problem.length || hasProblem(box, filters.problem)) &&
       (filters.checked !== "this_season" ||
         (box.last_checked_on && box.last_checked_on >= start)) &&
       (filters.checked !== "before" ||
@@ -139,6 +155,7 @@ const checkedParams = (checked, season) => {
 export const seasonStateParams = (filters, season) => ({
   type: filters.type,
   administration_unit: filters.unit ?? undefined,
+  problem: filters.problem,
   ...(filters.verified !== null && { is_verified: filters.verified }),
   ...checkedParams(filters.checked, season),
 })
@@ -147,6 +164,7 @@ export const seasonStateParams = (filters, season) => ({
 export const exportParams = (filters, season) => ({
   state: filters.shown,
   type: filters.type,
+  problem: filters.problem,
   ...(filters.verified !== null && { is_verified: filters.verified }),
   ...checkedParams(filters.checked, season),
 })

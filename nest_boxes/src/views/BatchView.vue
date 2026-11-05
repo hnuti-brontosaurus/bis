@@ -140,9 +140,7 @@ const confirm = async () => {
 <template>
   <main v-if="data" class="page batch-page">
     <div class="crumb">
-      <RouterLink
-        :to="{ name: 'area', params: { id: data.area.id }, query: { batch: batch.id } }"
-      >
+      <RouterLink :to="{ name: 'area', params: { id: data.area.id } }">
         {{ data.area.name }}
       </RouterLink>
       <AppIcon name="chev" />

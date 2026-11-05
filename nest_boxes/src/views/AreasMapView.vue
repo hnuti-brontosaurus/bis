@@ -63,6 +63,7 @@ const STATE_KEYS = ["planned", "to_check", "attention", "done"]
 const STATISTICS_UNAVAILABLE = {
   shown: "Statistiky stavy budek nerozlišují.",
   verified: "Statistiky ověřené a neověřené budky nerozlišují.",
+  problem: "Statistiky stavy budek nerozlišují.",
   checked: "Statistiky se počítají ze všech kontrol sezóny.",
 }
 

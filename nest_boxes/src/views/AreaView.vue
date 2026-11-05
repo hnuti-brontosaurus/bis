@@ -1,7 +1,7 @@
 <script setup>
-import { computed, nextTick, ref, shallowRef, watch } from "vue"
+import { computed, nextTick, ref, shallowRef } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
-import { NButton, NSelect, useMessage } from "naive-ui"
+import { NButton, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
@@ -21,7 +21,6 @@ import {
   ACTIVE_STATUSES,
   boxExtras,
   markerState,
-  splitByBatch,
   withoutReplaced,
 } from "@/composables/areaBoxes.js"
 import { boxCountLabel, currentSeason } from "@/composables/czech.js"
@@ -33,7 +32,7 @@ import {
   useFilters,
 } from "@/composables/filters.js"
 import { byId } from "@/composables/labels.js"
-import { latestChecks } from "@/composables/linkBoxes.js"
+import { compareNames, latestChecks } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { CZECHIA_BOUNDS } from "@/config.js"
 import { useAuthStore } from "@/data/auth.js"
@@ -72,19 +71,10 @@ const batches = computed(() => data.value?.batches ?? [])
 const typesById = computed(() => byId(data.value?.categories.types ?? []))
 const occupantsById = computed(() => byId(data.value?.categories.occupants ?? []))
 
-const batchId = computed(() =>
-  route.query.batch ? Number(route.query.batch) : (batches.value[0]?.id ?? null),
-)
-const batch = computed(() => batches.value.find(item => item.id === batchId.value))
-const otherBatches = computed(() => batches.value.filter(item => item !== batch.value))
-const batchOptions = computed(() =>
-  batches.value.map(item => ({ value: item.id, label: item.name })),
-)
-const selectBatch = id => router.replace({ query: { ...route.query, batch: id } })
-
 const shown = computed(() =>
   area.value ? filterBoxes(area.value.boxes, filters.value, season) : [],
 )
+const sortedShown = computed(() => [...shown.value].sort(compareNames))
 const legend = computed(() =>
   area.value
     ? legendCounts(
@@ -92,28 +82,21 @@ const legend = computed(() =>
       )
     : null,
 )
-const groups = computed(() => splitByBatch(shown.value, batch.value))
 const checkOf = box => data.value.checks.get(box.id)
 
 const extras = box =>
   boxExtras(box, checkOf(box), {
     typesById: typesById.value,
     occupantsById: occupantsById.value,
-    otherBatches: otherBatches.value,
+    otherBatches: batches.value,
   })
 
 const markerBoxes = computed(() =>
   withoutReplaced(shown.value, area.value.boxes)
     .filter(box => box.status !== "planned")
-    .map(box => ({ ...box, state: markerState(box, batch.value) })),
+    .map(box => ({ ...box, state: markerState(box, null) })),
 )
-const plannedBoxes = computed(() =>
-  shown.value.filter(
-    box =>
-      box.status === "planned" &&
-      (!batch.value || batch.value.box_ids.includes(box.id)),
-  ),
-)
+const plannedBoxes = computed(() => shown.value.filter(box => box.status === "planned"))
 
 const bounds = computed(() => {
   const located = area.value.boxes.filter(box => ACTIVE_STATUSES.includes(box.status))
@@ -128,16 +111,9 @@ const center = computed(
     },
 )
 
-const summary = computed(() =>
-  batch.value
-    ? `${batch.value.checked_count} z ${batch.value.box_count} zkontrolováno`
-    : boxCountLabel(shown.value.length),
-)
+const summary = computed(() => boxCountLabel(shown.value.length))
 
-const exportParams = computed(() => ({
-  ...filterExportParams(filters.value, season),
-  ...(batch.value && { batch: batch.value.id }),
-}))
+const exportParams = computed(() => filterExportParams(filters.value, season))
 
 const selectBox = async id => {
   if (id === selectedId.value) router.push({ name: "box", params: { id } })
@@ -157,10 +133,10 @@ const focusBox = box => {
   })
 }
 
-const onBatchCreated = async created => {
-  await reload()
-  await selectBatch(created.id)
+// A new batch opens on its link, where the manager sees and edits its boxes
+const onBatchCreated = created => {
   auth.refresh()
+  router.push({ name: "link", params: { token: created.token } })
 }
 
 const onPlanned = async box => {
@@ -172,8 +148,6 @@ const onImported = async count => {
   message.success(`Import je hotový, změněných budek: ${count}.`)
   await reload()
 }
-
-watch(batchId, () => (selectedId.value = null))
 </script>
 
 <template>
@@ -215,39 +189,51 @@ watch(batchId, () => (selectedId.value = null))
     </template>
 
     <section class="section batch" data-testid="batch-section">
-      <template v-if="batch">
+      <template v-if="batches.length">
         <p class="eyebrow">Otevřené obchůzky</p>
-        <div class="row">
-          <n-select
-            v-if="batches.length > 1"
-            :value="batch.id"
-            :options="batchOptions"
-            size="small"
-            class="grow"
-            @update:value="selectBatch"
-          />
-          <RouterLink
-            v-else
-            class="batch-name"
-            :to="{ name: 'link', params: { token: batch.token } }"
-            >{{ batch.name }}</RouterLink
-          >
-          <RouterLink
-            v-slot="{ navigate }"
-            :to="{ name: 'batch', params: { id: batch.id } }"
-            custom
-          >
-            <n-button type="primary" size="small" @click="navigate">
-              Potvrdit obchůzku
-            </n-button>
-          </RouterLink>
+        <div
+          v-for="item in batches"
+          :key="item.id"
+          class="batch-item"
+          data-testid="open-batch"
+        >
+          <div class="row">
+            <RouterLink
+              class="batch-name"
+              :to="{ name: 'link', params: { token: item.token } }"
+              >{{ item.name }}</RouterLink
+            >
+            <RouterLink
+              class="icon-button"
+              :to="{
+                name: 'area_print',
+                params: { id: area.id },
+                query: { batch: item.id },
+              }"
+              :aria-label="`Vytisknout obchůzku ${item.name}`"
+              title="Vytisknout"
+            >
+              <AppIcon name="print" />
+            </RouterLink>
+          </div>
+          <BatchProgress :batch="item" />
+          <div class="row">
+            <BatchLink :token="item.token" />
+            <RouterLink
+              v-slot="{ navigate }"
+              :to="{ name: 'batch', params: { id: item.id } }"
+              custom
+            >
+              <n-button type="primary" size="small" @click="navigate">
+                Potvrdit obchůzku
+              </n-button>
+            </RouterLink>
+          </div>
         </div>
-        <BatchProgress :batch="batch" />
-        <BatchLink :token="batch.token" />
       </template>
       <div class="row">
         <n-button
-          :type="batch ? 'default' : 'primary'"
+          :type="batches.length ? 'default' : 'primary'"
           size="small"
           @click="dialogs.batch = true"
         >
@@ -274,7 +260,7 @@ watch(batchId, () => (selectedId.value = null))
           :to="{
             name: 'area_print',
             params: { id: area.id },
-            query: { batch: batch?.id, ...filterQuery(filters) },
+            query: filterQuery(filters),
           }"
         >
           <AppIcon name="print" />Tisk
@@ -286,18 +272,11 @@ watch(batchId, () => (selectedId.value = null))
     </section>
 
     <BoxList
-      :groups="
-        batch
-          ? [
-              { key: 'in', title: 'V této obchůzce', boxes: groups.inBatch },
-              { key: 'out', title: 'Mimo obchůzku', boxes: groups.outside },
-            ]
-          : [{ key: 'all', title: 'Budky', boxes: groups.outside }]
-      "
+      :groups="[{ key: 'all', title: 'Budky', boxes: sortedShown }]"
       :selected-id="selectedId"
       :extras="extras"
       :types-by-id="typesById"
-      :state-of="box => markerState(box, batch)"
+      :state-of="box => markerState(box, null)"
       @focus="focusBox"
     />
 
@@ -311,7 +290,6 @@ watch(batchId, () => (selectedId.value = null))
       v-model:show="dialogs.plan"
       :area-id="area.id"
       :center="center"
-      :batch-id="batch?.id ?? null"
       :types="data.categories.types"
       :other-boxes="area.boxes"
       @saved="onPlanned"
@@ -351,6 +329,13 @@ watch(batchId, () => (selectedId.value = null))
   gap: 12px;
   padding: 14px 20px;
   border-top: 1px solid var(--line);
+}
+
+.batch-item {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .batch-name {

@@ -21,6 +21,15 @@ export const SEASON_STATE_LABELS = {
   planned: "Plánovaná",
 }
 
+// The problem filter's choices, see PROBLEM_KEYS in composables/filters.js
+export const PROBLEM_LABELS = {
+  needs_repair: "potřebuje opravu",
+  needs_replacing: "potřebuje vyměnit",
+  taken_down: "sundaná na opravu",
+  missing: "nenalezená",
+  moved: "přemístit",
+}
+
 // The entries of the map legend, see LEGEND_KEYS in composables/filters.js
 export const LEGEND_LABELS = {
   planned: "Plánované",

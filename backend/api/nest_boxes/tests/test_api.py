@@ -558,6 +558,24 @@ def test_season_states_per_area(board_client, area, unit, make_box, types):
     ]
 
 
+def test_boxes_by_problem(board_client, make_box):
+    make_box("1")
+    make_box("R", location=near(east=100), status=NestBox.Status.NEEDS_REPAIR)
+    make_box("M", location=near(east=200), status=NestBox.Status.MISSING)
+
+    def names(*problems):
+        boxes = board_client.get(f"{API}/boxes/", {"problem": problems}).json()
+        return sorted(box["name"] for box in boxes["results"])
+
+    assert names("needs_repair") == ["R"]
+    assert names("needs_repair", "missing") == ["M", "R"]
+    assert names("moved") == []
+    counts = board_client.get(
+        f"{API}/areas/season_states/", {"problem": "missing"}
+    ).json()
+    assert [(row["attention"], row["to_check"]) for row in counts] == [(1, 0)]
+
+
 def test_boxes_by_legend_entry(board_client, make_box):
     make_box("1")
     make_box("E", location=near(east=100), status=NestBox.Status.ENDED)

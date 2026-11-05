@@ -17,12 +17,8 @@ const copy = async () => {
 </script>
 
 <template>
-  <div class="linkbox">
-    <AppIcon name="link" />
-    <code data-testid="batch-link">{{ url.replace(/^https?:\/\//, "") }}</code>
-    <n-button size="small" @click="copy">
-      <template #icon><AppIcon name="copy" /></template>
-      Kopírovat
-    </n-button>
-  </div>
+  <n-button size="small" data-testid="batch-link" :data-url="url" @click="copy">
+    <template #icon><AppIcon name="link" /></template>
+    Odkaz pro dobrovolníky
+  </n-button>
 </template>

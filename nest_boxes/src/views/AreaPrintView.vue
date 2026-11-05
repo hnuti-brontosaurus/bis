@@ -43,7 +43,6 @@ const boxes = computed(() => {
         :to="{
           name: 'area',
           params: { id: data.area.id },
-          query: { batch: data.batch?.id },
         }"
       >
         <AppIcon name="back" /> Zpět na oblast

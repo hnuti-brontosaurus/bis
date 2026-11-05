@@ -24,15 +24,13 @@ test.describe("the area page", () => {
       .getByRole("button", { name: "Vytvořit obchůzku" })
       .click()
 
-    const batch = page.getByTestId("batch-section")
-    await expect(batch.getByText("0 z 3")).toBeVisible()
-    await expect(batch.getByTestId("batch-link")).toContainText("/budky/d/")
-    await expect(page.getByText("V této obchůzce · 3")).toBeVisible()
-
-    // The batch is edited on its link, where a manager of the area may change it
-    const shown = await batch.getByTestId("batch-link").textContent()
-    await page.goto(shown.slice(shown.indexOf("/budky/")))
-    // Signed in, so the link doesn't ask who it is
+    // A new batch opens on its link, where a manager of the area edits it;
+    // signed in, so the link doesn't ask who it is
+    await expect(page.getByTestId("remaining")).toHaveText("zbývá 3 z 3")
+    await expect(page.getByTestId("batch-link")).toHaveAttribute(
+      "data-url",
+      /\/budky\/d\//,
+    )
     await row(page, area.boxes["3"]).locator(".head").click()
     await row(page, area.boxes["3"])
       .getByRole("button", { name: "Vyřadit z obchůzky" })
@@ -40,8 +38,8 @@ test.describe("the area page", () => {
     await expect(page.getByRole("button", { name: "Mimo obchůzku · 1" })).toBeVisible()
 
     await page.goto(`/budky/oblast/${area.id}/`)
-    await expect(page.getByText("V této obchůzce · 2")).toBeVisible()
-    await expect(page.getByText("Mimo obchůzku · 1")).toBeVisible()
+    const batch = page.getByTestId("open-batch")
+    await expect(batch.getByText("Podzim E2E manažer")).toBeVisible()
     await expect(batch.getByText("0 z 2")).toBeVisible()
   })
 

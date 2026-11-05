@@ -56,7 +56,6 @@ const close = async batch => {
               :to="{
                 name: 'area',
                 params: { id: batch.area_id },
-                query: { batch: batch.id },
               }"
             >
               {{ batch.area_name }}

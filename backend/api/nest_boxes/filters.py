@@ -2,8 +2,16 @@ from categories.models import NestBoxType
 from django.contrib.gis.geos import Polygon
 from django.db.models import Exists, OuterRef, Q
 from django_filters import rest_framework as filters
-from nest_boxes.models import Batch, Check, NestBox, SeasonState
+from nest_boxes.models import (
+    ATTENTION_STATUSES,
+    Batch,
+    Check,
+    NestBox,
+    SeasonState,
+)
 from rest_framework.exceptions import ValidationError
+
+MOVED = "moved"
 
 
 class SeasonStateFilter(filters.FilterSet):
@@ -14,6 +22,14 @@ class SeasonStateFilter(filters.FilterSet):
     administration_unit = filters.NumberFilter(field_name="area__administration_unit")
     # An annotation, see NestBoxQuerySet.with_is_verified
     is_verified = filters.BooleanFilter()
+    # Why a box needs attention: a status of ATTENTION_STATUSES, or "moved"
+    problem = filters.MultipleChoiceFilter(
+        choices=[
+            *((status, status.label) for status in ATTENTION_STATUSES),
+            (MOVED, "přemístit"),
+        ],
+        method="filter_problem",
+    )
     # By the last confirmed check, as Exists: season_states can't group an
     # aggregate like box_queryset's last_checked_on
     last_checked_before = filters.DateFilter(method="filter_last_checked_before")
@@ -23,6 +39,12 @@ class SeasonStateFilter(filters.FilterSet):
     class Meta:
         model = NestBox
         fields = ("region",)
+
+    def filter_problem(self, queryset, name, value):
+        shown = Q(status__in=[item for item in value if item != MOVED])
+        if MOVED in value:
+            shown |= Q(should_be_moved=True)
+        return queryset.filter(shown)
 
     @staticmethod
     def confirmed_check(**conditions):

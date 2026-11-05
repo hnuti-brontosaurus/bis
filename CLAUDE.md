@@ -630,7 +630,7 @@ mockups in `mockups/`). It shares no code with the cookbook.
   groups by region instead (`public/regions/`: outline, a point inside, box
   count), so the public never gets a box's coordinates.
 - **Filters** of the map, the area page and `/statistiky/` are one set in
-  the URL (`composables/filters.js`: `unit`, `type`, `states`, `verified`,
+  the URL (`composables/filters.js`: `unit`, `type`, `states`, `problem` (why a box is K opravě), `verified`,
   `checked`, `q`), drawn over the map by `MapFilters`: a floating bar with
   the search and a "Filtry" modal (with the legend's states too; on a phone the search moves into it), the active ones as chips, and the legend,
   whose entries (season states plus `ended`, hidden by default) toggle what is
@@ -651,7 +651,9 @@ mockups in `mockups/`). It shares no code with the cookbook.
   a tag only for what is off (`boxTags`, never "neověřená"), the note's first line; a click opens
   the full note, the type with a Mapy.com link and the list's extras. A
   manager of the area edits a batch's boxes on its link (remove in an opened
-  row, add from "Mimo obchůzku"), not on the area page.
+  row, add from "Mimo obchůzku"), not on the area page, which lists its open
+  batches and opens a new one on its link. A link is never shown as text, only
+  copied by the "Odkaz pro dobrovolníky" button (`BatchLink`).
   Signed in, a link skips the volunteer's nickname and its checks record
   `entered_by` instead.
 - **Volunteer pages** (`/d/<token>/…`, `views/link/`) work offline. The

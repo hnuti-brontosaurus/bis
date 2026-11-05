@@ -44,6 +44,16 @@ describe("filterBoxes", () => {
     expect(filtered({ shown: ["done", "planned"] })).toEqual(["N10", "P1"])
     expect(filtered({ shown: ["ended"] })).toEqual(["Kuba"])
     expect(filtered({ type: [7] })).toEqual(["P1"])
+    expect(filtered({ problem: ["missing"] })).toEqual([])
+    expect(
+      names(
+        filterBoxes(
+          [box("R", { status: "needs_repair", season_state: "attention" }), ...boxes],
+          { ...defaultFilters(), problem: ["needs_repair", "moved"] },
+          2026,
+        ),
+      ),
+    ).toEqual(["R"])
     expect(filtered({ verified: false })).toEqual(["N2"])
     expect(filtered({ verified: true })).toEqual(["N10", "P1"])
     expect(filtered({ checked: "this_season" })).toEqual(["N10"])
@@ -85,6 +95,7 @@ describe("the URL", () => {
       unit: 4,
       type: [2, 7],
       shown: ["attention", "ended"],
+      problem: ["missing", "moved"],
       verified: false,
       checked: "never",
       search: "Kuba",
@@ -93,6 +104,7 @@ describe("the URL", () => {
       unit: 4,
       type: "2,7",
       states: "attention,ended",
+      problem: "missing,moved",
       verified: "0",
       checked: "never",
       q: "Kuba",
@@ -117,6 +129,7 @@ describe("query parameters", () => {
     ).toEqual({
       state: ["planned", "to_check", "attention", "done"],
       type: [2],
+      problem: [],
       is_verified: false,
       never_checked: true,
     })
@@ -128,6 +141,6 @@ describe("query parameters", () => {
   it("leave the legend out of season_states", () => {
     expect(
       seasonStateParams({ ...defaultFilters(), unit: 3, shown: [] }, 2026),
-    ).toEqual({ type: [], administration_unit: 3 })
+    ).toEqual({ type: [], problem: [], administration_unit: 3 })
   })
 })

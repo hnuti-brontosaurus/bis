@@ -8,6 +8,7 @@ import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
+import BatchLink from "@/components/batch/BatchLink.vue"
 import BoxItem from "@/components/box/BoxItem.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
@@ -199,13 +200,15 @@ const changeBatch = async (box, add) => {
           Zůstává to v telefonu. Dej prosím vědět správci oblasti.
         </div>
       </div>
-      <RouterLink
-        v-if="canManage"
-        class="small manage"
-        :to="{ name: 'area', params: { id: link.payload.area.id } }"
-      >
-        <AppIcon name="tool" />Spravovat oblast
-      </RouterLink>
+      <div v-if="canManage" class="row manage-row">
+        <BatchLink :token="link.payload.batch.token" />
+        <RouterLink
+          class="small manage"
+          :to="{ name: 'area', params: { id: link.payload.area.id } }"
+        >
+          <AppIcon name="tool" />Spravovat oblast
+        </RouterLink>
+      </div>
     </div>
     <div class="list" data-testid="box-list">
       <BoxItem
@@ -398,6 +401,11 @@ const changeBatch = async (box, add) => {
   display: grid;
   gap: 10px;
   border-bottom: 1px solid var(--line);
+}
+
+.manage-row {
+  align-items: center;
+  gap: 12px;
 }
 
 .manage {
