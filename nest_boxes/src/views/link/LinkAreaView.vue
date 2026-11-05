@@ -8,13 +8,14 @@ import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
+import LinkBoxDetail from "@/components/link/LinkBoxDetail.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import PositionMarker from "@/components/map/PositionMarker.vue"
 import { boundsOf, distance } from "@/components/map/geometry.js"
-import { checkResult, mapyLink, typeName } from "@/composables/boxes.js"
+import { checkResult } from "@/composables/boxes.js"
 import { formatDistance, plural } from "@/composables/czech.js"
 import { byId } from "@/composables/labels.js"
 import { sortBoxes } from "@/composables/linkBoxes.js"
@@ -69,13 +70,9 @@ const canManage = computed(
   () =>
     auth?.me?.is_budkar || auth?.me?.managed_area_ids.includes(link.payload.area.id),
 )
-const selected = computed(() => link.rows.find(row => row.id === selectedId.value))
 
 const subtitle = row => {
-  const parts = [
-    row.state === "planned" ? "plánovaná" : "",
-    typeName(typesById.value, row.type_id),
-  ]
+  const parts = [row.state === "planned" ? "plánovaná" : ""]
   if (position.value) parts.push(formatDistance(distance(position.value, row.location)))
   return parts.filter(Boolean).join(" · ")
 }
@@ -86,7 +83,12 @@ const select = async id => {
   document.querySelector(`[data-box-row="${id}"]`)?.scrollIntoView({ block: "nearest" })
 }
 
+// The selected row shows the box's detail; a click on it again closes that
 const focus = row => {
+  if (row.id === selectedId.value) {
+    selectedId.value = null
+    return
+  }
   selectedId.value = row.id
   map.value.flyTo({
     center: row.location.coordinates,
@@ -163,34 +165,8 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
       </RouterLink>
     </div>
     <div class="list" data-testid="box-list">
-      <div
-        v-for="row in toCheck"
-        :key="row.id"
-        class="item"
-        :class="{ selected: row.id === selectedId }"
-        :data-box-row="row.id"
-        @click="focus(row)"
-      >
-        <MarkerGlyph :state="row.state" />
-        <div class="text">
-          <div class="name">{{ row.name || "Nová budka" }}</div>
-          <div class="sub">{{ subtitle(row) }}</div>
-        </div>
-        <RouterLink v-slot="{ navigate }" :to="checkRoute(row)" custom>
-          <n-button
-            :type="row.state === 'planned' ? 'default' : 'primary'"
-            size="small"
-            @click.stop="navigate"
-          >
-            {{ row.state === "planned" ? "Pověsit" : "Zkontrolovat" }}
-          </n-button>
-        </RouterLink>
-      </div>
-      <template v-for="group in finished" :key="group.state">
-        <div class="group">{{ group.title }} · {{ group.rows.length }}</div>
+      <template v-for="row in toCheck" :key="row.id">
         <div
-          v-for="row in group.rows"
-          :key="row.id"
           class="item"
           :class="{ selected: row.id === selectedId }"
           :data-box-row="row.id"
@@ -198,51 +174,101 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
         >
           <MarkerGlyph :state="row.state" />
           <div class="text">
-            <div class="name">{{ row.name }}</div>
-            <div class="sub">
-              {{ row.check ? checkResult(row.check, occupantsById) : subtitle(row) }}
+            <div class="name">{{ row.name || "Nová budka" }}</div>
+            <div class="sub">{{ subtitle(row) }}</div>
+            <div v-if="row.note && row.id !== selectedId" class="row-note">
+              {{ row.note }}
             </div>
           </div>
-          <RouterLink
-            v-if="row.check"
-            class="icon-button"
-            :to="checkRoute(row)"
-            :aria-label="`Upravit kontrolu budky ${row.name}`"
-            @click.stop
-          >
-            <AppIcon name="edit" />
-          </RouterLink>
-          <RouterLink v-else v-slot="{ navigate }" :to="checkRoute(row)" custom>
-            <n-button size="small" secondary @click.stop="navigate">
-              Zkontrolovat
+          <RouterLink v-slot="{ navigate }" :to="checkRoute(row)" custom>
+            <n-button
+              :type="row.state === 'planned' ? 'default' : 'primary'"
+              size="small"
+              @click.stop="navigate"
+            >
+              {{ row.state === "planned" ? "Pověsit" : "Zkontrolovat" }}
             </n-button>
           </RouterLink>
         </div>
+        <LinkBoxDetail
+          v-if="row.id === selectedId"
+          :box="row"
+          :types-by-id="typesById"
+        />
+      </template>
+      <template v-for="group in finished" :key="group.state">
+        <div class="group">{{ group.title }} · {{ group.rows.length }}</div>
+        <template v-for="row in group.rows" :key="row.id">
+          <div
+            class="item"
+            :class="{ selected: row.id === selectedId }"
+            :data-box-row="row.id"
+            @click="focus(row)"
+          >
+            <MarkerGlyph :state="row.state" />
+            <div class="text">
+              <div class="name">{{ row.name }}</div>
+              <div class="sub">
+                {{ row.check ? checkResult(row.check, occupantsById) : subtitle(row) }}
+              </div>
+              <div v-if="row.note && row.id !== selectedId" class="row-note">
+                {{ row.note }}
+              </div>
+            </div>
+            <RouterLink
+              v-if="row.check"
+              class="icon-button"
+              :to="checkRoute(row)"
+              :aria-label="`Upravit kontrolu budky ${row.name}`"
+              @click.stop
+            >
+              <AppIcon name="edit" />
+            </RouterLink>
+            <RouterLink v-else v-slot="{ navigate }" :to="checkRoute(row)" custom>
+              <n-button size="small" secondary @click.stop="navigate">
+                Zkontrolovat
+              </n-button>
+            </RouterLink>
+          </div>
+          <LinkBoxDetail
+            v-if="row.id === selectedId"
+            :box="row"
+            :types-by-id="typesById"
+          />
+        </template>
       </template>
       <template v-if="added.length">
         <div class="group">Přidané budky · {{ added.length }}</div>
-        <div
-          v-for="row in added"
-          :key="row.id"
-          class="item"
-          :class="{ selected: row.id === selectedId }"
-          :data-box-row="row.id"
-          @click="focus(row)"
-        >
-          <MarkerGlyph :state="row.state" />
-          <div class="text">
-            <div class="name">{{ row.name }}</div>
-            <div class="sub">{{ subtitle(row) }} · čeká na potvrzení správcem</div>
-          </div>
-          <RouterLink
-            class="icon-button"
-            :to="{ name: 'link_new_box', query: { budka: row.id } }"
-            :aria-label="`Upravit budku ${row.name}`"
-            @click.stop
+        <template v-for="row in added" :key="row.id">
+          <div
+            class="item"
+            :class="{ selected: row.id === selectedId }"
+            :data-box-row="row.id"
+            @click="focus(row)"
           >
-            <AppIcon name="edit" />
-          </RouterLink>
-        </div>
+            <MarkerGlyph :state="row.state" />
+            <div class="text">
+              <div class="name">{{ row.name }}</div>
+              <div class="sub">{{ subtitle(row) }} · čeká na potvrzení správcem</div>
+              <div v-if="row.note && row.id !== selectedId" class="row-note">
+                {{ row.note }}
+              </div>
+            </div>
+            <RouterLink
+              class="icon-button"
+              :to="{ name: 'link_new_box', query: { budka: row.id } }"
+              :aria-label="`Upravit budku ${row.name}`"
+              @click.stop
+            >
+              <AppIcon name="edit" />
+            </RouterLink>
+          </div>
+          <LinkBoxDetail
+            v-if="row.id === selectedId"
+            :box="row"
+            :types-by-id="typesById"
+          />
+        </template>
       </template>
     </div>
     <div class="foot">
@@ -258,17 +284,6 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
           Nápověda
         </n-button>
       </RouterLink>
-      <n-button
-        v-if="selected"
-        size="small"
-        quaternary
-        tag="a"
-        :href="mapyLink(selected.location)"
-        target="_blank"
-      >
-        <template #icon><AppIcon name="ext" /></template>
-        {{ selected.name }} na Mapy.com
-      </n-button>
     </div>
   </MapPanelLayout>
 </template>
@@ -338,6 +353,19 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
 
 .name {
   font-weight: 700;
+}
+
+.row-note {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-note::before {
+  content: "Pozn.: ";
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .sub {

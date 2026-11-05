@@ -3,6 +3,7 @@ import { computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { useMessage } from "naive-ui"
 
+import AppIcon from "@/components/app/AppIcon.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
 import CheckForm from "@/components/check/CheckForm.vue"
 import { boxSummary } from "@/composables/boxes.js"
@@ -44,6 +45,13 @@ const submit = async (check, photos) => {
     :pending="link.pending"
   />
   <main class="page check-page">
+    <div v-if="box.note" class="note warn" data-testid="volunteer-note">
+      <AppIcon name="warn" />
+      <div>
+        <b>Poznámka pro dobrovolníky</b>
+        {{ box.note }}
+      </div>
+    </div>
     <CheckForm
       :key="initial?.id ?? 'new'"
       :box="box"
