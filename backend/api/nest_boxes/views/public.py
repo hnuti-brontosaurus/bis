@@ -83,7 +83,7 @@ class PublicAreaViewSet(
 
 
 # Where the landing map shows the boxes outside every Czech region
-ABROAD_MARKER = {"type": "Point", "coordinates": [17.6879883, 50.9860989]}
+ABROAD_MARKER = {"type": "Point", "coordinates": [17.4194825, 50.7438250]}
 
 
 class PublicRegionsView(NestBoxAPIMixin, APIView):
