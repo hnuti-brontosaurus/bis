@@ -365,30 +365,32 @@ const focusBox = box => {
             <span>obsazeno loni</span>
           </div>
         </div>
-        <div v-if="season" class="season-stepper">
-          <n-button
-            size="small"
-            quaternary
-            aria-label="Starší sezóna"
-            :disabled="seasonIndex === seasons.length - 1"
-            @click="stepSeason(1)"
-          >
-            <template #icon><AppIcon name="chevl" /></template>
-          </n-button>
-          <span>Sezóna {{ seasonLabel(season) }}</span>
-          <n-button
-            size="small"
-            quaternary
-            aria-label="Novější sezóna"
-            :disabled="seasonIndex <= 0"
-            @click="stepSeason(-1)"
-          >
-            <template #icon><AppIcon name="chev" /></template>
-          </n-button>
+        <div class="season-row">
+          <div v-if="season" class="season-stepper">
+            <n-button
+              size="small"
+              quaternary
+              aria-label="Starší sezóna"
+              :disabled="seasonIndex === seasons.length - 1"
+              @click="stepSeason(1)"
+            >
+              <template #icon><AppIcon name="chevl" /></template>
+            </n-button>
+            <span>Sezóna {{ seasonLabel(season) }}</span>
+            <n-button
+              size="small"
+              quaternary
+              aria-label="Novější sezóna"
+              :disabled="seasonIndex <= 0"
+              @click="stepSeason(-1)"
+            >
+              <template #icon><AppIcon name="chev" /></template>
+            </n-button>
+          </div>
+          <RouterLink class="all-seasons small" :to="{ name: 'statistics' }">
+            Všechny sezóny<AppIcon name="chev" />
+          </RouterLink>
         </div>
-        <RouterLink class="all-seasons small" :to="{ name: 'statistics' }">
-          Všechny sezóny v jedné tabulce<AppIcon name="chev" />
-        </RouterLink>
       </template>
     </div>
     <p v-if="showsBoxes && !mapBoxes" class="muted loading">Načítám budky…</p>
@@ -538,6 +540,14 @@ const focusBox = box => {
   color: var(--muted);
 }
 
+.season-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  white-space: nowrap;
+}
+
 .season-stepper {
   display: flex;
   align-items: center;
@@ -585,7 +595,6 @@ const focusBox = box => {
 }
 
 .all-seasons {
-  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 4px;
