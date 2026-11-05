@@ -44,7 +44,8 @@ describe("filterBoxes", () => {
     expect(filtered({ shown: ["done", "planned"] })).toEqual(["N10", "P1"])
     expect(filtered({ shown: ["ended"] })).toEqual(["Kuba"])
     expect(filtered({ type: [7] })).toEqual(["P1"])
-    expect(filtered({ unverified: true })).toEqual(["N2"])
+    expect(filtered({ verified: false })).toEqual(["N2"])
+    expect(filtered({ verified: true })).toEqual(["N10", "P1"])
     expect(filtered({ checked: "this_season" })).toEqual(["N10"])
     expect(filtered({ checked: "before" })).toEqual(["N2"])
     expect(filtered({ checked: "never" })).toEqual(["P1"])
@@ -84,7 +85,7 @@ describe("the URL", () => {
       unit: 4,
       type: [2, 7],
       shown: ["attention", "ended"],
-      unverified: true,
+      verified: false,
       checked: "never",
       search: "Kuba",
     }
@@ -92,7 +93,7 @@ describe("the URL", () => {
       unit: 4,
       type: "2,7",
       states: "attention,ended",
-      unverified: "1",
+      verified: "0",
       checked: "never",
       q: "Kuba",
     })
@@ -110,7 +111,7 @@ describe("query parameters", () => {
   it("map the filters to the export's query", () => {
     expect(
       exportParams(
-        { ...defaultFilters(), unverified: true, checked: "never", type: [2] },
+        { ...defaultFilters(), verified: false, checked: "never", type: [2] },
         2026,
       ),
     ).toEqual({

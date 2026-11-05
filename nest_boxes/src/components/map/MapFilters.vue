@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue"
-import { NButton, NCheckbox, NInput, NModal, NSelect } from "naive-ui"
+import { NButton, NInput, NModal, NSelect } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
@@ -24,7 +24,7 @@ const props = defineProps({
   // filter key → why it doesn't apply to what the map shows now
   unavailable: { type: Object, default: () => ({}) },
   // null where the filter is not offered at all
-  unverifiedCount: { type: Number, default: null },
+  verification: { type: Boolean, default: false },
   checked: { type: Boolean, default: true },
   searchPlaceholder: { type: String, required: true },
   // legend key → count; null hides the legend
@@ -41,6 +41,11 @@ const update = patch => emit("update", patch)
 
 const open = ref(false)
 const CHECKED_CHOICES = [{ value: null, label: "Kdykoli" }, ...CHECKED_OPTIONS]
+const VERIFIED_CHOICES = [
+  { value: null, label: "Všechny" },
+  { value: true, label: "Ověřené" },
+  { value: false, label: "Neověřené" },
+]
 
 const typeOptions = computed(() => categoryOptions(props.types ?? []))
 const typesById = computed(
@@ -95,11 +100,11 @@ const chips = computed(() => {
       label: legendChip.value,
       reset: { shown: defaultFilters().shown },
     },
-    props.unverifiedCount !== null &&
-      filters.unverified && {
-        key: "unverified",
-        label: "Neověřené",
-        reset: { unverified: false },
+    props.verification &&
+      filters.verified !== null && {
+        key: "verified",
+        label: filters.verified ? "Ověřené" : "Neověřené",
+        reset: { verified: null },
       },
     props.checked &&
       filters.checked && {
@@ -244,20 +249,16 @@ const only = key => update({ shown: [key] })
           />
           <p v-if="unavailable.checked" class="why">{{ unavailable.checked }}</p>
         </section>
-        <section
-          v-if="unverifiedCount !== null"
-          :class="{ unavailable: unavailable.unverified }"
-        >
+        <section v-if="verification" :class="{ unavailable: unavailable.verified }">
           <h3>Ověření</h3>
-          <n-checkbox
-            :checked="filters.unverified"
-            @update:checked="update({ unverified: $event })"
-          >
-            Jen neověřené budky ({{ unverifiedCount }})
-          </n-checkbox>
+          <ChoiceChips
+            :model-value="filters.verified"
+            :options="VERIFIED_CHOICES"
+            @update:model-value="update({ verified: $event })"
+          />
           <p class="why">
             {{
-              unavailable.unverified ?? "Ověřená budka má potvrzenou kontrolu z terénu."
+              unavailable.verified ?? "Ověřená budka má potvrzenou kontrolu z terénu."
             }}
           </p>
         </section>

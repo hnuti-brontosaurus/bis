@@ -630,7 +630,7 @@ mockups in `mockups/`). It shares no code with the cookbook.
   groups by region instead (`public/regions/`: outline, a point inside, box
   count), so the public never gets a box's coordinates.
 - **Filters** of the map, the area page and `/statistiky/` are one set in
-  the URL (`composables/filters.js`: `unit`, `type`, `states`, `unverified`,
+  the URL (`composables/filters.js`: `unit`, `type`, `states`, `verified`,
   `checked`, `q`), drawn over the map by `MapFilters`: a floating bar with
   the search and a "Filtry" modal (with the legend's states too), the active ones as chips, and the legend,
   whose entries (season states plus `ended`, hidden by default) toggle what is

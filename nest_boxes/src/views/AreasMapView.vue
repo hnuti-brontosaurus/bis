@@ -13,12 +13,7 @@ import BoxClusters from "@/components/map/BoxClusters.vue"
 import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
-import {
-  ACTIVE_STATUSES,
-  boxRowDetail,
-  groupByArea,
-  markerState,
-} from "@/composables/areaBoxes.js"
+import { boxRowDetail, groupByArea, markerState } from "@/composables/areaBoxes.js"
 import {
   areaCountLabel,
   boxCountLabel,
@@ -62,7 +57,7 @@ const STATE_COLUMNS = [
 const STATE_KEYS = ["planned", "to_check", "attention", "done"]
 const STATISTICS_UNAVAILABLE = {
   shown: "Statistiky stavy budek nerozlišují.",
-  unverified: "Statistiky neověřené budky nerozlišují.",
+  verified: "Statistiky ověřené a neověřené budky nerozlišují.",
   checked: "Statistiky se počítají ze všech kontrol sezóny.",
 }
 
@@ -176,12 +171,6 @@ const shownBoxes = computed(() =>
   filterBoxes(unitBoxes.value, filters.value, currentSeason()),
 )
 const boxGroups = computed(() => groupByArea(shownBoxes.value, areasById.value))
-const unverifiedCount = computed(
-  () =>
-    unitBoxes.value.filter(
-      box => !box.is_verified && ACTIVE_STATUSES.includes(box.status),
-    ).length,
-)
 const legend = computed(() => {
   if (showsBoxes.value)
     return legendCounts(
@@ -311,7 +300,7 @@ const focusBox = box => {
         :units="unitOptions"
         :types="auth.isManager ? types : null"
         :states="auth.isManager"
-        :unverified-count="auth.isManager ? unverifiedCount : null"
+        :verification="auth.isManager"
         :checked="auth.isManager"
         :unavailable="showsStatistics ? STATISTICS_UNAVAILABLE : {}"
         :search-placeholder="showsBoxes ? 'Hledat označení' : 'Hledat oblast'"

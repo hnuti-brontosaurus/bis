@@ -136,12 +136,6 @@ const summary = computed(() =>
     : boxCountLabel(shown.value.length),
 )
 
-const unverifiedCount = computed(
-  () =>
-    area.value.boxes.filter(
-      box => !box.is_verified && ACTIVE_STATUSES.includes(box.status),
-    ).length,
-)
 const exportParams = computed(() => ({
   ...filterExportParams(filters.value, season),
   ...(batch.value && { batch: batch.value.id }),
@@ -212,7 +206,7 @@ watch(batchId, () => (selectedId.value = null))
       <MapFilters
         :filters="filters"
         :types="data.categories.types"
-        :unverified-count="unverifiedCount"
+        verification
         search-placeholder="Hledat označení"
         :legend-counts="legend"
         :bottom-inset="bottomInset"

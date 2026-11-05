@@ -20,7 +20,8 @@ export const defaultFilters = () => ({
   unit: null,
   type: [],
   shown: [...DEFAULT_SHOWN],
-  unverified: false,
+  // true or false for only the verified or unverified boxes, null for all
+  verified: null,
   checked: null,
   search: "",
 })
@@ -35,7 +36,7 @@ export const parseFilters = query => ({
     query.states === undefined
       ? [...DEFAULT_SHOWN]
       : query.states.split(",").filter(key => LEGEND_KEYS.includes(key)),
-  unverified: query.unverified === "1",
+  verified: query.verified === undefined ? null : query.verified === "1",
   checked: CHECKED_OPTIONS.some(option => option.value === query.checked)
     ? query.checked
     : null,
@@ -52,7 +53,7 @@ export const filterQuery = filters => ({
   states: isDefaultShown(filters.shown)
     ? undefined
     : LEGEND_KEYS.filter(key => filters.shown.includes(key)).join(","),
-  unverified: filters.unverified ? "1" : undefined,
+  verified: filters.verified === null ? undefined : filters.verified ? "1" : "0",
   checked: filters.checked ?? undefined,
   q: filters.search || undefined,
 })
@@ -109,7 +110,7 @@ export const filterBoxes = (boxes, filters, season, { legend = true } = {}) => {
     box =>
       (!legend || filters.shown.includes(legendKey(box))) &&
       (!filters.type.length || filters.type.includes(box.type_id)) &&
-      (!filters.unverified || !box.is_verified) &&
+      (filters.verified === null || box.is_verified === filters.verified) &&
       (filters.checked !== "this_season" ||
         (box.last_checked_on && box.last_checked_on >= start)) &&
       (filters.checked !== "before" ||
@@ -138,7 +139,7 @@ const checkedParams = (checked, season) => {
 export const seasonStateParams = (filters, season) => ({
   type: filters.type,
   administration_unit: filters.unit ?? undefined,
-  ...(filters.unverified && { is_verified: false }),
+  ...(filters.verified !== null && { is_verified: filters.verified }),
   ...checkedParams(filters.checked, season),
 })
 
@@ -146,6 +147,6 @@ export const seasonStateParams = (filters, season) => ({
 export const exportParams = (filters, season) => ({
   state: filters.shown,
   type: filters.type,
-  ...(filters.unverified && { is_verified: false }),
+  ...(filters.verified !== null && { is_verified: filters.verified }),
   ...checkedParams(filters.checked, season),
 })
