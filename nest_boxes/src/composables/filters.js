@@ -11,7 +11,7 @@ const DEFAULT_SHOWN = LEGEND_KEYS.filter(key => key !== "ended")
 export const CHECKED_OPTIONS = [
   { value: "this_season", label: "Letos zkontrolované" },
   { value: "before", label: "Naposledy před letoškem" },
-  { value: "never", label: "Nikdy zkontrolované" },
+  { value: "never", label: "Nikdy nezkontrolované" },
 ]
 
 export const legendKey = box => box.season_state ?? "ended"
