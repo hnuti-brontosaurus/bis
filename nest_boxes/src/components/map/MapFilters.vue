@@ -137,19 +137,18 @@ const only = key => update({ shown: [key] })
             </n-button>
           </template>
           <div class="popover" data-testid="filters">
-            <label v-if="units">
+            <div v-if="units" class="field">
               <span class="label">Jednotka</span>
               <n-select
                 :value="filters.unit"
                 :options="units"
                 size="small"
                 placeholder="Všechny jednotky"
-                filterable
                 clearable
                 @update:value="update({ unit: $event })"
               />
-            </label>
-            <label :class="{ unavailable: unavailable.type }">
+            </div>
+            <div class="field" :class="{ unavailable: unavailable.type }">
               <span class="label">Typ</span>
               <n-select
                 :value="filters.type"
@@ -157,14 +156,17 @@ const only = key => update({ shown: [key] })
                 size="small"
                 placeholder="Všechny typy"
                 multiple
-                filterable
                 clearable
                 :disabled="Boolean(unavailable.type)"
                 @update:value="update({ type: $event })"
               />
               <span v-if="unavailable.type" class="why">{{ unavailable.type }}</span>
-            </label>
-            <label v-if="checked" :class="{ unavailable: unavailable.checked }">
+            </div>
+            <div
+              v-if="checked"
+              class="field"
+              :class="{ unavailable: unavailable.checked }"
+            >
               <span class="label">Kontrola</span>
               <n-select
                 :value="filters.checked"
@@ -178,7 +180,7 @@ const only = key => update({ shown: [key] })
               <span v-if="unavailable.checked" class="why">{{
                 unavailable.checked
               }}</span>
-            </label>
+            </div>
             <div
               v-if="unverifiedCount !== null"
               :class="{ unavailable: unavailable.unverified }"
@@ -319,7 +321,7 @@ const only = key => update({ shown: [key] })
   gap: 12px;
 }
 
-.popover label {
+.field {
   display: grid;
   gap: 4px;
 }

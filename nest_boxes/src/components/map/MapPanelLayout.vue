@@ -9,7 +9,8 @@ import {
   sheetHeights,
 } from "@/components/map/sheet.js"
 
-const HANDLE_HEIGHT = 21
+// The handle with its margins, and the sheet's top border
+const HANDLE_HEIGHT = 22
 const TAP_DISTANCE = 6
 
 const layout = ref(null)
@@ -56,7 +57,8 @@ const onPointerUp = () => {
 
 const resizeObserver = new ResizeObserver(() => {
   containerHeight.value = layout.value.clientHeight
-  summaryHeight.value = summary.value.offsetHeight
+  // Rounded down, a fraction of a pixel would overflow the page into a scrollbar
+  summaryHeight.value = Math.ceil(summary.value.getBoundingClientRect().height)
 })
 
 onMounted(() => {

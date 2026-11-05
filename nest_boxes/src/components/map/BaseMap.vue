@@ -77,9 +77,18 @@ onMounted(async () => {
   // Camera moves work before "load", which waits for slow tiles too
   emit("ready", map.value)
   stopStyleWatch = watch(style, value => map.value.setStyle(value))
+  // The sheet covers more or less of the map, which itself stays put: the
+  // centre moves to the point that is in the middle of the uncovered part
   stopInsetWatch = watch(
     () => props.bottomInset,
-    inset => map.value.easeTo({ padding: { bottom: inset } }),
+    inset => {
+      const { top } = map.value.getPadding()
+      const { clientWidth: width, clientHeight: height } = container.value
+      map.value.jumpTo({
+        center: map.value.unproject([width / 2, top + (height - top - inset) / 2]),
+        padding: { bottom: inset },
+      })
+    },
   )
 })
 
