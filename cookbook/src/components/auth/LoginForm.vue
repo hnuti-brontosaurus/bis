@@ -61,6 +61,14 @@ watchDebounced(
 
 const backendErrors = ref({})
 
+// Chef-only pages (`requiresAuth`) still need a chef profile, which a new
+// account creates on the profile page this form sits on.
+const returnToNext = () => {
+  const next = route.query.next
+  if (next && (authStore.isChef || !router.resolve(next).meta.requiresAuth))
+    router.push(next)
+}
+
 const register = async () => {
   registerLoading.value = true
   backendErrors.value = {}
@@ -68,6 +76,7 @@ const register = async () => {
     await form.value.validate()
     const { response } = await hcaptcha.value.executeAsync()
     authStore.setMe(await authApi.register({ ...user.value, response }))
+    returnToNext()
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
       backendErrors.value = e.response.data
@@ -86,7 +95,7 @@ const login = async () => {
   try {
     await form.value.validate()
     authStore.setMe(await authApi.login({ ...user.value }))
-    if (authStore.isChef && route.query.next) router.push(route.query.next)
+    returnToNext()
   } catch (e) {
     if (axios.isAxiosError(e) && e.response?.status === 400 && e.response.data) {
       backendErrors.value = e.response.data

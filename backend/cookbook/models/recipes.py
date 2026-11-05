@@ -175,6 +175,34 @@ class RecipeComment(BaseModel):
     user = m.ForeignKey(User, related_name="recipe_comments", on_delete=CASCADE)
     created_at = m.DateTimeField(auto_now_add=True)
     comment = HTMLField()
+    # A private comment is shared with the recipe's author only.
+    is_public = m.BooleanField(default=True)
+
+
+@translate_model
+class RecipeCommentPhoto(Photo):
+    parent = m.ForeignKey(RecipeComment, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipe_comments")
+
+
+@translate_model
+class RecipeNote(BaseModel):
+    """A user's own note on a recipe, seen by nobody else."""
+
+    recipe = m.ForeignKey(Recipe, related_name="notes", on_delete=CASCADE)
+    user = m.ForeignKey(User, related_name="recipe_notes", on_delete=CASCADE)
+    note = HTMLField(blank=True)
+
+    class Meta(BaseModel.Meta):
+        constraints = [
+            m.UniqueConstraint(fields=["recipe", "user"], name="one_note_per_recipe")
+        ]
+
+
+@translate_model
+class RecipeNotePhoto(Photo):
+    parent = m.ForeignKey(RecipeNote, related_name="photos", on_delete=CASCADE)
+    photo = ThumbnailImageField(upload_to="recipe_notes")
 
 
 def copy_photos(photos, target):

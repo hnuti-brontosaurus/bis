@@ -16,7 +16,11 @@ from api.cookbook.views.cookbook import (
     ChefViewSet,
     IngredientViewSet,
     MenuViewSet,
+    RecipeCommentPhotoViewSet,
+    RecipeCommentViewSet,
     RecipeIngredientPhotoViewSet,
+    RecipeNotePhotoViewSet,
+    RecipeNoteViewSet,
     RecipePhotoViewSet,
     RecipeStepPhotoViewSet,
     RecipeTipPhotoViewSet,
@@ -36,6 +40,12 @@ router.register(
 )
 router.register("recipe_step_photos", RecipeStepPhotoViewSet, "recipe_step_photos")
 router.register("recipe_tip_photos", RecipeTipPhotoViewSet, "recipe_tip_photos")
+router.register("recipe_comments", RecipeCommentViewSet, "recipe_comments")
+router.register(
+    "recipe_comment_photos", RecipeCommentPhotoViewSet, "recipe_comment_photos"
+)
+router.register("recipe_notes", RecipeNoteViewSet, "recipe_notes")
+router.register("recipe_note_photos", RecipeNotePhotoViewSet, "recipe_note_photos")
 router.register("menus", MenuViewSet, "menus")
 router.register("articles", ArticleViewSet, "articles")
 router.register("article_images", ArticleImageViewSet, "article_images")

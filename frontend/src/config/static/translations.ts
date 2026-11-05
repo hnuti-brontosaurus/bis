@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 647b82cbc5ed62e8
+// source-hash: bab11b938e5abe13
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1075,6 +1075,31 @@ export const recipeComment = {
   _name: 'Komentář receptu',
   _name_plural: 'Komentář receptu',
   recipe: 'Recept',
+  user: 'Autorstvo',
+  comment: 'Komentář',
+  is_public: 'Veřejný',
+  photos: 'Fotky',
+} as const
+
+export const recipeCommentPhoto = {
+  _name: 'Fotka komentáře receptu',
+  _name_plural: 'Fotka komentáře receptu',
+  parent: 'Komentář receptu',
+} as const
+
+export const recipeNote = {
+  _name: 'Poznámka k receptu',
+  _name_plural: 'Poznámka k receptu',
+  recipe: 'Recept',
+  user: 'Uživatel',
+  note: 'Poznámka',
+  photos: 'Fotky',
+} as const
+
+export const recipeNotePhoto = {
+  _name: 'Fotka poznámky k receptu',
+  _name_plural: 'Fotka poznámky k receptu',
+  parent: 'Poznámka k receptu',
 } as const
 
 export const article = {
@@ -1300,7 +1325,6 @@ export const cookbook = {
     cook_mode: 'Vařím',
     cook_mode_hint: 'Nechá obrazovku rozsvícenou, dokud je zapnuto.',
     tips: 'Tipy a triky',
-    comments: 'Komentáře',
     sources: 'Zdroje',
     ingredients: 'Ingredience',
     servings: 'Porcí',
@@ -1374,6 +1398,28 @@ export const cookbook = {
   },
   article: { edit: 'Upravit', empty: 'Na tomhle článku se ještě pracuje.' },
   section: { tips: 'tip', steps: 'krok', ingredients: 'přísada', part: 'část' },
+  comments: {
+    title: 'Komentáře',
+    add: 'Přidat komentář',
+    empty: 'Zatím tu žádný komentář není.',
+    load_error: 'Komentáře se nepodařilo načíst',
+    public: 'Veřejný',
+    private: 'Jen pro autorstvo receptu',
+    public_hint: 'Uvidí ho všichni.',
+    private_hint: 'Uvidí ho jen autorstvo receptu.',
+    delete: 'Smazat komentář',
+    delete_title: 'Smazat komentář',
+    delete_content: 'Opravdu chceš tento komentář smazat?',
+    delete_error: 'Komentář se nepodařilo smazat',
+  },
+  notes: {
+    title: 'Moje poznámka',
+    add: 'Přidat poznámku',
+    edit: 'Upravit poznámku',
+    hint: 'Poznámku k receptu uvidíš jen ty, třeba „2,5 dávky na moji největší dortovou formu“.',
+    dialog_hint: 'Poznámku uvidíš jen ty. Když ji uložíš prázdnou, smaže se.',
+    load_error: 'Poznámku se nepodařilo načíst',
+  },
   ingredients: {
     title: 'Přísady',
     new: 'Nová přísada',
@@ -1436,6 +1482,7 @@ export const cookbook = {
     dark_theme: 'Tmavý režim',
     chef_required_login:
       'Přihlas se nebo se zaregistruj — pro přidání receptu pak budeš potřebovat profil kuchařstva.',
+    login_required: 'Pro pokračování se přihlas nebo zaregistruj.',
     chef_required_profile:
       'Pro přidávání receptů je potřeba mít profil kuchařstva. Vyplň ho níže.',
   },

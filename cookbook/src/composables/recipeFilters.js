@@ -90,11 +90,7 @@ export const useRecipeFilters = () => {
     const ingredientComments = (recipe.ingredients ?? [])
       .map(ri => htmlToText(ri.comment))
       .join(" ")
-    const commentText = (recipe.comments ?? [])
-      .map(c => htmlToText(c.comment))
-      .join(" ")
-    const tier3 =
-      `${ingredientComments} ${stepText} ${tipText} ${commentText}`.toLowerCase()
+    const tier3 = `${ingredientComments} ${stepText} ${tipText}`.toLowerCase()
     if (matchesAll(tokens, tier3)) return 3
     return 0
   }

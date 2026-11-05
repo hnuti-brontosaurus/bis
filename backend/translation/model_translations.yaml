@@ -948,6 +948,28 @@ RecipeComment:
   name_plural: Komentáře receptu
   fields:
     recipe: Recept
+    user: Autorstvo
+    comment: Komentář
+    is_public: Veřejný
+    photos: Fotky
+RecipeCommentPhoto:
+  name: Fotka komentáře receptu
+  name_plural: Fotky komentáře receptu
+  fields:
+    parent: Komentář receptu
+RecipeNote:
+  name: Poznámka k receptu
+  name_plural: Poznámky k receptu
+  fields:
+    recipe: Recept
+    user: Uživatel
+    note: Poznámka
+    photos: Fotky
+RecipeNotePhoto:
+  name: Fotka poznámky k receptu
+  name_plural: Fotky poznámky k receptu
+  fields:
+    parent: Poznámka k receptu
 Article:
   name: Článek
   name_plural: Články

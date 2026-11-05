@@ -427,15 +427,22 @@ why the new-ingredient form has no category field.
 
 ### Cookbook photo galleries
 
-A recipe, each recipe ingredient and each step has a `photos` gallery
-(`RecipePhoto` / `RecipeIngredientPhoto` / `RecipeStepPhoto`, ordered by
-`order`; the first recipe photo is the cover). The recipe save
-(`useRecipeSave.js`) sends only `{id, order}` of the photos already saved, so
-drf-writable-nested reorders them and deletes the missing ones, and then each
-new photo is POSTed on its own to `recipe_photos` / `recipe_ingredient_photos`
-/ `recipe_step_photos` with its `parent_id`. The file is read into base64 at
-upload time, not in a form rule: a collapsed step or ingredient row unmounts
-its form.
+A recipe, each recipe ingredient, step and tip has a `photos` gallery
+(`RecipePhoto` / `RecipeIngredientPhoto` / `RecipeStepPhoto` /
+`RecipeTipPhoto`, ordered by `order`; the first recipe photo is the cover).
+The recipe save (`useRecipeSave.js`) sends only `{id, order}` of the photos
+already saved, so drf-writable-nested reorders them and deletes the missing
+ones, and then each new photo is POSTed on its own to its `recipe_*_photos`
+endpoint with its `parent_id`. The uploads find their parent rows by position
+in the saved recipe, so every child list needs an `order` field. The file is
+read into base64 at upload time, not in a form rule: a collapsed step or
+ingredient row unmounts its form.
+
+Comments and private notes (`RecipeComment`, `RecipeNote`) are written by any
+signed-in user, chef or not, and have galleries the same way
+(`data/recipeComments.js`). They are not part of the recipe payload: a private
+comment is visible only to its writer, the recipe's author and editors, a note
+only to its writer.
 
 ### Cookbook servings
 

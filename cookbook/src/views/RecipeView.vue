@@ -31,6 +31,8 @@ import { useAuthStore } from "@/data/auth.js"
 import { handleAxiosError } from "@/contrib/composables/setup.js"
 import RecipeIngredients from "@/components/recipe/RecipeIngredients.vue"
 import RecipePhotos from "@/components/recipe/RecipePhotos.vue"
+import RecipeComments from "@/components/recipe/RecipeComments.vue"
+import RecipeNote from "@/components/recipe/RecipeNote.vue"
 import CollapseList from "@/contrib/components/CollapseList.vue"
 import AppPage from "@/components/app/AppPage.vue"
 import HtmlText from "@/components/app/HtmlText.vue"
@@ -299,14 +301,12 @@ const onDelete = () => {
         </template>
       </CollapseList>
     </section>
-    <section v-if="recipe.comments.length">
-      <n-h2>{{ _.recipes.comments }}</n-h2>
-      <CollapseList :data="recipe.comments" />
-    </section>
     <section v-if="recipe.sources">
       <n-h2>{{ _.recipes.sources }}</n-h2>
       <n-text tag="div" class="prose"><HtmlText :html="recipe.sources" /></n-text>
     </section>
+    <RecipeComments :recipe="recipe" />
+    <RecipeNote :recipe="recipe" />
   </AppPage>
 </template>
 

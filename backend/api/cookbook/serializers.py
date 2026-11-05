@@ -31,6 +31,7 @@ import re
 from itertools import groupby
 
 import nh3
+from api.cookbook.permissions import CookbookAccessPermission, can_delete_comment
 from cookbook.models.articles import Article, ArticleImage
 from cookbook.models.cart import Cart
 from cookbook.models.chefs import Chef
@@ -39,8 +40,11 @@ from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
 from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
+    RecipeCommentPhoto,
     RecipeIngredient,
     RecipeIngredientPhoto,
+    RecipeNote,
+    RecipeNotePhoto,
     RecipePhoto,
     RecipeStep,
     RecipeStepPhoto,
@@ -205,6 +209,16 @@ class RecipeTipPhotoSerializer(RecipePhotoSerializer):
         model = RecipeTipPhoto
 
 
+class RecipeCommentPhotoSerializer(RecipePhotoSerializer):
+    class Meta(RecipePhotoSerializer.Meta):
+        model = RecipeCommentPhoto
+
+
+class RecipeNotePhotoSerializer(RecipePhotoSerializer):
+    class Meta(RecipePhotoSerializer.Meta):
+        model = RecipeNotePhoto
+
+
 class RecipePhotoUploadSerializer(RecipePhotoSerializer):
     parent_id = PrimaryKeyRelatedField(source="parent", queryset=Recipe.objects.all())
 
@@ -236,6 +250,24 @@ class RecipeTipPhotoUploadSerializer(RecipeTipPhotoSerializer):
     )
 
     class Meta(RecipeTipPhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeCommentPhotoUploadSerializer(RecipeCommentPhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(
+        source="parent", queryset=RecipeComment.objects.all()
+    )
+
+    class Meta(RecipeCommentPhotoSerializer.Meta):
+        fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
+
+
+class RecipeNotePhotoUploadSerializer(RecipeNotePhotoSerializer):
+    parent_id = PrimaryKeyRelatedField(
+        source="parent", queryset=RecipeNote.objects.all()
+    )
+
+    class Meta(RecipeNotePhotoSerializer.Meta):
         fields = (*RecipePhotoSerializer.Meta.fields, "parent_id")
 
 
@@ -277,11 +309,66 @@ class RecipeTipSerializer(SanitizesHTML, WritableNestedModelSerializer):
         fields = ("id", "name", "order", "description", "photos")
 
 
+class VisibleRecipeField(PrimaryKeyRelatedField):
+    """A recipe the requesting user can see."""
+
+    def get_queryset(self):
+        return CookbookAccessPermission.filter_visible(
+            self.context["request"], Recipe.objects.all()
+        )
+
+
 class RecipeCommentSerializer(SanitizesHTML, serializers.ModelSerializer):
+    """Photos are uploaded to `recipe_comment_photos` once the comment is
+    saved, like a recipe's."""
+
+    recipe_id = VisibleRecipeField(source="recipe")
+    author = serializers.SerializerMethodField()
+    can_delete = serializers.SerializerMethodField()
+    photos = RecipeCommentPhotoSerializer(many=True, read_only=True)
+
     class Meta:
         model = RecipeComment
-        fields = ("id", "user_id", "created_at", "comment")
+        fields = (
+            "id",
+            "recipe_id",
+            "author",
+            "created_at",
+            "comment",
+            "is_public",
+            "photos",
+            "can_delete",
+        )
         read_only_fields = ("created_at",)
+
+    def get_author(self, comment):
+        user = comment.user
+        return user.chef.name if user.is_chef else user.first_name
+
+    def get_can_delete(self, comment):
+        return can_delete_comment(self.context["request"].user, comment)
+
+
+class RecipeNoteSerializer(SanitizesHTML, WritableNestedModelSerializer):
+    """A note keeps, reorders and deletes its photos through `photos` and
+    uploads new ones to `recipe_note_photos`, like a recipe."""
+
+    recipe_id = VisibleRecipeField(source="recipe")
+    photos = RecipeNotePhotoSerializer(many=True, required=False)
+
+    class Meta:
+        model = RecipeNote
+        fields = ("id", "recipe_id", "note", "photos")
+
+    def validate_recipe_id(self, recipe):
+        if self.instance is not None and recipe != self.instance.recipe:
+            raise serializers.ValidationError("Poznámku nejde přesunout.")
+        notes = RecipeNote.objects.filter(
+            recipe=recipe, user=self.context["request"].user
+        )
+        if self.instance is None and notes.exists():
+            raise serializers.ValidationError("K receptu už poznámku máš.")
+        return recipe
 
 
 class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
@@ -303,7 +390,6 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
     steps = RecipeStepSerializer(many=True, required=False)
     tips = RecipeTipSerializer(many=True, required=False)
     photos = RecipePhotoSerializer(many=True, required=False)
-    comments = RecipeCommentSerializer(many=True, required=False, read_only=True)
     # Cached on the Recipe via signals (cookbook.signals); chefs edit
     # allergens on the Ingredient, never per-recipe.
     allergen_ids = PrimaryKeyRelatedField(source="allergens", many=True, read_only=True)
@@ -327,7 +413,6 @@ class RecipeSerializer(SanitizesHTML, WritableNestedModelSerializer):
             "ingredients",
             "steps",
             "tips",
-            "comments",
             "allergen_ids",
             "is_public",
             "original_id",

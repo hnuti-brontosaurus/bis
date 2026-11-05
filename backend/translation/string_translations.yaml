@@ -154,7 +154,6 @@ cookbook:
     cook_mode: Vařím
     cook_mode_hint: Nechá obrazovku rozsvícenou, dokud je zapnuto.
     tips: Tipy a triky
-    comments: Komentáře
     sources: Zdroje
     ingredients: Ingredience
     servings: Porcí
@@ -232,6 +231,28 @@ cookbook:
     ingredients: přísada
     part: část
 
+  comments:
+    title: Komentáře
+    add: Přidat komentář
+    empty: Zatím tu žádný komentář není.
+    load_error: Komentáře se nepodařilo načíst
+    public: Veřejný
+    private: Jen pro autorstvo receptu
+    public_hint: Uvidí ho všichni.
+    private_hint: Uvidí ho jen autorstvo receptu.
+    delete: Smazat komentář
+    delete_title: Smazat komentář
+    delete_content: Opravdu chceš tento komentář smazat?
+    delete_error: Komentář se nepodařilo smazat
+
+  notes:
+    title: Moje poznámka
+    add: Přidat poznámku
+    edit: Upravit poznámku
+    hint: Poznámku k receptu uvidíš jen ty, třeba „2,5 dávky na moji největší dortovou formu“.
+    dialog_hint: Poznámku uvidíš jen ty. Když ji uložíš prázdnou, smaže se.
+    load_error: Poznámku se nepodařilo načíst
+
   ingredients:
     title: Přísady
     new: Nová přísada
@@ -293,4 +314,5 @@ cookbook:
     saved: Uloženo
     dark_theme: Tmavý režim
     chef_required_login: Přihlas se nebo se zaregistruj — pro přidání receptu pak budeš potřebovat profil kuchařstva.
+    login_required: Pro pokračování se přihlas nebo zaregistruj.
     chef_required_profile: Pro přidávání receptů je potřeba mít profil kuchařstva. Vyplň ho níže.

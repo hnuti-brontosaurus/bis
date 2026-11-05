@@ -8,6 +8,9 @@ Visibility (reads / list filtering):
     On top of that, a viewer in `HIDDEN_AUTHORS` never sees the listed
     authors' recipes, editor or not.
   * Menu:   editors see all; chefs see is_shared + own; others see is_shared.
+  * Recipe comment: on a visible recipe, public ones to everyone; a private
+    one only to its writer, the recipe's author and editors.
+  * Recipe note: only to its writer.
 
 Writes:
   * Chef: a user creates / edits only their own chef row; never deletes.
@@ -20,6 +23,10 @@ Writes:
   * Article: editors edit; nobody creates or deletes, see `ArticleViewSet`.
   * Article image: editors upload; the article save deletes it.
   * Recipe tag: editors create, in an existing group; the rest is admin work.
+  * Recipe comment: any signed-in user writes, chef or not; its writer, the
+    recipe's author and editors delete; nobody edits.
+  * Recipe note: any signed-in user keeps one per recipe, and edits only it.
+  * Comment / note photo: created by the comment's / note's writer.
 
 The viewset wires this in via `CookbookViewSetMixin`, which both sets
 `permission_classes` and applies `filter_visible` in `get_queryset`.
@@ -31,7 +38,11 @@ from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import (
     Recipe,
+    RecipeComment,
+    RecipeCommentPhoto,
     RecipeIngredientPhoto,
+    RecipeNote,
+    RecipeNotePhoto,
     RecipePhoto,
     RecipeStepPhoto,
     RecipeTipPhoto,
@@ -52,6 +63,24 @@ PHOTO_MODELS = (RecipePhoto, RecipeIngredientPhoto, RecipeStepPhoto, RecipeTipPh
 HIDDEN_AUTHORS = {
     "kiki.suldovska@gmail.com": ["marketa.tumova28@gmail.com"],
 }
+
+
+def can_delete_comment(user, comment):
+    if not user.is_authenticated:
+        return False
+    return (
+        user.is_editor
+        or comment.user_id == user.id
+        or comment.recipe.chef.user_id == user.id
+    )
+
+
+def _photo_parent(request, model):
+    """The photo endpoints only create, so the parent comes from the request."""
+    parent_id = str(request.data.get("parent_id"))
+    if not parent_id.isdigit():
+        return None
+    return model.parent.field.related_model.objects.filter(id=parent_id).first()
 
 
 def hidden_author_emails(user):
@@ -84,6 +113,24 @@ class CookbookAccessPermission(BasePermission):
             Unit,
         ):
             return queryset
+
+        if model is RecipeNote:
+            if not user.is_authenticated:
+                return queryset.none()
+            return queryset.filter(user_id=user.id)
+
+        if model is RecipeComment:
+            recipes = cls.filter_visible(request, Recipe.objects.all())
+            queryset = queryset.filter(recipe__in=recipes)
+            if not user.is_authenticated:
+                return queryset.filter(is_public=True)
+            if user.is_editor:
+                return queryset
+            return queryset.filter(
+                Q(is_public=True)
+                | Q(user_id=user.id)
+                | Q(recipe__chef__user_id=user.id)
+            )
 
         if model is Recipe:
             queryset = queryset.exclude(
@@ -159,6 +206,16 @@ class CookbookAccessPermission(BasePermission):
                 return False
             return self._matches(request, obj, "user_id", user.id)
 
+        if model is RecipeComment:
+            return obj is None or can_delete_comment(user, obj)
+
+        if model is RecipeNote:
+            return obj is None or obj.user_id == user.id
+
+        if model in (RecipeCommentPhoto, RecipeNotePhoto):
+            parent = _photo_parent(request, model)
+            return parent is not None and parent.user_id == user.id
+
         if not user.is_chef:
             return False
 
@@ -179,13 +236,8 @@ class CookbookAccessPermission(BasePermission):
             return self._matches(request, obj, "chef_id", user.chef.id)
 
         if model in PHOTO_MODELS:
-            # The photo endpoints only create, so the parent comes from the
-            # request. Deleting a photo goes through the recipe save.
-            parent_id = str(request.data.get("parent_id"))
-            if not parent_id.isdigit():
-                return False
-            parent_model = model.parent.field.related_model
-            parent = parent_model.objects.filter(id=parent_id).first()
+            # Deleting a photo goes through the recipe save.
+            parent = _photo_parent(request, model)
             if parent is None:
                 return False
             recipe = parent if model is RecipePhoto else parent.recipe

@@ -6,6 +6,7 @@ from cookbook.models.menus import Menu, MenuRecipe, MenuRecipeIngredient
 from cookbook.models.recipes import (
     Recipe,
     RecipeComment,
+    RecipeCommentPhoto,
     RecipeIngredient,
     RecipeIngredientPhoto,
     RecipePhoto,
@@ -79,9 +80,14 @@ class RecipeTipAdmin(PermissionMixin, NestedTabularInline):
     inlines = [RecipeTipPhotoAdmin]
 
 
+class RecipeCommentPhotoAdmin(PermissionMixin, NestedTabularInline):
+    model = RecipeCommentPhoto
+
+
 class RecipeCommentAdmin(PermissionMixin, NestedTabularInline):
     model = RecipeComment
     autocomplete_fields = ["user"]
+    inlines = [RecipeCommentPhotoAdmin]
 
 
 @admin.register(Recipe)

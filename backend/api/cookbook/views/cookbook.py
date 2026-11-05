@@ -6,7 +6,11 @@ from api.cookbook.serializers import (
     ChefSerializer,
     IngredientSerializer,
     MenuSerializer,
+    RecipeCommentPhotoUploadSerializer,
+    RecipeCommentSerializer,
     RecipeIngredientPhotoUploadSerializer,
+    RecipeNotePhotoUploadSerializer,
+    RecipeNoteSerializer,
     RecipePhotoUploadSerializer,
     RecipeSerializer,
     RecipeStepPhotoUploadSerializer,
@@ -18,7 +22,11 @@ from cookbook.models.ingredients import Ingredient
 from cookbook.models.menus import Menu
 from cookbook.models.recipes import (
     Recipe,
+    RecipeComment,
+    RecipeCommentPhoto,
     RecipeIngredientPhoto,
+    RecipeNote,
+    RecipeNotePhoto,
     RecipePhoto,
     RecipeStepPhoto,
     RecipeTipPhoto,
@@ -53,8 +61,6 @@ class RecipeViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
             "ingredients__photos",
             "steps__photos",
             "tips__photos",
-            "comments",
-            "comments__user",
         )
         .all()
     )
@@ -93,6 +99,42 @@ class RecipeStepPhotoViewSet(PhotoUploadViewSet):
 class RecipeTipPhotoViewSet(PhotoUploadViewSet):
     serializer_class = RecipeTipPhotoUploadSerializer
     queryset = RecipeTipPhoto.objects.all()
+
+
+class RecipeCommentPhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipeCommentPhotoUploadSerializer
+    queryset = RecipeCommentPhoto.objects.all()
+
+
+class RecipeNotePhotoViewSet(PhotoUploadViewSet):
+    serializer_class = RecipeNotePhotoUploadSerializer
+    queryset = RecipeNotePhoto.objects.all()
+
+
+class RecipeCommentViewSet(
+    CookbookViewSetMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = RecipeCommentSerializer
+    filterset_fields = ["recipe"]
+    queryset = RecipeComment.objects.select_related(
+        "user__chef", "recipe__chef"
+    ).prefetch_related("photos")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class RecipeNoteViewSet(CookbookViewSetMixin, ModelViewSet):
+    serializer_class = RecipeNoteSerializer
+    filterset_fields = ["recipe"]
+    queryset = RecipeNote.objects.prefetch_related("photos")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class MenuViewSet(CookbookViewSetMixin, ChangeViewSetMixin, ModelViewSet):
