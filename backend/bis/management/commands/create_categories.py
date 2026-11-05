@@ -642,12 +642,10 @@ class Command(BaseCommand):
                     contents_known=True,
                     occupant=occupant(slug="ptak"),
                 ),
-                "hornets": dict(
-                    name="sršni", contents_known=True, occupant=occupant(slug="srsni")
-                ),
+                # Either of the two, so the form asks which
+                "hornets": dict(name="vosy/sršni", contents_known=True, occupant=None),
                 "could_not_open": dict(name="nešla otevřít"),
                 "too_high": dict(name="moc vysoko"),
-                "no_time": dict(name="nestihlo se"),
                 "other": dict(name="jiné", contents_known=True),
             },
         )

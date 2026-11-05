@@ -148,7 +148,7 @@ def animals(note):
 
 def not_cleaned_reason(note):
     key = normalized(note)
-    if re.search(r"sršn|sršeň", key):
+    if re.search(r"sršn|sršeň|\bvos[ay]\b", key):
         return "hornets"
     if re.search(r"pták|vejc|na vajíčkách|živá|netopýr", key):
         return "bird_inside"

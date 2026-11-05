@@ -95,7 +95,7 @@ const WHY_NOT = {
   },
   not_reached: {
     label: "Proč jste se k ní nedostali?",
-    placeholder: "Třeba: oplocený pozemek, nestihli jsme to",
+    placeholder: "Třeba: oplocený pozemek, rozvodněný potok",
   },
 }
 const NOT_HUNG = {
