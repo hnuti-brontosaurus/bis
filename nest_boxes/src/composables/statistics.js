@@ -18,7 +18,7 @@ export const unitsOf = areas =>
     ...new Map(
       areas.map(area => [area.administration_unit.id, area.administration_unit]),
     ).values(),
-  ].sort((a, b) => a.name.localeCompare(b.name, "cs"))
+  ].sort((a, b) => a.abbreviation.localeCompare(b.abbreviation, "cs"))
 
 const withMarkers = (items, areas) => {
   const byId = new Map(areas.map(area => [area.id, area]))

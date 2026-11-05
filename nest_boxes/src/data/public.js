@@ -42,7 +42,7 @@ export const listPublicRegions = () =>
  * @property {number} attention
  *
  * @typedef {SeasonFigures & { area: { id: number, name: string,
- *   administration_unit: { id: number, name: string } } }} AreaSeasonFigures
+ *   administration_unit: { id: number, name: string, abbreviation: string } } }} AreaSeasonFigures
  *
  * Mirrors `season_statistics` in backend/nest_boxes/statistics.py.
  * @typedef {Object} Statistics

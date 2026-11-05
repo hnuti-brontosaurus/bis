@@ -21,7 +21,7 @@ const saving = ref(false)
 const error = ref("")
 
 const unitOptions = computed(() =>
-  units.value.map(unit => ({ value: unit.id, label: unit.name })),
+  units.value.map(unit => ({ value: unit.id, label: unit.abbreviation })),
 )
 
 watch(
@@ -86,7 +86,7 @@ const save = async () => {
           filterable
           placeholder="Základní článek"
         />
-        <span v-else>{{ area.administration_unit.name }}</span>
+        <span v-else>{{ area.administration_unit.abbreviation }}</span>
         <span v-if="!auth.me.is_budkar" class="hint">
           Článek oblasti mění budkař.
         </span>

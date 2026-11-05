@@ -55,7 +55,7 @@ const chronological = figures => [...figures].reverse()
 
 const unitOptions = computed(() =>
   unitsOf((statistics.value?.areas ?? []).map(row => row.area)).map(unit => ({
-    label: unit.name,
+    label: unit.abbreviation,
     value: unit.id,
   })),
 )
@@ -163,7 +163,7 @@ watch(
         </tbody>
         <tbody v-for="group in table.units" :key="group.unit.id">
           <tr class="unit">
-            <td class="first">{{ group.unit.name }}</td>
+            <td class="first">{{ group.unit.abbreviation }}</td>
             <td
               v-for="(figures, index) in chronological(group.seasons)"
               :key="index"

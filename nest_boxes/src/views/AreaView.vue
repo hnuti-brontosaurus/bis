@@ -224,7 +224,7 @@ watch(batchId, () => (selectedId.value = null))
       <div class="summary">
         <div class="row title-row">
           <div class="grow">
-            <p class="eyebrow">{{ area.administration_unit.name }}</p>
+            <p class="eyebrow">{{ area.administration_unit.abbreviation }}</p>
             <h2>{{ area.name }}</h2>
           </div>
           <n-button size="small" quaternary @click="dialogs.area = true">

@@ -106,7 +106,10 @@ const shownSeason = computed(() =>
 
 const types = computed(() => categories.value?.types ?? [])
 const unitOptions = computed(() =>
-  unitsOf(areas.value ?? []).map(unit => ({ label: unit.name, value: unit.id })),
+  unitsOf(areas.value ?? []).map(unit => ({
+    label: unit.abbreviation,
+    value: unit.id,
+  })),
 )
 // Newest first, so an older season is further down the list
 const seasons = computed(() => statistics.value?.seasons ?? [])

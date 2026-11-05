@@ -56,7 +56,7 @@ const boxes = computed(() => {
     </div>
     <header class="sheet-head">
       <div>
-        <p class="eyebrow">{{ data.area.administration_unit.name }}</p>
+        <p class="eyebrow">{{ data.area.administration_unit.abbreviation }}</p>
         <h1>
           {{ data.area.name
           }}<template v-if="data.batch"> · {{ data.batch.name }}</template>

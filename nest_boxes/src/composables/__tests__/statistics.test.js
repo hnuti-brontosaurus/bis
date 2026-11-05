@@ -31,14 +31,15 @@ describe("statistics", () => {
     })
   })
 
-  it("lists each unit once, sorted the Czech way", () => {
-    const unit = (id, name) => ({ administration_unit: { id, name } })
+  it("lists each unit once, by abbreviation the Czech way", () => {
+    const unit = (id, abbreviation) => ({
+      administration_unit: { id, name: `ZČ HB ${abbreviation}`, abbreviation },
+    })
     expect(
-      unitsOf([unit(2, "ZČ Čejkovice"), unit(1, "RC Brno"), unit(2, "ZČ Čejkovice")]),
-    ).toEqual([
-      { id: 1, name: "RC Brno" },
-      { id: 2, name: "ZČ Čejkovice" },
-    ])
+      unitsOf([unit(2, "Čejkovice"), unit(1, "Brno"), unit(2, "Čejkovice")]).map(
+        item => item.abbreviation,
+      ),
+    ).toEqual(["Brno", "Čejkovice"])
   })
 
   it("makes bubbles of the areas with a marker and any boxes", () => {

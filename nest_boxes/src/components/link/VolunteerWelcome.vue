@@ -44,8 +44,8 @@ const submit = () =>
       <h1>Díky, že jdeš čistit budky</h1>
       <p class="muted lead">
         Budky v oblasti {{ link.payload.area.name }} čistí
-        {{ link.payload.batch.cleaned_by.name }}. Než vyrazíš, řekni nám, kdo jsi.
-        Zeptáme se jen jednou, telefon si to zapamatuje.
+        {{ link.payload.batch.cleaned_by.abbreviation }}. Než vyrazíš, řekni nám, kdo
+        jsi. Zeptáme se jen jednou, telefon si to zapamatuje.
       </p>
     </div>
     <n-form
