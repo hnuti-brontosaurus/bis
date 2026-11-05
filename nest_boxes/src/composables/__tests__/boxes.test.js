@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   boxChangesLabel,
+  boxTags,
   checkResult,
   describeChange,
   reportedState,
@@ -46,7 +47,7 @@ describe("describeChange", () => {
 
   it("names choices, types and moves", () => {
     expect(describeChange("status", ["in_use", "missing"], context)).toBe(
-      "stav vyvěšená → nenalezená",
+      "stav v pořádku → nenalezená",
     )
     expect(describeChange("type", [null, 2], context)).toBe("typ – → velký sýkorník")
     expect(
@@ -103,5 +104,17 @@ describe("reportedState", () => {
 
   it("changes nothing when the box was not reached", () => {
     expect(reportedState(check({ found: "not_reached" }))).toBeNull()
+  })
+})
+
+describe("boxTags", () => {
+  it("names only what is off", () => {
+    const box = { status: "in_use", is_verified: true }
+    expect(boxTags(box)).toEqual([])
+    expect(boxTags({ ...box, status: "needs_replacing", is_verified: false })).toEqual([
+      { text: "potřebuje vyměnit", tone: "bad" },
+      { text: "neověřená", tone: "warn" },
+    ])
+    expect(boxTags({ status: "planned", is_verified: false })).toEqual([])
   })
 })

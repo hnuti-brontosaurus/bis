@@ -539,7 +539,6 @@ SENSITIVITY = {
             "name",
             "previous_names",
             "status",
-            "condition",
             "location",
             "planned_radius",
             "region",

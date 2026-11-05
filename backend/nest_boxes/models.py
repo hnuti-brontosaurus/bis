@@ -36,8 +36,8 @@ from translation.translate import translate_model
 
 
 def in_use(prefix=""):
-    """Hanging: the only boxes spacing and statistics see."""
-    return Q(**{f"{prefix}status": NestBox.Status.IN_USE})
+    """Hanging, in whatever shape: the only boxes spacing and statistics see."""
+    return Q(**{f"{prefix}status__in": HANGING_STATUSES})
 
 
 # A verified box this close to another should be moved
@@ -113,14 +113,14 @@ class NestBoxQuerySet(m.QuerySet):
     def with_season_state(self):
         """`season_state`, one of SeasonState, or null for an ended box.
 
-        A pending check counts as if it were confirmed: its status and condition
-        are what confirming it would leave on the box, see `checks._box_values`.
+        A pending check counts as if it were confirmed: its status is what
+        confirming it would leave on the box, see `checks._box_values`.
         """
-        Status, Found, BoxLeft = NestBox.Status, Check.Found, Check.BoxLeft
-        repairs = (NestBox.Condition.NEEDS_REPAIR, NestBox.Condition.NEEDS_REPLACING)
+        Status, Found = NestBox.Status, Check.Found
         pending = Q(season_check__is_confirmed=False)
         returnable = pending & Q(status__in=RETURNABLE_STATUSES)
         found = Q(season_check__found=Found.FOUND)
+        found_now = returnable & found
         return (
             self.with_should_be_moved()
             .annotate(
@@ -132,13 +132,17 @@ class NestBoxQuerySet(m.QuerySet):
                         returnable & Q(season_check__found=Found.NOT_FOUND),
                         then=Value(Status.MISSING),
                     ),
-                    When(
-                        returnable
-                        & found
-                        & Q(season_check__box_left=BoxLeft.TAKEN_DOWN),
-                        then=Value(Status.TAKEN_DOWN),
+                    *(
+                        When(
+                            found_now & Q(season_check__box_left=box_left),
+                            then=Value(status),
+                        )
+                        for box_left, status in BOX_LEFT_STATUS.items()
                     ),
-                    When(returnable & found, then=Value(Status.IN_USE)),
+                    When(
+                        found_now & Q(status__in=(Status.MISSING, Status.TAKEN_DOWN)),
+                        then=Value(Status.IN_USE),
+                    ),
                     When(
                         pending
                         & Q(
@@ -148,23 +152,13 @@ class NestBoxQuerySet(m.QuerySet):
                     ),
                     default=F("status"),
                 ),
-                season_condition=Case(
-                    When(
-                        returnable
-                        & found
-                        & Q(season_check__box_left__in=(BoxLeft.FINE, *repairs)),
-                        then=F("season_check__box_left"),
-                    ),
-                    default=F("condition"),
-                ),
             )
             .annotate(
                 season_state=Case(
                     When(status=Status.ENDED, then=None),
                     When(season_status=Status.PLANNED, then=Value(SeasonState.PLANNED)),
                     When(
-                        Q(season_status__in=(Status.MISSING, Status.TAKEN_DOWN))
-                        | Q(season_condition__in=repairs)
+                        Q(season_status__in=ATTENTION_STATUSES)
                         | Q(season_check__cleaning=Check.Cleaning.NOT_CLEANED)
                         | Q(should_be_moved=True),
                         then=Value(SeasonState.ATTENTION),
@@ -182,15 +176,12 @@ class NestBoxQuerySet(m.QuerySet):
 class NestBox(m.Model):
     class Status(m.TextChoices):
         PLANNED = "planned", "plánovaná"
-        IN_USE = "in_use", "vyvěšená"
+        IN_USE = "in_use", "v pořádku"
+        NEEDS_REPAIR = "needs_repair", "potřebuje opravu"
+        NEEDS_REPLACING = "needs_replacing", "potřebuje vyměnit"
         TAKEN_DOWN = "taken_down", "sundaná na opravu"
         MISSING = "missing", "nenalezená"
         ENDED = "ended", "zaniklá"
-
-    class Condition(m.TextChoices):
-        FINE = "fine", "v pořádku"
-        NEEDS_REPAIR = "needs_repair", "potřebuje opravu"
-        NEEDS_REPLACING = "needs_replacing", "potřebuje vyměnit"
 
     class Opening(m.TextChoices):
         FRONT = "front", "přední stěnou"
@@ -209,9 +200,6 @@ class NestBox(m.Model):
     name = m.CharField(max_length=63)
     previous_names = m.TextField(blank=True)
     status = m.CharField(max_length=15, choices=Status.choices)
-    condition = m.CharField(
-        max_length=15, choices=Condition.choices, default=Condition.FINE
-    )
 
     location = m.PointField()
     planned_radius = m.PositiveIntegerField(null=True, blank=True)
@@ -316,20 +304,33 @@ class NestBox(m.Model):
                     LEFT JOIN {table} AS other
                         ON other.area_id = box.area_id
                         AND other.id <> box.id
-                        AND other.status = %(in_use)s
-                        AND box.status = %(in_use)s
+                        AND other.status = ANY(%(hanging)s)
+                        AND box.status = ANY(%(hanging)s)
                     WHERE box.area_id = %(area_id)s
                     GROUP BY box.id
                 ) AS nearest
                 WHERE box.id = nearest.id
                 """,
-                {"area_id": area_id, "in_use": cls.Status.IN_USE},
+                {"area_id": area_id, "hanging": list(HANGING_STATUSES)},
             )
 
 
+# On its tree, in whatever shape
+HANGING_STATUSES = (
+    NestBox.Status.IN_USE,
+    NestBox.Status.NEEDS_REPAIR,
+    NestBox.Status.NEEDS_REPLACING,
+)
+# Something to do this season, see NestBoxQuerySet.with_season_state
+ATTENTION_STATUSES = (
+    NestBox.Status.NEEDS_REPAIR,
+    NestBox.Status.NEEDS_REPLACING,
+    NestBox.Status.TAKEN_DOWN,
+    NestBox.Status.MISSING,
+)
 # A check can move a box between these, see `checks._box_values`
 RETURNABLE_STATUSES = (
-    NestBox.Status.IN_USE,
+    *HANGING_STATUSES,
     NestBox.Status.MISSING,
     NestBox.Status.TAKEN_DOWN,
 )
@@ -490,6 +491,15 @@ class Check(m.Model):
                 else self.box.area.administration_unit_id
             )
         super().save(*args, **kwargs)
+
+
+# The status a found box takes from what its check says it was left as
+BOX_LEFT_STATUS = {
+    Check.BoxLeft.FINE: NestBox.Status.IN_USE,
+    Check.BoxLeft.NEEDS_REPAIR: NestBox.Status.NEEDS_REPAIR,
+    Check.BoxLeft.NEEDS_REPLACING: NestBox.Status.NEEDS_REPLACING,
+    Check.BoxLeft.TAKEN_DOWN: NestBox.Status.TAKEN_DOWN,
+}
 
 
 @translate_model

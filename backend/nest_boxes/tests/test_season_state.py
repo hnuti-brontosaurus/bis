@@ -6,7 +6,7 @@ from nest_boxes.models import Check, NestBox, SeasonState
 from nest_boxes.statistics import season_statistics
 from nest_boxes.tests.conftest import made_at, near
 
-Status, Condition = NestBox.Status, NestBox.Condition
+Status = NestBox.Status
 Found, Cleaning, BoxLeft = Check.Found, Check.Cleaning, Check.BoxLeft
 
 
@@ -45,15 +45,15 @@ def box(make_box):
     return make
 
 
-def test_status_and_condition(box, types):
+def test_status(box, types):
     box("planned", status=Status.PLANNED, installed_on=None)
     box("to check")
     box("checked last season")
     check(NestBox.objects.get(name="checked last season"), season=2024)
     box("missing", status=Status.MISSING)
     box("taken down", status=Status.TAKEN_DOWN)
-    box("needs repair", condition=Condition.NEEDS_REPAIR)
-    box("needs replacing", condition=Condition.NEEDS_REPLACING)
+    box("needs repair", status=Status.NEEDS_REPAIR)
+    box("needs replacing", status=Status.NEEDS_REPLACING)
     box("bats", type=types["netopyrnik"])
     box("ended", status=Status.ENDED, ended_on=date(2025, 8, 1))
 
@@ -93,12 +93,12 @@ def test_pending_checks_count_as_confirmed(box):
         box_left=BoxLeft.FINE,
     )
     check(
-        box("mended", condition=Condition.NEEDS_REPAIR),
+        box("mended", status=Status.NEEDS_REPAIR),
         is_confirmed=False,
         box_left=BoxLeft.FINE,
     )
     check(
-        box("still broken", condition=Condition.NEEDS_REPAIR),
+        box("still broken", status=Status.NEEDS_REPAIR),
         is_confirmed=False,
         box_left="",
     )

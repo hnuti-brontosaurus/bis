@@ -16,7 +16,12 @@ import {
   isoDate,
   pendingLabel,
 } from "@/composables/czech.js"
-import { BOX_LEFT_LABELS, byId, CLEANING_LABELS } from "@/composables/labels.js"
+import {
+  BOX_LEFT_LABELS,
+  byId,
+  CLEANING_LABELS,
+  HANGING_STATUSES,
+} from "@/composables/labels.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { useAuthStore } from "@/data/auth.js"
@@ -34,7 +39,7 @@ import {
   updateCheck,
 } from "@/data/manage.js"
 
-const ENTERABLE = ["in_use", "planned", "missing", "taken_down"]
+const ENTERABLE = ["planned", ...HANGING_STATUSES, "missing", "taken_down"]
 
 const route = useRoute()
 const message = useMessage()

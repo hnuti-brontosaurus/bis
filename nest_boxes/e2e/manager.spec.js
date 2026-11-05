@@ -29,7 +29,19 @@ test.describe("the area page", () => {
     await expect(batch.getByTestId("batch-link")).toContainText("/budky/d/")
     await expect(page.getByText("V této obchůzce · 3")).toBeVisible()
 
-    await page.getByRole("button", { name: "Vyřadit z obchůzky 3" }).click()
+    // The batch is edited on its link, where a manager of the area may change it
+    const shown = await batch.getByTestId("batch-link").textContent()
+    await page.goto(shown.slice(shown.indexOf("/budky/")))
+    await page.getByLabel("Přezdívka").fill("Budkař")
+    await page.getByLabel("E-mail").fill("budkar@example.com")
+    await page.getByRole("button", { name: "Pokračovat na mapu" }).click()
+    await row(page, area.boxes["3"]).locator(".head").click()
+    await row(page, area.boxes["3"])
+      .getByRole("button", { name: "Vyřadit z obchůzky" })
+      .click()
+    await expect(page.getByRole("button", { name: "Mimo obchůzku · 1" })).toBeVisible()
+
+    await page.goto(`/budky/oblast/${area.id}/`)
     await expect(page.getByText("V této obchůzce · 2")).toBeVisible()
     await expect(page.getByText("Mimo obchůzku · 1")).toBeVisible()
     await expect(batch.getByText("0 z 2")).toBeVisible()
@@ -60,9 +72,9 @@ test.describe("the area page", () => {
     await expect(dialog.getByTestId("coordinates")).toBeVisible()
     await dialog.getByRole("button", { name: "Naplánovat" }).click()
     await expect(page.getByText("Budka P9 je naplánovaná.")).toBeVisible()
-    await expect(page.locator("[data-box-row]", { hasText: "P9" })).toContainText(
-      "plánovaná",
-    )
+    await expect(
+      page.locator("[data-box-row]", { hasText: "P9" }).locator(".marker-glyph"),
+    ).toHaveClass(/planned/)
   })
 })
 
@@ -264,13 +276,13 @@ test.describe("the map of areas", () => {
 
     await cluster.click()
     await expect(marker(other.name)).toBeVisible()
-    await expect(page.locator(".box-row.selected")).toHaveCount(1)
+    await expect(page.locator(".box-item.expanded")).toHaveCount(1)
     await marker(other.name).click()
-    await expect(row(page, other)).toHaveClass(/selected/)
-    await expect(row(page, marked)).not.toHaveClass(/selected/)
+    await expect(row(page, other)).toHaveClass(/expanded/)
+    await expect(row(page, marked)).not.toHaveClass(/expanded/)
 
     // A click on the selected row opens the box, like a second click on its marker
-    await row(page, other).click()
+    await row(page, other).locator(".head").click()
     await expect(
       page.getByRole("heading", { name: other.name, exact: true }),
     ).toBeVisible()

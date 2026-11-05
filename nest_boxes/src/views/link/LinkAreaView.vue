@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, shallowRef } from "vue"
+import { computed, nextTick, ref, shallowRef, watch } from "vue"
 import { RouterLink } from "vue-router"
 import { NButton } from "naive-ui"
 
@@ -8,19 +8,21 @@ import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import VolunteerHeader from "@/components/app/VolunteerHeader.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
-import LinkBoxDetail from "@/components/link/LinkBoxDetail.vue"
+import BoxItem from "@/components/box/BoxItem.vue"
 import MapLegend from "@/components/map/MapLegend.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
-import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import PositionMarker from "@/components/map/PositionMarker.vue"
 import { boundsOf, distance } from "@/components/map/geometry.js"
+import { ACTIVE_STATUSES } from "@/composables/areaBoxes.js"
 import { checkResult } from "@/composables/boxes.js"
 import { formatDistance, plural } from "@/composables/czech.js"
 import { byId } from "@/composables/labels.js"
 import { sortBoxes } from "@/composables/linkBoxes.js"
 import { usePosition } from "@/composables/usePosition.js"
 import { useAuthStore } from "@/data/auth.js"
+import { reportError } from "@/data/errors.js"
+import { addBatchBoxes, getArea, removeBatchBoxes } from "@/data/manage.js"
 import { useLinkStore } from "@/data/link.js"
 
 const SORTS = [
@@ -60,7 +62,26 @@ const finished = computed(() =>
 const added = computed(() => sortBoxes(link.rows.filter(isNew)))
 const total = computed(() => known.value.length)
 
-const markers = computed(() => link.rows.filter(row => row.state !== "planned"))
+// A manager of the area edits the batch here: the area's other boxes, to add
+const areaBoxes = shallowRef([])
+const showsOutside = ref(false)
+const outside = computed(() => {
+  const inBatch = new Set(link.rows.map(row => row.id))
+  return sortBoxes(
+    areaBoxes.value.filter(
+      box => ACTIVE_STATUSES.includes(box.status) && !inBatch.has(box.id),
+    ),
+  )
+})
+
+const markers = computed(() => [
+  ...link.rows.filter(row => row.state !== "planned"),
+  ...(showsOutside.value
+    ? outside.value
+        .filter(box => box.status !== "planned")
+        .map(box => ({ ...box, state: "out" }))
+    : []),
+])
 const planned = computed(() => link.rows.filter(row => row.state === "planned"))
 const bounds = link.payload.boxes.length
   ? boundsOf(link.payload.boxes.map(box => box.location))
@@ -71,11 +92,8 @@ const canManage = computed(
     auth?.me?.is_budkar || auth?.me?.managed_area_ids.includes(link.payload.area.id),
 )
 
-const subtitle = row => {
-  const parts = [row.state === "planned" ? "plánovaná" : ""]
-  if (position.value) parts.push(formatDistance(distance(position.value, row.location)))
-  return parts.filter(Boolean).join(" · ")
-}
+const away = row =>
+  position.value ? formatDistance(distance(position.value, row.location)) : ""
 
 const select = async id => {
   selectedId.value = id
@@ -100,6 +118,27 @@ const recordsLabel = count =>
   `${count} ${plural(count, "záznam", "záznamy", "záznamů")}`
 
 const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
+
+const loadArea = async () => {
+  areaBoxes.value = (await getArea(link.payload.area.id)).boxes
+}
+
+watch(canManage, manages => manages && loadArea().catch(reportError), {
+  immediate: true,
+})
+
+const changing = ref(null)
+const changeBatch = async (box, add) => {
+  changing.value = box.id
+  try {
+    await (add ? addBatchBoxes : removeBatchBoxes)(link.payload.batch.id, [box.id])
+    await link.refresh()
+  } catch (error) {
+    reportError(error)
+  } finally {
+    changing.value = null
+  }
+}
 </script>
 
 <template>
@@ -165,21 +204,17 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
       </RouterLink>
     </div>
     <div class="list" data-testid="box-list">
-      <template v-for="row in toCheck" :key="row.id">
-        <div
-          class="item"
-          :class="{ selected: row.id === selectedId }"
-          :data-box-row="row.id"
-          @click="focus(row)"
-        >
-          <MarkerGlyph :state="row.state" />
-          <div class="text">
-            <div class="name">{{ row.name || "Nová budka" }}</div>
-            <div class="sub">{{ subtitle(row) }}</div>
-            <div v-if="row.note && row.id !== selectedId" class="row-note">
-              {{ row.note }}
-            </div>
-          </div>
+      <BoxItem
+        v-for="row in toCheck"
+        :key="row.id"
+        :box="row"
+        :state="row.state"
+        :expanded="row.id === selectedId"
+        :types-by-id="typesById"
+        :aside="away(row)"
+        @toggle="focus(row)"
+      >
+        <template #action>
           <RouterLink v-slot="{ navigate }" :to="checkRoute(row)" custom>
             <n-button
               :type="row.state === 'planned' ? 'default' : 'primary'"
@@ -189,32 +224,32 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
               {{ row.state === "planned" ? "Pověsit" : "Zkontrolovat" }}
             </n-button>
           </RouterLink>
-        </div>
-        <LinkBoxDetail
-          v-if="row.id === selectedId"
-          :box="row"
-          :types-by-id="typesById"
-        />
-      </template>
+        </template>
+        <template #extra>
+          <n-button
+            v-if="canManage"
+            size="small"
+            :loading="changing === row.id"
+            @click.stop="changeBatch(row, false)"
+          >
+            <template #icon><AppIcon name="minus" /></template>
+            Vyřadit z obchůzky
+          </n-button>
+        </template>
+      </BoxItem>
       <template v-for="group in finished" :key="group.state">
         <div class="group">{{ group.title }} · {{ group.rows.length }}</div>
-        <template v-for="row in group.rows" :key="row.id">
-          <div
-            class="item"
-            :class="{ selected: row.id === selectedId }"
-            :data-box-row="row.id"
-            @click="focus(row)"
-          >
-            <MarkerGlyph :state="row.state" />
-            <div class="text">
-              <div class="name">{{ row.name }}</div>
-              <div class="sub">
-                {{ row.check ? checkResult(row.check, occupantsById) : subtitle(row) }}
-              </div>
-              <div v-if="row.note && row.id !== selectedId" class="row-note">
-                {{ row.note }}
-              </div>
-            </div>
+        <BoxItem
+          v-for="row in group.rows"
+          :key="row.id"
+          :box="row"
+          :state="row.state"
+          :expanded="row.id === selectedId"
+          :types-by-id="typesById"
+          :aside="away(row)"
+          @toggle="focus(row)"
+        >
+          <template #action>
             <RouterLink
               v-if="row.check"
               class="icon-button"
@@ -229,31 +264,39 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
                 Zkontrolovat
               </n-button>
             </RouterLink>
-          </div>
-          <LinkBoxDetail
-            v-if="row.id === selectedId"
-            :box="row"
-            :types-by-id="typesById"
-          />
-        </template>
+          </template>
+          <template #extra>
+            <p v-if="row.check" class="small muted">
+              Letos: {{ checkResult(row.check, occupantsById) }}
+            </p>
+            <n-button
+              v-if="canManage"
+              size="small"
+              :loading="changing === row.id"
+              @click.stop="changeBatch(row, false)"
+            >
+              <template #icon><AppIcon name="minus" /></template>
+              Vyřadit z obchůzky
+            </n-button>
+          </template>
+        </BoxItem>
       </template>
       <template v-if="added.length">
         <div class="group">Přidané budky · {{ added.length }}</div>
-        <template v-for="row in added" :key="row.id">
-          <div
-            class="item"
-            :class="{ selected: row.id === selectedId }"
-            :data-box-row="row.id"
-            @click="focus(row)"
-          >
-            <MarkerGlyph :state="row.state" />
-            <div class="text">
-              <div class="name">{{ row.name }}</div>
-              <div class="sub">{{ subtitle(row) }} · čeká na potvrzení správcem</div>
-              <div v-if="row.note && row.id !== selectedId" class="row-note">
-                {{ row.note }}
-              </div>
-            </div>
+        <BoxItem
+          v-for="row in added"
+          :key="row.id"
+          :box="row"
+          :state="row.state"
+          :expanded="row.id === selectedId"
+          :types-by-id="typesById"
+          :aside="away(row)"
+          @toggle="focus(row)"
+        >
+          <template #tags>
+            <span class="tag warn">čeká na potvrzení správcem</span>
+          </template>
+          <template #action>
             <RouterLink
               class="icon-button"
               :to="{ name: 'link_new_box', query: { budka: row.id } }"
@@ -262,12 +305,44 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
             >
               <AppIcon name="edit" />
             </RouterLink>
-          </div>
-          <LinkBoxDetail
-            v-if="row.id === selectedId"
+          </template>
+          <template #extra> </template>
+        </BoxItem>
+      </template>
+      <template v-if="canManage && outside.length">
+        <button
+          type="button"
+          class="group toggle"
+          :aria-expanded="showsOutside"
+          @click="showsOutside = !showsOutside"
+        >
+          Mimo obchůzku · {{ outside.length }}
+          <AppIcon :name="showsOutside ? 'minus' : 'chevd'" />
+        </button>
+        <template v-if="showsOutside">
+          <BoxItem
+            v-for="row in outside"
+            :key="row.id"
             :box="row"
+            state="out"
+            :expanded="row.id === selectedId"
             :types-by-id="typesById"
-          />
+            :aside="away(row)"
+            @toggle="focus(row)"
+          >
+            <template #action>
+              <n-button
+                size="small"
+                :loading="changing === row.id"
+                :aria-label="`Přidat do obchůzky ${row.name}`"
+                @click.stop="changeBatch(row, true)"
+              >
+                <template #icon><AppIcon name="plus" /></template>
+                Přidat
+              </n-button>
+            </template>
+            <template #extra> </template>
+          </BoxItem>
         </template>
       </template>
     </div>
@@ -333,55 +408,29 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
   height: 16px;
 }
 
-.item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--line);
-  cursor: pointer;
-}
-
-.item.selected {
-  background: var(--primary-soft);
-}
-
-.text {
-  flex: 1;
-  min-width: 0;
-}
-
-.name {
-  font-weight: 700;
-}
-
-.row-note {
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.row-note::before {
-  content: "Pozn.: ";
-  font-weight: 700;
-  color: var(--muted);
-}
-
-.sub {
-  font-size: 13px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .group {
   padding: 14px 20px 6px;
   font: 700 12px var(--font);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
+}
+
+.group.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.group.toggle .icon {
+  width: 14px;
+  height: 14px;
 }
 
 .foot {
@@ -404,10 +453,6 @@ const checkRoute = row => ({ name: "link_check", params: { boxId: row.id } })
   .foot {
     padding-left: 16px;
     padding-right: 16px;
-  }
-
-  .item {
-    padding: 10px 16px;
   }
 
   .group {

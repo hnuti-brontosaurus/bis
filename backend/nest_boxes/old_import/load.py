@@ -164,7 +164,6 @@ def load(plan, old_users):
                 name=planned.name,
                 previous_names=planned.previous_names,
                 status=planned.status,
-                condition=planned.condition,
                 location=Point(planned.location[1], planned.location[0], srid=4326),
                 elevation=planned.elevation,
                 type=box_type,

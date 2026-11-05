@@ -41,7 +41,9 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 choices=[
                     ("planned", "plánovaná"),
-                    ("in_use", "vyvěšená"),
+                    ("in_use", "v pořádku"),
+                    ("needs_repair", "potřebuje opravu"),
+                    ("needs_replacing", "potřebuje vyměnit"),
                     ("taken_down", "sundaná na opravu"),
                     ("missing", "nenalezená"),
                     ("ended", "zaniklá"),

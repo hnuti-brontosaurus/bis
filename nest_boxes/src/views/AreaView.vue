@@ -19,7 +19,7 @@ import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import { boundsOf } from "@/components/map/geometry.js"
 import {
   ACTIVE_STATUSES,
-  boxRowDetail,
+  boxExtras,
   markerState,
   splitByBatch,
   withoutReplaced,
@@ -37,15 +37,12 @@ import { latestChecks } from "@/composables/linkBoxes.js"
 import { useLoad } from "@/composables/useLoad.js"
 import { CZECHIA_BOUNDS } from "@/config.js"
 import { useAuthStore } from "@/data/auth.js"
-import { reportError } from "@/data/errors.js"
 import {
-  addBatchBoxes,
   exportUrl,
   getArea,
   getCategories,
   listBatches,
   listChecks,
-  removeBatchBoxes,
 } from "@/data/manage.js"
 
 const route = useRoute()
@@ -98,8 +95,8 @@ const legend = computed(() =>
 const groups = computed(() => splitByBatch(shown.value, batch.value))
 const checkOf = box => data.value.checks.get(box.id)
 
-const detail = box =>
-  boxRowDetail(box, checkOf(box), {
+const extras = box =>
+  boxExtras(box, checkOf(box), {
     typesById: typesById.value,
     occupantsById: occupantsById.value,
     otherBatches: otherBatches.value,
@@ -158,23 +155,6 @@ const focusBox = box => {
     center: box.location.coordinates,
     zoom: Math.max(map.value.getZoom(), 16),
   })
-}
-
-const replaceBatch = updated => {
-  data.value = {
-    ...data.value,
-    batches: data.value.batches.map(item => (item.id === updated.id ? updated : item)),
-  }
-}
-
-const move = async (box, into) => {
-  try {
-    replaceBatch(
-      await (into ? addBatchBoxes : removeBatchBoxes)(batch.value.id, [box.id]),
-    )
-  } catch (error) {
-    reportError(error)
-  }
 }
 
 const onBatchCreated = async created => {
@@ -315,22 +295,11 @@ watch(batchId, () => (selectedId.value = null))
           : [{ key: 'all', title: 'Budky', boxes: groups.outside }]
       "
       :selected-id="selectedId"
-      :detail="detail"
+      :extras="extras"
+      :types-by-id="typesById"
       :state-of="box => markerState(box, batch)"
       @focus="focusBox"
-    >
-      <template v-if="batch" #action="{ box, group }">
-        <button
-          type="button"
-          class="move"
-          :title="group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'"
-          :aria-label="`${group.key === 'in' ? 'Vyřadit z obchůzky' : 'Přidat do obchůzky'} ${box.name}`"
-          @click.stop="move(box, group.key !== 'in')"
-        >
-          <AppIcon :name="group.key === 'in' ? 'minus' : 'plus'" />
-        </button>
-      </template>
-    </BoxList>
+    />
 
     <AreaFormDialog v-model:show="dialogs.area" :area="area" @saved="reload" />
     <NewBatchDialog
@@ -388,24 +357,6 @@ watch(batchId, () => (selectedId.value = null))
   flex: 1;
   font-size: 16px;
   font-weight: 700;
-}
-
-.move {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--muted);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  flex: none;
-}
-
-.move .icon {
-  width: 16px;
-  height: 16px;
 }
 
 @media (max-width: 720px) {

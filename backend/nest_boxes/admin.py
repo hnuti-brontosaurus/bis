@@ -14,7 +14,7 @@ from nest_boxes.models import (
 
 class BoxInline(PermissionMixin, admin.TabularInline):
     model = NestBox
-    fields = ("name", "status", "condition", "type")
+    fields = ("name", "status", "type")
     show_change_link = True
     extra = 0
 
@@ -40,13 +40,12 @@ class NestBoxAdmin(PermissionMixin, GISModelAdmin):
         "name",
         "area",
         "status",
-        "condition",
         "type",
         "is_verified",
         "closest_distance",
         "closest_same_type_distance",
     )
-    list_filter = ("status", "condition", "type")
+    list_filter = ("status", "type")
     search_fields = ("name", "previous_names", "area__name")
     autocomplete_fields = ("area", "created_by")
     readonly_fields = (

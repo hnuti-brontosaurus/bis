@@ -116,7 +116,7 @@ def test_confirming_applies_box_changes_and_verifies(box, manager, types):
 
     box = NestBox.objects.with_is_verified().get(pk=box.pk)
     assert box.is_verified
-    assert box.condition == NestBox.Condition.NEEDS_REPAIR
+    assert box.status == NestBox.Status.NEEDS_REPAIR
     assert box.type == types["maly_sykornik"]
     assert box.opening == "roof"
     assert box.location.distance(near(east=3)) == pytest.approx(0)
@@ -124,7 +124,7 @@ def test_confirming_applies_box_changes_and_verifies(box, manager, types):
     assert history.box_check == check
     assert history.date == check.date
     assert set(history.changes) == {
-        "condition",
+        "status",
         "location",
         "hole_size",
         "type",

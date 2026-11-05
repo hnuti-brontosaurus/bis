@@ -550,3 +550,8 @@ a {
   border-style: dashed;
   color: var(--muted);
 }
+
+.tag.dim {
+  background: none;
+  border: 1px dashed var(--line-strong);
+}

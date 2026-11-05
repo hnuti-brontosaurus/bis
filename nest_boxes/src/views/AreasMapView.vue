@@ -14,7 +14,7 @@ import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import {
-  boxRowDetail,
+  boxExtras,
   groupByArea,
   markerState,
   withoutReplaced,
@@ -240,7 +240,7 @@ const detailContext = computed(() => ({
   occupantsById: byId(categories.value?.occupants ?? []),
   otherBatches: [],
 }))
-const detail = box => boxRowDetail(box, null, detailContext.value)
+const extras = box => boxExtras(box, null, detailContext.value)
 
 const canManage = auth.canManage
 
@@ -404,7 +404,8 @@ const focusBox = box => {
       v-else-if="showsBoxes"
       :groups="boxGroups"
       :selected-id="selectedBoxId"
-      :detail="detail"
+      :extras="extras"
+      :types-by-id="detailContext.typesById"
       :state-of="box => markerState(box, null)"
       @focus="focusBox"
     />

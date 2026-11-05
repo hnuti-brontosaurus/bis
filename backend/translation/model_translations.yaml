@@ -1073,7 +1073,6 @@ NestBox:
     name: Označení
     previous_names: Dřívější označení
     status: Stav
-    condition: Technický stav
     location: Poloha
     planned_radius: Poloměr plánovaného místa (m)
     elevation: Nadmořská výška (m)

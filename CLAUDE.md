@@ -647,6 +647,11 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Built static** goes to `nest_boxes/dist`, which CI copies to
   `backend/nest_boxes_static/`; production nginx serves it like the
   cookbook's (`deployments/base`).
+- **Box rows** in the manager lists and on batch links are `BoxItem`: name,
+  a tag only for what is off (`boxTags`), the note's first line; a click opens
+  the full note, the type with a Mapy.com link and the list's extras. A
+  manager of the area edits a batch's boxes on its link (remove in an opened
+  row, add from "Mimo obchůzku"), not on the area page.
 - **Volunteer pages** (`/d/<token>/…`, `views/link/`) work offline. The
   `link` store (`data/link.js`) keeps the link payload in IndexedDB
   (`data/offline.js`) and falls back to it when `GET links/<token>/` gets no
@@ -715,7 +720,11 @@ filter, never `|safe`, because some items embed event names.
 permissions, spacing, check upserts, confirming and statistics live in
 `nest_boxes/{permissions,boxes,checks,statistics}.py`.
 
-- "In use" is `status = in_use` (`NestBox.objects.in_use()`). A box a
+- A box has one `status`, its shape included: `in_use` (in order),
+  `needs_repair` and `needs_replacing` all hang (`HANGING_STATUSES`,
+  `NestBox.objects.in_use()`), besides planned, taken down, missing and ended.
+  A found box takes its status from the check's `box_left` (`BOX_LEFT_STATUS`).
+  A box a
   volunteer hangs through a batch link is a planned box with no `created_by`
   (`NestBox.is_new`) plus a pending check in that batch that hangs it
   (`box_changes.hung`), created together by `checks.submit_box`; confirming the

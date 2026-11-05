@@ -52,7 +52,7 @@ def _per_area(queryset, area_field):
 
 def _states_per_area(season, types):
     """This season's from the live season states, pending checks included; a past
-    one's from its confirmed checks, since a past box's status and condition are
+    one's from its confirmed checks, since a past box's status is
     gone, so there attention is what its check reported.
     """
     if season == Check.current_season():

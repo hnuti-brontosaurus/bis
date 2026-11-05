@@ -102,7 +102,6 @@ class PlannedBox:
     opening: str = ""
     material: str = ""
     status: str = Status.IN_USE
-    condition: str = NestBox.Condition.FINE
     installed_on: date | None = None
     ended_on: date | None = None
     end_reason: str | None = None
@@ -438,7 +437,6 @@ class Planner:
                     current,
                     old_id=None,
                     status=Status.IN_USE,
-                    condition=NestBox.Condition.FINE,
                     installed_on=day,
                     checks=[],
                 )
@@ -506,8 +504,12 @@ class Planner:
         for segment in segments:
             self._attributes(segment, texts)
             left = segment.checks[-1].reading.box_left if segment.checks else ""
-            if left in (BoxLeft.NEEDS_REPAIR, BoxLeft.NEEDS_REPLACING):
-                segment.condition = left
+            # The same values: a hanging box's shape is part of its status
+            if segment.status == Status.IN_USE and left in (
+                BoxLeft.NEEDS_REPAIR,
+                BoxLeft.NEEDS_REPLACING,
+            ):
+                segment.status = left
             by_season = defaultdict(list)
             for check in segment.checks:
                 by_season[Check.season_of(check.date)].append(check)

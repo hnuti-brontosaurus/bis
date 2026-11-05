@@ -5,7 +5,9 @@ const options = labels =>
 
 export const STATUS_LABELS = {
   planned: "plánovaná",
-  in_use: "vyvěšená",
+  in_use: "v pořádku",
+  needs_repair: "potřebuje opravu",
+  needs_replacing: "potřebuje vyměnit",
   taken_down: "sundaná na opravu",
   missing: "nenalezená",
   ended: "zaniklá",
@@ -29,13 +31,17 @@ export const LEGEND_LABELS = {
 }
 
 // Ending is an action of its own, never a plain edit.
-export const EDITABLE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
+export const EDITABLE_STATUSES = [
+  "planned",
+  "in_use",
+  "needs_repair",
+  "needs_replacing",
+  "taken_down",
+  "missing",
+]
 
-export const CONDITION_LABELS = {
-  fine: "v pořádku",
-  needs_repair: "potřebuje opravu",
-  needs_replacing: "potřebuje vyměnit",
-}
+// On its tree, in whatever shape; HANGING_STATUSES in nest_boxes/models.py
+export const HANGING_STATUSES = ["in_use", "needs_repair", "needs_replacing"]
 
 export const HOLE_SHAPE_LABELS = {
   round: "kulatý",
@@ -89,7 +95,6 @@ export const BOX_LEFT_LABELS = {
 }
 
 export const STATUS_OPTIONS = options(STATUS_LABELS)
-export const CONDITION_OPTIONS = options(CONDITION_LABELS)
 export const HOLE_SHAPE_OPTIONS = options(HOLE_SHAPE_LABELS)
 export const OPENING_OPTIONS = options(OPENING_LABELS)
 export const MATERIAL_OPTIONS = options(MATERIAL_LABELS)

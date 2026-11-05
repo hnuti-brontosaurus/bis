@@ -214,6 +214,16 @@ export const useLinkStore = defineStore("link", () => {
     startPrefetch()
   }
 
+  // After a manager changed which boxes the batch has
+  const refresh = async () => {
+    const { data } = await client.get(`/links/${token.value}/`)
+    await saveLink(token.value, data)
+    payload.value = data
+    // A box added from elsewhere in the area may lie outside the cached tiles
+    prefetched.delete(token.value)
+    startPrefetch()
+  }
+
   const save = async (kind, id, body) => {
     await enqueue({ token: token.value, kind, id, payload: plain(body) })
     await refreshOutbox()
@@ -232,6 +242,7 @@ export const useLinkStore = defineStore("link", () => {
   const savePhoto = photo => save("photo", `${photo.parent_id}:${photo.order}`, photo)
 
   return {
+    refresh,
     token,
     status,
     payload,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  boxRowDetail,
+  boxExtras,
   groupByArea,
   markerState,
   splitByBatch,
@@ -15,7 +15,6 @@ const box = (name, overrides = {}) => ({
   status: "in_use",
   type_id: 2,
   is_verified: true,
-  condition: "fine",
   last_checked_on: null,
   ...overrides,
 })
@@ -57,7 +56,7 @@ describe("markerState", () => {
   })
 })
 
-describe("boxRowDetail", () => {
+describe("boxExtras", () => {
   const context = {
     typesById: new Map([
       [2, { id: 2, name: "velký sýkorník", needs_cleaning: true }],
@@ -77,22 +76,18 @@ describe("boxRowDetail", () => {
       box_changes: {},
       is_confirmed: false,
     }
-    expect(boxRowDetail(box("N1"), check, context).text).toBe(
-      "velký sýkorník · vyčištěno · sýkora · čeká",
-    )
+    expect(boxExtras(box("N1"), check, context)).toEqual([
+      "Letos: vyčištěno · sýkora · čeká na potvrzení",
+      "Nikdy kontrolovaná",
+    ])
   })
 
   it("says why an unchecked box may need no check", () => {
-    expect(boxRowDetail(box("N1", { type_id: 11 }), null, context)).toEqual({
-      text: "netopýrník · nečistí se",
-      tone: "info",
-    })
-    expect(boxRowDetail(box("N5"), null, context).text).toBe(
-      "velký sýkorník · v obchůzce Podzim B",
+    expect(boxExtras(box("N1", { type_id: 11 }), null, context)[0]).toBe(
+      "Tento typ se nečistí.",
     )
-    expect(
-      boxRowDetail(box("N6", { condition: "needs_replacing" }), null, context).tone,
-    ).toBe("bad")
+    expect(boxExtras(box("N5"), null, context)[0]).toBe("V obchůzce Podzim B")
+    expect(boxExtras(box("P", { status: "planned" }), null, context)).toEqual([])
   })
 })
 

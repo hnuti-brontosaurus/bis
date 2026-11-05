@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 11411ee30e09de39
+// source-hash: 23b879b372255930
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -1207,7 +1207,6 @@ export const nestBox = {
   name: 'Označení',
   previous_names: 'Dřívější označení',
   status: 'Stav',
-  condition: 'Technický stav',
   location: 'Poloha',
   planned_radius: 'Poloměr plánovaného místa (m)',
   elevation: 'Nadmořská výška (m)',

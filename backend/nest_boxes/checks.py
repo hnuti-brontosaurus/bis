@@ -5,7 +5,13 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils.timezone import now
 from nest_boxes.boxes import delete_box, missing_for_new_box, update_box
-from nest_boxes.models import RETURNABLE_STATUSES, Check, NestBox
+from nest_boxes.models import (
+    BOX_LEFT_STATUS,
+    HANGING_STATUSES,
+    RETURNABLE_STATUSES,
+    Check,
+    NestBox,
+)
 
 # Keys of Check.box_changes. `location` is a GeoJSON point, `type` a
 # NestBoxType id, `installed_on` an ISO date; `hung` marks a planned box hung.
@@ -134,18 +140,16 @@ def _box_values(check):
         if check.found == Check.Found.NOT_FOUND:
             values["status"] = NestBox.Status.MISSING
         elif check.found == Check.Found.FOUND:
-            if check.box_left == Check.BoxLeft.TAKEN_DOWN:
-                values["status"] = NestBox.Status.TAKEN_DOWN
-            else:
+            if check.box_left:
+                values["status"] = BOX_LEFT_STATUS[check.box_left]
+            elif box.status not in HANGING_STATUSES:
                 values["status"] = NestBox.Status.IN_USE
-                if check.box_left:
-                    values["condition"] = check.box_left
     return values
 
 
 @transaction.atomic
 def confirm_check(check, user):
-    """Confirms a check and applies it to its box: status, condition, box_changes."""
+    """Confirms a check and applies it to its box: status and box_changes."""
     check.is_confirmed = True
     check.confirmed_at = now()
     check.confirmed_by = user

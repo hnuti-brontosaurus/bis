@@ -22,7 +22,7 @@ import { formatDate, formatDistance, seasonLabel } from "@/composables/czech.js"
 import {
   BOX_LEFT_LABELS,
   byId,
-  CONDITION_LABELS,
+  HANGING_STATUSES,
   MATERIAL_LABELS,
   OPENING_LABELS,
   STATUS_LABELS,
@@ -63,6 +63,8 @@ const usable = computed(() => box.value.status !== "ended")
 
 const STATUS_TONES = {
   in_use: "ok",
+  needs_repair: "warn",
+  needs_replacing: "bad",
   planned: "info",
   missing: "bad",
   taken_down: "warn",
@@ -70,7 +72,9 @@ const STATUS_TONES = {
 
 const neighbours = computed(() =>
   data.value.area.boxes
-    .filter(other => other.id !== box.value.id && other.status === "in_use")
+    .filter(
+      other => other.id !== box.value.id && HANGING_STATUSES.includes(other.status),
+    )
     .map(other => ({ ...other, state: "out" })),
 )
 const marker = computed(() =>
@@ -85,7 +89,6 @@ const facts = computed(() => [
   ["Otevírání", OPENING_LABELS[box.value.opening] ?? "–"],
   ["Materiál", MATERIAL_LABELS[box.value.material] ?? "–"],
   ["Vyvěšena", formatDate(box.value.installed_on)],
-  ["Stav budky", CONDITION_LABELS[box.value.condition]],
   ["Nejbližší budka", formatDistance(box.value.closest_distance)],
   ["Nejbližší stejného typu", formatDistance(box.value.closest_same_type_distance)],
   [

@@ -1,3 +1,4 @@
+import { HANGING_STATUSES } from "@/composables/labels.js"
 import { distance } from "@/components/map/geometry.js"
 
 // The limits of `spacing_warnings` in backend/nest_boxes/boxes.py, from
@@ -30,7 +31,7 @@ export const latestChecks = checks => {
   return byBox
 }
 
-export const isInUse = box => box.status === "in_use"
+export const isInUse = box => HANGING_STATUSES.includes(box.status)
 
 /** Where a box is now: a hanging check moves a planned box to where it went up. */
 export const boxLocation = (box, check) => check?.box_changes?.location ?? box.location

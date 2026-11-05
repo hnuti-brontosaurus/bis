@@ -366,18 +366,6 @@ class Migration(migrations.Migration):
                         max_length=15,
                     ),
                 ),
-                (
-                    "condition",
-                    models.CharField(
-                        choices=[
-                            ("fine", "v pořádku"),
-                            ("needs_repair", "potřebuje opravu"),
-                            ("needs_replacing", "potřebuje vyměnit"),
-                        ],
-                        default="fine",
-                        max_length=15,
-                    ),
-                ),
                 ("location", django.contrib.gis.db.models.fields.PointField(srid=4326)),
                 ("planned_radius", models.PositiveIntegerField(blank=True, null=True)),
                 ("elevation", models.IntegerField(blank=True, null=True)),

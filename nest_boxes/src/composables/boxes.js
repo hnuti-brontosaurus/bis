@@ -4,7 +4,6 @@ import { formatDate } from "@/composables/czech.js"
 import {
   BOX_LEFT_LABELS,
   CLEANING_LABELS,
-  CONDITION_LABELS,
   CONTENT_LABELS,
   FOUND_LABELS,
   HOLE_SHAPE_LABELS,
@@ -75,7 +74,6 @@ const FIELD_LABELS = {
   name: "označení",
   previous_names: "dřívější označení",
   status: "stav",
-  condition: "stav budky",
   location: "poloha",
   planned_radius: "okruh",
   area: "oblast",
@@ -93,7 +91,6 @@ const FIELD_LABELS = {
 
 const CHOICE_LABELS = {
   status: STATUS_LABELS,
-  condition: CONDITION_LABELS,
   hole_shape: HOLE_SHAPE_LABELS,
   opening: OPENING_LABELS,
   material: MATERIAL_LABELS,
@@ -150,3 +147,29 @@ export const boxChangesLabel = (changes, typesById) => {
     })
     .join(", ")
 }
+
+const STATUS_TONES = {
+  needs_repair: "warn",
+  taken_down: "warn",
+  needs_replacing: "bad",
+  missing: "bad",
+  ended: "dim",
+}
+
+/**
+ * The tags a box's row shows next to its name: only what is off. A box in
+ * order says nothing, its marker already tells how far along it is.
+ */
+export const boxTags = box =>
+  [
+    STATUS_TONES[box.status] && {
+      text: STATUS_LABELS[box.status],
+      tone: STATUS_TONES[box.status],
+    },
+    box.should_be_moved && { text: "přemístit", tone: "warn" },
+    !box.is_verified &&
+      !["planned", "ended"].includes(box.status) && {
+        text: "neověřená",
+        tone: "warn",
+      },
+  ].filter(Boolean)

@@ -260,7 +260,7 @@ def test_confirming_the_batch_applies_box_changes(
     assert response.json()["closed_at"]
     box = NestBox.objects.with_is_verified().get(pk=box.pk)
     assert (box.name, box.hole_size, box.opening) == ("1A", 28, "roof")
-    assert box.condition == NestBox.Condition.NEEDS_REPAIR
+    assert box.status == NestBox.Status.NEEDS_REPAIR
     assert box.is_verified
     assert Check.objects.get().is_confirmed
 
@@ -526,7 +526,7 @@ def season_2025(monkeypatch):
 
 def test_season_states_per_area(board_client, area, unit, make_box, types):
     make_box("1")
-    make_box("2", location=near(east=100), condition=NestBox.Condition.NEEDS_REPAIR)
+    make_box("2", location=near(east=100), status=NestBox.Status.NEEDS_REPAIR)
     make_box("3", location=near(east=200), type=types["netopyrnik"])
     make_box("4", location=near(east=300), verified=True)
     with paused_validation():
@@ -630,7 +630,6 @@ def test_map_of_boxes_has_constant_queries(
         "planned_radius",
         "type_id",
         "status",
-        "condition",
         "is_verified",
         "is_new",
         "should_be_moved",

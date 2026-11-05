@@ -757,7 +757,6 @@ class NestBoxExportSerializer(ModelSerializer):
     type = StringRelatedField(label=nest_box_label("type"))
     end_reason = StringRelatedField(label=nest_box_label("end_reason"))
     status = nest_box_display("status")
-    condition = nest_box_display("condition")
     hole_shape = nest_box_display("hole_shape")
     opening = nest_box_display("opening")
     material = nest_box_display("material")
@@ -778,7 +777,6 @@ class NestBoxExportSerializer(ModelSerializer):
             "name",
             "previous_names",
             "status",
-            "condition",
             "latitude",
             "longitude",
             "elevation",

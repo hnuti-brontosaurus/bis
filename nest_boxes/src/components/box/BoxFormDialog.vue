@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 import { watchDebounced } from "@vueuse/core"
-import { NButton, NInput, NInputNumber, NModal, NSelect } from "naive-ui"
+import { NButton, NInput, NInputNumber, NModal } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
@@ -10,11 +10,7 @@ import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import { boxValues } from "@/components/check/checkForm.js"
 import { markerState, withoutReplaced } from "@/composables/areaBoxes.js"
 import { formatDistance } from "@/composables/czech.js"
-import {
-  CONDITION_OPTIONS,
-  EDITABLE_STATUSES,
-  STATUS_LABELS,
-} from "@/composables/labels.js"
+import { EDITABLE_STATUSES, STATUS_LABELS } from "@/composables/labels.js"
 import { reportError } from "@/data/errors.js"
 import { createBox, getBoxWarnings, updateBox } from "@/data/manage.js"
 
@@ -58,7 +54,6 @@ const fieldsOf = box =>
     ? {
         ...boxValues(box),
         status: box.status,
-        condition: box.condition,
         planned_radius: box.planned_radius,
         previous_names: box.previous_names,
         note: box.note,
@@ -66,7 +61,6 @@ const fieldsOf = box =>
     : {
         ...blank(),
         status: "planned",
-        condition: "fine",
         planned_radius: DEFAULT_PLAN_RADIUS,
         previous_names: "",
         note: "",
@@ -159,12 +153,12 @@ const save = async () => {
         Dobrovolníci uvidí kroužek, kam budku pověsit. Pověšení zapíšou kontrolou se
         skutečnou polohou.
       </p>
-      <div class="grid-2">
+      <div class="field">
+        <span class="label">Stav</span>
+        <ChoiceChips v-model="values.status" :options="statusOptions" />
+      </div>
+      <div v-if="planned" class="grid-2">
         <div class="field">
-          <span class="label">Stav</span>
-          <n-select v-model:value="values.status" :options="statusOptions" />
-        </div>
-        <div v-if="planned" class="field">
           <label for="box-radius">Okruh, kam ji pověsit</label>
           <n-input-number
             v-model:value="values.planned_radius"
@@ -174,10 +168,6 @@ const save = async () => {
           >
             <template #suffix>m</template>
           </n-input-number>
-        </div>
-        <div v-else class="field">
-          <span class="label">Stav budky</span>
-          <ChoiceChips v-model="values.condition" :options="CONDITION_OPTIONS" />
         </div>
       </div>
       <BoxFields

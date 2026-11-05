@@ -1,10 +1,16 @@
 import { distance } from "@/components/map/geometry.js"
-import { checkResult, lastCheckedLabel, typeName } from "@/composables/boxes.js"
-import { CONDITION_LABELS, STATUS_LABELS } from "@/composables/labels.js"
+import { checkResult, lastCheckedLabel } from "@/composables/boxes.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 
 // A box on a tree, or about to be; ended ones are history.
-export const ACTIVE_STATUSES = ["planned", "in_use", "taken_down", "missing"]
+export const ACTIVE_STATUSES = [
+  "planned",
+  "in_use",
+  "needs_repair",
+  "needs_replacing",
+  "taken_down",
+  "missing",
+]
 
 // An ended box this close to a box that isn't ended was replaced by it
 const REPLACED_WITHIN = 5
@@ -38,31 +44,23 @@ export const markerState = (box, batch) =>
     : "out"
 
 /**
- * The second line of a box row: its type and what the season's check found,
- * or why a box outside the batch may not need one.
+ * The lines an opened box row adds under its type: what the season's check
+ * found, or why the box may need none, and when it was last checked.
  */
-export const boxRowDetail = (
-  box,
-  check,
-  { typesById, occupantsById, otherBatches },
-) => {
-  const type = typeName(typesById, box.type_id)
-  if (box.status === "planned") return { text: `plánovaná · ${type}` }
+export const boxExtras = (box, check, { typesById, occupantsById, otherBatches }) => {
+  if (["planned", "ended"].includes(box.status)) return []
+  const lines = []
   if (check)
-    return {
-      text: `${type} · ${checkResult(check, occupantsById)}${check.is_confirmed ? "" : " · čeká"}`,
-    }
-  if (box.status !== "in_use")
-    return { text: `${type} · ${STATUS_LABELS[box.status]}`, tone: "warn" }
-  if (typesById.get(box.type_id)?.needs_cleaning === false)
-    return { text: `${type} · nečistí se`, tone: "info" }
-  if (box.condition !== "fine")
-    return { text: `${type} · ${CONDITION_LABELS[box.condition]}`, tone: "bad" }
-  if (box.should_be_moved) return { text: `${type} · přemístit`, tone: "warn" }
+    lines.push(
+      `Letos: ${checkResult(check, occupantsById)}${check.is_confirmed ? "" : " · čeká na potvrzení"}`,
+    )
+  else if (typesById.get(box.type_id)?.needs_cleaning === false)
+    lines.push("Tento typ se nečistí.")
   const other = otherBatches.find(batch => batch.box_ids.includes(box.id))
-  if (other) return { text: `${type} · v obchůzce ${other.name}` }
-  if (!box.is_verified) return { text: `${type} · neověřená`, tone: "warn" }
-  return { text: `${type} · ${lastCheckedLabel(box)}` }
+  if (other) lines.push(`V obchůzce ${other.name}`)
+  const last = lastCheckedLabel(box)
+  lines.push(last.charAt(0).toUpperCase() + last.slice(1))
+  return lines
 }
 
 /** BoxList's groups of the map of all boxes: one per area, both by name. */

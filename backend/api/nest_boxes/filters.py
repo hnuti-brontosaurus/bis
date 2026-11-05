@@ -58,7 +58,7 @@ class NestBoxFilter(SeasonStateFilter):
 
     class Meta:
         model = NestBox
-        fields = ("area", "region", "condition")
+        fields = ("area", "region")
 
     def filter_state(self, queryset, name, value):
         shown = Q(season_state__in=value)

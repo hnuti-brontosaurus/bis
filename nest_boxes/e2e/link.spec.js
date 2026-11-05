@@ -12,7 +12,7 @@ const BOX_IDS = [
 const checkEmpty = async (page, boxName) => {
   await page
     .getByTestId("box-list")
-    .locator(".item", { hasText: boxName })
+    .locator(".box-item", { hasText: boxName })
     .getByRole("button", { name: "Zkontrolovat" })
     .click()
   await expect(page.getByRole("banner").getByText(`Budka ${boxName}`)).toBeVisible()

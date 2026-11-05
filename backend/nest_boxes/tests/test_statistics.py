@@ -38,7 +38,7 @@ def boxes(make_box, types):
 
     return {
         "bird": box("bird"),
-        "wasps": box("wasps", condition=NestBox.Condition.NEEDS_REPAIR),
+        "wasps": box("wasps", status=NestBox.Status.NEEDS_REPAIR),
         "empty": box("empty"),
         "unknown": box("unknown"),
         "closed": box("closed"),
