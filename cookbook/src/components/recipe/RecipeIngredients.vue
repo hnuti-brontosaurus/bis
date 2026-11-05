@@ -11,15 +11,23 @@ import {
 } from "naive-ui"
 import { computed, h, ref, watch } from "vue"
 import {
+  faCalculator,
   faCartPlus,
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons"
 import { useRender } from "@/contrib/composables/render.js"
 import { _ } from "@/composables/translations.js"
-import { pluralizeUnit } from "@/data/unitConversion.js"
+import {
+  convertAmount,
+  convertibleUnits,
+  pluralizeUnit,
+  roundAmount,
+} from "@/data/unitConversion.js"
 import { useCartStore } from "@/data/cart.js"
+import { useUnitsStore } from "@/data/units.js"
 import AddToCartDialog from "@/components/cart/AddToCartDialog.vue"
+import UnitConverterDialog from "@/components/recipe/UnitConverterDialog.vue"
 import HtmlText from "@/components/app/HtmlText.vue"
 import RecipePhotos from "@/components/recipe/RecipePhotos.vue"
 import { isPartHeading, withPartHeadings } from "@/data/ingredientParts.js"
@@ -33,11 +41,31 @@ watch(
   () => (servings.value = recipe.value.default_servings),
   { immediate: true },
 )
-const expandable = row => row.comment || row.photos?.length
+const unitsStore = useUnitsStore()
+
+// Units picked in the converter, by recipe ingredient id; kept for the visit.
+const shownUnitIds = ref({})
+const converting = ref(null)
+const showConverter = ref(false)
+const convert = row => {
+  converting.value = row
+  showConverter.value = true
+}
+const recipeAmount = row => row.amount * servings.value
+const shownUnit = row => unitsStore.byId[shownUnitIds.value[row.id]] ?? row.unit
+const shownAmount = row =>
+  roundAmount(
+    convertAmount(recipeAmount(row), row.unit, shownUnit(row), row.ingredient),
+  )
+const isConvertible = row => convertibleUnits(unitsStore.list, row).length > 1
+
+const expandable = row => !row.optionalHeading && (row.comment || row.photos?.length)
 const columns = computed(() => {
   return [
     {
       type: "expand",
+      width: 28,
+      className: "compact",
       expandable,
       renderExpand: row =>
         h(NFlex, { vertical: true }, () => [
@@ -60,8 +88,11 @@ const columns = computed(() => {
     },
     {
       key: "ingredient.name",
-      colSpan: row => (isPartHeading(row) ? 2 : 1),
+      // An optional heading is a divider, so it has no checkbox to keep.
+      colSpan: row => (row.optionalHeading ? 4 : isPartHeading(row) ? 3 : 1),
       render: row => {
+        if (row.optionalHeading)
+          return h("span", { class: "optional-heading" }, _.value.recipes.optional)
         if (isPartHeading(row)) return h("span", { class: "section-heading" }, row.name)
         return row.is_optional
           ? h("em", {}, row.ingredient?.name)
@@ -73,12 +104,26 @@ const columns = computed(() => {
       align: "right",
       className: "amount",
       render: row => {
-        const amount = Math.round(row.amount * servings.value * 100) / 100
-        const unit = h(NText, { depth: 3 }, () => pluralizeUnit(amount, row.unit))
-        return h(row.is_optional ? "em" : "span", {}, [`${amount} `, unit])
+        const amount = shownAmount(row)
+        const unit = h(NText, { depth: 3 }, () => pluralizeUnit(amount, shownUnit(row)))
+        return h(row.is_optional ? "em" : "span", {}, [`${amount ?? "–"} `, unit])
       },
     },
-    { type: "selection" },
+    {
+      key: "convert",
+      width: 32,
+      className: "compact",
+      render: row =>
+        isConvertible(row) &&
+        h(NButton, {
+          size: "tiny",
+          quaternary: true,
+          title: _.value.recipes.convert_units,
+          renderIcon: icon(faCalculator),
+          onClick: () => convert(row),
+        }),
+    },
+    { type: "selection", width: 32, className: "compact" },
   ]
 })
 
@@ -115,28 +160,46 @@ const updateReady = keys => {
 // nothing to open ticks instead. Clicks that land on the controls themselves
 // are left to the table.
 const rowProps = row => ({
-  style: "cursor: pointer",
+  style: row.optionalHeading ? "" : "cursor: pointer",
   onClick: event => {
-    if (event.target.closest(".n-checkbox, .n-data-table-expand-trigger")) return
+    if (row.optionalHeading) return
+    if (event.target.closest(".n-checkbox, .n-button, .n-data-table-expand-trigger"))
+      return
     if (expandable(row) && !event.target.closest(".n-data-table-td--selection"))
       expanded.value = toggled(expanded.value, row.key)
     else updateReady(toggled(ready.value, row.key))
   },
 })
 
+// Within each part the optional ingredients come last, below a divider.
 const data = computed(() => {
-  return withPartHeadings(recipe.value.ingredients).map(row =>
-    isPartHeading(row) ? { ...row, key: `part-${row.name}` } : { ...row, key: row.id },
-  )
+  const rows = []
+  let ingredients = []
+  const addIngredients = () => {
+    const optional = ingredients.filter(row => row.is_optional)
+    rows.push(...ingredients.filter(row => !row.is_optional))
+    if (optional.length)
+      rows.push({ key: `optional-${rows.length}`, optionalHeading: true }, ...optional)
+    ingredients = []
+  }
+  withPartHeadings(recipe.value.ingredients).forEach(row => {
+    if (isPartHeading(row)) {
+      addIngredients()
+      rows.push({ ...row, key: `part-${row.name}` })
+    } else ingredients.push({ ...row, key: row.id })
+  })
+  addIngredients()
+  return rows
 })
+const tickable = computed(() => data.value.filter(row => !row.optionalHeading))
 
 // The table has no header-row hook.
 const onHeaderClick = event => {
   if (!event.target.closest(".n-data-table-thead")) return
   if (event.target.closest(".n-checkbox, .n-button")) return
   if (!event.target.closest(".n-data-table-th--selection")) expandAll()
-  else if (ready.value.length === data.value.length) updateReady([])
-  else updateReady(data.value.map(row => row.key))
+  else if (ready.value.length === tickable.value.length) updateReady([])
+  else updateReady(tickable.value.map(row => row.key))
 }
 
 const partIngredients = computed(() => {
@@ -144,7 +207,7 @@ const partIngredients = computed(() => {
   let heading
   data.value.forEach(row => {
     if (isPartHeading(row)) parts[(heading = row.key)] = []
-    else if (heading) parts[heading].push(row.key)
+    else if (heading && !row.optionalHeading) parts[heading].push(row.key)
   })
   return parts
 })
@@ -205,10 +268,19 @@ const onConfirmAdd = group => {
     @confirm="onConfirmAdd"
   />
 
+  <UnitConverterDialog
+    v-model:show="showConverter"
+    :row="converting"
+    :amount="converting && recipeAmount(converting)"
+    :unit-id="converting && shownUnitIds[converting.id]"
+    @update:unit-id="unitId => (shownUnitIds[converting.id] = unitId)"
+  />
+
   <n-data-table
     :data="data"
     :columns="columns"
     :row-props="rowProps"
+    :row-class-name="row => (row.optionalHeading ? 'optional-row' : '')"
     :checked-row-keys="ready"
     @update:checked-row-keys="updateReady"
     v-model:expanded-row-keys="expanded"
@@ -228,6 +300,24 @@ const onConfirmAdd = group => {
 
 :deep(.n-data-table-thead) {
   cursor: pointer;
+}
+
+:deep(.compact) {
+  padding-right: 4px;
+  padding-left: 4px;
+}
+
+:deep(.optional-row td) {
+  padding-top: 16px;
+  padding-bottom: 4px;
+}
+
+:deep(.optional-heading) {
+  color: var(--muted);
+  font-size: 0.8em;
+  font-style: italic;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 :deep(.amount) {

@@ -223,6 +223,14 @@ const onDelete = () => {
               item.name
             }}</em>
             <span v-else :class="{ muted: item.done }">{{ item.name }}</span>
+            <n-tag
+              v-if="item.is_optional"
+              size="small"
+              :bordered="false"
+              class="optional"
+            >
+              {{ _.recipes.optional }}
+            </n-tag>
           </template>
           <template #default="{ item }">
             <n-flex v-if="item.description || item.photos.length" vertical>
@@ -353,6 +361,11 @@ const onDelete = () => {
   border-radius: 3px;
   background: var(--primary-soft);
   color: var(--primary-text);
+}
+
+.optional {
+  margin-left: 8px;
+  font-style: italic;
 }
 
 .step-number.done {

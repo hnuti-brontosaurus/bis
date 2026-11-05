@@ -25,7 +25,7 @@ const buildRowsFromRecipe = () =>
   props.recipe.ingredients.map(ri => ({
     key: `recipe_${ri.id}`,
     checked: !ri.is_optional,
-    baseAmount: ri.amount,
+    fromRecipe: true,
     value: {
       ingredient_id: ri.ingredient_id,
       unit_id: ri.unit_id,
@@ -41,11 +41,17 @@ watch(
   { immediate: true },
 )
 
+// Scaled rather than recomputed from the recipe, so an amount converted to
+// another unit stays in that unit.
+let scaledFor = servings.value
 watch(servings, n => {
-  if (!props.show) return
-  rows.value.forEach(r => {
-    if (r.baseAmount != null) r.value.amount = r.baseAmount * n
-  })
+  if (!n) return
+  if (props.show)
+    rows.value.forEach(r => {
+      if (r.fromRecipe && r.value.amount != null)
+        r.value.amount = (r.value.amount * n) / scaledFor
+    })
+  scaledFor = n
 })
 
 const addRow = () => {
@@ -115,7 +121,7 @@ const onCancel = () => emit("update:show", false)
         >
           <n-checkbox v-model:checked="row.checked" />
           <div style="flex: 1; min-width: 0">
-            <IngredientInput v-model:value="row.value" />
+            <IngredientInput v-model:value="row.value" convert-on-unit-change />
           </div>
           <n-button
             quaternary

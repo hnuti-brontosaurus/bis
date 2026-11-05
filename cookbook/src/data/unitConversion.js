@@ -134,3 +134,17 @@ export const convertAmount = (amount, fromUnit, toUnit, ingredient) => {
   if (grams == null) return null
   return gramsToUnit(grams, toUnit, ingredient)
 }
+
+export const roundAmount = amount =>
+  amount == null ? null : Math.round(amount * 100) / 100
+
+/**
+ * The units a recipe ingredient row can be shown in: the units allowed for
+ * its ingredient that its own unit actually converts to, its own included.
+ */
+export const convertibleUnits = (units, row) =>
+  filterAllowedUnits(units, row.ingredient).filter(
+    unit =>
+      unit.id === row.unit?.id ||
+      convertAmount(1, row.unit, unit, row.ingredient) != null,
+  )
