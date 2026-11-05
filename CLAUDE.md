@@ -622,8 +622,8 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Map of areas** (`AreasMapView`, `/mapa/`) has two modes, `?mode=boxes` for
   managers only: area bubbles from the public endpoints, or every manageable box
   from `boxes/map/` (an unpaginated light serializer; the box page loads the
-  rest). It reuses the area page's `BoxList`; `BoxList` renders
-  20 rows and more as they scroll into sight. A click on a single marker or
+  rest). It reuses the area page's `BoxList`; `BoxList` shows
+  50 rows a page, and selecting a box on the map turns to its page. A click on a single marker or
   bubble selects its row in the panel, a second click opens it (the area page
   only for managers), and a merged bubble or cluster zooms to fit its members; opening and acting start from the list. Boxes cluster below zoom 14 the way areas merge
   (`BoxClusters`, same `MERGE_GAP`, a merged bubble's thick outline). The landing map

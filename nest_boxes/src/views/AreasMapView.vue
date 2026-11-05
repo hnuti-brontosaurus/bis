@@ -235,12 +235,12 @@ watch(
   { immediate: true },
 )
 
-const detail = box =>
-  boxRowDetail(box, null, {
-    typesById: byId(types.value),
-    occupantsById: byId(categories.value?.occupants ?? []),
-    otherBatches: [],
-  })
+const detailContext = computed(() => ({
+  typesById: byId(types.value),
+  occupantsById: byId(categories.value?.occupants ?? []),
+  otherBatches: [],
+}))
+const detail = box => boxRowDetail(box, null, detailContext.value)
 
 const canManage = auth.canManage
 
