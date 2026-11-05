@@ -2,6 +2,7 @@
 import { inject, onBeforeUnmount, watch } from "vue"
 import { Marker } from "maplibre-gl"
 
+import { inView } from "@/components/map/geometry.js"
 import { boxMarkerElement } from "@/components/map/markers.js"
 
 const props = defineProps({
@@ -13,6 +14,7 @@ const props = defineProps({
 const emit = defineEmits(["select"])
 
 const { map } = inject("map")
+// Only the boxes in view have a marker, see inView
 let markers = new Map()
 
 const clear = () => {
@@ -20,30 +22,45 @@ const clear = () => {
   markers = new Map()
 }
 
+const markerOf = box => {
+  const element = boxMarkerElement({
+    name: box.name,
+    state: box.state,
+    selected: box.id === props.selectedId,
+  })
+  element.addEventListener("click", event => {
+    event.stopPropagation()
+    emit("select", box.id)
+  })
+  return new Marker({ element, anchor: "center" })
+    .setLngLat(box.location.coordinates)
+    .addTo(map.value)
+}
+
+const sync = () => {
+  const visible = inView(map.value)
+  const shown = new Set()
+  for (const box of props.boxes) {
+    if (!visible(map.value.project(box.location.coordinates))) continue
+    shown.add(box.id)
+    if (!markers.has(box.id)) markers.set(box.id, markerOf(box))
+  }
+  for (const [id, marker] of markers)
+    if (!shown.has(id)) {
+      marker.remove()
+      markers.delete(id)
+    }
+}
+
 watch(
   () => props.boxes,
-  boxes => {
+  () => {
     clear()
-    for (const box of boxes) {
-      const element = boxMarkerElement({
-        name: box.name,
-        state: box.state,
-        selected: box.id === props.selectedId,
-      })
-      element.addEventListener("click", event => {
-        event.stopPropagation()
-        emit("select", box.id)
-      })
-      markers.set(
-        box.id,
-        new Marker({ element, anchor: "center" })
-          .setLngLat(box.location.coordinates)
-          .addTo(map.value),
-      )
-    }
+    sync()
   },
   { immediate: true },
 )
+map.value.on("moveend", sync)
 
 watch(
   () => props.selectedId,
@@ -53,7 +70,10 @@ watch(
   },
 )
 
-onBeforeUnmount(clear)
+onBeforeUnmount(() => {
+  map.value.off("moveend", sync)
+  clear()
+})
 </script>
 
 <template>

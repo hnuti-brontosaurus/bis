@@ -54,6 +54,20 @@ export const clusterByDistance = (items, gap) => {
   return clusters
 }
 
+/**
+ * Whether a screen point lies in the map's view or within `margin` (a share
+ * of its size) around it. Maplibre moves every DOM marker on every frame, off
+ * screen too, so a map of many keeps only these and refreshes on "moveend".
+ */
+export const inView = (map, margin = 0.5) => {
+  const { clientWidth: width, clientHeight: height } = map.getContainer()
+  return ({ x, y }) =>
+    x >= -margin * width &&
+    x <= (1 + margin) * width &&
+    y >= -margin * height &&
+    y <= (1 + margin) * height
+}
+
 export const bubbleDiameter = boxCount => Math.round(26 + Math.sqrt(boxCount) * 1.3)
 
 const LATITUDE_SPAN = 0.0018
