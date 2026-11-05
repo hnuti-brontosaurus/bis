@@ -23,10 +23,13 @@ export const PROBLEM_KEYS = [
   "taken_down",
   "missing",
   "moved",
+  "not_cleaned",
 ]
 
 const hasProblem = (box, problems) =>
-  problems.includes(box.status) || (problems.includes("moved") && box.should_be_moved)
+  problems.includes(box.season_status) ||
+  (problems.includes("moved") && box.should_be_moved) ||
+  (problems.includes("not_cleaned") && box.season_cleaning === "not_cleaned")
 
 export const defaultFilters = () => ({
   unit: null,

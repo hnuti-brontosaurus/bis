@@ -84,17 +84,22 @@ def create_box(values, user, date):
     """A new box, with its starting values as the first history entry."""
     box = NestBox(**values, created_by=user)
     box.save()
+    record_start(box, values, user, date)
+    return box
+
+
+def record_start(box, values, user, date, box_check=None):
     NestBoxHistory.objects.create(
         box=box,
         date=date,
         user=user,
+        box_check=box_check,
         changes={
             field: [None, _to_json(value)]
             for field, value in values.items()
             if field != "id"
         },
     )
-    return box
 
 
 def missing_for_new_box(box):

@@ -43,7 +43,14 @@ const withSent = (payload, item, result) => {
     ...payload,
     checks: payload.checks.map(check =>
       check.id === item.payload.parent_id
-        ? { ...check, photos: [...check.photos, result] }
+        ? {
+            ...check,
+            // The server replaces a photo resent with the same order
+            photos: [
+              ...check.photos.filter(photo => photo.order !== result.order),
+              result,
+            ],
+          }
         : check,
     ),
   }

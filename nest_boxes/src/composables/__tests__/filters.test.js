@@ -48,12 +48,32 @@ describe("filterBoxes", () => {
     expect(
       names(
         filterBoxes(
-          [box("R", { status: "needs_repair", season_state: "attention" }), ...boxes],
+          [
+            box("R", { season_status: "needs_repair", season_state: "attention" }),
+            ...boxes,
+          ],
           { ...defaultFilters(), problem: ["needs_repair", "moved"] },
           2026,
         ),
       ),
     ).toEqual(["R"])
+    expect(
+      names(
+        filterBoxes(
+          [
+            box("G", { season_status: "missing", season_state: "attention" }),
+            box("D", { season_cleaning: "not_cleaned", season_state: "attention" }),
+            box("F", {
+              status: "needs_repair",
+              season_status: "in_use",
+              season_state: "done",
+            }),
+          ],
+          { ...defaultFilters(), problem: ["missing", "not_cleaned", "needs_repair"] },
+          2026,
+        ),
+      ),
+    ).toEqual(["G", "D"])
     expect(filtered({ verified: false })).toEqual(["N2"])
     expect(filtered({ verified: true })).toEqual(["N10", "P1"])
     expect(filtered({ checked: "this_season" })).toEqual(["N10"])

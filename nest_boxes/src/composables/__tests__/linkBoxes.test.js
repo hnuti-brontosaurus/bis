@@ -45,6 +45,23 @@ describe("latestChecks", () => {
     expect(checks.get("1").id).toBe("a")
     expect(checks.get("2").id).toBe("c")
   })
+
+  it("compares the server's offset times with the phone's UTC ones", () => {
+    const checks = latestChecks([
+      { id: "server", box_id: "1", made_at: "2026-11-03T12:30:00+01:00" },
+      { id: "phone", box_id: "1", made_at: "2026-11-03T11:45:00.000Z" },
+    ])
+    expect(checks.get("1").id).toBe("phone")
+  })
+
+  it("shows the edit of a check, which keeps its made_at", () => {
+    const madeAt = "2026-11-03T12:00:00+01:00"
+    const checks = latestChecks([
+      { id: "a", box_id: "1", made_at: madeAt, note: "" },
+      { id: "a", box_id: "1", made_at: madeAt, note: "edited" },
+    ])
+    expect(checks.get("1").note).toBe("edited")
+  })
 })
 
 describe("spacingWarnings", () => {

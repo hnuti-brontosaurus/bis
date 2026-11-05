@@ -231,6 +231,8 @@ BOX_FIELDS = (
     "closest_same_type_distance",
     "should_be_moved",
     "season_state",
+    "season_status",
+    "season_cleaning",
     "last_checked_on",
     "old_id",
     "created_at",
@@ -258,6 +260,8 @@ class BoxSerializer(ModelSerializer):
     is_new = BooleanField(read_only=True)
     should_be_moved = BooleanField(read_only=True)
     season_state = CharField(read_only=True, allow_null=True)
+    season_status = CharField(read_only=True)
+    season_cleaning = CharField(read_only=True, allow_null=True)
     last_checked_on = DateField(read_only=True)
 
     class Meta:
@@ -275,6 +279,15 @@ class BoxSerializer(ModelSerializer):
         if status == NestBox.Status.ENDED:
             raise serializers.ValidationError(
                 "Budka se ukončuje vlastní akcí, ne změnou stavu."
+            )
+        # A planned box can be deleted, which a box that hung must never be
+        if (
+            status == NestBox.Status.PLANNED
+            and self.instance is not None
+            and self.instance.status != NestBox.Status.PLANNED
+        ):
+            raise serializers.ValidationError(
+                "Pověšená budka se nemůže vrátit do plánu."
             )
         return status
 
@@ -555,6 +568,8 @@ class MapBoxSerializer(ModelSerializer):
     is_new = BooleanField()
     should_be_moved = BooleanField()
     season_state = CharField(allow_null=True)
+    season_status = CharField()
+    season_cleaning = CharField(allow_null=True)
     last_checked_on = DateField()
 
     class Meta:
@@ -572,6 +587,8 @@ class MapBoxSerializer(ModelSerializer):
             "is_new",
             "should_be_moved",
             "season_state",
+            "season_status",
+            "season_cleaning",
             "last_checked_on",
         )
         read_only_fields = fields

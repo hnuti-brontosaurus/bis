@@ -21,12 +21,17 @@ export const sortBoxes = (boxes, position) =>
       : compareNames(a, b),
   )
 
-/** One check per box: the season's check made later on a phone wins. */
+/**
+ * One check per box: the season's check made later on a phone wins, and of
+ * the same check edited (an edit keeps made_at) the one listed last. The
+ * server's times carry an offset and the phone's are UTC, so compare instants.
+ */
 export const latestChecks = checks => {
   const byBox = new Map()
   for (const check of checks) {
     const known = byBox.get(check.box_id)
-    if (!known || check.made_at > known.made_at) byBox.set(check.box_id, check)
+    if (!known || Date.parse(check.made_at) >= Date.parse(known.made_at))
+      byBox.set(check.box_id, check)
   }
   return byBox
 }

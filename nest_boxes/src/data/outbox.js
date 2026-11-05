@@ -1,3 +1,4 @@
+import { uuid } from "@/composables/uuid.js"
 import { database } from "@/data/offline.js"
 
 /**
@@ -8,6 +9,8 @@ import { database } from "@/data/offline.js"
  * @property {string} id the client's id of what it carries; a newer save of
  *   the same thing replaces the queued one in its place
  * @property {Object} payload the request body
+ * @property {string} revision new on every save, so a send can tell whether
+ *   the item was saved again while it was on its way
  * @property {Object} [rejected] the server's 400 answer; left for the
  *   volunteer to see and skipped by later sends
  */
@@ -15,10 +18,14 @@ import { database } from "@/data/offline.js"
 /** @returns {Promise<OutboxItem[]>} */
 export const outboxItems = async () => (await database).getAll("outbox")
 
+// An edit keeps the check's made_at, so a tie is the same check saved again.
+// The server's times carry an offset and the phone's are UTC: compare instants.
 const isNewer = (item, queued) =>
-  item.kind !== "check" || item.payload.made_at > queued.payload.made_at
+  item.kind !== "check" ||
+  Date.parse(item.payload.made_at) >= Date.parse(queued.payload.made_at)
 
-export const enqueue = async item => {
+export const enqueue = async saved => {
+  const item = { ...saved, revision: uuid() }
   const transaction = (await database).transaction("outbox", "readwrite")
   const queued = (await transaction.store.getAll()).find(
     other => other.kind === item.kind && other.id === item.id,
@@ -37,6 +44,17 @@ const removeWhere = async predicate => {
 }
 
 export const dropToken = token => removeWhere(item => item.token === token)
+
+/** Removes or replaces the sent item, unless it was saved again meanwhile. */
+const settle = async (item, replacement = null) => {
+  const transaction = (await database).transaction("outbox", "readwrite")
+  const stored = await transaction.store.get(item.key)
+  if (stored?.revision === item.revision)
+    await (replacement
+      ? transaction.store.put(replacement)
+      : transaction.store.delete(item.key))
+  await transaction.done
+}
 
 /**
  * Sends the outbox in order. A request that gets no answer, or a 5xx, stops the run, so
@@ -71,12 +89,12 @@ export const flushOutbox = async (send, { onSent, onClosed, onRejected }) => {
         await onClosed(item.token)
       } else {
         const rejected = error.response.data
-        await (await database).put("outbox", { ...item, rejected })
+        await settle(item, { ...item, rejected })
         await onRejected({ ...item, rejected })
       }
       continue
     }
-    await (await database).delete("outbox", item.key)
+    await settle(item)
     if (item.kind === "check" && !result.accepted) {
       lostChecks.add(item.payload.id)
       await removeWhere(

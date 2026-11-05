@@ -28,6 +28,7 @@ export const PROBLEM_LABELS = {
   taken_down: "sundaná na opravu",
   missing: "nenalezená",
   moved: "přemístit",
+  not_cleaned: "nevyčištěná",
 }
 
 // The entries of the map legend, see LEGEND_KEYS in composables/filters.js

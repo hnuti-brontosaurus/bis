@@ -12,6 +12,7 @@ from nest_boxes.models import (
 from rest_framework.exceptions import ValidationError
 
 MOVED = "moved"
+NOT_CLEANED = "not_cleaned"
 
 
 class SeasonStateFilter(filters.FilterSet):
@@ -22,11 +23,12 @@ class SeasonStateFilter(filters.FilterSet):
     administration_unit = filters.NumberFilter(field_name="area__administration_unit")
     # An annotation, see NestBoxQuerySet.with_is_verified
     is_verified = filters.BooleanFilter()
-    # Why a box needs attention: a status of ATTENTION_STATUSES, or "moved"
+    # Why a box is in SeasonState.ATTENTION: its season status, "moved" or "not_cleaned"
     problem = filters.MultipleChoiceFilter(
         choices=[
             *((status, status.label) for status in ATTENTION_STATUSES),
             (MOVED, "přemístit"),
+            (NOT_CLEANED, "nevyčištěná"),
         ],
         method="filter_problem",
     )
@@ -41,9 +43,11 @@ class SeasonStateFilter(filters.FilterSet):
         fields = ("region",)
 
     def filter_problem(self, queryset, name, value):
-        shown = Q(status__in=[item for item in value if item != MOVED])
+        shown = Q(season_status__in=value)
         if MOVED in value:
             shown |= Q(should_be_moved=True)
+        if NOT_CLEANED in value:
+            shown |= Q(season_cleaning=Check.Cleaning.NOT_CLEANED)
         return queryset.filter(shown)
 
     @staticmethod

@@ -414,6 +414,12 @@ def test_box_writes_return_warnings_and_history(board_client, area, make_box, ty
         ).status_code
         == 400
     )
+    assert (
+        board_client.patch(
+            f"{API}/boxes/{box_id}/", {"status": "planned"}, format="json"
+        ).status_code
+        == 400
+    )
 
 
 def test_gpx_roundtrip(board_client, area, make_box):
@@ -570,10 +576,39 @@ def test_boxes_by_problem(board_client, make_box):
     assert names("needs_repair") == ["R"]
     assert names("needs_repair", "missing") == ["M", "R"]
     assert names("moved") == []
+    assert names("not_cleaned") == []
     counts = board_client.get(
         f"{API}/areas/season_states/", {"problem": "missing"}
     ).json()
     assert [(row["attention"], row["to_check"]) for row in counts] == [(1, 0)]
+
+
+def test_problems_follow_this_seasons_pending_check(
+    board_client, make_box, season_2025
+):
+    """As the map's state does: a pending check counts as if it were confirmed."""
+    gone = make_box("G")
+    repaired = make_box(
+        "R", location=near(east=100), status=NestBox.Status.NEEDS_REPAIR
+    )
+    dirty = make_box("D", location=near(east=200))
+    found = dict(date=date(2025, 11, 1), made_at=made_at(10), found=Check.Found.FOUND)
+    Check.objects.create(box=gone, **found | {"found": Check.Found.NOT_FOUND})
+    Check.objects.create(box=repaired, box_left=Check.BoxLeft.FINE, **found)
+    Check.objects.create(
+        box=dirty,
+        box_left=Check.BoxLeft.FINE,
+        cleaning=Check.Cleaning.NOT_CLEANED,
+        **found,
+    )
+
+    def names(*problems):
+        boxes = board_client.get(f"{API}/boxes/", {"problem": problems}).json()
+        return sorted(box["name"] for box in boxes["results"])
+
+    assert names("missing") == ["G"]
+    assert names("needs_repair") == []
+    assert names("not_cleaned") == ["D"]
 
 
 def test_boxes_by_legend_entry(board_client, make_box):
@@ -664,6 +699,8 @@ def test_map_of_boxes_has_constant_queries(
         "is_new",
         "should_be_moved",
         "season_state",
+        "season_status",
+        "season_cleaning",
         "last_checked_on",
     }
     assert boxes[0]["season_state"] == "to_check"

@@ -4,7 +4,12 @@ from django.contrib.gis.geos import GEOSException, GEOSGeometry, Point
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils.timezone import now
-from nest_boxes.boxes import delete_box, missing_for_new_box, update_box
+from nest_boxes.boxes import (
+    delete_box,
+    missing_for_new_box,
+    record_start,
+    update_box,
+)
 from nest_boxes.models import (
     BOX_LEFT_STATUS,
     HANGING_STATUSES,
@@ -147,6 +152,15 @@ def _box_values(check):
     return values
 
 
+def _apply_if_latest(check, user):
+    """Only the box's latest check tells how the box is now: confirming or
+    correcting an older one, left pending from a past season, must not undo
+    what a later check set."""
+    latest = Check.objects.filter(box=check.box).order_by("-date", "-made_at").first()
+    if latest == check:
+        update_box(check.box, _box_values(check), user, check.date, check)
+
+
 @transaction.atomic
 def confirm_check(check, user):
     """Confirms a check and applies it to its box: status and box_changes."""
@@ -154,7 +168,22 @@ def confirm_check(check, user):
     check.confirmed_at = now()
     check.confirmed_by = user
     check.save()
-    update_box(check.box, _box_values(check), user, check.date, check)
+    if check.box.is_new:
+        _hang_new_box(check, user)
+    else:
+        _apply_if_latest(check, user)
+
+
+def _hang_new_box(check, user):
+    """A volunteer's box enters the history only now, with its starting values as
+    `create_box` records them: until confirmed, a resend may still change it and
+    deleting its check deletes it."""
+    box = check.box
+    values = {"area": box.area, **_box_values(check)}
+    for name, value in values.items():
+        setattr(box, name, value)
+    box.save()
+    record_start(box, values, user, check.date, check)
 
 
 def _ensure_alone_in_season(check):
@@ -192,9 +221,8 @@ def edit_check(check, occupants, user):
     _ensure_alone_in_season(check)
     check.save()
     check.occupants.set(occupants)
-    latest = Check.objects.filter(box=check.box).order_by("-date", "-made_at").first()
-    if check.is_confirmed and latest == check:
-        update_box(check.box, _box_values(check), user, check.date, check)
+    if check.is_confirmed:
+        _apply_if_latest(check, user)
     return check
 
 

@@ -159,6 +159,17 @@ def test_check_sets_the_box_status(box, manager, found, box_left, status):
     assert box.status == status
 
 
+def test_confirming_an_older_check_leaves_the_box_to_the_later_one(box, manager):
+    older = upsert_check(new_check(box, 10, date=date(2024, 11, 1), **NOT_FOUND), [])
+    confirm_check(upsert_check(new_check(box, 10), []), manager)
+
+    confirm_check(older, manager)
+
+    box.refresh_from_db()
+    assert box.status == NestBox.Status.IN_USE
+    assert Check.objects.get(pk=older.pk).is_confirmed
+
+
 def test_a_found_missing_box_is_back_in_use(make_box, manager):
     box = make_box(status=NestBox.Status.MISSING)
     confirm_check(upsert_check(new_check(box, 10), []), manager)
@@ -248,6 +259,11 @@ def test_confirming_the_check_hangs_the_new_box(batch, box, manager, new_box):
     assert not Check.objects.filter(is_confirmed=False).exists()
     new = NestBox.objects.with_is_verified().get(pk=new.pk)
     assert new.status == NestBox.Status.IN_USE and new.is_verified
+    start = new.history.get()
+    assert (start.user, start.box_check.box) == (manager, new)
+    assert start.changes["status"] == [None, NestBox.Status.IN_USE]
+    assert start.changes["name"] == [None, "new"]
+    assert {"area", "location", "type", "opening", "installed_on"} <= set(start.changes)
     assert NestBox.objects.get(pk=box.pk).status == NestBox.Status.MISSING
     with pytest.raises(BatchClosed):
         submit_check(batch, new_check(box, 11), [])

@@ -68,6 +68,28 @@ describe("outbox", () => {
     expect(items[0].payload.note).toBe("edited")
   })
 
+  it("keeps the edit of a queued check, which keeps its made_at", async () => {
+    await enqueue(check("c", "2026-11-03T10:00:00Z", { note: "first" }))
+    await enqueue(check("c", "2026-11-03T10:00:00Z", { note: "edited" }))
+
+    const [item] = await outboxItems()
+    expect(item.payload.note).toBe("edited")
+  })
+
+  it("keeps what was saved again while it was being sent", async () => {
+    await enqueue(check("c", "2026-11-03T10:00:00Z", { note: "first" }))
+    const { send, sent } = sender(async () => {
+      await enqueue(check("c", "2026-11-03T10:00:00Z", { note: "edited" }))
+      return { accepted: true }
+    })
+
+    await flushOutbox(send, handlers())
+
+    const [item] = await outboxItems()
+    expect(item.payload.note).toBe("edited")
+    expect(sent).toEqual([["check", "c"]])
+  })
+
   it("stops without signal and sends the rest on the next run", async () => {
     await enqueue(check("c", "2026-11-03T10:00:00Z"))
     await enqueue(check("d", "2026-11-03T10:30:00Z"))

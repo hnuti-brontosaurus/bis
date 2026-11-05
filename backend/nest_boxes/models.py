@@ -111,7 +111,8 @@ class NestBoxQuerySet(m.QuerySet):
         )
 
     def with_season_state(self):
-        """`season_state`, one of SeasonState, or null for an ended box.
+        """`season_state`, one of SeasonState, or null for an ended box, and the
+        `season_status` and `season_cleaning` it is worked out from.
 
         A pending check counts as if it were confirmed: its status is what
         confirming it would leave on the box, see `checks._box_values`.
@@ -152,6 +153,7 @@ class NestBoxQuerySet(m.QuerySet):
                     ),
                     default=F("status"),
                 ),
+                season_cleaning=F("season_check__cleaning"),
             )
             .annotate(
                 season_state=Case(
@@ -267,17 +269,26 @@ class NestBox(m.Model):
 
     def save(self, *args, **kwargs):
         self.region = Region.objects.filter(area__contains=self.location).first()
-        previous_area_id = (
+        previous = (
             None
             if self._state.adding
             else NestBox.objects.filter(pk=self.pk)
-            .values_list("area_id", flat=True)
+            .values(*SPACING_FIELDS, *DISTANCE_FIELDS)
             .first()
         )
+        if previous:
+            # Another box's save may have recomputed them since this one was loaded
+            for name in DISTANCE_FIELDS:
+                setattr(self, name, previous[name])
         super().save(*args, **kwargs)
+        # Each recompute measures every pair of the area's boxes
+        if previous and all(
+            previous[name] == getattr(self, name) for name in SPACING_FIELDS
+        ):
+            return
         NestBox.recompute_distances(self.area_id)
-        if previous_area_id not in (None, self.area_id):
-            NestBox.recompute_distances(previous_area_id)
+        if previous and previous["area_id"] != self.area_id:
+            NestBox.recompute_distances(previous["area_id"])
 
     def delete(self, *args, **kwargs):
         result = super().delete(*args, **kwargs)
@@ -321,6 +332,9 @@ HANGING_STATUSES = (
     NestBox.Status.NEEDS_REPAIR,
     NestBox.Status.NEEDS_REPLACING,
 )
+# What the distances of `recompute_distances` depend on
+SPACING_FIELDS = ("area_id", "location", "status", "type_id")
+DISTANCE_FIELDS = ("closest_distance", "closest_same_type_distance")
 # Something to do this season, see NestBoxQuerySet.with_season_state
 ATTENTION_STATUSES = (
     NestBox.Status.NEEDS_REPAIR,
