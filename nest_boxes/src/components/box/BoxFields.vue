@@ -55,8 +55,10 @@ const hint = computed(() =>
 const set = (name, value) => (values.value = { ...values.value, [name]: value })
 
 // The type follows the hole until someone picks a type the hole doesn't suggest.
+// Two sources, not one getter returning an array: a fresh array always counts
+// as changed, so every set() would re-run this and set() again, forever.
 watch(
-  () => [values.value.hole_shape, values.value.hole_size],
+  [() => values.value.hole_shape, () => values.value.hole_size],
   ([shape, size], [oldShape, oldSize]) => {
     const previous = suggestType(props.types, oldShape, oldSize)
     const next = suggestType(props.types, shape, size)
