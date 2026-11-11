@@ -26,6 +26,9 @@ export const circlePolygon = ([lng, lat], radius, steps = 48) => {
 export const FIT_PADDING = 64
 
 // How close two bubbles' edges may come before they merge into one, in px
+// From here in, every box has room for its own marker and name
+export const CLUSTER_UNTIL_ZOOM = 14
+
 export const MERGE_GAP = 24
 
 /**

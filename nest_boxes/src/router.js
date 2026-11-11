@@ -77,7 +77,8 @@ export const routes = [
     component: () => import("@/views/OpenBatchesView.vue"),
   },
   {
-    path: "/d/:token/",
+    // The optional slug is the area's name, see linkRoute
+    path: "/d/:slug?/:token([0-9a-f-]{36})/",
     meta: { volunteer: true },
     component: () => import("@/views/link/LinkView.vue"),
     children: [

@@ -5,6 +5,7 @@ import { NButton, NInput, NInputNumber, NModal } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import ChoiceChips from "@/components/app/ChoiceChips.vue"
+import AreaSelect from "@/components/area/AreaSelect.vue"
 import BoxFields from "@/components/box/BoxFields.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import { boxValues } from "@/components/check/checkForm.js"
@@ -53,6 +54,7 @@ const fieldsOf = box =>
   box
     ? {
         ...boxValues(box),
+        area_id: box.area_id,
         status: box.status,
         planned_radius: box.planned_radius,
         previous_names: box.previous_names,
@@ -60,6 +62,7 @@ const fieldsOf = box =>
       }
     : {
         ...blank(),
+        area_id: props.areaId,
         status: "planned",
         planned_radius: DEFAULT_PLAN_RADIUS,
         previous_names: "",
@@ -89,12 +92,17 @@ const boxFields = computed({
 })
 
 watchDebounced(
-  () => [values.value.location, values.value.type, values.value.name],
-  async ([location, type, name]) => {
+  () => [
+    values.value.area_id,
+    values.value.location,
+    values.value.type,
+    values.value.name,
+  ],
+  async ([area, location, type, name]) => {
     if (!show.value) return
     try {
       warnings.value = await getBoxWarnings({
-        area: props.areaId,
+        area,
         location,
         type,
         name,
@@ -113,7 +121,6 @@ const payload = () => {
     ...rest,
     type_id: type,
     planned_radius: planned.value ? rest.planned_radius : null,
-    area_id: props.areaId,
     ...(!props.box && props.batchId && { batch_id: props.batchId }),
   }
 }
@@ -153,23 +160,6 @@ const save = async () => {
         Dobrovolníci uvidí kroužek, kam budku pověsit. Pověšení zapíšou kontrolou se
         skutečnou polohou.
       </p>
-      <div class="field">
-        <span class="label">Stav</span>
-        <ChoiceChips v-model="values.status" :options="statusOptions" />
-      </div>
-      <div v-if="planned" class="grid-2">
-        <div class="field">
-          <label for="box-radius">Okruh, kam ji pověsit</label>
-          <n-input-number
-            v-model:value="values.planned_radius"
-            :input-props="{ id: 'box-radius' }"
-            :min="1"
-            :max="2000"
-          >
-            <template #suffix>m</template>
-          </n-input-number>
-        </div>
-      </div>
       <BoxFields
         v-model="boxFields"
         :types="types"
@@ -189,6 +179,29 @@ const save = async () => {
             : undefined
         "
       >
+        <template #after-name>
+          <div class="field">
+            <span class="label">Stav</span>
+            <ChoiceChips v-model="values.status" :options="statusOptions" />
+          </div>
+          <div v-if="box" class="field">
+            <label for="box-area">Oblast</label>
+            <AreaSelect id="box-area" v-model="values.area_id" />
+          </div>
+          <div v-if="planned" class="grid-2">
+            <div class="field">
+              <label for="box-radius">Okruh, kam ji pověsit</label>
+              <n-input-number
+                v-model:value="values.planned_radius"
+                :input-props="{ id: 'box-radius' }"
+                :min="1"
+                :max="2000"
+              >
+                <template #suffix>m</template>
+              </n-input-number>
+            </div>
+          </div>
+        </template>
         <template #map>
           <BoxMarkers :boxes="mapBoxes" passive />
         </template>

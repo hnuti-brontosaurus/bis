@@ -106,6 +106,7 @@ AdministrationUnit:
     phone: Telefon
     category: Typ jednotky
     board_members: Členové představenstva
+    nest_box_managers: Budkaři článku
     bank_account_number: Číslo účtu
     chairman: Předseda
     vice_chairman: Místopředseda

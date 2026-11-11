@@ -6,6 +6,7 @@ import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import {
   boundsOf,
   bubbleDiameter,
+  CLUSTER_UNTIL_ZOOM,
   clusterByDistance,
   FIT_PADDING,
   inView,
@@ -13,13 +14,11 @@ import {
 } from "@/components/map/geometry.js"
 import { areaBubbleElement, boxMarkerElement } from "@/components/map/markers.js"
 
-// From here in, every box has room for its own marker and name
-const CLUSTER_UNTIL_ZOOM = 14
-
 const props = defineProps({
   // [{ id, name, location: GeoJSON Point, state: one of BOX_STATES, area_id }]
   boxes: { type: Array, required: true },
   selectedId: { type: String, default: null },
+  pickedIds: { type: Array, default: () => [] },
   // area id → name, which labels a bubble of one area's boxes
   areaNames: { type: Map, required: true },
 })
@@ -47,6 +46,9 @@ const clear = () => {
   markers = []
 }
 
+const isSelected = box =>
+  box.id === props.selectedId || props.pickedIds.includes(box.id)
+
 const clusterElement = items => {
   const count = state => items.filter(box => box.state === state).length
   const areaIds = new Set(items.map(box => box.area_id))
@@ -57,7 +59,7 @@ const clusterElement = items => {
     diameter: bubbleDiameter(items.length),
     name: areaIds.size === 1 ? props.areaNames.get(items[0].area_id) : "",
     merged: true,
-    selected: items.some(box => box.id === props.selectedId),
+    selected: items.some(isSelected),
   })
 }
 
@@ -79,7 +81,7 @@ const render = () => {
           ? clusterElement(items)
           : boxMarkerElement({
               state: box.state,
-              selected: box.id === props.selectedId,
+              selected: isSelected(box),
             })
       element.addEventListener("click", event => {
         event.stopPropagation()
@@ -87,7 +89,7 @@ const render = () => {
           map.value.fitBounds(boundsOf(items.map(item => item.location)), {
             padding: FIT_PADDING,
           })
-        else emit("select", box.id)
+        else emit("select", box.id, event.shiftKey)
       })
       return new Marker({ element, anchor: "center" })
         .setLngLat(map.value.unproject([cluster.x, cluster.y]))
@@ -95,7 +97,13 @@ const render = () => {
     })
 }
 
-watch([() => props.boxes, () => props.selectedId, moved], render, { immediate: true })
+watch(
+  [() => props.boxes, () => props.selectedId, () => props.pickedIds, moved],
+  render,
+  {
+    immediate: true,
+  },
+)
 
 onBeforeUnmount(() => {
   map.value.off("moveend", onMove)
@@ -109,6 +117,7 @@ onBeforeUnmount(() => {
     v-if="!clustered"
     :boxes="boxes"
     :selected-id="selectedId"
-    @select="emit('select', $event)"
+    :picked-ids="pickedIds"
+    @select="(id, shift) => emit('select', id, shift)"
   />
 </template>

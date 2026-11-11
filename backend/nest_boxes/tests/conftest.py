@@ -82,6 +82,19 @@ def area(unit):
 
 
 @pytest.fixture
+def other_unit(unit):
+    with paused_validation():
+        return AdministrationUnit.objects.create(
+            name="Jiný", abbreviation="J", is_for_kids=False, category=unit.category
+        )
+
+
+@pytest.fixture
+def other_area(other_unit):
+    return Area.objects.create(name="Jinde", administration_unit=other_unit)
+
+
+@pytest.fixture
 def make_box(area, types):
     def make(name="1", location=ORIGIN, verified=False, **kwargs):
         defaults = dict(

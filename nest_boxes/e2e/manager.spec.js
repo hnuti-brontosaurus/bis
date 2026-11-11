@@ -18,6 +18,7 @@ test.describe("the area page", () => {
 
     await page.getByRole("button", { name: "Nová obchůzka" }).click()
     await expect(page.getByText("Navržených budek: 3")).toBeVisible()
+    expect(await page.getByLabel("Název").inputValue()).toContain(`${area.name} · `)
     await page.getByLabel("Název").fill("Podzim E2E manažer")
     await page
       .getByRole("dialog")
@@ -29,7 +30,7 @@ test.describe("the area page", () => {
     await expect(page.getByTestId("remaining")).toHaveText("zbývá 3 z 3")
     await expect(page.getByTestId("batch-link")).toHaveAttribute(
       "data-url",
-      /\/budky\/d\//,
+      /\/budky\/d\/[a-z0-9-]+\/[0-9a-f-]{36}\/$/,
     )
     await row(page, area.boxes["3"]).locator(".head").click()
     await row(page, area.boxes["3"])
@@ -53,6 +54,21 @@ test.describe("the area page", () => {
     await expect(
       page.getByRole("heading", { name: `${area.name} upravená` }),
     ).toBeVisible()
+  })
+
+  test("moves a box to another area", async ({ page, area }) => {
+    await page.goto(`/budky/oblast/${area.id}/`)
+    await row(page, area.boxes["2"]).locator(".head").click()
+    await row(page, area.boxes["2"])
+      .getByRole("button", { name: "Přesunout", exact: true })
+      .click()
+    const dialog = page.getByRole("dialog")
+    await choose(page, dialog.getByLabel("Do oblasti"), "E2E Cibulka")
+    await dialog.getByRole("button", { name: "Přesunout", exact: true }).click()
+
+    await expect(page.getByText("Budka 2 je přesunutá.")).toBeVisible()
+    await expect(page.getByText("Budky · 2")).toBeVisible()
+    await expect(row(page, area.boxes["2"])).toHaveCount(0)
   })
 
   test("filters the boxes and plans a new one", async ({ page, area }) => {

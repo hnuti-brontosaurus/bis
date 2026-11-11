@@ -86,7 +86,13 @@ class AdministrationUnitAdmin(PermissionMixin, NestedModelAdmin):
         PointField: {"widget": LatLongWidget},
     }
 
-    autocomplete_fields = "chairman", "vice_chairman", "manager", "board_members"
+    autocomplete_fields = (
+        "chairman",
+        "vice_chairman",
+        "manager",
+        "board_members",
+        "nest_box_managers",
+    )
 
     exclude = "_import_id", "_history", "_search_field"
     list_select_related = "address", "chairman", "category"

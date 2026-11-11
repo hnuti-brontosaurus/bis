@@ -7,7 +7,7 @@ import BatchProgress from "@/components/batch/BatchProgress.vue"
 import { useLoad } from "@/composables/useLoad.js"
 import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
-import { closeBatch, listOpenBatches } from "@/data/manage.js"
+import { closeBatch, linkRoute, listOpenBatches } from "@/data/manage.js"
 
 const message = useMessage()
 const auth = useAuthStore()
@@ -47,7 +47,7 @@ const close = async batch => {
         <div class="stack info">
           <div>
             <h3>
-              <RouterLink :to="{ name: 'link', params: { token: batch.token } }">{{
+              <RouterLink :to="linkRoute(batch.token, batch.area_name)">{{
                 batch.name
               }}</RouterLink>
             </h3>
@@ -61,7 +61,7 @@ const close = async batch => {
               {{ batch.area_name }}
             </RouterLink>
           </div>
-          <BatchLink :token="batch.token" />
+          <BatchLink :token="batch.token" :area-name="batch.area_name" />
         </div>
         <BatchProgress :batch="batch" />
         <div class="row">

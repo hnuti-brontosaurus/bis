@@ -1,8 +1,9 @@
+from django.core.exceptions import PermissionDenied
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Max, ProtectedError, Q
 from nest_boxes.checks import BatchClosed
 from nest_boxes.models import HelpArticle, NestBox
-from nest_boxes.permissions import is_manager
+from nest_boxes.permissions import can_manage, is_manager, manages_all
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.permissions import SAFE_METHODS, BasePermission
@@ -35,9 +36,14 @@ class IsManager(BasePermission):
         return is_manager(request.user)
 
 
-class IsManagerOrReadOnly(BasePermission):
+class IsBudkarOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.method in SAFE_METHODS or is_manager(request.user)
+        return request.method in SAFE_METHODS or manages_all(request.user)
+
+
+def require_manage(user, area):
+    if not can_manage(user, area):
+        raise PermissionDenied
 
 
 def box_queryset():

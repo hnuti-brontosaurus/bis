@@ -33,6 +33,7 @@ import {
   getArea,
   getBatch,
   getCategories,
+  linkRoute,
   listChecks,
   listHelpArticles,
   saveCheckPhotos,
@@ -152,7 +153,7 @@ const confirm = async () => {
         <h1>
           <RouterLink
             class="batch-name"
-            :to="{ name: 'link', params: { token: batch.token } }"
+            :to="linkRoute(batch.token, batch.area_name)"
             >{{ batch.name }}</RouterLink
           >
         </h1>
@@ -169,7 +170,11 @@ const confirm = async () => {
     </div>
     <div class="card stack progress-card">
       <BatchProgress :batch="batch" />
-      <BatchLink v-if="!batch.closed_at" :token="batch.token" />
+      <BatchLink
+        v-if="!batch.closed_at"
+        :token="batch.token"
+        :area-name="batch.area_name"
+      />
     </div>
 
     <div class="tiles" data-testid="batch-tiles">

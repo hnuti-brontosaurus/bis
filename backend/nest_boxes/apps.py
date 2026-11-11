@@ -7,4 +7,4 @@ class NestBoxesConfig(AppConfig):
     verbose_name = "Budky"
 
     def ready(self):
-        from nest_boxes import public_cache  # noqa: F401  registers the signals
+        from nest_boxes import outlines, public_cache  # noqa: F401  register signals

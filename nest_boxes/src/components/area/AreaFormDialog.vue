@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef, watch } from "vue"
 import { NButton, NInput, NModal, NSelect } from "naive-ui"
 
+import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
 import { createArea, listUnits, updateArea } from "@/data/manage.js"
 
@@ -13,13 +14,17 @@ const props = defineProps({
 const emit = defineEmits(["saved"])
 const show = defineModel("show", { type: Boolean, required: true })
 
+const auth = useAuthStore()
 const units = shallowRef([])
 const values = ref({})
 const saving = ref(false)
 const error = ref("")
 
+// The API refuses an area for a unit the user doesn't manage
 const unitOptions = computed(() =>
-  units.value.map(unit => ({ value: unit.id, label: unit.abbreviation })),
+  units.value
+    .filter(unit => auth.managedUnitIds.includes(unit.id))
+    .map(unit => ({ value: unit.id, label: unit.abbreviation })),
 )
 
 watch(

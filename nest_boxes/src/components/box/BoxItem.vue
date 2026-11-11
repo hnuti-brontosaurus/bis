@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 import { RouterLink } from "vue-router"
+import { NButton } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
 import MarkerGlyph from "@/components/map/MarkerGlyph.vue"
@@ -11,21 +12,35 @@ const props = defineProps({
   // one of BOX_STATES, see map/markers.js
   state: { type: String, required: true },
   expanded: { type: Boolean, default: false },
+  // one of the boxes picked with Shift
+  picked: { type: Boolean, default: false },
   typesById: { type: Map, required: true },
   // where the name leads; a plain name without it
   to: { type: Object, default: null },
   // muted text after the tags, such as how far the box is
   aside: { type: String, default: "" },
+  // the lines an opened row lists under the type
+  facts: { type: Array, default: () => [] },
 })
 
+// the click, to tell a Shift click
 const emit = defineEmits(["toggle"])
 
 const tags = computed(() => boxTags(props.box))
+const allFacts = computed(() => {
+  const type = typeName(props.typesById, props.box.type_id)
+  return [type.charAt(0).toUpperCase() + type.slice(1), ...props.facts]
+})
 </script>
 
 <template>
-  <div class="box-item" :class="{ expanded }" :data-box-row="box.id">
-    <div class="head" @click="emit('toggle')">
+  <div class="box-item" :class="{ expanded, picked }" :data-box-row="box.id">
+    <!-- Shift + click would select the text of the rows in between -->
+    <div
+      class="head"
+      @mousedown="event => event.shiftKey && event.preventDefault()"
+      @click="emit('toggle', $event)"
+    >
       <MarkerGlyph :state="state" />
       <div class="text">
         <div class="title">
@@ -45,18 +60,25 @@ const tags = computed(() => boxTags(props.box))
     </div>
     <div v-if="expanded" class="detail" data-testid="box-detail">
       <p v-if="box.note" class="full-note">{{ box.note }}</p>
-      <p class="type-line">
-        {{ typeName(typesById, box.type_id) }} ·
-        <a
+      <ul class="box-facts">
+        <li v-for="fact in allFacts" :key="fact">{{ fact }}</li>
+      </ul>
+      <div class="actions">
+        <n-button
+          tag="a"
+          size="small"
+          secondary
           :href="mapyLink(box.location)"
           target="_blank"
           rel="noopener"
           :aria-label="`Budka ${box.name} na Mapy.com`"
           @click.stop
-          ><AppIcon name="map" />Mapy.com</a
         >
-      </p>
-      <slot name="extra" />
+          <template #icon><AppIcon name="map" /></template>
+          Mapy.com
+        </n-button>
+        <slot name="actions" />
+      </div>
     </div>
   </div>
 </template>
@@ -64,6 +86,10 @@ const tags = computed(() => boxTags(props.box))
 <style scoped>
 .box-item {
   border-bottom: 1px solid var(--line);
+}
+
+.box-item.picked {
+  background: var(--primary-soft);
 }
 
 .box-item.expanded {
@@ -115,35 +141,44 @@ a.name:hover {
   text-overflow: ellipsis;
 }
 
+/* The facts on the left, the buttons on the right under the row's own button */
 .detail {
-  display: grid;
-  gap: 6px;
-  padding: 0 20px 12px 56px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 16px;
+  padding: 0 20px 14px 56px;
   font-size: 14px;
 }
 
-.detail :deep(p) {
-  margin: 0;
-}
-
 .full-note {
+  flex-basis: 100%;
+  margin: 0;
   white-space: pre-line;
 }
 
-.type-line {
+.box-facts {
+  flex: 1 1 120px;
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   color: var(--muted);
 }
 
-.type-line a {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+.box-facts li:first-child {
+  color: var(--text);
   font-weight: 700;
 }
 
-.type-line .icon {
-  width: 15px;
-  height: 15px;
+/* As far apart as the row's own button is from the first of them */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  margin-left: auto;
 }
 
 @media (max-width: 720px) {

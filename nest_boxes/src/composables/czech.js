@@ -47,3 +47,12 @@ export const checkCountLabel = count =>
 
 export const formatDistance = metres =>
   metres === null || metres === undefined ? "–" : `${Math.round(metres)} m`
+
+/** Lower case without diacritics: "Mikulčice" → "mikulcice". */
+export const plainText = text => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+
+/** "Mikulčice – sektor A" → "mikulcice-sektor-a", for a readable URL. */
+export const slugify = text =>
+  plainText(text)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")

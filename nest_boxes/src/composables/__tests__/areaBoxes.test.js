@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  boxExtras,
+  boxFacts,
   groupByArea,
   markerState,
   splitByBatch,
@@ -56,7 +56,7 @@ describe("markerState", () => {
   })
 })
 
-describe("boxExtras", () => {
+describe("boxFacts", () => {
   const context = {
     typesById: new Map([
       [2, { id: 2, name: "velký sýkorník", needs_cleaning: true }],
@@ -76,18 +76,18 @@ describe("boxExtras", () => {
       box_changes: {},
       is_confirmed: false,
     }
-    expect(boxExtras(box("N1"), check, context)).toEqual([
-      "Letos: vyčištěno · sýkora · čeká na potvrzení",
-      "Nikdy kontrolovaná",
+    expect(boxFacts(box("N1"), check, context)).toEqual([
+      "Letos vyčištěno · sýkora · čeká na potvrzení",
+      "Zatím bez kontroly",
     ])
   })
 
   it("says why an unchecked box may need no check", () => {
-    expect(boxExtras(box("N1", { type_id: 11 }), null, context)[0]).toBe(
-      "Tento typ se nečistí.",
+    expect(boxFacts(box("N1", { type_id: 11 }), null, context)[0]).toBe(
+      "Tento typ se nečistí",
     )
-    expect(boxExtras(box("N5"), null, context)[0]).toBe("V obchůzce Podzim B")
-    expect(boxExtras(box("P", { status: "planned" }), null, context)).toEqual([])
+    expect(boxFacts(box("N5"), null, context)[0]).toBe("V obchůzce Podzim B")
+    expect(boxFacts(box("P", { status: "planned" }), null, context)).toEqual([])
   })
 })
 

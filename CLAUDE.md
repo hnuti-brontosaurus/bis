@@ -619,6 +619,13 @@ mockups in `mockups/`). It shares no code with the cookbook.
 - **Bottom sheet:** `MapPanelLayout`'s drag zone (handle + `#summary` slot)
   takes pointer capture, and a captured pointer's click lands on the zone, not
   on a button inside it; so a drag never starts on a button, link or input.
+- **Picking:** on the map of all boxes, Shift + click on a marker or row
+  picks boxes, which the panel's header lists with a "Přesunout" for all of
+  them (`boxes/move/`). That is why `BaseMap` turns maplibre's `boxZoom`
+  (Shift + drag) off: it swallowed the click.
+- **Camera:** a `BaseMap` with `remember-as` reopens where it was left in the
+  tab (`map/camera.js`, sessionStorage), so going back to the map of areas,
+  an area or a batch link from a box keeps the zoom.
 - **Map of areas** (`AreasMapView`, `/mapa/`) has two modes, `?mode=boxes` for
   managers only: area bubbles from the public endpoints, or every manageable box
   from `boxes/map/` (an unpaginated light serializer; the box page loads the
@@ -649,14 +656,16 @@ mockups in `mockups/`). It shares no code with the cookbook.
   cookbook's (`deployments/base`).
 - **Box rows** in the manager lists and on batch links are `BoxItem`: name,
   a tag only for what is off (`boxTags`, never "neověřená"), the note's first line; a click opens
-  the full note, the type with a Mapy.com link and the list's extras. A
+  the full note, the type and the list's facts (`boxFacts`) on the left, and
+  on the right its buttons (Mapy.com, "Přesunout" in `BoxList`). A
   manager of the area edits a batch's boxes on its link (remove in an opened
   row, add from "Mimo obchůzku"), not on the area page, which lists its open
   batches and opens a new one on its link. A link is never shown as text, only
   copied by the "Odkaz pro dobrovolníky" button (`BatchLink`).
   Signed in, a link skips the volunteer's nickname and its checks record
   `entered_by` instead.
-- **Volunteer pages** (`/d/<token>/…`, `views/link/`) work offline. The
+- **Volunteer pages** (`/d/<area slug>/<token>/…`, `views/link/`; the slug is
+  optional and only makes the link readable, `linkRoute`) work offline. The
   `link` store (`data/link.js`) keeps the link payload in IndexedDB
   (`data/offline.js`) and falls back to it when `GET links/<token>/` gets no
   answer. Checks, photos and new boxes go into the outbox
@@ -771,9 +780,11 @@ permissions, spacing, check upserts, confirming and statistics live in
 - The budkař role is `BrontosaurusMovement.nest_box_managers` (role slug
   `nest_box_manager`, `User.is_nest_box_manager`). It is deliberately not
   part of `is_staff`, and the admin shows the app to superusers only.
-- Managing is all or nothing: a budkař or superuser manages every area
-  (`permissions.is_manager`), nobody else any. An area's unit only groups the
-  statistics; its board gets no access.
+- Who manages what is `nest_boxes/permissions.py`: a budkař or superuser
+  (`manages_all`) every area and the help; a unit's board and the unit's own
+  budkaři (`AdministrationUnit.nest_box_managers`, set in the unit's admin)
+  that unit's areas, like a "lokalita" of the old app. Each of them is a
+  manager before the unit has any area, so that they can create the first.
 
 The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
 
@@ -790,10 +801,21 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
 - `NestBoxAPIMixin.handle_exception` turns the domain's Django
   `ValidationError` into a 400, `BatchClosed` into a 410 and `ProtectedError`
   into a 400, so views call the domain functions without try blocks.
-- `IsManager` makes every manager endpoint a 403 for non-managers, so their
-  querysets are unfiltered.
-- A batch link (`links/<token>/…`) shows only that batch's boxes and never
-  volunteers' emails.
+- `IsManager` makes every manager endpoint a 403 for non-managers, and the
+  querysets are filtered by `manageable_areas`, so another unit's rows are
+  404s. A write naming an area (a box moved, a check, a batch) is checked with
+  `require_manage`, an area's unit against `managed_units`.
+- A batch link (`links/<token>/…`) lets the volunteer act on that batch's boxes
+  only and never shows volunteers' emails. It also sends `other_boxes`: id,
+  name and location of the unit's other hanging boxes, drawn greyed out and
+  inert so the volunteer sees where the batch ends.
+- `areas/outlines/` (`nest_boxes/outlines.py`) is the ground each area covers,
+  drawn faintly on the managers' maps from the zoom boxes stop clustering. One
+  SQL pass over every box: each area's boxes buffered and closed, clipped to
+  the Voronoi cells of all boxes so mingled areas never overlap. Cached under
+  its own generation, which only a `NestBox` or `Area` save replaces.
+- Moving a box to another area (`update_box`, `boxes/move/` for several)
+  drops it from the open batches of its old area.
 - `POST /api/nest_boxes/testing/seed/` (TESTING only, 404 elsewhere) resets the
   e2e fixture set from `nest_boxes/e2e_seed.py` and returns its ids: budkař
   `budkar@budky.nope` and the rightless `clen@budky.nope`, both with password
@@ -822,7 +844,7 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
   `fill_nest_box_elevations` (in `nightly`) fills empty ones from OpenTopoData
   `eudem25m`, 100 points a request, one request a second.
 - `daily` sends `emails.open_batches_reminder` on Mondays: batches open over a
-  week, to the batch's author while still a budkař, else to every budkař.
+  week, to whoever opened the batch.
 
 `import_old_nest_boxes <dump.sql>` replaces **all** nest box data (areas,
 batches and photos included) with the old database. It reads the Adminer dump

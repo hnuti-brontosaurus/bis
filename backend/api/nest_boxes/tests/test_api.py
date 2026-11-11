@@ -6,9 +6,8 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
-from administration_units.models import AdministrationUnit
 from api.nest_boxes.tests.conftest import API
-from bis.helpers import paused_validation
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
@@ -74,8 +73,7 @@ def test_public_areas_never_show_box_coordinates(anonymous, make_box, area):
         "batches/open/",
     ],
 )
-def test_non_managers_are_refused(anonymous, client_for, stranger, unit, area, url):
-    unit.board_members.add(stranger)
+def test_non_managers_are_refused(anonymous, client_for, stranger, area, url):
     assert anonymous.get(f"{API}/{url}").status_code == 403
     assert client_for(stranger).get(f"{API}/{url}").status_code == 403
 
@@ -85,6 +83,110 @@ def test_budkar_creates_areas(client_for, budkar, unit):
         f"{API}/areas/", {"name": "Nová", "administration_unit_id": unit.pk}
     )
     assert response.status_code == 201
+
+
+def test_board_manages_the_units_areas_only(
+    client_for, manager, unit, area, other_area, make_box
+):
+    unit.board_members.add(manager)
+    client = client_for(manager)
+    box = make_box()
+    elsewhere = make_box("2", location=near(east=900), area=other_area)
+
+    assert client.get(f"{API}/areas/{area.pk}/").status_code == 200
+    assert client.get(f"{API}/areas/{other_area.pk}/").status_code == 404
+    assert [row["id"] for row in client.get(f"{API}/boxes/map/").json()] == [
+        str(box.pk)
+    ]
+    assert client.get(f"{API}/boxes/{elsewhere.pk}/").status_code == 404
+    moved = client.patch(
+        f"{API}/boxes/{box.pk}/", {"area_id": other_area.pk}, format="json"
+    )
+    assert moved.status_code == 403
+    created = client.post(
+        f"{API}/batches/", {"area_id": other_area.pk, "name": "X"}, format="json"
+    )
+    assert created.status_code == 403
+    assert (
+        client.patch(
+            f"{API}/areas/{area.pk}/",
+            {"administration_unit_id": other_area.administration_unit_id},
+            format="json",
+        ).status_code
+        == 403
+    )
+
+
+def test_units_budkar_manages_and_creates_its_areas(
+    client_for, manager, unit, other_unit
+):
+    unit.nest_box_managers.add(manager)
+    client = client_for(manager)
+
+    data = client.get(f"{API}/whoami/").json()
+    assert data["is_manager"] and not data["is_budkar"]
+    assert data["managed_unit_ids"] == [unit.pk]
+    created = client.post(
+        f"{API}/areas/", {"name": "Nová", "administration_unit_id": unit.pk}
+    )
+    assert created.status_code == 201
+    refused = client.post(
+        f"{API}/areas/", {"name": "Cizí", "administration_unit_id": other_unit.pk}
+    )
+    assert refused.status_code == 403
+    assert client.get(f"{API}/whoami/").json()["managed_area_ids"] == [
+        created.json()["id"]
+    ]
+
+
+def test_moving_a_box_leaves_its_open_batch(budkar_client, batch, other_area):
+    box = batch.boxes.get()
+
+    response = budkar_client.patch(
+        f"{API}/boxes/{box.pk}/", {"area_id": other_area.pk}, format="json"
+    )
+
+    assert response.json()["area_id"] == other_area.pk
+    assert not batch.boxes.exists()
+
+
+def test_boxes_move_together(
+    client_for, budkar_client, stranger, make_box, area, other_area
+):
+    first = make_box("1")
+    second = make_box("2", location=near(east=100))
+    make_box("2", location=near(east=900), area=other_area)
+    url = f"{API}/boxes/move/"
+    payload = {"box_ids": [str(first.pk), str(second.pk)], "area_id": other_area.pk}
+
+    area.administration_unit.board_members.add(stranger)
+    assert client_for(stranger).post(url, payload, format="json").status_code == 403
+    response = budkar_client.post(url, payload, format="json").json()
+
+    assert {box["area_id"] for box in response["boxes"]} == {other_area.pk}
+    assert response["duplicate_names"] == ["2"]
+    assert not area.boxes.exists()
+    # Back is refused to the board, which doesn't manage the other unit's boxes
+    back = {**payload, "area_id": area.pk}
+    assert client_for(stranger).post(url, back, format="json").status_code == 400
+
+
+def test_outlines_split_mingled_areas(budkar_client, make_box, area, other_area):
+    for east in (0, 100, 200):
+        make_box(str(east), location=near(east=east))
+    make_box("J", location=near(east=300), area=other_area)
+    make_box("far", location=near(north=5000), status=NestBox.Status.ENDED)
+
+    outlines = {
+        row["id"]: GEOSGeometry(json.dumps(row["outline"]))
+        for row in budkar_client.get(f"{API}/areas/outlines/").json()
+    }
+
+    assert set(outlines) == {area.pk, other_area.pk}
+    assert outlines[area.pk].contains(near(east=100))
+    assert not outlines[area.pk].contains(near(east=300))
+    assert outlines[other_area.pk].contains(near(east=300))
+    assert outlines[area.pk].intersection(outlines[other_area.pk]).area < 1e-10
 
 
 def test_whoami(anonymous, client_for, stranger, budkar_client, batch):
@@ -97,13 +199,19 @@ def test_whoami(anonymous, client_for, stranger, budkar_client, batch):
     assert data["open_batch_count"] == 0
 
 
-def test_volunteer_sees_only_the_batchs_boxes(anonymous, batch, make_box):
+def test_volunteer_sees_only_the_batchs_boxes(anonymous, batch, make_box, other_area):
     outside = make_box("2", location=near(east=300, north=200))
+    elsewhere = make_box("3", location=near(east=900, north=700), area=other_area)
+    make_box("4", location=near(east=600), status=NestBox.Status.ENDED)
 
     data = anonymous.get(f"{API}/links/{batch.token}/").json()
 
     assert [box["id"] for box in data["boxes"]] == [str(batch.boxes.get().pk)]
-    assert not contains_coordinates(data, outside.location)
+    # The unit's other boxes hanging, greyed out on the map
+    assert data["other_boxes"] == [
+        {"id": str(outside.pk), "name": "2", "location": geojson(outside.location)}
+    ]
+    assert not contains_coordinates(data, elsewhere.location)
     assert {"types", "occupants", "end_reasons", "not_cleaned_reasons"} == set(
         data["categories"]
     )
@@ -467,21 +575,20 @@ def test_want_to_hang_sends_an_email(anonymous):
     assert text.call_args.kwargs["reply_to"] == ["jana@example.com"]
 
 
-def test_open_batches_reminder(batch, budkar, stranger):
+def test_open_batches_reminder(batch, stranger):
     from nest_boxes.emails import open_batches_reminder
 
     Batch.objects.filter(pk=batch.pk).update(created_at=now().replace(year=2024))
     with patch("nest_boxes.emails.text") as text:
         open_batches_reminder()
+    # Nobody opened the seeded batch
+    text.assert_not_called()
 
-    assert text.call_args.args[0] == [budkar.email]
-    assert batch.name in text.call_args.args[2]
-
-    # The author hears alone, until they stop being a budkař
     Batch.objects.filter(pk=batch.pk).update(created_by=stranger)
     with patch("nest_boxes.emails.text") as text:
         open_batches_reminder()
-    assert text.call_args.args[0] == [budkar.email]
+    assert text.call_args.args[0] == [stranger.email]
+    assert batch.name in text.call_args.args[2]
 
 
 def test_help_articles_are_written_by_budkar_only(client_for, stranger, budkar_client):
@@ -515,15 +622,11 @@ def season_2025(monkeypatch):
     monkeypatch.setattr(Check, "current_season", staticmethod(lambda: 2025))
 
 
-def test_season_states_per_area(budkar_client, area, unit, make_box, types):
+def test_season_states_per_area(budkar_client, area, other_unit, make_box, types):
     make_box("1")
     make_box("2", location=near(east=100), status=NestBox.Status.NEEDS_REPAIR)
     make_box("3", location=near(east=200), type=types["netopyrnik"])
     make_box("4", location=near(east=300), verified=True)
-    with paused_validation():
-        other_unit = AdministrationUnit.objects.create(
-            name="Jiný", abbreviation="J", is_for_kids=False, category=unit.category
-        )
     url = f"{API}/areas/season_states/"
 
     counts = {"area_id": area.pk, "planned": 0, "to_check": 2, "attention": 1}

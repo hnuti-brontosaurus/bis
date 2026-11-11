@@ -8,6 +8,7 @@ from api.nest_boxes.serializers import (
     LinkBoxSerializer,
     LinkCheckSerializer,
     LinkNewBoxSerializer,
+    LinkOtherBoxSerializer,
     box_warnings_data,
     categories_data,
 )
@@ -41,6 +42,12 @@ class LinkView(NestBoxAPIMixin, APIView):
         batch = open_batch(token)
         season = Check.current_season()
         boxes = NestBox.objects.with_season_state().filter(batches=batch)
+        # Only to look at, greyed out: where the unit's other boxes hang
+        other_boxes = (
+            NestBox.objects.in_use()
+            .filter(area__administration_unit=batch.area.administration_unit_id)
+            .exclude(batches=batch)
+        )
         checks = Check.objects.filter(
             box__in=batch.boxes.all(), season=season
         ).prefetch_related("occupants", "photos")
@@ -50,6 +57,7 @@ class LinkView(NestBoxAPIMixin, APIView):
                 "area": LinkAreaSerializer(batch.area).data,
                 "season": season,
                 "boxes": LinkBoxSerializer(boxes, many=True).data,
+                "other_boxes": LinkOtherBoxSerializer(other_boxes, many=True).data,
                 "checks": LinkCheckSerializer(checks, many=True).data,
                 "categories": categories_data(),
                 "help_articles": HelpArticleSerializer(help_articles(), many=True).data,

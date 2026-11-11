@@ -18,6 +18,7 @@ from api.nest_boxes.serializers import (
     HistorySerializer,
     ImportRowSerializer,
     MapBoxSerializer,
+    MoveBoxesSerializer,
     box_warnings_data,
     warnings_data,
 )
@@ -25,8 +26,10 @@ from api.nest_boxes.views.base import (
     IsManager,
     NestBoxAPIMixin,
     box_queryset,
+    require_manage,
 )
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
@@ -35,6 +38,7 @@ from django.utils.timezone import localdate, now
 from nest_boxes.boxes import (
     create_box,
     delete_box,
+    duplicate_names,
     end_box,
     season_state_counts,
     suggested_batch_boxes,
@@ -49,7 +53,9 @@ from nest_boxes.checks import (
     enter_check,
 )
 from nest_boxes.gpx import apply_import, export_gpx, import_rows, parse_gpx
-from nest_boxes.models import Area, Batch, Check, CheckPhoto, NestBox
+from nest_boxes.models import Batch, Check, CheckPhoto, NestBox
+from nest_boxes.outlines import area_outlines
+from nest_boxes.permissions import manageable_areas, managed_units
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -59,13 +65,19 @@ from xlsx_export.serializers import NestBoxExportSerializer
 
 
 class ManagerViewSet(NestBoxAPIMixin, viewsets.ModelViewSet):
+    """Querysets hold only what the user manages, so another unit's rows are 404s."""
+
     permission_classes = [IsManager]
+
+    def areas(self):
+        return manageable_areas(self.request.user)
 
 
 class AreaViewSet(ManagerViewSet):
     def get_queryset(self):
         areas = (
-            Area.objects.with_markers()
+            self.areas()
+            .with_markers()
             .select_related("administration_unit")
             .order_by("name")
         )
@@ -76,19 +88,37 @@ class AreaViewSet(ManagerViewSet):
     def get_serializer_class(self):
         return AreaDetailSerializer if self.action == "retrieve" else AreaSerializer
 
-    def perform_destroy(self, instance):
-        instance.delete()
+    def require_unit(self, serializer):
+        unit = serializer.validated_data.get("administration_unit")
+        if unit and not managed_units(self.request.user).filter(pk=unit.pk).exists():
+            raise PermissionDenied
+
+    def perform_create(self, serializer):
+        self.require_unit(serializer)
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self.require_unit(serializer)
+        serializer.save()
 
     @action(detail=False)
     def season_states(self, request):
         """Per area, how many of the boxes the filters pick are in each season state."""
         boxes = SeasonStateFilter(
             request.query_params,
-            NestBox.objects.with_season_state(),
+            NestBox.objects.with_season_state().filter(area__in=self.areas()),
         )
         if not boxes.is_valid():
             raise ValidationError(boxes.errors)
         return Response(season_state_counts(boxes.qs))
+
+    @action(detail=False)
+    def outlines(self, request):
+        """The ground each area covers, see `nest_boxes.outlines`."""
+        managed = set(self.areas().values_list("pk", flat=True))
+        return Response(
+            [outline for outline in area_outlines() if outline["id"] in managed]
+        )
 
     def filtered_boxes(self, area):
         return NestBoxFilter(
@@ -148,7 +178,7 @@ class BoxViewSet(ManagerViewSet):
     search_fields = ("name", "previous_names")
 
     def get_queryset(self):
-        return box_queryset()
+        return box_queryset().filter(area__in=self.areas())
 
     def respond(self, box, status=None):
         box = self.get_queryset().get(pk=box.pk)
@@ -162,6 +192,7 @@ class BoxViewSet(ManagerViewSet):
         serializer.is_valid(raise_exception=True)
         values = dict(serializer.validated_data)
         batch = values.pop("batch", None)
+        require_manage(request.user, values["area"])
         if batch and batch.area != values["area"]:
             raise ValidationError({"batch_id": "Obchůzka patří k jiné oblasti."})
         box = create_box(values, request.user, localdate())
@@ -174,6 +205,8 @@ class BoxViewSet(ManagerViewSet):
             self.get_object(), data=request.data, partial=kwargs.get("partial", False)
         )
         serializer.is_valid(raise_exception=True)
+        if "area" in serializer.validated_data:
+            require_manage(request.user, serializer.validated_data["area"])
         update_box(
             serializer.instance, serializer.validated_data, request.user, localdate()
         )
@@ -187,6 +220,35 @@ class BoxViewSet(ManagerViewSet):
         """Every box of the manager's areas, unpaginated and with the map's fields only."""
         boxes = self.get_queryset().select_related(None)
         return Response(MapBoxSerializer(boxes, many=True).data)
+
+    @action(detail=False, methods=["post"])
+    def move(self, request):
+        """Boxes to another area, as they hang; `duplicate_names` are the moved
+        names the area already has."""
+        serializer = MoveBoxesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        area = serializer.validated_data["area"]
+        require_manage(request.user, area)
+        ids = set(serializer.validated_data["box_ids"])
+        boxes = list(self.get_queryset().filter(pk__in=ids))
+        if len(boxes) != len(ids):
+            raise ValidationError({"box_ids": "Některé budky nespravuješ."})
+        with transaction.atomic():
+            for box in boxes:
+                update_box(box, {"area": area}, request.user, localdate())
+        moved = self.get_queryset().filter(pk__in=ids)
+        return Response(
+            {
+                "boxes": BoxSerializer(moved, many=True).data,
+                "duplicate_names": sorted(
+                    {
+                        box.name
+                        for box in moved
+                        if duplicate_names(area, box.name, box.pk).exists()
+                    }
+                ),
+            }
+        )
 
     @action(detail=True)
     def history(self, request, pk):
@@ -211,6 +273,7 @@ class BoxViewSet(ManagerViewSet):
         serializer = BoxWarningsQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        require_manage(request.user, data["area"])
         return Response(
             warnings_data(
                 data["area"],
@@ -227,9 +290,11 @@ class CheckViewSet(ManagerViewSet):
     filterset_class = CheckFilter
 
     def get_queryset(self):
-        return Check.objects.select_related(
-            "entered_by", "confirmed_by"
-        ).prefetch_related("occupants", "photos")
+        return (
+            Check.objects.filter(box__area__in=self.areas())
+            .select_related("entered_by", "confirmed_by")
+            .prefetch_related("occupants", "photos")
+        )
 
     def respond(self, check, status=None):
         return Response(
@@ -244,6 +309,7 @@ class CheckViewSet(ManagerViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         check, occupants = serializer.build()
+        require_manage(request.user, check.box.area)
         if check.batch and check.batch.area_id != check.box.area_id:
             raise ValidationError({"batch_id": "Obchůzka patří k jiné oblasti."})
         if check.made_at is None:
@@ -280,7 +346,16 @@ class CheckPhotoViewSet(
     permission_classes = [IsManager]
     serializer_class = CheckPhotoUploadSerializer
 
-    queryset = CheckPhoto.objects.all()
+    def get_queryset(self):
+        return CheckPhoto.objects.filter(
+            box_check__box__area__in=manageable_areas(self.request.user)
+        )
+
+    def perform_create(self, serializer):
+        require_manage(
+            self.request.user, serializer.validated_data["box_check"].box.area
+        )
+        serializer.save()
 
 
 def batch_queryset():
@@ -312,7 +387,7 @@ class BatchViewSet(ManagerViewSet):
     filterset_class = BatchFilter
 
     def get_queryset(self):
-        return batch_queryset()
+        return batch_queryset().filter(area__in=self.areas())
 
     def respond(self, batch, status=None):
         return Response(
@@ -324,6 +399,7 @@ class BatchViewSet(ManagerViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         area = serializer.validated_data["area"]
+        require_manage(request.user, area)
         boxes = serializer.validated_data.get("boxes")
         if boxes is None:
             serializer.validated_data["boxes"] = list(
@@ -344,7 +420,7 @@ class BatchViewSet(ManagerViewSet):
     @action(detail=False)
     def suggested(self, request):
         """The boxes a new batch of `?area=` starts with."""
-        area = Area.objects.filter(pk=request.query_params.get("area")).first()
+        area = self.areas().filter(pk=request.query_params.get("area")).first()
         if area is None:
             raise ValidationError({"area": "Neznámá oblast."})
         boxes = suggested_batch_boxes(area, Check.current_season())

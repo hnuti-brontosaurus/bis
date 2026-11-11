@@ -30,6 +30,10 @@ export const useAuthStore = defineStore("auth", () => {
 
   const isAuthenticated = computed(() => Boolean(me.value?.is_authenticated))
   const isManager = computed(() => Boolean(me.value?.is_manager))
+  // A budkař of the whole movement, not of a unit: edits the help too
+  const isBudkar = computed(() => Boolean(me.value?.is_budkar))
+  const canManage = areaId => Boolean(me.value?.managed_area_ids.includes(areaId))
+  const managedUnitIds = computed(() => me.value?.managed_unit_ids ?? [])
   const openBatchCount = computed(() => me.value?.open_batch_count ?? 0)
   const initials = computed(() => {
     const user = me.value?.user
@@ -45,6 +49,9 @@ export const useAuthStore = defineStore("auth", () => {
     isAuthenticated,
     isAnonymous,
     isManager,
+    isBudkar,
+    canManage,
+    managedUnitIds,
     openBatchCount,
     initials,
   }

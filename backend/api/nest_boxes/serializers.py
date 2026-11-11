@@ -297,6 +297,11 @@ class BoxWarningsQuerySerializer(Serializer):
     exclude = UUIDField(required=False)
 
 
+class MoveBoxesSerializer(Serializer):
+    box_ids = ListField(child=UUIDField(), min_length=1)
+    area_id = related(Area, "area")
+
+
 class EndBoxSerializer(Serializer):
     end_reason_id = related(NestBoxEndReason, "end_reason")
     ended_on = DateField()
@@ -338,6 +343,15 @@ class LinkBoxSerializer(ModelSerializer):
             "is_verified",
             "is_new",
         )
+        read_only_fields = fields
+
+
+class LinkOtherBoxSerializer(ModelSerializer):
+    """A box of the unit outside the batch, which a volunteer only sees on the map."""
+
+    class Meta:
+        model = NestBox
+        fields = ("id", "name", "location")
         read_only_fields = fields
 
 

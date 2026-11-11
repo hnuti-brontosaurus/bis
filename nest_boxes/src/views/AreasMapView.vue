@@ -7,14 +7,16 @@ import AppIcon from "@/components/app/AppIcon.vue"
 import SegmentedControl from "@/components/app/SegmentedControl.vue"
 import AreaFormDialog from "@/components/area/AreaFormDialog.vue"
 import BoxList from "@/components/box/BoxList.vue"
+import MoveBoxDialog from "@/components/box/MoveBoxDialog.vue"
 import AreaBubbles from "@/components/map/AreaBubbles.vue"
+import AreaOutlines from "@/components/map/AreaOutlines.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
 import BoxClusters from "@/components/map/BoxClusters.vue"
 import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
 import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import {
-  boxExtras,
+  boxFacts,
   groupByArea,
   markerState,
   withoutReplaced,
@@ -40,10 +42,16 @@ import {
   statisticsBubbles,
   unitsOf,
 } from "@/composables/statistics.js"
+import { compareNames } from "@/composables/linkBoxes.js"
 import { usePublicData } from "@/composables/usePublicData.js"
 import { useAuthStore } from "@/data/auth.js"
 import { reportError } from "@/data/errors.js"
-import { getCategories, getSeasonStates, listMapBoxes } from "@/data/manage.js"
+import {
+  getAreaOutlines,
+  getCategories,
+  getSeasonStates,
+  listMapBoxes,
+} from "@/data/manage.js"
 
 const MODES = [
   { value: "areas", label: "Oblasti" },
@@ -85,6 +93,7 @@ const view = ref("states")
 const categories = shallowRef(null)
 const stateRows = shallowRef(null)
 const mapBoxes = shallowRef(null)
+const outlines = shallowRef([])
 
 // Box coordinates are for managers only
 const mode = computed({
@@ -241,7 +250,48 @@ const detailContext = computed(() => ({
   occupantsById: byId(categories.value?.occupants ?? []),
   otherBatches: [],
 }))
-const extras = box => boxExtras(box, null, detailContext.value)
+const facts = box => boxFacts(box, null, detailContext.value)
+
+const loadOutlines = () =>
+  getAreaOutlines().then(result => (outlines.value = result), reportError)
+watch(
+  () => auth.isManager,
+  manager => manager && loadOutlines(),
+  { immediate: true },
+)
+const shownOutlines = computed(() =>
+  areas.value
+    ? outlines.value.filter(outline => inUnit(areasById.value.get(outline.id)))
+    : [],
+)
+
+const onMoved = saved => {
+  const areaOf = new Map(saved.map(box => [box.id, box.area_id]))
+  mapBoxes.value = mapBoxes.value.map(box =>
+    areaOf.has(box.id) ? { ...box, area_id: areaOf.get(box.id) } : box,
+  )
+  pickedIds.value = []
+  loadOutlines()
+}
+
+// Shift + click picks boxes to act on together; the box selected so far is
+// the first of them
+const pickedIds = ref([])
+const movingPicked = ref(false)
+const pickedBoxes = computed(() => {
+  const picked = new Set(pickedIds.value)
+  return (mapBoxes.value ?? []).filter(box => picked.has(box.id)).sort(compareNames)
+})
+const pick = id => {
+  const start =
+    pickedIds.value.length || selectedBoxId.value === null
+      ? pickedIds.value
+      : [selectedBoxId.value]
+  pickedIds.value = start.includes(id)
+    ? start.filter(picked => picked !== id)
+    : [...start, id]
+  selectedBoxId.value = null
+}
 
 const onAreaCreated = area => router.push({ name: "area", params: { id: area.id } })
 
@@ -252,13 +302,15 @@ const scrollToRow = async selector => {
 
 // A second click on a marker opens it; the area page is for managers only
 const selectArea = id => {
-  if (id === selectedAreaId.value && auth.isManager)
+  if (id === selectedAreaId.value && auth.canManage(id))
     router.push({ name: "area", params: { id } })
   selectedAreaId.value = id
   scrollToRow(`[data-area-row="${id}"]`)
 }
 
-const selectBox = id => {
+const selectBox = (id, shift) => {
+  if (shift) return pick(id)
+  pickedIds.value = []
   if (id === selectedBoxId.value) router.push({ name: "box", params: { id } })
   selectedBoxId.value = id
   scrollToRow(`[data-box-row="${id}"]`)
@@ -266,7 +318,7 @@ const selectBox = id => {
 
 // A click on the selected row opens it, as a second click on its marker does
 const focusArea = areaId => {
-  if (areaId === selectedAreaId.value && auth.isManager)
+  if (areaId === selectedAreaId.value && auth.canManage(areaId))
     return router.push({ name: "area", params: { id: areaId } })
   selectedAreaId.value = areaId
   const area = areasById.value.get(areaId)
@@ -274,6 +326,7 @@ const focusArea = areaId => {
 }
 
 const focusBox = box => {
+  pickedIds.value = []
   if (box.id === selectedBoxId.value)
     return router.push({ name: "box", params: { id: box.id } })
   selectedBoxId.value = box.id
@@ -287,7 +340,8 @@ const focusBox = box => {
 <template>
   <MapPanelLayout>
     <template #map="{ bottomInset, sheetStop }">
-      <BaseMap :bottom-inset="bottomInset" @ready="map = $event">
+      <BaseMap remember-as="areas" :bottom-inset="bottomInset" @ready="map = $event">
+        <AreaOutlines :outlines="shownOutlines" />
         <AreaBubbles
           v-if="!showsBoxes"
           :areas="bubbles"
@@ -299,6 +353,7 @@ const focusBox = box => {
           <BoxClusters
             :boxes="markerBoxes"
             :selected-id="selectedBoxId"
+            :picked-ids="pickedIds"
             :area-names="areaNames"
             @select="selectBox"
           />
@@ -342,6 +397,21 @@ const focusBox = box => {
             <span class="hide-sm">Nová oblast</span>
           </n-button>
         </div>
+      </div>
+      <div v-if="showsBoxes && pickedBoxes.length" class="picked" data-testid="picked">
+        <div class="row">
+          <b class="grow">Vybráno: {{ boxCountLabel(pickedBoxes.length) }}</b>
+          <n-button size="small" type="primary" @click="movingPicked = true">
+            <template #icon><AppIcon name="layers" /></template>
+            Přesunout
+          </n-button>
+          <n-button size="small" quaternary @click="pickedIds = []">
+            Zrušit výběr
+          </n-button>
+        </div>
+        <p class="small muted">
+          {{ pickedBoxes.map(box => box.name).join(", ") }}
+        </p>
       </div>
     </template>
     <div v-if="!showsBoxes" class="head">
@@ -398,15 +468,30 @@ const focusBox = box => {
         </div>
       </template>
     </div>
+    <p
+      v-if="showsBoxes && mapBoxes && !pickedBoxes.length"
+      class="small muted hint hide-sm"
+    >
+      Se Shiftem vybereš víc budek najednou.
+    </p>
+    <MoveBoxDialog
+      v-if="movingPicked"
+      :boxes="pickedBoxes"
+      @close="movingPicked = false"
+      @moved="onMoved"
+    />
     <p v-if="showsBoxes && !mapBoxes" class="muted loading">Načítám budky…</p>
     <BoxList
       v-else-if="showsBoxes"
       :groups="boxGroups"
       :selected-id="selectedBoxId"
-      :extras="extras"
+      :picked-ids="pickedIds"
+      :facts="facts"
       :types-by-id="detailContext.typesById"
       :state-of="box => markerState(box, null)"
       @focus="focusBox"
+      @pick="box => pick(box.id)"
+      @moved="onMoved"
     />
     <template v-else>
       <div class="scroll-x">
@@ -469,7 +554,7 @@ const focusBox = box => {
             >
               <td class="first">
                 <RouterLink
-                  v-if="auth.isManager"
+                  v-if="auth.canManage(row.area.id)"
                   :to="{ name: 'area', params: { id: row.area.id } }"
                   @click.stop
                 >
@@ -620,6 +705,18 @@ const focusBox = box => {
 .grow {
   flex: 1;
   min-width: 0;
+}
+
+.picked {
+  display: grid;
+  gap: 4px;
+  padding: 10px 20px 12px;
+  background: var(--primary-soft);
+  border-top: 1px solid var(--line);
+}
+
+.hint {
+  padding: 0 20px 8px;
 }
 
 .loading {

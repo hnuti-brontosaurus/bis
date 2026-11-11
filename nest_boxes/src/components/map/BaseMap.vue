@@ -11,6 +11,7 @@ import {
 } from "vue"
 import { Map as MaplibreMap, NavigationControl } from "maplibre-gl"
 
+import { recallCamera, rememberCamera } from "@/components/map/camera.js"
 import { styleFor } from "@/components/map/mapStyle.js"
 import { terrainSources } from "@/components/map/terrain.js"
 import "@/components/map/maplibre.js"
@@ -23,6 +24,8 @@ const props = defineProps({
   interactive: { type: Boolean, default: true },
   // the part of the map hidden under a bottom sheet, kept out of fitBounds
   bottomInset: { type: Number, default: 0 },
+  // names the view to come back to: the map opens where it was left, not at `bounds`
+  rememberAs: { type: String, default: null },
 })
 
 const emit = defineEmits(["ready"])
@@ -57,19 +60,27 @@ let stopInsetWatch = null
 
 onMounted(async () => {
   baseStyle.value = await loadBaseStyle()
+  const remembered = props.rememberAs && recallCamera(props.rememberAs)
   map.value = new MaplibreMap({
     container: container.value,
     style: style.value,
-    bounds: props.bounds,
-    fitBoundsOptions: {
-      padding: { top: 24, left: 24, right: 24, bottom: 24 + props.bottomInset },
-    },
+    ...(remembered || {
+      bounds: props.bounds,
+      fitBoundsOptions: {
+        padding: { top: 24, left: 24, right: 24, bottom: 24 + props.bottomInset },
+      },
+    }),
     interactive: props.interactive,
     attributionControl: { customAttribution: MAP_ATTRIBUTION },
     dragRotate: false,
+    // Shift + click picks boxes, see AreasMapView
+    boxZoom: false,
     pitchWithRotate: false,
   })
   map.value.touchZoomRotate.disableRotation()
+  if (remembered) map.value.jumpTo({ padding: { bottom: props.bottomInset } })
+  if (props.rememberAs)
+    map.value.on("moveend", () => rememberCamera(props.rememberAs, map.value))
   if (props.interactive)
     map.value.addControl(new NavigationControl({ showCompass: false }))
   resizeObserver = new ResizeObserver(() => map.value.resize())

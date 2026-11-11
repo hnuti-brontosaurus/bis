@@ -1,5 +1,6 @@
 import { distance } from "@/components/map/geometry.js"
-import { checkResult, lastCheckedLabel } from "@/composables/boxes.js"
+import { checkResult } from "@/composables/boxes.js"
+import { formatDate } from "@/composables/czech.js"
 import { compareNames } from "@/composables/linkBoxes.js"
 
 // A box on a tree, or about to be; ended ones are history.
@@ -45,22 +46,26 @@ export const markerState = (box, batch) =>
 
 /**
  * The lines an opened box row adds under its type: what the season's check
- * found, or why the box may need none, and when it was last checked.
+ * found, or why the box may need none, the batch it is in and when it was
+ * last checked.
  */
-export const boxExtras = (box, check, { typesById, occupantsById, otherBatches }) => {
+export const boxFacts = (box, check, { typesById, occupantsById, otherBatches }) => {
   if (["planned", "ended"].includes(box.status)) return []
-  const lines = []
+  const facts = []
   if (check)
-    lines.push(
-      `Letos: ${checkResult(check, occupantsById)}${check.is_confirmed ? "" : " · čeká na potvrzení"}`,
+    facts.push(
+      `Letos ${checkResult(check, occupantsById)}${check.is_confirmed ? "" : " · čeká na potvrzení"}`,
     )
   else if (typesById.get(box.type_id)?.needs_cleaning === false)
-    lines.push("Tento typ se nečistí.")
+    facts.push("Tento typ se nečistí")
   const other = otherBatches.find(batch => batch.box_ids.includes(box.id))
-  if (other) lines.push(`V obchůzce ${other.name}`)
-  const last = lastCheckedLabel(box)
-  lines.push(last.charAt(0).toUpperCase() + last.slice(1))
-  return lines
+  if (other) facts.push(`V obchůzce ${other.name}`)
+  facts.push(
+    box.last_checked_on
+      ? `Kontrola ${formatDate(box.last_checked_on)}`
+      : "Zatím bez kontroly",
+  )
+  return facts
 }
 
 /** BoxList's groups of the map of all boxes: one per area, both by name. */

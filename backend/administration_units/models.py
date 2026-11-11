@@ -66,6 +66,10 @@ class AdministrationUnit(SearchMixin, m.Model):
     board_members = m.ManyToManyField(
         "bis.User", related_name="administration_units", blank=True
     )
+    # Manage the unit's nest box areas, as its board does
+    nest_box_managers = m.ManyToManyField(
+        "bis.User", related_name="nest_box_units", blank=True
+    )
 
     _import_id = m.CharField(max_length=15, default="")
     _history = m.JSONField(default=dict)

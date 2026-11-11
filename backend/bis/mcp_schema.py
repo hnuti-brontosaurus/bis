@@ -337,6 +337,7 @@ class AdministrationSubUnitType:
         "gps_location",
         "image",
         "custom_statues",
+        "nest_box_managers",
         "phone",
         "email",
         "_import_id",

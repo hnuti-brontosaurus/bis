@@ -3,7 +3,9 @@ import { computed, ref, watch } from "vue"
 import { RouterLink } from "vue-router"
 import { NButton, NPagination } from "naive-ui"
 
+import AppIcon from "@/components/app/AppIcon.vue"
 import BoxItem from "@/components/box/BoxItem.vue"
+import MoveBoxDialog from "@/components/box/MoveBoxDialog.vue"
 
 // Rows rendered at once; a whole region's boxes would take seconds
 const PAGE_SIZE = 50
@@ -12,16 +14,20 @@ const props = defineProps({
   // [{ key, title, boxes }]
   groups: { type: Array, required: true },
   selectedId: { type: String, default: null },
-  // box => [line], what an opened row adds, see boxExtras in composables/areaBoxes.js
-  extras: { type: Function, required: true },
+  // the boxes picked with Shift, or null where a Shift click is just a click
+  pickedIds: { type: Array, default: null },
+  // box => [line], what an opened row adds, see boxFacts in composables/areaBoxes.js
+  facts: { type: Function, required: true },
   typesById: { type: Map, required: true },
   // box => one of BOX_STATES, see map/markers.js
   stateOf: { type: Function, required: true },
 })
 
-const emit = defineEmits(["focus"])
+// "moved" carries the boxes as saved in their new area
+const emit = defineEmits(["focus", "pick", "moved"])
 
 const list = ref(null)
+const moving = ref(null)
 const page = ref(1)
 
 const order = computed(() =>
@@ -77,9 +83,11 @@ const turnPage = value => {
         :box="box"
         :state="state"
         :expanded="box.id === selectedId"
+        :picked="Boolean(pickedIds?.includes(box.id))"
         :types-by-id="typesById"
+        :facts="facts(box)"
         :to="{ name: 'box', params: { id: box.id } }"
-        @toggle="emit('focus', box)"
+        @toggle="event => emit(pickedIds && event.shiftKey ? 'pick' : 'focus', box)"
       >
         <template #tags>
           <span v-if="box.is_new" class="tag warn">nová</span>
@@ -96,8 +104,16 @@ const turnPage = value => {
             >
           </RouterLink>
         </template>
-        <template #extra>
-          <p v-for="line in extras(box)" :key="line" class="small muted">{{ line }}</p>
+        <template #actions>
+          <n-button
+            v-if="box.status !== 'ended'"
+            size="small"
+            secondary
+            @click.stop="moving = box"
+          >
+            <template #icon><AppIcon name="layers" /></template>
+            Přesunout
+          </n-button>
         </template>
       </BoxItem>
     </template>
@@ -113,6 +129,12 @@ const turnPage = value => {
         @update:page="turnPage"
       />
     </div>
+    <MoveBoxDialog
+      v-if="moving"
+      :boxes="[moving]"
+      @close="moving = null"
+      @moved="emit('moved', $event)"
+    />
   </div>
 </template>
 

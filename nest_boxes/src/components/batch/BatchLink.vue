@@ -1,14 +1,23 @@
 <script setup>
 import { computed } from "vue"
+import { useRouter } from "vue-router"
 import { NButton, useMessage } from "naive-ui"
 
 import AppIcon from "@/components/app/AppIcon.vue"
-import { linkUrl } from "@/data/manage.js"
+import { linkRoute } from "@/data/manage.js"
 
-const props = defineProps({ token: { type: String, required: true } })
+const props = defineProps({
+  token: { type: String, required: true },
+  areaName: { type: String, required: true },
+})
 
 const message = useMessage()
-const url = computed(() => linkUrl(props.token))
+const router = useRouter()
+const url = computed(
+  () =>
+    window.location.origin +
+    router.resolve(linkRoute(props.token, props.areaName)).href,
+)
 
 const copy = async () => {
   await navigator.clipboard.writeText(url.value)

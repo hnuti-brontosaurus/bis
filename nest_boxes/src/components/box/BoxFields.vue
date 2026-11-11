@@ -82,6 +82,7 @@ watch(
       />
       <span v-if="errors.name" class="error">{{ errors.name }}</span>
     </div>
+    <slot name="after-name" />
     <div v-if="shows('location')" class="field">
       <span class="label">Poloha</span>
       <LocationPicker

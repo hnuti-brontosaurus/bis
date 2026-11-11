@@ -4,7 +4,7 @@
 //
 // It is regenerated from backend/translation/{model,string}_translations.yaml
 // by backend/translation/generate_translations.py whenever the yamls change.
-// source-hash: 23b879b372255930
+// source-hash: e5c008df782d6697
 
 export const baseAddress = { _name: 'Adresa', _name_plural: 'Adresa' } as const
 
@@ -126,6 +126,7 @@ export const administrationUnit = {
   phone: 'Telefon',
   category: 'Typ jednotky',
   board_members: 'Členové představenstva',
+  nest_box_managers: 'Budkaři článku',
   bank_account_number: 'Číslo účtu',
   chairman: 'Předseda',
   vice_chairman: 'Místopředseda',

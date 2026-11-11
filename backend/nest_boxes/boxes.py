@@ -76,6 +76,10 @@ def update_box(box, values, user, date, box_check=None):
         NestBoxHistory.objects.create(
             box=box, date=date, user=user, box_check=box_check, changes=changes
         )
+    if "area" in changes:
+        # A batch holds the boxes of its own area only
+        for batch in box.batches.filter(closed_at=None).exclude(area=box.area):
+            batch.boxes.remove(box)
     return changes
 
 

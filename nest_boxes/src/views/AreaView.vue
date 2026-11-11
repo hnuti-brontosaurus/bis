@@ -12,6 +12,7 @@ import BatchProgress from "@/components/batch/BatchProgress.vue"
 import BoxFormDialog from "@/components/box/BoxFormDialog.vue"
 import BoxList from "@/components/box/BoxList.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
+import AreaOutlines from "@/components/map/AreaOutlines.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
@@ -19,7 +20,7 @@ import PlannedBoxes from "@/components/map/PlannedBoxes.vue"
 import { boundsOf } from "@/components/map/geometry.js"
 import {
   ACTIVE_STATUSES,
-  boxExtras,
+  boxFacts,
   markerState,
   withoutReplaced,
 } from "@/composables/areaBoxes.js"
@@ -39,8 +40,10 @@ import { useAuthStore } from "@/data/auth.js"
 import {
   exportUrl,
   getArea,
+  getAreaOutlines,
   getCategories,
   listBatches,
+  linkRoute,
   listChecks,
 } from "@/data/manage.js"
 
@@ -52,13 +55,14 @@ const season = currentSeason()
 const areaId = Number(route.params.id)
 
 const { data, reload } = useLoad(async () => {
-  const [area, batches, checks, categories] = await Promise.all([
+  const [area, batches, checks, categories, outlines] = await Promise.all([
     getArea(areaId),
     listBatches({ area: areaId, is_open: true }),
     listChecks({ area: areaId, season }),
     getCategories(),
+    getAreaOutlines(),
   ])
-  return { area, batches, checks: latestChecks(checks), categories }
+  return { area, batches, checks: latestChecks(checks), categories, outlines }
 })
 
 const map = shallowRef(null)
@@ -84,8 +88,8 @@ const legend = computed(() =>
 )
 const checkOf = box => data.value.checks.get(box.id)
 
-const extras = box =>
-  boxExtras(box, checkOf(box), {
+const facts = box =>
+  boxFacts(box, checkOf(box), {
     typesById: typesById.value,
     occupantsById: occupantsById.value,
     otherBatches: batches.value,
@@ -136,7 +140,7 @@ const focusBox = box => {
 // A new batch opens on its link, where the manager sees and edits its boxes
 const onBatchCreated = created => {
   auth.refresh()
-  router.push({ name: "link", params: { token: created.token } })
+  router.push(linkRoute(created.token, area.value.name))
 }
 
 const onPlanned = async box => {
@@ -153,7 +157,13 @@ const onImported = async count => {
 <template>
   <MapPanelLayout v-if="data">
     <template #map="{ bottomInset, sheetStop }">
-      <BaseMap :bounds="bounds" :bottom-inset="bottomInset" @ready="map = $event">
+      <BaseMap
+        :bounds="bounds"
+        :remember-as="`area-${areaId}`"
+        :bottom-inset="bottomInset"
+        @ready="map = $event"
+      >
+        <AreaOutlines :outlines="data.outlines" :current-id="area.id" />
         <PlannedBoxes :boxes="plannedBoxes" />
         <BoxMarkers
           :boxes="markerBoxes"
@@ -198,11 +208,9 @@ const onImported = async count => {
           data-testid="open-batch"
         >
           <div class="row">
-            <RouterLink
-              class="batch-name"
-              :to="{ name: 'link', params: { token: item.token } }"
-              >{{ item.name }}</RouterLink
-            >
+            <RouterLink class="batch-name" :to="linkRoute(item.token, area.name)">{{
+              item.name
+            }}</RouterLink>
             <RouterLink
               class="icon-button"
               :to="{
@@ -218,7 +226,7 @@ const onImported = async count => {
           </div>
           <BatchProgress :batch="item" />
           <div class="row">
-            <BatchLink :token="item.token" />
+            <BatchLink :token="item.token" :area-name="area.name" />
             <RouterLink
               v-slot="{ navigate }"
               :to="{ name: 'batch', params: { id: item.id } }"
@@ -274,16 +282,18 @@ const onImported = async count => {
     <BoxList
       :groups="[{ key: 'all', title: 'Budky', boxes: sortedShown }]"
       :selected-id="selectedId"
-      :extras="extras"
+      :facts="facts"
       :types-by-id="typesById"
       :state-of="box => markerState(box, null)"
       @focus="focusBox"
+      @moved="reload"
     />
 
     <AreaFormDialog v-model:show="dialogs.area" :area="area" @saved="reload" />
     <NewBatchDialog
       v-model:show="dialogs.batch"
       :area-id="area.id"
+      :area-name="area.name"
       @created="onBatchCreated"
     />
     <BoxFormDialog

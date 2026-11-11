@@ -9,10 +9,13 @@ const props = defineProps({
   // [{ id, name, location: GeoJSON Point, state: one of BOX_STATES }]
   boxes: { type: Array, required: true },
   selectedId: { type: [String, Number], default: null },
+  // also drawn selected: the boxes picked with Shift
+  pickedIds: { type: Array, default: () => [] },
   // only to look at: a click goes through to the map, as on a location picker
   passive: { type: Boolean, default: false },
 })
 
+// (id, whether Shift was held)
 const emit = defineEmits(["select"])
 
 const { map } = inject("map")
@@ -24,17 +27,19 @@ const clear = () => {
   markers = new Map()
 }
 
+const isSelected = id => id === props.selectedId || props.pickedIds.includes(id)
+
 const markerOf = box => {
   const element = boxMarkerElement({
     name: box.name,
     state: box.state,
-    selected: box.id === props.selectedId,
+    selected: isSelected(box.id),
   })
   if (props.passive) element.style.pointerEvents = "none"
   else
     element.addEventListener("click", event => {
       event.stopPropagation()
-      emit("select", box.id)
+      emit("select", box.id, event.shiftKey)
     })
   return new Marker({ element, anchor: "center" })
     .setLngLat(box.location.coordinates)
@@ -68,13 +73,10 @@ watch(
 map.value.on("moveend", sync)
 map.value.on("resize", sync)
 
-watch(
-  () => props.selectedId,
-  (selected, previous) => {
-    markers.get(previous)?.getElement().classList.remove("selected")
-    markers.get(selected)?.getElement().classList.add("selected")
-  },
-)
+watch([() => props.selectedId, () => props.pickedIds], () => {
+  for (const [id, marker] of markers)
+    marker.getElement().classList.toggle("selected", isSelected(id))
+})
 
 onBeforeUnmount(() => {
   map.value.off("moveend", sync)

@@ -65,11 +65,6 @@ export const reportedState = check => {
     : "done"
 }
 
-export const lastCheckedLabel = box =>
-  box.last_checked_on
-    ? `kontrola ${formatDate(box.last_checked_on)}`
-    : "nikdy kontrolovaná"
-
 const FIELD_LABELS = {
   name: "označení",
   previous_names: "dřívější označení",

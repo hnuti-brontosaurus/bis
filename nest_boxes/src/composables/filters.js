@@ -1,7 +1,7 @@
 import { computed, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
-import { seasonStart } from "@/composables/czech.js"
+import { plainText, seasonStart } from "@/composables/czech.js"
 
 // A box's entry in the map legend: its season state, or "ended", which has none
 export const LEGEND_KEYS = ["planned", "to_check", "attention", "done", "ended"]
@@ -113,10 +113,8 @@ export const useFilters = () => {
   return { filters, update }
 }
 
-const normalized = text => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-
 export const matchesSearch = (text, search) =>
-  !search.trim() || normalized(text).includes(normalized(search.trim()))
+  !search.trim() || plainText(text).includes(plainText(search.trim()))
 
 /**
  * The client side of the boxes/ filters, so the list and the exports agree.

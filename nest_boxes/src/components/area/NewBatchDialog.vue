@@ -7,6 +7,7 @@ import { createBatch, getSuggestedBoxes } from "@/data/manage.js"
 
 const props = defineProps({
   areaId: { type: Number, required: true },
+  areaName: { type: String, required: true },
 })
 
 const emit = defineEmits(["created"])
@@ -15,7 +16,7 @@ const show = defineModel("show", { type: Boolean, required: true })
 const AUTUMN_FROM_MONTH = 6
 
 const defaultName = (today = new Date()) =>
-  `${today.getMonth() >= AUTUMN_FROM_MONTH ? "Podzim" : "Jaro"} ${today.getFullYear()}`
+  `${props.areaName} · ${today.getMonth() >= AUTUMN_FROM_MONTH ? "podzim" : "jaro"} ${today.getFullYear()}`
 
 const name = ref(defaultName())
 const suggested = ref(null)
@@ -25,6 +26,7 @@ watch(
   show,
   open => {
     if (!open) return
+    name.value = defaultName()
     suggested.value = null
     getSuggestedBoxes(props.areaId).then(
       ({ box_ids }) => (suggested.value = box_ids.length),
@@ -64,7 +66,8 @@ const create = async () => {
           :input-props="{ id: 'batch-name' }"
         />
         <span class="hint"
-          >Uvidí ho dobrovolníci, třeba „Podzim 2026 · skupina A“.</span
+          >Uvidí ho dobrovolníci, třeba „{{ areaName }} · podzim 2026 · skupina
+          A“.</span
         >
       </div>
       <p class="small">

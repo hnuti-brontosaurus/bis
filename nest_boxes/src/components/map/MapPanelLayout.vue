@@ -107,9 +107,11 @@ onBeforeUnmount(() => resizeObserver.disconnect())
   position: relative;
 }
 
+/* A Shift + click picks boxes; it must not select the markers' text */
 .map-area {
   min-height: 0;
   position: relative;
+  user-select: none;
 }
 
 .panel {

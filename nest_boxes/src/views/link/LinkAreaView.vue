@@ -84,12 +84,20 @@ const markers = computed(() => [
         .map(box => ({ ...box, state: "out" }))
     : []),
 ])
+// The unit's boxes outside the batch, greyed out, to tell where the batch ends.
+// A payload stored offline before they were added has none.
+const greyed = computed(() => {
+  const shown = new Set(markers.value.map(box => box.id))
+  return (link.payload.other_boxes ?? [])
+    .filter(box => !shown.has(box.id))
+    .map(box => ({ ...box, state: "out" }))
+})
 const planned = computed(() => link.rows.filter(row => row.state === "planned"))
 const bounds = link.payload.boxes.length
   ? boundsOf(link.payload.boxes.map(box => box.location))
   : undefined
 
-const canManage = computed(() => Boolean(auth?.isManager))
+const canManage = computed(() => Boolean(auth?.canManage(link.payload.area.id)))
 
 const away = row =>
   position.value ? formatDistance(distance(position.value, row.location)) : ""
@@ -151,7 +159,13 @@ const changeBatch = async (box, add) => {
   />
   <MapPanelLayout>
     <template #map="{ bottomInset }">
-      <BaseMap :bounds="bounds" :bottom-inset="bottomInset" @ready="map = $event">
+      <BaseMap
+        :bounds="bounds"
+        :remember-as="`link-${link.payload.batch.token}`"
+        :bottom-inset="bottomInset"
+        @ready="map = $event"
+      >
+        <BoxMarkers :boxes="greyed" passive />
         <PlannedBoxes :boxes="planned" />
         <BoxMarkers :boxes="markers" :selected-id="selectedId" @select="select" />
         <PositionMarker :position="position" />
@@ -198,7 +212,10 @@ const changeBatch = async (box, add) => {
         </div>
       </div>
       <div v-if="canManage" class="row manage-row">
-        <BatchLink :token="link.payload.batch.token" />
+        <BatchLink
+          :token="link.payload.batch.token"
+          :area-name="link.payload.area.name"
+        />
         <RouterLink
           class="small manage"
           :to="{ name: 'area', params: { id: link.payload.area.id } }"
@@ -229,10 +246,11 @@ const changeBatch = async (box, add) => {
             </n-button>
           </RouterLink>
         </template>
-        <template #extra>
+        <template #actions>
           <n-button
             v-if="canManage"
             size="small"
+            secondary
             :loading="changing === row.id"
             @click.stop="changeBatch(row, false)"
           >
@@ -251,6 +269,7 @@ const changeBatch = async (box, add) => {
           :expanded="row.id === selectedId"
           :types-by-id="typesById"
           :aside="away(row)"
+          :facts="row.check ? [`Letos ${checkResult(row.check, occupantsById)}`] : []"
           @toggle="focus(row)"
         >
           <template #action>
@@ -269,13 +288,11 @@ const changeBatch = async (box, add) => {
               </n-button>
             </RouterLink>
           </template>
-          <template #extra>
-            <p v-if="row.check" class="small muted">
-              Letos: {{ checkResult(row.check, occupantsById) }}
-            </p>
+          <template #actions>
             <n-button
               v-if="canManage"
               size="small"
+              secondary
               :loading="changing === row.id"
               @click.stop="changeBatch(row, false)"
             >
@@ -310,7 +327,6 @@ const changeBatch = async (box, add) => {
               <AppIcon name="edit" />
             </RouterLink>
           </template>
-          <template #extra> </template>
         </BoxItem>
       </template>
       <template v-if="canManage && outside.length">
@@ -345,7 +361,6 @@ const changeBatch = async (box, add) => {
                 Přidat
               </n-button>
             </template>
-            <template #extra> </template>
           </BoxItem>
         </template>
       </template>

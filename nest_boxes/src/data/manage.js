@@ -1,6 +1,6 @@
 import axios from "axios"
 
-import { APP_PATH } from "@/config.js"
+import { slugify } from "@/composables/czech.js"
 import { client, fetchAll } from "@/data/client.js"
 
 const MAX_PAGE_SIZE = 200
@@ -40,6 +40,9 @@ export const exportUrl = (areaId, format, params) => {
 export const importGpx = (areaId, payload) =>
   client.post(`/areas/${areaId}/import_gpx/`, payload).then(data)
 
+/** [{ id, name, outline }]: the ground each managed area's boxes cover. */
+export const getAreaOutlines = () => client.get("/areas/outlines/").then(data)
+
 /** [{ area_id, planned, to_check, attention, done }] of the boxes the filters pick. */
 export const getSeasonStates = params =>
   client.get("/areas/season_states/", { params }).then(data)
@@ -52,6 +55,9 @@ export const getBox = id => client.get(`/boxes/${id}/`).then(data)
 export const createBox = values => client.post("/boxes/", values).then(data)
 export const updateBox = (id, values) =>
   client.patch(`/boxes/${id}/`, values).then(data)
+/** { boxes, duplicate_names }: the boxes as saved in their new area. */
+export const moveBoxes = (boxIds, areaId) =>
+  client.post("/boxes/move/", { box_ids: boxIds, area_id: areaId }).then(data)
 export const getBoxHistory = id => client.get(`/boxes/${id}/history/`).then(data)
 export const endBox = (id, values) =>
   client.post(`/boxes/${id}/end/`, values).then(data)
@@ -103,4 +109,8 @@ export const addBatchBoxes = (id, boxIds) =>
 export const removeBatchBoxes = (id, boxIds) =>
   client.post(`/batches/${id}/remove_boxes/`, { box_ids: boxIds }).then(data)
 
-export const linkUrl = token => `${window.location.origin}${APP_PATH}/d/${token}/`
+// The area's name only makes the link readable; the token alone finds the batch
+export const linkRoute = (token, areaName) => ({
+  name: "link",
+  params: { slug: slugify(areaName), token },
+})

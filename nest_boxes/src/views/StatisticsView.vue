@@ -177,7 +177,7 @@ watch(
           <tr v-for="row in group.areas" :key="row.area.id">
             <td class="first area">
               <RouterLink
-                v-if="auth.isManager"
+                v-if="auth.canManage(row.area.id)"
                 :to="{ name: 'area', params: { id: row.area.id } }"
                 >{{ row.area.name }}</RouterLink
               >

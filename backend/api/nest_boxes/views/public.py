@@ -9,7 +9,7 @@ from api.nest_boxes.serializers import (
     categories_data,
 )
 from api.nest_boxes.views.base import (
-    IsManagerOrReadOnly,
+    IsBudkarOrReadOnly,
     NestBoxAPIMixin,
     help_articles,
 )
@@ -26,7 +26,12 @@ from nest_boxes.models import (
     NestBox,
     NestBoxType,
 )
-from nest_boxes.permissions import is_manager
+from nest_boxes.permissions import (
+    is_manager,
+    manageable_areas,
+    managed_units,
+    manages_all,
+)
 from nest_boxes.public_cache import cached
 from nest_boxes.statistics import (
     default_season,
@@ -51,6 +56,7 @@ class WhoAmIView(NestBoxAPIMixin, APIView):
     def get(self, request):
         user = request.user
         manager = is_manager(user)
+        areas = manageable_areas(user)
         return Response(
             {
                 "is_authenticated": user.is_authenticated,
@@ -60,8 +66,19 @@ class WhoAmIView(NestBoxAPIMixin, APIView):
                     else None
                 ),
                 "is_manager": manager,
+                "is_budkar": manages_all(user),
+                "managed_area_ids": (
+                    list(areas.values_list("id", flat=True)) if manager else []
+                ),
+                "managed_unit_ids": (
+                    list(managed_units(user).values_list("id", flat=True))
+                    if manager
+                    else []
+                ),
                 "open_batch_count": (
-                    Batch.objects.filter(closed_at=None).count() if manager else 0
+                    Batch.objects.filter(area__in=areas, closed_at=None).count()
+                    if manager
+                    else 0
                 ),
             }
         )
@@ -178,7 +195,7 @@ class HelpArticleViewSet(
 ):
     lookup_field = "slug"
     serializer_class = HelpArticleSerializer
-    permission_classes = [IsManagerOrReadOnly]
+    permission_classes = [IsBudkarOrReadOnly]
     pagination_class = None
 
     def get_queryset(self):
@@ -196,5 +213,5 @@ class HelpImageViewSet(
     """An image is uploaded the moment it is inserted; the article save deletes it."""
 
     serializer_class = HelpImageSerializer
-    permission_classes = [IsManagerOrReadOnly]
+    permission_classes = [IsBudkarOrReadOnly]
     queryset = HelpImage.objects.all()

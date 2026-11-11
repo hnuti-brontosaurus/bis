@@ -450,6 +450,7 @@ SENSITIVITY = {
         INTERNAL: [
             "data_box",
             "custom_statues",
+            "nest_box_managers",
         ],
         PERSONAL: ["phone", "email"],
     },
