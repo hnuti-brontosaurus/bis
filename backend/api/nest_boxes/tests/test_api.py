@@ -202,6 +202,7 @@ def test_whoami(anonymous, client_for, stranger, budkar_client, batch):
 def test_volunteer_sees_only_the_batchs_boxes(anonymous, batch, make_box, other_area):
     outside = make_box("2", location=near(east=300, north=200))
     elsewhere = make_box("3", location=near(east=900, north=700), area=other_area)
+    far = make_box("5", location=near(east=1500))
     make_box("4", location=near(east=600), status=NestBox.Status.ENDED)
 
     data = anonymous.get(f"{API}/links/{batch.token}/").json()
@@ -212,6 +213,7 @@ def test_volunteer_sees_only_the_batchs_boxes(anonymous, batch, make_box, other_
         {"id": str(outside.pk), "name": "2", "location": geojson(outside.location)}
     ]
     assert not contains_coordinates(data, elsewhere.location)
+    assert not contains_coordinates(data, far.location)
     assert {"types", "occupants", "end_reasons", "not_cleaned_reasons"} == set(
         data["categories"]
     )

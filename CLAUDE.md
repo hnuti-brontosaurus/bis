@@ -807,10 +807,12 @@ The API is `backend/api/nest_boxes/`, at `/api/nest_boxes/`:
   `require_manage`, an area's unit against `managed_units`.
 - A batch link (`links/<token>/…`) lets the volunteer act on that batch's boxes
   only and never shows volunteers' emails. It also sends `other_boxes`: id,
-  name and location of the unit's other hanging boxes, drawn greyed out and
+  name and location of the unit's other hanging boxes within 1 km of the
+  batch's (`OTHER_BOXES_WITHIN`), drawn greyed out and
   inert so the volunteer sees where the batch ends.
 - `areas/outlines/` (`nest_boxes/outlines.py`) is the ground each area covers,
-  drawn faintly on the managers' maps from the zoom boxes stop clustering. One
+  drawn faintly only on the map of all boxes, from the zoom boxes stop
+  clustering. One
   SQL pass over every box: each area's boxes buffered and closed, clipped to
   the Voronoi cells of all boxes so mingled areas never overlap. Cached under
   its own generation, which only a `NestBox` or `Area` save replaces.

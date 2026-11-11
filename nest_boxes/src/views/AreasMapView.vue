@@ -254,11 +254,8 @@ const facts = box => boxFacts(box, null, detailContext.value)
 
 const loadOutlines = () =>
   getAreaOutlines().then(result => (outlines.value = result), reportError)
-watch(
-  () => auth.isManager,
-  manager => manager && loadOutlines(),
-  { immediate: true },
-)
+// Only the map of all boxes draws them, so they load with its boxes
+watch(showsBoxes, shows => shows && loadOutlines(), { immediate: true })
 const shownOutlines = computed(() =>
   areas.value
     ? outlines.value.filter(outline => inUnit(areasById.value.get(outline.id)))
@@ -341,7 +338,6 @@ const focusBox = box => {
   <MapPanelLayout>
     <template #map="{ bottomInset, sheetStop }">
       <BaseMap remember-as="areas" :bottom-inset="bottomInset" @ready="map = $event">
-        <AreaOutlines :outlines="shownOutlines" />
         <AreaBubbles
           v-if="!showsBoxes"
           :areas="bubbles"
@@ -349,6 +345,7 @@ const focusBox = box => {
           @select="selectArea"
         />
         <template v-else>
+          <AreaOutlines :outlines="shownOutlines" />
           <PlannedBoxes :boxes="plannedBoxes" />
           <BoxClusters
             :boxes="markerBoxes"

@@ -13,6 +13,8 @@ from api.nest_boxes.serializers import (
     categories_data,
 )
 from api.nest_boxes.views.base import NestBoxAPIMixin, help_articles
+from django.contrib.gis.geos import MultiPoint
+from django.contrib.gis.measure import D
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from nest_boxes.checks import ensure_open, submit_box, submit_check
@@ -20,6 +22,9 @@ from nest_boxes.models import Batch, Check, NestBox
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
+
+# Metres from the batch's boxes: the neighbouring sectors, not the whole unit
+OTHER_BOXES_WITHIN = 1000
 
 
 def open_batch(token):
@@ -42,11 +47,20 @@ class LinkView(NestBoxAPIMixin, APIView):
         batch = open_batch(token)
         season = Check.current_season()
         boxes = NestBox.objects.with_season_state().filter(batches=batch)
-        # Only to look at, greyed out: where the unit's other boxes hang
+        # Only to look at, greyed out: where the unit's other boxes hang nearby
+        locations = [box.location for box in boxes]
         other_boxes = (
             NestBox.objects.in_use()
-            .filter(area__administration_unit=batch.area.administration_unit_id)
+            .filter(
+                area__administration_unit=batch.area.administration_unit_id,
+                location__distance_lte=(
+                    MultiPoint(*locations, srid=4326),
+                    D(m=OTHER_BOXES_WITHIN),
+                ),
+            )
             .exclude(batches=batch)
+            if locations
+            else NestBox.objects.none()
         )
         checks = Check.objects.filter(
             box__in=batch.boxes.all(), season=season

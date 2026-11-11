@@ -12,7 +12,6 @@ import BatchProgress from "@/components/batch/BatchProgress.vue"
 import BoxFormDialog from "@/components/box/BoxFormDialog.vue"
 import BoxList from "@/components/box/BoxList.vue"
 import BaseMap from "@/components/map/BaseMap.vue"
-import AreaOutlines from "@/components/map/AreaOutlines.vue"
 import BoxMarkers from "@/components/map/BoxMarkers.vue"
 import MapFilters from "@/components/map/MapFilters.vue"
 import MapPanelLayout from "@/components/map/MapPanelLayout.vue"
@@ -40,7 +39,6 @@ import { useAuthStore } from "@/data/auth.js"
 import {
   exportUrl,
   getArea,
-  getAreaOutlines,
   getCategories,
   listBatches,
   linkRoute,
@@ -55,14 +53,13 @@ const season = currentSeason()
 const areaId = Number(route.params.id)
 
 const { data, reload } = useLoad(async () => {
-  const [area, batches, checks, categories, outlines] = await Promise.all([
+  const [area, batches, checks, categories] = await Promise.all([
     getArea(areaId),
     listBatches({ area: areaId, is_open: true }),
     listChecks({ area: areaId, season }),
     getCategories(),
-    getAreaOutlines(),
   ])
-  return { area, batches, checks: latestChecks(checks), categories, outlines }
+  return { area, batches, checks: latestChecks(checks), categories }
 })
 
 const map = shallowRef(null)
@@ -163,7 +160,6 @@ const onImported = async count => {
         :bottom-inset="bottomInset"
         @ready="map = $event"
       >
-        <AreaOutlines :outlines="data.outlines" :current-id="area.id" />
         <PlannedBoxes :boxes="plannedBoxes" />
         <BoxMarkers
           :boxes="markerBoxes"

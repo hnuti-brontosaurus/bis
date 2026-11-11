@@ -6,8 +6,6 @@ import { CLUSTER_UNTIL_ZOOM } from "@/components/map/geometry.js"
 const props = defineProps({
   // [{ id, name, outline: GeoJSON }], see nest_boxes/outlines.py
   outlines: { type: Array, required: true },
-  // drawn stronger: the area whose page this is
-  currentId: { type: Number, default: null },
 })
 
 const OVERLAY = "nest_boxes_area_outlines"
@@ -17,12 +15,10 @@ const SHOWN_FROM_ZOOM = CLUSTER_UNTIL_ZOOM
 
 const { map, setOverlay, removeOverlay } = inject("map")
 
-const opacity = (normal, hovered, current) => [
+const opacity = (normal, hovered) => [
   "case",
   ["boolean", ["feature-state", "hover"], false],
   hovered,
-  ["get", "current"],
-  current,
   normal,
 ]
 
@@ -30,7 +26,7 @@ watchEffect(() => {
   const features = props.outlines.map(area => ({
     type: "Feature",
     id: area.id,
-    properties: { name: area.name, current: area.id === props.currentId },
+    properties: { name: area.name },
     geometry: area.outline,
   }))
   setOverlay(OVERLAY, colors => ({
@@ -45,7 +41,7 @@ watchEffect(() => {
         minzoom: SHOWN_FROM_ZOOM,
         paint: {
           "fill-color": colors.primary,
-          "fill-opacity": opacity(0.06, 0.18, 0.12),
+          "fill-opacity": opacity(0.06, 0.18),
         },
       },
       {
@@ -55,8 +51,8 @@ watchEffect(() => {
         minzoom: SHOWN_FROM_ZOOM,
         paint: {
           "line-color": colors.primary,
-          "line-opacity": opacity(0.45, 0.9, 0.8),
-          "line-width": ["case", ["get", "current"], 2, 1.25],
+          "line-opacity": opacity(0.45, 0.9),
+          "line-width": 1.25,
         },
       },
       {
@@ -73,7 +69,7 @@ watchEffect(() => {
           "text-color": colors.primaryText,
           "text-halo-color": colors.surface,
           "text-halo-width": 1.5,
-          "text-opacity": opacity(0.6, 1, 0.9),
+          "text-opacity": opacity(0.6, 1),
         },
       },
     ],
