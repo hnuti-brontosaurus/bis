@@ -213,3 +213,9 @@
   box-shadow: 0 0 0 8px var(--loc-ring);
   pointer-events: none;
 }
+
+/* The canvas takes focus on a click, for the arrow keys; any key then, Shift
+   for picking boxes included, would ring the whole map as keyboard focus */
+.maplibregl-canvas:focus-visible {
+  outline: none;
+}
