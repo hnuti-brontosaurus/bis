@@ -103,8 +103,8 @@ def test_production_denies_staff(request_with_user, mcp_permission, settings):
 
 @pytest.mark.django_db
 def test_production_allows_listed_email(request_with_user, mcp_permission, settings):
-    settings.ENVIRONMENT = "prod"
     request = request_with_user(make_user("lamanchy@gmail.com"))
+    settings.ENVIRONMENT = "prod"
     assert mcp_permission.has_permission(request, None)
 
 
