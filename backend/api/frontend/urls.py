@@ -87,5 +87,9 @@ urlpatterns = [
     ),
     path("events/<int:event_id>/export_files/", frontend.views.export_files),
     path("events/<uuid:event_uid>/shared_folder/", frontend.views.shared_folder),
+    path(
+        "events/<uuid:event_uid>/shared_folder/create/",
+        frontend.views.create_shared_folder,
+    ),
     path("events/<int:event_id>/get_feedbacks/", frontend.views.get_feedbacks),
 ]

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Sdílená složka – {{ event.name }}</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0 16px;
+            text-align: center;
+            color: #222;
+            background: #fff;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { color: #eee; background: #1b1b1b; }
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 16px;
+            border: 4px solid #1e964633;
+            border-top-color: #1e9646;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<main>
+    <div class="spinner" id="spinner"></div>
+    <p id="message">Vytvářím sdílenou složku akce {{ event.name }}, chvilku to potrvá…</p>
+</main>
+<script>
+    fetch("create/", {method: "POST"})
+        .then(response => response.json().catch(() => ({})))
+        .then(data => {
+            if (!data.url) throw new Error(data.error)
+            window.location.replace(data.url)
+        })
+        .catch(error => {
+            document.getElementById("spinner").remove()
+            document.getElementById("message").textContent =
+                error.message || "Složku se nepodařilo vytvořit, zkus stránku načíst znovu."
+        })
+</script>
+</body>
+</html>

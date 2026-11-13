@@ -36,12 +36,14 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Q
 from django.http import (
-    HttpResponse,
     HttpResponseForbidden,
     HttpResponseRedirect,
+    JsonResponse,
 )
+from django.shortcuts import render
 from django.utils.functional import cached_property
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from event.models import (
     Event,
@@ -560,12 +562,24 @@ def export_files(request, event_id):
 
 def shared_folder(request, event_uid):
     event = get_object_or_404(Event, uid=event_uid)
+    if event.shared_folder_url:
+        return HttpResponseRedirect(event.shared_folder_url)
+    return render(request, "bis/shared_folder.html", {"event": event})
+
+
+# Creating the folder takes seconds, so the page above shows a wait and asks for
+# it by POST: link previews only GET the link and must not create empty folders.
+@csrf_exempt
+@require_POST
+def create_shared_folder(request, event_uid):
+    event = get_object_or_404(Event, uid=event_uid)
     url = get_or_create_shared_folder_url(event)
     if url is None:
-        return HttpResponse(
-            "Sdílené složky se vytvářejí pouze v produkčním prostředí.", status=503
+        return JsonResponse(
+            {"error": "Sdílené složky se vytvářejí pouze v produkčním prostředí."},
+            status=503,
         )
-    return HttpResponseRedirect(url)
+    return JsonResponse({"url": url})
 
 
 @login_required

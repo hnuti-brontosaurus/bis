@@ -124,6 +124,10 @@ def shared_folder_name(event):
     return sanitize_name(f"{event.name} {event.start.year}")
 
 
+def shared_folder_link(event):
+    return f"{settings.FULL_HOSTNAME}/{settings.API_BASE}frontend/events/{event.uid}/shared_folder/"
+
+
 def get_or_create_shared_folder_url(event):
     if event.shared_folder_url:
         return event.shared_folder_url

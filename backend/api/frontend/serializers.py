@@ -2,6 +2,7 @@ from datetime import date
 
 from api.helpers import catch_related_object_does_not_exist
 from bis import emails
+from bis.drive import shared_folder_link
 from bis.helpers import AgeStats, get_locked_year, paused_validation
 from bis.models import (
     EYCACard,
@@ -752,6 +753,7 @@ class EventSerializer(ModelSerializer):
     category = EventCategorySerializer()
     program = EventProgramCategorySerializer()
     intended_for = EventIntendedForCategorySerializer()
+    shared_folder_link = SerializerMethodField()
 
     class Meta:
         model = Event
@@ -779,6 +781,7 @@ class EventSerializer(ModelSerializer):
             "organizers_note",
             "duration",
             "uid",
+            "shared_folder_link",
             "finance",
             "propagation",
             "vip_propagation",
@@ -787,6 +790,9 @@ class EventSerializer(ModelSerializer):
             "feedback_form",
         )
         read_only_fields = ["duration", "uid"]
+
+    def get_shared_folder_link(self, event) -> str:
+        return shared_folder_link(event)
 
     def get_excluded_fields(self, fields):
         if self.context["request"].user.is_member_only:
