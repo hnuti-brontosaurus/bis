@@ -67,9 +67,53 @@ def test_staff_user_allowed(request_with_user, mcp_permission):
 
 
 @pytest.mark.django_db
-def test_disabled_in_production(request_with_user, mcp_permission, settings):
+def test_production_allows_bot_without_personal_data(
+    request_with_user, mcp_permission, settings
+):
     from bis.tests.test_mcp_visibility import make_bot
 
     request = request_with_user(make_bot("brontosaurus.bot@gmail.com"))
     settings.ENVIRONMENT = "prod"
-    assert not mcp_permission.has_permission(request, None)
+    assert mcp_permission.has_permission(request, None)
+
+
+@pytest.mark.django_db
+def test_production_denies_bot_with_personal_data(
+    request_with_user, mcp_permission, settings
+):
+    from bis.tests.test_mcp_visibility import make_bot
+
+    bot = make_bot("chatbot@example.com", sees_personal_data=True)
+    settings.ENVIRONMENT = "prod"
+    assert not mcp_permission.has_permission(request_with_user(bot), None)
+
+
+@pytest.mark.django_db
+def test_production_denies_staff(request_with_user, mcp_permission, settings):
+    from bis.models import RoleCategory
+
+    role = RoleCategory.objects.get_or_create(
+        slug="board_member", defaults={"name": "Board member"}
+    )[0]
+    user = make_user("staff@example.com")
+    user.roles.add(role)
+    settings.ENVIRONMENT = "prod"
+    assert not mcp_permission.has_permission(request_with_user(user), None)
+
+
+@pytest.mark.django_db
+def test_production_allows_listed_email(request_with_user, mcp_permission, settings):
+    settings.ENVIRONMENT = "prod"
+    request = request_with_user(make_user("lamanchy@gmail.com"))
+    assert mcp_permission.has_permission(request, None)
+
+
+@pytest.mark.django_db
+def test_production_denies_listed_email_with_personal_data(
+    request_with_user, mcp_permission, settings
+):
+    user = make_user("lamanchy@gmail.com")
+    user.sees_personal_data_over_mcp = True
+    user.save()
+    settings.ENVIRONMENT = "prod"
+    assert not mcp_permission.has_permission(request_with_user(user), None)

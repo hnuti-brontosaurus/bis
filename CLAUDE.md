@@ -317,10 +317,11 @@ assigning `other.field` — see `User.merge_with`.
 ### MCP server
 `/mcp` exposes one GraphQL `query` tool (`bis/mcp.py`, schema in
 `bis/mcp_schema.py`) for staff and bot accounts. The game book and cookbook
-are deliberately left out. It is **switched off in production** (`MCPPermission`
-in `project/urls.py` denies everyone) until the data processing agreements are
-in place; dev runs it as usual. What an account may see depends on the data
-processing agreement behind its LLM, so it is set per user by two flags in
+are deliberately left out. In **production** `MCPPermission` (`project/urls.py`)
+admits only bots and the accounts in `MCP_PRODUCTION_EMAILS`, and only without
+`sees_personal_data_over_mcp` — the office approved the Brontobot for public
+and internal data — until the data processing agreements are in place; dev admits staff and every bot. What an account may
+see depends on the data processing agreement behind its LLM, so it is set per user by two flags in
 the user admin's "Interní data" (superusers only): `is_bot` (no roles, sees
 every row, no inbox) and `sees_personal_data_over_mcp`. The Brontobot (ollama,
 no DPA) has only `is_bot`, the chatbot (business ChatGPT with a DPA) both.

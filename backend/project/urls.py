@@ -12,15 +12,20 @@ from mcp_server.views import MCPServerStreamableHttpView
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
 from rest_framework.permissions import BasePermission
 
+MCP_PRODUCTION_EMAILS = {"lamanchy@gmail.com"}
+
 
 class MCPPermission(BasePermission):
     def has_permission(self, request, view):
-        # Off in production until the data processing agreements are signed
-        if settings.ENVIRONMENT == "prod":
-            return False
         user = request.user
         if not user or not user.is_authenticated:
             return False
+        # Production admits only accounts that see no personal data until the
+        # data processing agreements are signed
+        if settings.ENVIRONMENT == "prod":
+            return (
+                user.is_bot or user.email in MCP_PRODUCTION_EMAILS
+            ) and not user.sees_personal_data_over_mcp
         return user.is_staff or user.is_bot
 
 
